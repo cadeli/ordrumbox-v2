@@ -4,8 +4,7 @@ export default class KickGenerate extends BaseGenerator {
     static KICK_GENERATION_CONFIGS = Object.freeze({
         basic: {
             mode: 'phrases',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 0, step: 0, accent: true },
                 { beat: 1, step: 0, accent: true },
@@ -24,8 +23,7 @@ export default class KickGenerate extends BaseGenerator {
         },
         fourOnFloor: {
             mode: 'grid',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             probabilities: [1, 0.05, 0.92, 0.08],
             velocity: {
                 base: 0.86,
@@ -38,8 +36,7 @@ export default class KickGenerate extends BaseGenerator {
         },
         syncopated: {
             mode: 'grid',
-            loopPointBeat: 2,
-            loopPointStep: 0,
+            loopBeats: 2,
             probabilities: [1, 0.26, 0.58, 0.34],
             velocity: {
                 base: 0.78,
@@ -52,8 +49,7 @@ export default class KickGenerate extends BaseGenerator {
         },
         break: {
             mode: 'grid',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             probabilities: [1, 0, 0, 0],
             velocity: {
                 base: 0.76,

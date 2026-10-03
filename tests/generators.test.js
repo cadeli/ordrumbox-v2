@@ -69,16 +69,12 @@ describe('Generators', () => {
         it('sets correct loop point for fourOnFloor', () => {
             const track = makeTrack('KICK', [], { beatCount: 4, stepsPerBeat: 4 })
             new KickGenerate().generateNewKick(track, 'fourOnFloor')
-            expect(track.loopPointBeat).toBe(1)
-            expect(track.loopPointStep).toBe(0)
             expect(track.loopAtStep).toBe(4)
         })
 
         it('sets correct loop point for basic', () => {
             const track = makeTrack('KICK', [], { beatCount: 4, stepsPerBeat: 4 })
             new KickGenerate().generateNewKick(track, 'basic')
-            expect(track.loopPointBeat).toBe(4)
-            expect(track.loopPointStep).toBe(0)
             expect(track.loopAtStep).toBe(16)
         })
 
@@ -184,7 +180,6 @@ describe('Generators', () => {
         it('roll sets loop point correctly', () => {
             const track = makeTrack('SNARE', [], { beatCount: 4, stepsPerBeat: 4 })
             new SnareGenerate().generateNewSnare(track, 'roll')
-            expect(track.loopPointBeat).toBeGreaterThan(0)
         })
 
         it('syncopated produces notes only within loop point (beat < 2)', () => {
@@ -443,8 +438,7 @@ describe('Generators', () => {
             const gen = new PercGenerate()
             const tones = [0, 4, 7]
             const config = {
-                loopPointBeat: 4,
-                loopPointStep: 0,
+                loopAtStep: 4 * 4,
                 callSteps: [0, 2],
                 responseSteps: [1, 3],
                 density: 1.0,
@@ -468,8 +462,7 @@ describe('Generators', () => {
             const track = makeTrack('PERC', [], { beatCount: 4 })
             const gen = new PercGenerate()
             const config = {
-                loopPointBeat: 4,
-                loopPointStep: 0,
+                loopAtStep: 4 * 4,
                 startBarOffset: 1,
                 steps: [0, 1, 2],
                 velocity: {
@@ -490,7 +483,6 @@ describe('Generators', () => {
         it('loop point is set after generation', () => {
             const track = makeTrack('PERC')
             new PercGenerate().generateNewPerc(track, 'basic')
-            expect(track.loopPointBeat).toBeGreaterThan(0)
         })
     })
 
@@ -575,8 +567,6 @@ describe('Generators', () => {
             for (const { gen, name, variant, method } of testCases) {
                 const track = makeTrack(name, [], { beatCount: 4, stepsPerBeat: 4 })
                 gen[method](track, variant)
-                expect(track.loopPointBeat).toBeGreaterThan(0)
-                expect(track.loopPointStep).toBeGreaterThanOrEqual(0)
                 expect(track.loopAtStep).toBeGreaterThan(0)
                 expect(track.loopAtStep).toBeLessThanOrEqual(track.beatCount * track.stepsPerBeat)
             }
@@ -751,7 +741,6 @@ describe('Generators', () => {
         it('loop point is valid', () => {
             const track = makeTrack('KICK', [], { beatCount, stepsPerBeat })
             new KickGenerate().generateNewKick(track, 'basic')
-            expect(track.loopPointBeat).toBeGreaterThan(0)
             expect(track.loopAtStep).toBeGreaterThan(0)
         })
     })
@@ -843,7 +832,6 @@ describe('Generators', () => {
         it('sets loop point from config', () => {
             const track = makeTrack('CLAP', [], { beatCount: 4, stepsPerBeat: 4 })
             new ClapGenerate().generateNewClap(track, 'backbeat')
-            expect(track.loopPointBeat).toBe(4)
             expect(track.loopAtStep).toBe(16)
         })
 
@@ -888,7 +876,6 @@ describe('Generators', () => {
         it('sets loop point from config', async () => {
             const track = makeTrack('COWBELL', [], { beatCount: 4, stepsPerBeat: 4 })
             await new CowbellGenerate().generateNewCowbell(track, 'basic')
-            expect(track.loopPointBeat).toBe(4)
             expect(track.loopAtStep).toBe(16)
         })
     })
@@ -974,7 +961,6 @@ describe('Generators', () => {
         it('sets loop point from config', () => {
             const track = makeTrack('PIANO', [], { beatCount: 4, stepsPerBeat: 4 })
             new MelodyGenerate().generateNewMelody(track, 'chordStab')
-            expect(track.loopPointBeat).toBe(4)
             expect(track.loopAtStep).toBe(16)
         })
     })
@@ -1007,12 +993,9 @@ describe('Generators', () => {
 
         it('resets loop point to full track length', () => {
             const track = makeTrack('KICK', [], { beatCount: 4, stepsPerBeat: 4 })
-            track.loopPointBeat = 1
-            track.loopPointStep = 2
+            track.loopAtStep = 1 * (track.stepsPerBeat ?? 4)
             track.loopAtStep = 6
             new RandomGenerate().generateRandom(track)
-            expect(track.loopPointBeat).toBe(4)
-            expect(track.loopPointStep).toBe(0)
             expect(track.loopAtStep).toBe(16)
         })
 
@@ -1020,7 +1003,6 @@ describe('Generators', () => {
             const track = makeTrack('KICK', [], { beatCount: 4, stepsPerBeat: 4 })
             delete track.beatCount
             new RandomGenerate().generateRandom(track, { beatCount: 2 })
-            expect(track.loopPointBeat).toBe(2)
             expect(track.loopAtStep).toBe(8)
             for (const note of track.notes) {
                 expect(note.beat).toBeLessThan(2)

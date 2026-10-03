@@ -342,13 +342,14 @@ describe('Roundtrip 4 — Transport → Player tick chain', () => {
         expect(transport.tick).toBeGreaterThan(tickBefore)
     })
 
-    it('setBpm updates clockInterval and secondsPerBeat', () => {
+    it('setBpm updates clockInterval and secondsPerTick', () => {
         const ctx = { state: 'running', currentTime: 0, sampleRate: 44100 }
         const transport = new Transport(ctx)
         transport.setBpm(140)
         expect(transport.bpm).toBe(140)
         expect(transport.clockInterval).toBeCloseTo(60 / (140 * 24), 6)
-        expect(appState.secondsPerBeat).toBeCloseTo((60 * 4) / (140 * TICK), 6)
+        // a beat is TICK ticks, so a tick is (60 / bpm) / TICK seconds long
+        expect(appState.secondsPerTick).toBeCloseTo(60 / (140 * TICK), 6)
     })
 
     it('onSchedule receives monotonically increasing ticks', () => {

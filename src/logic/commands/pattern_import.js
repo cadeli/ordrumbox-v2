@@ -1,5 +1,5 @@
 import { fixPattern } from '../../patterns/fixer.js'
-import { TRACK_DEFAULTS, recalcLoopDerived } from '../../model/track_schema.js'
+import { TRACK_DEFAULTS } from '../../model/track_schema.js'
 import { areValidNoteKeys, compactArrayToNote, isCompactFormat } from '../../core/note_schema.js'
 import { reportUserError } from '../../core/notify.js'
 import Utils from '../../core/utils.js'
@@ -53,11 +53,10 @@ export function validatePatternJson(data) {
 
 /**
  * Copy all properties from sourceTrack to track.
- * Handles derived properties (loopPointBeat/Step), optional FX props,
- * and beats/beatCount alias.
+ * Handles optional FX props and the beats/beatCount alias.
  */
 function copyTrackProps(track, sourceTrack) {
-    const derivedKeys = new Set(['loopPointBeat', 'loopPointStep', 'notes', 'noteKeys'])
+    const derivedKeys = new Set(['notes', 'noteKeys'])
 
     for (const prop of Object.keys(TRACK_DEFAULTS)) {
         if (derivedKeys.has(prop)) continue
@@ -90,7 +89,6 @@ function copyTrackProps(track, sourceTrack) {
         track.loopAtStep = track.beatCount * track.stepsPerBeat
     }
 
-    recalcLoopDerived(track)
     return track
 }
 

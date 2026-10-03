@@ -43,7 +43,7 @@ function makePlayer(pattern, getFlatNotes) {
         getAutoGenerate: vi.fn(() => Promise.resolve({ changeTrack: vi.fn() })),
         getFlatNotes,
         TICK: 32,
-        secondsPerBeat: 0.25,
+        secondsPerTick: 0.25,
         isOffline: false,
     })
 }
@@ -191,7 +191,7 @@ describe('AudioEngine cache wiring', () => {
             patterns,
             getAutoGenerate: vi.fn(() => Promise.resolve({ changeTrack: vi.fn() })),
             TICK: 32,
-            secondsPerBeat: 0.25,
+            secondsPerTick: 0.25,
             isOffline: true,
         })
     }

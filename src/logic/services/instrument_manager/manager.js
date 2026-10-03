@@ -35,8 +35,8 @@ export default class InstrumentsManager {
 
             this.byId.set(inst.id.toUpperCase(), inst)
 
-            if (inst.name && inst.name.syn) {
-                inst.name.syn.forEach((syn) => {
+            if (inst.synonyms.length > 0) {
+                inst.synonyms.forEach((syn) => {
                     try {
                         const pattern = new RegExp(`^${syn}$`, 'i')
                         this.matchers.push({ pattern, instrument: inst })

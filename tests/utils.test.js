@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import Utils from '../src/core/utils.js'
-import { recalcLoopDerived } from '../src/model/track_schema.js'
 import { getLoopCandidateSteps } from './helpers/loop_candidate_steps.js'
 
 describe('Utils.clamp', () => {
@@ -154,10 +153,6 @@ describe('Utils', () => {
             expect(Utils.getTrackLoopAtStep({ loopAtStep: 8, stepsPerBeat: 4 })).toBe(8)
         })
 
-        it('calculates from loopPointBeat/loopPointStep', () => {
-            expect(Utils.getTrackLoopAtStep({ loopPointBeat: 2, loopPointStep: 1, stepsPerBeat: 4 })).toBe(9)
-        })
-
         it('falls back to track step length', () => {
             const track = { beatCount: 4, stepsPerBeat: 4, notes: [] }
             expect(Utils.getTrackLoopAtStep(track)).toBe(16)
@@ -220,8 +215,6 @@ describe('Utils', () => {
             expect(track.notes.length).toBe(1)
             expect(track.notes[0].beat).toBe(0)
             expect(track.notes[0].beatStep).toBe(0)
-            expect(track.loopPointBeat).toBe(1)
-            expect(track.loopPointStep).toBe(0)
         })
 
         it('compacts each track independently when called on multiple tracks', () => {
@@ -273,8 +266,6 @@ describe('Utils', () => {
             expect(trackA.notes.length).toBe(1)
             expect(trackA.notes[0].beat).toBe(0)
             expect(trackA.notes[0].beatStep).toBe(0)
-            expect(trackA.loopPointBeat).toBe(1)
-            expect(trackA.loopPointStep).toBe(0)
 
             // Track B: 4 notes → 1 note, loop at 4 steps (1 beat)
             expect(resultB.changed).toBe(true)
@@ -282,15 +273,11 @@ describe('Utils', () => {
             expect(trackB.notes.length).toBe(1)
             expect(trackB.notes[0].beat).toBe(0)
             expect(trackB.notes[0].beatStep).toBe(1)
-            expect(trackB.loopPointBeat).toBe(1)
-            expect(trackB.loopPointStep).toBe(0)
 
             // Track C: 8 notes → 2 notes, loop at 4 steps (1 beat)
             expect(resultC.changed).toBe(true)
             expect(resultC.loopAtStep).toBe(4)
             expect(trackC.notes.length).toBe(2)
-            expect(trackC.loopPointBeat).toBe(1)
-            expect(trackC.loopPointStep).toBe(0)
 
             // All tracks independent: trackB note step differs from trackA
             expect(trackB.notes[0].beatStep).toBe(1)
@@ -319,13 +306,9 @@ describe('Utils', () => {
                 notes: [],
             }
             const originalLoopAtStep = track.loopAtStep
-            const originalLoopPointBeat = track.loopPointBeat
-            const originalLoopPointStep = track.loopPointStep
             const result = Utils.addLoopToTrackIfPossible(track)
             expect(result.changed).toBe(false)
             expect(track.loopAtStep).toBe(originalLoopAtStep)
-            expect(track.loopPointBeat).toBe(originalLoopPointBeat)
-            expect(track.loopPointStep).toBe(originalLoopPointStep)
         })
 
         it('handles invalid track', () => {
@@ -428,9 +411,7 @@ describe('Utils', () => {
                     { beat: 2, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
                     { beat: 3, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
                 ],
-                loopAtStep: 4,
-                loopPointBeat: 1,
-                loopPointStep: 0,
+                loopAtStep: 1 * 4,
             }
 
             const result = Utils.addLoopToTrackIfPossible(track)
@@ -445,9 +426,7 @@ describe('Utils', () => {
                     { beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
                     { beat: 1, beatStep: 1, velocity: 0.8, pitch: 1, pan: 0 },
                 ],
-                loopAtStep: 16,
-                loopPointBeat: 4,
-                loopPointStep: 0,
+                loopAtStep: 4 * 4,
             }
 
             const result = Utils.addLoopToTrackIfPossible(track)
@@ -498,42 +477,16 @@ describe('Utils', () => {
     })
 })
 
-describe('recalcLoopDerived', () => {
-    it('computes loopPointBeat=4, loopPointStep=0 for loopAtStep=16, stepsPerBeat=4', () => {
-        const track = { loopAtStep: 16, stepsPerBeat: 4 }
-        recalcLoopDerived(track)
-        expect(track.loopPointBeat).toBe(4)
-        expect(track.loopPointStep).toBe(0)
+// loopAtStep is the ONLY loop field: 0 and null both mean "no explicit loop point"
+// and resolve to the track length (getTrackStepLength). Resolving them to a
+// zero-length loop is what made computeNbTickForLoop answer "0 ticks" = no
+// repetition at all.
+describe('loop length resolution', () => {
+    it.each([0, null, undefined])('loopAtStep=%s resolves to the track length', (loopAtStep) => {
+        expect(Utils.getTrackLoopAtStep({ loopAtStep, stepsPerBeat: 4, beatCount: 4, notes: [] })).toBe(16)
     })
 
-    it('computes loopPointBeat=2, loopPointStep=2 for loopAtStep=10, stepsPerBeat=4', () => {
-        const track = { loopAtStep: 10, stepsPerBeat: 4 }
-        recalcLoopDerived(track)
-        expect(track.loopPointBeat).toBe(2)
-        expect(track.loopPointStep).toBe(2)
-    })
-
-    // 0 and null both mean "no explicit loop point" (Utils.getTrackLoopAtStep only
-    // trusts loopAtStep > 0). Resolving them to a zero-length loop is what made
-    // computeNbTickForLoop answer "0 ticks" = no repetition at all.
-    it.each([0, null])('resolves loopAtStep=%s to the track length', (loopAtStep) => {
-        const track = { loopAtStep, stepsPerBeat: 4, beatCount: 4 }
-        recalcLoopDerived(track)
-        expect(track.loopPointBeat).toBe(4)
-        expect(track.loopPointStep).toBe(0)
-    })
-
-    it('computes loopPointBeat=0, loopPointStep=1 for loopAtStep=1, stepsPerBeat=8', () => {
-        const track = { loopAtStep: 1, stepsPerBeat: 8 }
-        recalcLoopDerived(track)
-        expect(track.loopPointBeat).toBe(0)
-        expect(track.loopPointStep).toBe(1)
-    })
-
-    it('mutates the track object in place', () => {
-        const track = { loopAtStep: 12, stepsPerBeat: 4 }
-        recalcLoopDerived(track)
-        expect(track).toHaveProperty('loopPointBeat', 3)
-        expect(track).toHaveProperty('loopPointStep', 0)
+    it('an explicit loopAtStep is used as is, whatever the subdivision', () => {
+        expect(Utils.getTrackLoopAtStep({ loopAtStep: 9, stepsPerBeat: 8, beatCount: 4, notes: [] })).toBe(9)
     })
 })

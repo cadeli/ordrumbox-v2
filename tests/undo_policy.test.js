@@ -72,11 +72,9 @@ describe('Undo policy — track parameters (cmd.updateTrack)', () => {
         expect(track.pitch).toBe(24)
     })
 
-    it('ignores unknown and derived keys — never applied, never recorded', () => {
-        cmd.updateTrack(track, { notAKey: 1, loopPointBeat: 9, loopPointStep: 2 })
+    it('ignores unknown keys — never applied, never recorded', () => {
+        cmd.updateTrack(track, { notAKey: 1, loopBeats: 9, stepPercent: 2 })
         expect(track.notAKey).toBeUndefined()
-        expect(track.loopPointBeat).toBeUndefined()
-        expect(track.loopPointStep).toBeUndefined()
         expect(history.pastLength).toBe(0)
 
         cmd.updateTrack(track, { beatCount: 8 })

@@ -48,7 +48,7 @@ export default class Player {
         this.getPlaybackMode = config.getPlaybackMode ?? (() => PLAYBACK_MODE.PATTERN)
         this.getSong = config.getSong ?? (() => null)
         this.TICK = config.TICK
-        this.secondsPerBeat = config.secondsPerBeat
+        this.secondsPerTick = config.secondsPerTick
         this.isOffline = !!config.isOffline
         this.sound = new Sound(config.audioCtx, config.mixer, this.sounds, this.generatedSounds, this.isOffline)
         this.loop = 0
@@ -174,7 +174,7 @@ export default class Player {
             const notesToPlay = flatNotesMap.get(loopStep)
             if (!notesToPlay) return
 
-            const secondsPerBeat = this.secondsPerBeat
+            const secondsPerTick = this.secondsPerTick
             const sound = this.sound
 
             // Cache trackIdxMap: rebuild when the tracks container changes OR
@@ -196,7 +196,7 @@ export default class Player {
             for (let i = 0; i < notesToPlay.length; i++) {
                 const flatNote = notesToPlay[i]
                 if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
-                    NoteParams.applyNoteParams(flatNote, secondsPerBeat)
+                    NoteParams.applyNoteParams(flatNote, secondsPerTick)
                     promises.push(sound.play(flatNote, atTime + flatNote.swingTime))
                     playbackEvents.emit(EVENTS.NOTE_TRIGGER, {
                         trackIdx: trackIdxMap.get(flatNote.track) ?? -1,
@@ -223,7 +223,7 @@ export default class Player {
         this.#songBar = this.#songBarOf(tick)
         if (sources.length === 0) return
 
-        const secondsPerBeat = this.secondsPerBeat
+        const secondsPerTick = this.secondsPerTick
         const sound = this.sound
         const visiblePattern = this.patterns[this.getSelectedPatternIdx()]
         const promises = []
@@ -255,7 +255,7 @@ export default class Player {
             for (let i = 0; i < notesToPlay.length; i++) {
                 const flatNote = notesToPlay[i]
                 if (!Utils.shouldTrackPlay(flatNote.track, anySolo)) continue
-                NoteParams.applyNoteParams(flatNote, secondsPerBeat)
+                NoteParams.applyNoteParams(flatNote, secondsPerTick)
                 promises.push(sound.play(flatNote, atTime + flatNote.swingTime))
                 if (isVisible) {
                     playbackEvents.emit(EVENTS.NOTE_TRIGGER, {
@@ -318,7 +318,7 @@ export default class Player {
             euclideanRotation: note?.euclideanRotation ?? 0,
         }
         const flatNote = new FlatNote(0, track, previewNote)
-        NoteParams.applyNoteParams(flatNote, this.secondsPerBeat ?? 60 / 120)
+        NoteParams.applyNoteParams(flatNote, this.secondsPerTick ?? 60 / (120 * 32))
         await this.sound.play(flatNote, this.audioCtx.currentTime)
         logger.info(
             'Player',

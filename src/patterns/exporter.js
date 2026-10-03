@@ -49,7 +49,6 @@ export class PatternExporter {
     static cleanTrack(track) {
         const cleaned = {}
         for (const [key, val] of Object.entries(track)) {
-            if (Utils.TRACK_RECALCULATED.includes(key)) continue
             if (key === 'noteKeys') continue
             if (!(key in Utils.TRACK_DEFAULTS)) {
                 cleaned[key] = val

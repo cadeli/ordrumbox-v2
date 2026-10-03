@@ -28,6 +28,7 @@ export async function exportOffline(deps, pattern, numLoops, OfflineAudioContext
         const beatCount = pattern.beatCount
         const totalLoops = Math.max(1, numLoops)
         const secondsPerBeat = 60 / bpm
+        const secondsPerTick = secondsPerBeat / TICK
         const patternDuration = beatCount * secondsPerBeat
         const sampleRate = audioCtx.sampleRate
         const samplesPerPattern = Math.round(patternDuration * sampleRate)
@@ -69,7 +70,7 @@ export async function exportOffline(deps, pattern, numLoops, OfflineAudioContext
                     const nbTickForPattern = TICK * beatCount
                     const noteTime = NoteParams.tickToTime(tick, nbTickForPattern, truePatternDuration)
                     const absoluteTime = loopStartTime + noteTime
-                    NoteParams.applyNoteParams(flatNote, secondsPerBeat)
+                    NoteParams.applyNoteParams(flatNote, secondsPerTick)
 
                     if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
                         await offlineSound.play(flatNote, absoluteTime + flatNote.swingTime)

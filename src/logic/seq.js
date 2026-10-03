@@ -70,7 +70,7 @@ export default class Sequencer {
             getAutoGenerate: getAutoGenerateService,
             uiState: {}, // UI state removed
             TICK,
-            secondsPerBeat: this.appState.secondsPerBeat,
+            secondsPerTick: this.appState.secondsPerTick,
         })
         this.playbackEvents.on(EVENTS.PATTERN_CHANGE, (changedTracks) => {
             if (this.serviceRegistry.audioEngine) {

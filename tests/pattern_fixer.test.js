@@ -9,6 +9,7 @@ import {
     getUnloadedSamplesFromDrumkits,
 } from '../src/patterns/fixer.js'
 import { normalizeNote } from '../src/core/note_schema.js'
+import { computeNbTickForLoop } from '../src/patterns/engine.js'
 
 describe('patternFixer - fixTrackPanning', () => {
     // PAN_MAP is indexed by drum type, so the pan follows the TYPE. It used to be
@@ -84,8 +85,6 @@ describe('patternFixer - fixTrackDefaults', () => {
         }
         fixTrackDefaults(track)
         expect(track.pan).toBe(0)
-        expect(track.loopPointBeat).toBe(4)
-        expect(track.loopPointStep).toBe(0)
         expect(track.useAutoAssignSound).toBe(true)
         expect(track.filterType).toBe('allpass')
         expect(track.notes[0].every).toBe(1)
@@ -243,30 +242,19 @@ describe.each(PARAM_SETS)('normalizeNoteGridPosition — spb=%i bpm=%i beats=%i 
 })
 
 describe.each(PARAM_SETS)('fixTrackDefaults — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
-    it('sets loopPointBeat and loopPointStep from loopAtStep', () => {
-        const loopAtStep = beatCount * stepsPerBeat
-        const track = { beatCount, stepsPerBeat, loopAtStep }
-        const fixed = fixTrackDefaults(track)
-        expect(fixed.loopPointBeat).toBe(beatCount)
-        expect(fixed.loopPointStep).toBe(0)
-    })
-
-    // loopAtStep null is TRACK_DEFAULTS' "loop the whole track". It used to derive
-    // loopPointBeat = 0, which made computeNbTickForLoop answer "0 ticks", i.e. no
+    // loopAtStep null is TRACK_DEFAULTS' "loop the whole track". Deriving a zero
+    // loop from it is what made computeNbTickForLoop answer "0 ticks", i.e. no
     // repetition at all, for every track that never had an explicit loop point.
     it('resolves a null loopAtStep to the track length, not to zero', () => {
         const track = { beatCount, stepsPerBeat, loopAtStep: null }
         const fixed = fixTrackDefaults(track)
-        expect(fixed.loopPointBeat).toBe(beatCount)
-        expect(fixed.loopPointStep).toBe(0)
+        expect(computeNbTickForLoop(fixed)).toBe(beatCount * 32)
     })
 
-    it('derives non-zero loopPointStep when loopAtStep is not a multiple of stepsPerBeat', () => {
-        const loopAtStep = stepsPerBeat * 2 + 1
-        const track = { beatCount, stepsPerBeat, loopAtStep }
+    it('keeps an explicit loopAtStep, including one off the beat grid', () => {
+        const track = { beatCount, stepsPerBeat, loopAtStep: stepsPerBeat * 2 + 1 }
         const fixed = fixTrackDefaults(track)
-        expect(fixed.loopPointBeat).toBe(Math.floor(loopAtStep / stepsPerBeat))
-        expect(fixed.loopPointStep).toBe(loopAtStep % stepsPerBeat)
+        expect(fixed.loopAtStep).toBe(stepsPerBeat * 2 + 1)
     })
 })
 

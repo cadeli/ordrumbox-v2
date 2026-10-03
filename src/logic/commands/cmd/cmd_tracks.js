@@ -1,16 +1,11 @@
 import Utils from '../../../core/utils.js'
 import { NOT_FOUND } from '../../../core/constants.js'
-import {
-    clampStepsPerBeat,
-    normalizeTrack,
-    recalcLoopDerived,
-    TRACK_VALUE_RANGES,
-} from '../../../model/track_schema.js'
+import { clampStepsPerBeat, normalizeTrack, TRACK_VALUE_RANGES } from '../../../model/track_schema.js'
 import { reportUserError } from '../../../core/notify.js'
 import { soundRegistry } from '../../../state/sound_registry.js'
 import RandomGenerate from '../../generators/random_generate.js'
 
-const TRACK_STATE_KEYS = ['notes', 'loopPointStep', 'loopPointBeat', 'loopAtStep']
+const TRACK_STATE_KEYS = ['notes', 'loopAtStep']
 
 /**
  * Track commands — sub-module of the Commander (see CommanderHost in ../cmd.js).
@@ -182,7 +177,6 @@ export default class TrackCommands {
             loopAtStep: beatCount * stepsPerBeat,
             pan: Utils.getPanFromTrackName(name),
         })
-        recalcLoopDerived(newTrack)
         return newTrack
     }
 
@@ -190,7 +184,7 @@ export default class TrackCommands {
      * Set stepsPerBeat to an absolute value (clamped 1..8) and migrate the
      * notes / loop point proportionally:
      * - notes: steppc (absolute position) is preserved → beatStep rescaled
-     * - loopAtStep is clamped to the new bar length, loop point re-derived
+     * - loopAtStep is clamped to the new bar length
      * @param {any} track
      * @param {number} value - target steps per beat
      * @param {object} [opts]
@@ -204,7 +198,7 @@ export default class TrackCommands {
 
         this.#withUndo(
             track,
-            ['stepsPerBeat', 'loopPointStep', 'loopPointBeat', 'loopAtStep', 'notes'],
+            ['stepsPerBeat', 'loopAtStep', 'notes'],
             `Steps per bar on ${track.name}`,
             () => {
                 const oldStepsPerBeat = track.stepsPerBeat
@@ -219,7 +213,6 @@ export default class TrackCommands {
 
                 const maxSteps = (track.beatCount ?? 4) * target
                 if (track.loopAtStep > maxSteps) track.loopAtStep = maxSteps
-                recalcLoopDerived(track)
             },
             {
                 persist: true,
@@ -238,14 +231,13 @@ export default class TrackCommands {
     incrLoopPoint(track) {
         this.#withUndo(
             track,
-            ['loopAtStep', 'loopPointBeat', 'loopPointStep'],
+            ['loopAtStep'],
             `Loop point on ${track.name}`,
             () => {
                 track.loopAtStep--
                 if (track.loopAtStep < 1) {
                     track.loopAtStep = track.stepsPerBeat * track.beatCount
                 }
-                recalcLoopDerived(track)
             },
             { persist: true },
         )
@@ -260,9 +252,7 @@ export default class TrackCommands {
     cleanTrack(track) {
         this.#withUndo(track, TRACK_STATE_KEYS, `Clean ${track.name}`, () => {
             track.notes = []
-            track.loopPointStep = 0
-            track.loopPointBeat = track.beatCount
-            track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
+            track.loopAtStep = track.beatCount * track.stepsPerBeat
         })
     }
 

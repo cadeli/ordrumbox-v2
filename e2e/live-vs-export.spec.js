@@ -97,7 +97,7 @@ test.describe('Live vs Export equivalence', () => {
                 getAutoGenerate: () => null,
                 uiState: {},
                 TICK,
-                secondsPerBeat: TICK_TIME * 4,
+                secondsPerTick: TICK_TIME * 4,
                 isOffline: true,
             })
 

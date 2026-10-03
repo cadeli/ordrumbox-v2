@@ -3,7 +3,7 @@ import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
 import { reportUserError } from '../../core/notify.js'
-import { TRACK_DEFAULTS, TRACK_VALUE_RANGES, recalcLoopDerived } from '../../model/track_schema.js'
+import { TRACK_DEFAULTS, TRACK_VALUE_RANGES } from '../../model/track_schema.js'
 import NoteCommands from './cmd/cmd_notes.js'
 import TrackCommands from './cmd/cmd_tracks.js'
 import PatternCommands from './cmd/cmd_patterns.js'
@@ -27,7 +27,6 @@ import SelectionCommands from './cmd/cmd_selection.js'
 
 export default class Commander {
     static TAG = 'Commander'
-    static #DERIVED_KEYS = new Set(['loopPointBeat', 'loopPointStep'])
     static #TRACK_KEY_SET = new Set(Object.keys(TRACK_DEFAULTS))
     static TRACK_VALUE_RANGES = TRACK_VALUE_RANGES
 
@@ -339,7 +338,7 @@ export default class Commander {
         const newValues = {}
         let changed = false
         for (const [k, v] of Object.entries(updates)) {
-            if (Commander.#DERIVED_KEYS.has(k) || !Commander.#TRACK_KEY_SET.has(k)) continue
+            if (!Commander.#TRACK_KEY_SET.has(k)) continue
             // A non-finite number would survive the clamp below (it is skipped)
             // and then be written + persisted + recorded as an undo step:
             // NaN !== NaN always reports a change, so reject it outright.
@@ -367,9 +366,6 @@ export default class Commander {
                 for (const [k, v] of Object.entries(values)) {
                     track[k] = v
                 }
-                if (typeof track.stepsPerBeat === 'number' && typeof track.loopAtStep === 'number') {
-                    recalcLoopDerived(track)
-                }
                 this.incrementPatternVersionByTrack(track)
                 this.persist()
             }
@@ -387,18 +383,6 @@ export default class Commander {
             })
         }
 
-        if (typeof track.stepsPerBeat === 'number' && typeof track.loopAtStep === 'number') {
-            recalcLoopDerived(track)
-        }
-
-        if (
-            track.loopAtStep === undefined &&
-            typeof track.loopPointBeat === 'number' &&
-            typeof track.stepsPerBeat === 'number'
-        ) {
-            track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + (track.loopPointStep ?? 0)
-            recalcLoopDerived(track)
-        }
         return track
     }
 

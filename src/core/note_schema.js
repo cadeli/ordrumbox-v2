@@ -102,13 +102,13 @@ export const NOTE_DEFAULTS = {
  * Properties that are recalculated on the fly (derived).
  * Never exported or imported in the compact format.
  */
-export const NOTE_RECALCULATED = ['steppc', 'stepPercent']
+export const NOTE_RECALCULATED = ['steppc']
 
 /**
  * Position keys used for step calculation.
  * Included in the compact format when non-default.
  */
-export const NOTE_POSITION_KEYS = new Set(['beat', 'beatStep', 'stepPercent'])
+export const NOTE_POSITION_KEYS = new Set(['beat', 'beatStep'])
 
 /**
  * Convert a note object to a compact array using the given key order.

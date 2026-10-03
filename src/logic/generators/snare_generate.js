@@ -4,8 +4,7 @@ export default class SnareGenerate extends BaseGenerator {
     static SNARE_GENERATION_CONFIGS = Object.freeze({
         basic: {
             mode: 'phrases',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 1, step: 0, accent: true },
                 { beat: 3, step: 0, accent: true },
@@ -21,8 +20,7 @@ export default class SnareGenerate extends BaseGenerator {
         },
         ghost: {
             mode: 'phrases',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 1, step: 0, accent: true },
                 { beat: 1, step: 3, ghost: true },
@@ -42,8 +40,7 @@ export default class SnareGenerate extends BaseGenerator {
         },
         break: {
             mode: 'fill',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             startBeatOffset: 1,
             density: 0.62,
             steps: [0, 1, 2, 3],
@@ -58,8 +55,7 @@ export default class SnareGenerate extends BaseGenerator {
         },
         syncopated: {
             mode: 'grid',
-            loopPointBeat: 2,
-            loopPointStep: 0,
+            loopBeats: 2,
             probabilities: [0.15, 0.35, 0.2, 0.72],
             requiredSteps: [{ beatModulo: 2, step: 0 }],
             velocity: {
@@ -73,8 +69,7 @@ export default class SnareGenerate extends BaseGenerator {
         },
         roll: {
             mode: 'roll',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             startBeatOffset: 1,
             retriggerNum: 8,
             rate: 16,
@@ -91,8 +86,7 @@ export default class SnareGenerate extends BaseGenerator {
         },
         breakCrescendo: {
             mode: 'breakCrescendo',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             stepsBack: 16,
             retriggerNumMax: 8,
             rate: 16,

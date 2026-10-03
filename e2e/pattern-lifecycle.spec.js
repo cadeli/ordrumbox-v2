@@ -95,7 +95,7 @@ const TRACK_KEYS = [
     'delayOn',
 ]
 
-// Note keys that must survive a reload (steppc/stepPercent are recalculated,
+// Note keys that must survive a reload (steppc is recalculated,
 // arpRange/_arpScale/_arpType survive a raw reload but not a JSON round-trip).
 // prob/rate/retriggerNum/euclideanFill are excluded: track.variation2 > 0
 // re-randomizes them in place on every flat-notes computation.

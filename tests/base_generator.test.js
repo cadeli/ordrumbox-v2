@@ -11,8 +11,7 @@ describe('BaseGenerator', () => {
     const testConfigs = {
         basic: {
             mode: 'phrases',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopAtStep: 4 * 4,
             phrases: [
                 { beat: 0, step: 0, accent: true },
                 { beat: 1, step: 2 },
@@ -28,8 +27,7 @@ describe('BaseGenerator', () => {
         },
         grid: {
             mode: 'grid',
-            loopPointBeat: 2,
-            loopPointStep: 0,
+            loopAtStep: 2 * 4,
             probabilities: [1, 0.5, 0.8, 0.3],
             velocity: {
                 base: 0.7,
@@ -86,16 +84,13 @@ describe('BaseGenerator', () => {
     describe('applyLoopPoint', () => {
         it('sets loop point from config', () => {
             const track = { stepsPerBeat: 4, beatCount: 4 }
-            generator.applyLoopPoint(track, { loopPointBeat: 2, loopPointStep: 0 })
-            expect(track.loopPointBeat).toBe(2)
-            expect(track.loopPointStep).toBe(0)
+            generator.applyLoopPoint(track, { loopBeats: 2 })
             expect(track.loopAtStep).toBe(8)
         })
 
         it('falls back to track beats when no config loop point', () => {
             const track = { stepsPerBeat: 4, beatCount: 4 }
             generator.applyLoopPoint(track, {})
-            expect(track.loopPointBeat).toBe(4)
             expect(track.loopAtStep).toBe(16)
         })
     })

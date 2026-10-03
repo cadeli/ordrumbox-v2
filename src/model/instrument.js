@@ -7,7 +7,9 @@ export default class Instrument {
         this.id = data.id ?? Instrument.NOT_FOUND
         this.drum = data.drum === true
         this.pan = data.pan ?? '0'
-        this.name = data.name ?? { syn: [] }
+        /** Sound-name synonyms (some are regex patterns) that resolve to this
+         *  instrument. NOT a display name — the id is the name. */
+        this.synonyms = data.synonyms ?? []
         this.subst = data.subst ?? {}
         this.midi = Array.isArray(data.midi) ? data.midi.map((m) => new Midi(m)) : []
     }
@@ -16,8 +18,8 @@ export default class Instrument {
         let ret = ` key : ${this.id}`
         ret += this.drum ? ',type: Drum' : ',type: Melo'
         ret += `, pan: ${this.pan}`
-        if (this.name && this.name.syn && this.name.syn.length > 0) {
-            ret += `, syn: [${this.name.syn.join('|')}]`
+        if (this.synonyms.length > 0) {
+            ret += `, synonyms: [${this.synonyms.join('|')}]`
         }
         this.midi.forEach((m) => {
             ret += `, [${m.name}${m.key ? ' key:' + m.key : ''}]`

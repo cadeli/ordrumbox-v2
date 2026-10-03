@@ -47,8 +47,13 @@ function allNoteOns(bytes) {
 
 // ─── Pattern builders ─────────────────────────────────────────────────────────
 
-function track(name, stepsPerBeat, beats, loopPointBeat, notes, opts = {}) {
-    return makeTrack(name, notes, { stepsPerBeat, beatCount: beats, loopPointBeat: loopPointBeat ?? beats, ...opts })
+function track(name, stepsPerBeat, beats, loopBeats, notes, opts = {}) {
+    return makeTrack(name, notes, {
+        stepsPerBeat,
+        beatCount: beats,
+        loopAtStep: (loopBeats ?? beats) * stepsPerBeat,
+        ...opts,
+    })
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -148,7 +153,7 @@ describe('MidiExporter — functional end-to-end', () => {
             bpm: 120,
             beatCount: 4,
             tracks: [
-                track('KICK', 4, 4, 2 /* loopPointBeat */, [
+                track('KICK', 4, 4, 2 /* loopBeats */, [
                     makeNote(0, 0, { velocity: 0.8 }),
                     makeNote(1, 0, { velocity: 0.6 }),
                 ]),
@@ -1155,17 +1160,17 @@ describe('MidiExporter — functional end-to-end', () => {
         })
     })
 
-    // ── 13. loopPointStep > 0 ──────────────────────────────────────────────────
+    // ── 13. loop off the beat grid ─────────────────────────────────────────────
 
-    describe('Case 13: loopPointStep shifts loop start within beat', () => {
-        it('loopPointStep > 0 changes the loop offset', () => {
+    describe('Case 13: a loopAtStep off the beat grid still loops', () => {
+        it('loopAtStep = 2.5 beats changes the loop offset', () => {
             const pattern = {
-                name: 'LoopStep',
+                name: 'LoopOffGrid',
                 bpm: 120,
                 beatCount: 4,
                 tracks: [
-                    track('KICK', 4, 4, 2, [makeNote(0, 0, { velocity: 0.8 }), makeNote(1, 0, { velocity: 0.8 })], {
-                        loopPointStep: 4,
+                    track('KICK', 4, 4, null, [makeNote(0, 0, { velocity: 0.8 }), makeNote(1, 0, { velocity: 0.8 })], {
+                        loopAtStep: 10,
                     }),
                 ],
             }

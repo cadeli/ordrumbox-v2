@@ -54,7 +54,6 @@ test.describe('E2E-D : stepsPerBeat × beatCount page matrix', () => {
                         track.beatCount = beatCount
                         track.stepsPerBeat = stepsPerBeat
                         track.loopAtStep = beatCount * stepsPerBeat
-                        if (track.loopPointBeat > beatCount) track.loopPointBeat = beatCount
                     }
                     appState.currentPage = 0
                     playbackEvents.batch(() => {

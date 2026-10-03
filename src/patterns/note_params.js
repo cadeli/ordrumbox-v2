@@ -1,3 +1,4 @@
+import { TICK } from '../core/constants.js'
 import Utils from '../core/utils.js'
 import Defaults from './defaults.js'
 import { logger } from '../core/logger.js'
@@ -5,13 +6,27 @@ import { logger } from '../core/logger.js'
 export default class NoteParams {
     static TAG = 'NoteParams'
 
-    static SWING_RESOLUTION_OVERRIDE = 2
-
-    static computeSwingTime(note, secondsPerBeat, _rez, depth) {
-        if (Math.floor(note.beatStep % this.SWING_RESOLUTION_OVERRIDE) === 1) {
-            return depth * secondsPerBeat
-        }
-        return 0
+    /**
+     * Delay applied to the off-beat notes of a swung group.
+     *
+     * `resolution` is the track's swingResolution (1-8), i.e. the grid the notes
+     * are grouped on: the note at `beatStep % resolution === 1` is the one that
+     * gets pushed late. 1 = straight (nothing is ever off-beat), 2 = every other
+     * step, 4 = every fourth. It used to be hardcoded to 2, which made the knob
+     * (editable in the track editor, persisted, undoable) do nothing.
+     *
+     * @param {{beatStep?: number}} note
+     * @param {number} secondsPerTick  Sequencer tick duration (a beat is TICK of them)
+     * @param {number} resolution  Swing grid (track.swingResolution)
+     * @param {number} depth  Track swing intensity, 0-1: 1 delays by a whole beat,
+     *   0.33 by a triplet
+     * @returns {number} seconds to add to the note time
+     */
+    static computeSwingTime(note, secondsPerTick, resolution, depth) {
+        const grid = Math.max(1, Math.floor(Number(resolution) || 1))
+        if (grid === 1) return 0
+        if (Math.floor(note.beatStep % grid) !== 1) return 0
+        return depth * secondsPerTick * TICK
     }
 
     static computePan(flatNote) {
@@ -34,13 +49,13 @@ export default class NoteParams {
         return Math.floor(fpitch * 100) / 100
     }
 
-    static applyNoteParams(flatNote, secondsPerBeat) {
+    static applyNoteParams(flatNote, secondsPerTick) {
         flatNote.pan = this.computePan(flatNote)
         flatNote.fpitch = this.computePitch(flatNote)
         flatNote.baseFpitch = flatNote.fpitch
         flatNote.swingTime = this.computeSwingTime(
             flatNote.note,
-            secondsPerBeat,
+            secondsPerTick,
             flatNote.track.swingResolution,
             flatNote.track.swingAmount,
         )

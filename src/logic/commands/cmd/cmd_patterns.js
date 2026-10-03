@@ -3,7 +3,6 @@ import Defaults from '../../../patterns/defaults.js'
 import { importPatternFromJson } from '../pattern_import.js'
 import { logger } from '../../../core/logger.js'
 import { MAX_BEATS } from '../../../core/constants.js'
-import { recalcLoopDerived } from '../../../model/track_schema.js'
 import Utils from '../../../core/utils.js'
 import { ensurePatternId } from '../../../model/song_schema.js'
 
@@ -163,8 +162,6 @@ export default class PatternCommands {
                 track,
                 beatCount: track.beatCount,
                 loopAtStep: track.loopAtStep,
-                loopPointBeat: track.loopPointBeat,
-                loopPointStep: track.loopPointStep,
             }))
 
         const oldBeatCount = pattern.beatCount
@@ -172,11 +169,9 @@ export default class PatternCommands {
 
         const applyState = (beats, trackStates) => {
             pattern.beatCount = beats
-            for (const { track, beatCount, loopAtStep, loopPointBeat, loopPointStep } of trackStates) {
+            for (const { track, beatCount, loopAtStep } of trackStates) {
                 track.beatCount = beatCount
                 track.loopAtStep = loopAtStep
-                track.loopPointBeat = loopPointBeat
-                track.loopPointStep = loopPointStep
             }
             this.#host.persist()
         }
@@ -185,15 +180,12 @@ export default class PatternCommands {
             const maxSteps = appliedBeatCount * (track.stepsPerBeat ?? 4)
             if (track.loopAtStep > maxSteps) {
                 track.loopAtStep = maxSteps
-                recalcLoopDerived(track)
             }
             track.beatCount = appliedBeatCount
             return {
                 track,
                 beatCount: track.beatCount,
                 loopAtStep: track.loopAtStep,
-                loopPointBeat: track.loopPointBeat,
-                loopPointStep: track.loopPointStep,
             }
         })
         pattern.beatCount = appliedBeatCount

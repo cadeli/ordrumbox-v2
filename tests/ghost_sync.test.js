@@ -18,7 +18,10 @@ vi.mock('../src/core/notify.js', () => ({ showToast: vi.fn() }))
 
 const BEAT_COUNT = 4
 const STEPS_PER_BEAT = 4
-const LOOP_AT_STEP = 6
+const PATTERN_STEPS = BEAT_COUNT * STEPS_PER_BEAT
+// A loop shorter than the pattern: the engine audibly repeats it, the editors
+// still draw the pattern as written (see the tiling test at the end).
+const SHORT_LOOP_AT_STEP = 6
 
 const makeNote = (beat, beatStep, opts = {}) => ({
     beat,
@@ -35,7 +38,7 @@ const makeNote = (beat, beatStep, opts = {}) => ({
     ...opts,
 })
 
-function makePattern(notes) {
+function makePattern(notes, loopAtStep = PATTERN_STEPS) {
     return {
         name: 'Ghost sync',
         beatCount: BEAT_COUNT,
@@ -45,7 +48,7 @@ function makePattern(notes) {
                 name: 'KICK',
                 beatCount: BEAT_COUNT,
                 stepsPerBeat: STEPS_PER_BEAT,
-                loopAtStep: LOOP_AT_STEP,
+                loopAtStep,
                 notes,
             },
         ],
@@ -138,15 +141,15 @@ describe('ghost sync — grid, piano roll and engine agree', () => {
         ])
     })
 
-    it('renders the same steps as the engine (euclid span clamped by the loop point)', () => {
+    it('renders the same steps as the engine (euclid span clamped by the next note)', () => {
         const { grid, piano } = boot(pattern)
         const engine = engineSteps(pattern)
 
         const ui = [...new Set([...gridGhostSteps(grid), ...gridNoteSteps(grid)])].sort((a, b) => a - b)
         const pianoUi = [...new Set([...pianoGhostSteps(piano), ...pianoNoteSteps(piano)])].sort((a, b) => a - b)
 
-        // euclid fill of 3 over [0, loopAtStep[ (6 steps) => steps 0, 2, 4
-        expect(engine).toEqual([0, 2, 4, 10, 12, 13, 14])
+        // euclid fill of 3 over [0, next note at 10) => steps 0, 3, 6
+        expect(engine).toEqual([0, 3, 6, 10, 12, 13, 14])
         expect(ui).toEqual(engine)
         expect(pianoUi).toEqual(engine)
     })
@@ -171,6 +174,26 @@ describe('ghost sync — grid, piano roll and engine agree', () => {
         expect(engineCount).toBe(16)
         expect(gridGhostCount(grid)).toBe(engineCount - 1)
         expect(pianoGhostCount(piano)).toBe(engineCount - 1)
+    })
+
+    // A loop shorter than the pattern is a deliberate difference, not a drift: the
+    // engine repeats what it plays, the editors show what is stored.
+    it('a loop shorter than the pattern: the engine tiles it, the editors do not', () => {
+        const shortLoop = makePattern(
+            [makeNote(0, 0, { euclideanFill: 3 }), makeNote(2, 2), makeNote(3, 0, { retriggerNum: 3, rate: 8 })],
+            SHORT_LOOP_AT_STEP,
+        )
+        const { grid, piano } = boot(shortLoop)
+        const engine = engineSteps(shortLoop)
+        const ui = [...new Set([...gridGhostSteps(grid), ...gridNoteSteps(grid)])].sort((a, b) => a - b)
+        const pianoUi = [...new Set([...pianoGhostSteps(piano), ...pianoNoteSteps(piano)])].sort((a, b) => a - b)
+
+        // the euclid fill of 3 over [0, 6[ (0, 2, 4) repeats at 6, 8, 10
+        expect(engine).toEqual([0, 2, 4, 6, 8, 10, 12, 13, 14])
+        expect(ui).toEqual([0, 2, 4, 10, 12, 13, 14])
+        // every extra engine step is a loop copy of a stored one
+        expect(engine.filter((s) => !ui.includes(s)).every((s) => ui.includes(s - SHORT_LOOP_AT_STEP))).toBe(true)
+        expect(pianoUi).toEqual(ui)
     })
 
     it('exposes identical ghost steps in the grid and in the piano roll', () => {

@@ -53,7 +53,7 @@ export default class WavExporter {
             getAutoGenerate: getAutoGenerateService,
             uiState: {},
             TICK,
-            secondsPerBeat: TICK_TIME * 4, // Approx seconds per beat for swing
+            secondsPerTick: TICK_TIME, // one sequencer tick, for swing
             isOffline: true,
         })
 
@@ -146,7 +146,7 @@ export default class WavExporter {
             getSelectedSongIdx: () => 0,
             uiState: {},
             TICK,
-            secondsPerBeat: TICK_TIME * 4,
+            secondsPerTick: TICK_TIME,
             isOffline: true,
         })
 

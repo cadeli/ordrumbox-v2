@@ -7,7 +7,6 @@ import { valueOrFallback } from '../core/logger.js'
  * Tracks in the JSON pattern format omit properties at their default value.
  * The loader (fixer.js) restores missing properties from TRACK_DEFAULTS.
  *
- * Properties that are recalculated on the fly (loopPointBeat, loopPointStep)
  * are never serialized.
  *
  * ## Default Values
@@ -127,8 +126,6 @@ export function normalizeTrack(track = {}) {
  * Properties that are recalculated on the fly (derived).
  * Never exported or imported in the compact format.
  */
-export const TRACK_RECALCULATED = ['loopPointBeat', 'loopPointStep']
-
 /**
  * Numeric range constraints for track properties.
  * Used by updateTrack() and MCP tools to clamp values.
@@ -193,24 +190,5 @@ export function clampStepsPerBeat(track) {
     if (typeof track.beatCount === 'number' && track.loopAtStep > track.beatCount * target) {
         track.loopAtStep = track.beatCount * target
     }
-    recalcLoopDerived(track)
     return true
-}
-
-/**
- * Recalculates loopPointBeat and loopPointStep from loopAtStep and stepsPerBeat.
- *
- * loopAtStep null is TRACK_DEFAULTS' "loop the whole track"; it is resolved here
- * so every reader of the derived pair agrees with Utils.getTrackLoopAtStep, which
- * treats null the same way. Resolving it to 0 instead made computeNbTickForLoop
- * answer "0 ticks", i.e. no repetition at all, for any track that never had an
- * explicit loop point.
- */
-export function recalcLoopDerived(track) {
-    const stepsPerBeat = Number(track.stepsPerBeat) > 0 ? Number(track.stepsPerBeat) : 1
-    const declared = Number(track.loopAtStep)
-    const loopAtStep =
-        Number.isFinite(declared) && declared > 0 ? Math.floor(declared) : (Number(track.beatCount) || 4) * stepsPerBeat
-    track.loopPointBeat = Math.floor(loopAtStep / stepsPerBeat)
-    track.loopPointStep = loopAtStep % stepsPerBeat
 }

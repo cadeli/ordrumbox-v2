@@ -1273,7 +1273,7 @@ describe('WAV Export — functional end-to-end', () => {
                         'KICK',
                         'kick.wav',
                         [makeNote(0, 0, { velocity: 0.8 }), makeNote(1, 0, { velocity: 0.6 })],
-                        { loopPointBeat: 2 },
+                        { loopAtStep: 8 },
                     ),
                 ],
             }
@@ -1288,7 +1288,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'OneBarLoop',
                 bpm: 120,
                 beatCount: 4,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)], { loopPointBeat: 1 })],
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)], { loopAtStep: 4 })],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             let count = 0

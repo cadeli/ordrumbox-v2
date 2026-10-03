@@ -4,8 +4,7 @@ export default class CowbellGenerate extends BaseGenerator {
     static COWBELL_GENERATION_CONFIGS = Object.freeze({
         basic: {
             mode: 'phrases',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 0, step: 0, accent: true },
                 { beat: 1, step: 0 },
@@ -23,8 +22,7 @@ export default class CowbellGenerate extends BaseGenerator {
         },
         offbeat: {
             mode: 'grid',
-            loopPointBeat: 2,
-            loopPointStep: 0,
+            loopBeats: 2,
             probabilities: [0.05, 0.8, 0.05, 0.8],
             velocity: {
                 base: 0.68,
@@ -37,8 +35,7 @@ export default class CowbellGenerate extends BaseGenerator {
         },
         dense: {
             mode: 'grid',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             probabilities: [0.7, 0.3, 0.7, 0.3],
             velocity: {
                 base: 0.62,
@@ -51,8 +48,7 @@ export default class CowbellGenerate extends BaseGenerator {
         },
         sparse: {
             mode: 'phrases',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 0, step: 0 },
                 { beat: 2, step: 2 },
@@ -61,8 +57,7 @@ export default class CowbellGenerate extends BaseGenerator {
         },
         syncopated: {
             mode: 'phrases',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 0, step: 0, accent: true },
                 { beat: 0, step: 3 },

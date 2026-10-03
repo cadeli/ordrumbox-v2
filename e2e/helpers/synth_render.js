@@ -133,7 +133,7 @@ export async function renderSynthBatch(page, configs, opts = {}) {
                     getAutoGenerate: () => false,
                     uiState: {},
                     TICK,
-                    secondsPerBeat: 60 / bpm,
+                    secondsPerTick: 60 / bpm,
                     isOffline: true,
                 })
                 await engine.start(pattern)

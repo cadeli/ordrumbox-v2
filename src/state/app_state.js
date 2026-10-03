@@ -32,7 +32,9 @@ class AppState {
         currentView: 'edit',
         autoMode: false,
         textInput: false,
-        secondsPerBeat: 8,
+        /** Seconds per sequencer tick, set from the tempo in Transport.setBpm().
+            TICK ticks per beat, so a tick is 1/32 of a beat. */
+        secondsPerTick: 0.5,
         flatNotes: null,
         workletStatus: 'unknown',
         showVus: true,
@@ -66,7 +68,7 @@ class AppState {
     /** @type {boolean} */
     textInput
     /** @type {number} */
-    secondsPerBeat
+    secondsPerTick
     /** @type {any} */
     flatNotes
     /** @type {string} */

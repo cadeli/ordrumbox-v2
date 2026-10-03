@@ -5,8 +5,7 @@ export default class HatGenerate extends BaseGenerator {
         chh16thLocked: {
             mode: 'locked',
             trackType: 'CHH',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             velocityPattern: [
                 0.72, 0.55, 0.68, 0.52, 0.72, 0.55, 0.68, 0.48, 0.72, 0.55, 0.68, 0.52, 0.72, 0.55, 0.68, 0.42,
             ],
@@ -23,8 +22,7 @@ export default class HatGenerate extends BaseGenerator {
         chhBasic: {
             mode: 'grid',
             trackType: 'CHH',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             probabilities: [0.95, 0.55, 0.82, 0.62],
             velocity: {
                 base: 0.42,
@@ -38,8 +36,7 @@ export default class HatGenerate extends BaseGenerator {
         chhDense: {
             mode: 'grid',
             trackType: 'CHH',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             probabilities: [1, 0.88, 0.96, 0.82],
             velocity: {
                 base: 0.38,
@@ -53,8 +50,7 @@ export default class HatGenerate extends BaseGenerator {
         chhSparse: {
             mode: 'grid',
             trackType: 'CHH',
-            loopPointBeat: 2,
-            loopPointStep: 0,
+            loopBeats: 2,
             probabilities: [0.8, 0.12, 0.55, 0.18],
             velocity: {
                 base: 0.46,
@@ -68,8 +64,7 @@ export default class HatGenerate extends BaseGenerator {
         chhRoll: {
             mode: 'roll',
             trackType: 'CHH',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             rollBeat: 3,
             retriggerNum: 4,
             rate: 86,
@@ -85,8 +80,7 @@ export default class HatGenerate extends BaseGenerator {
         ohhShaker: {
             mode: 'shaker',
             trackType: 'OHH',
-            loopPointBeat: 2,
-            loopPointStep: 0,
+            loopBeats: 2,
             velocityPattern: [0.62, 0.38, 0.55, 0.42, 0.62, 0.38, 0.55, 0.35],
             accentEvery: 4,
             velocity: {
@@ -101,8 +95,7 @@ export default class HatGenerate extends BaseGenerator {
         ohhRide: {
             mode: 'ride',
             trackType: 'OHH',
-            loopPointBeat: 2,
-            loopPointStep: 0,
+            loopBeats: 2,
             velocityPattern: [0.7, 0.45, 0.62, 0.45],
             accentEvery: 4,
             bell: { step: 0, velocity: 0.78 },
@@ -118,8 +111,7 @@ export default class HatGenerate extends BaseGenerator {
         ohhBasic: {
             mode: 'phrases',
             trackType: 'OHH',
-            loopPointBeat: 2,
-            loopPointStep: 0,
+            loopBeats: 2,
             phrases: [
                 { beat: 0, step: 2, accent: true },
                 { beat: 1, step: 2 },
@@ -136,8 +128,7 @@ export default class HatGenerate extends BaseGenerator {
         ohhOffbeat: {
             mode: 'grid',
             trackType: 'OHH',
-            loopPointBeat: 2,
-            loopPointStep: 0,
+            loopBeats: 2,
             probabilities: [0.02, 0.22, 0.88, 0.18],
             velocity: {
                 base: 0.56,
@@ -151,8 +142,7 @@ export default class HatGenerate extends BaseGenerator {
         ohhRoll: {
             mode: 'roll',
             trackType: 'OHH',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             rollBeat: 3,
             retriggerNum: 3,
             rate: 86,
@@ -168,8 +158,7 @@ export default class HatGenerate extends BaseGenerator {
         transition: {
             mode: 'transition',
             trackType: 'HAT',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             startBeatOffset: 1,
             retriggerNum: 6,
             rate: 8,

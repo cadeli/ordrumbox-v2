@@ -46,10 +46,9 @@ describe('PatternExporter', () => {
         })
 
         it('strips NOTE_RECALCULATED keys regardless of value', () => {
-            const note = { ...Utils.NOTE_DEFAULTS, steppc: 50, stepPercent: 0.5 }
+            const note = { ...Utils.NOTE_DEFAULTS, steppc: 50 }
             const cleaned = PatternExporter.cleanNote(note)
             expect(cleaned).not.toHaveProperty('steppc')
-            expect(cleaned).not.toHaveProperty('stepPercent')
         })
 
         it('keeps unknown keys (not in NOTE_DEFAULTS)', () => {
@@ -81,13 +80,6 @@ describe('PatternExporter', () => {
             const cleaned = PatternExporter.cleanTrack(track)
             expect(cleaned.beatCount).toBe(8)
             expect(cleaned.mute).toBe(true)
-        })
-
-        it('strips TRACK_RECALCULATED keys', () => {
-            const track = { ...Utils.TRACK_DEFAULTS, loopPointBeat: 2, loopPointStep: 0, notes: [] }
-            const cleaned = PatternExporter.cleanTrack(track)
-            expect(cleaned).not.toHaveProperty('loopPointBeat')
-            expect(cleaned).not.toHaveProperty('loopPointStep')
         })
 
         it('keeps unknown keys not in TRACK_DEFAULTS', () => {

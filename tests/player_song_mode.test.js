@@ -65,7 +65,7 @@ function makePlayer({ patterns, song, view = 'song' }) {
         // handleLoopStart calls this at every cycle boundary, song mode included
         computeFlatNotes: (pattern, _loop) => buildFlatNotes(pattern),
         TICK,
-        secondsPerBeat: 0.5,
+        secondsPerTick: 0.5,
         isOffline: true,
     })
     player.sound.play = (flatNote) => {

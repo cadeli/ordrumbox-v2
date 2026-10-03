@@ -65,7 +65,7 @@ export default class Transport {
     setBpm = (bpm) => {
         this.bpm = bpm
         this.clockInterval = 60 / (this.bpm * 24)
-        appState.secondsPerBeat = (60 * 4) / (this.bpm * TICK)
+        appState.secondsPerTick = 60 / (this.bpm * TICK)
         logger.info('Transport', 'Transport::setBpm new bpm is ', bpm)
     }
 
@@ -119,7 +119,7 @@ export default class Transport {
      * Nothing is "noted" here — the caller (onSchedule) is what sounds a tick.
      */
     nextNote = () => {
-        this.nextStepTime += 0.25 * appState.secondsPerBeat
+        this.nextStepTime += appState.secondsPerTick
         this.tick++
     }
 }

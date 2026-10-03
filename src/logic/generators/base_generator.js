@@ -14,8 +14,7 @@
 /**
  * Sections de config lues par le generateur de base.
  * @typedef {object} GeneratorConfig
- * @property {number} [loopPointBeat]
- * @property {number} [loopPointStep]
+ * @property {number} [loopBeats]  Loop length in beats (converted to loopAtStep)
  * @property {number} [stepsPerBeat]
  */
 import { serviceRegistry } from '../../state/service_registry.js'
@@ -62,26 +61,21 @@ export default class BaseGenerator {
         return context.toFixed !== false ? Number(result.toFixed(2)) : result
     }
 
+    /** Sets the track's single loop field: the loop length in steps. */
     applyLoopPoint = (track, config) => {
-        const loopPointBeat = config.loopPointBeat ?? track.beatCount ?? 1
-        const loopPointStep = config.loopPointStep ?? 0
-        track.loopPointBeat = loopPointBeat
-        track.loopPointStep = loopPointStep
-        track.loopAtStep = loopPointBeat * track.stepsPerBeat + loopPointStep
+        track.loopAtStep = (config.loopBeats ?? track.beatCount ?? 1) * track.stepsPerBeat
     }
 
     /**
      * Compute the absolute loop point step from config and track.
      * @param {{stepsPerBeat?: number}} track - track with stepsPerBeat
-     * @param {GeneratorConfig} config - generator config with loopPointBeat/loopPointStep
-     * @param {number} [defaultLoopBeats=1] - default loopPointBeat if not in config
+     * @param {GeneratorConfig} config - generator config with loopBeats
+     * @param {number} [defaultLoopBeats=1] - loop length in beats if not in config
      * @returns {number} absolute step index
      */
     getLoopPointAbsolute = (track, config, defaultLoopBeats = 1) => {
-        const loopPointBeat = config.loopPointBeat ?? defaultLoopBeats
-        const loopPointStep = config.loopPointStep ?? 0
-        const stepsPerBeat = track.stepsPerBeat ?? 4
-        return loopPointBeat * stepsPerBeat + loopPointStep
+        const loopBeats = config.loopBeats ?? defaultLoopBeats
+        return loopBeats * (track.stepsPerBeat ?? 4)
     }
 
     /**

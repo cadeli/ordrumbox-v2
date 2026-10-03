@@ -155,7 +155,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             // wipes out the LFO, filter, and other params sent during setup().
             this.#sendUpdate(gs, this.#lastPan)
 
-            // Auto-release after one step (16th note = 0.25 * secondsPerBeat).
+            // Auto-release after one step (a 16th note = a quarter of a beat).
             // Send a deferred release directly to the worklet processor instead of
             // relying on setTimeout. The processor checks `releaseTime` against
             // `currentTime` in its per-sample loop, so this works correctly in

@@ -271,8 +271,7 @@ export default class PianoRollPanel extends BasePanel {
         if (!track || Number.isNaN(midi)) return
         const relativePitch = midi - MIDDLE_C - (track.pitch ?? 0)
         const flatNote = new FlatNote(0, track, { ...Utils.NOTE_DEFAULTS, pitch: relativePitch })
-        const secondsPerBeat = serviceRegistry.seq?.secondsPerBeat ?? 0.5
-        NoteParams.applyNoteParams(flatNote, secondsPerBeat)
+        NoteParams.applyNoteParams(flatNote, appState.secondsPerTick)
         serviceRegistry.audioEngine?.sound?.play(flatNote, serviceRegistry.audioEngine.audioCtx.currentTime)
     }
 

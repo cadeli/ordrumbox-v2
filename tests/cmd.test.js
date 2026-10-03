@@ -5,7 +5,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import Utils from '../src/core/utils.js'
 import { isNoteAt, kitIsLoaded, getTrackFromType, getAllSoundsForType } from './helpers/cmd_test_helpers.js'
-import { makePattern, makeTrack } from './helpers/make_pattern.js'
+import { makePattern } from './helpers/make_pattern.js'
 import HistoryManager from '../src/logic/history_manager.js'
 import { resetUserErrorReports } from '../src/core/notify.js'
 
@@ -94,8 +94,6 @@ describe('Functional: Commander operations', () => {
             expect(track.beatCount).toBe(4)
             expect(track.stepsPerBeat).toBe(4)
             expect(track.loopAtStep).toBe(16)
-            expect(track.loopPointBeat).toBe(4)
-            expect(track.loopPointStep).toBe(0)
             expect(track.notes).toEqual([])
             expect(track.mute).toBe(false)
             expect(track.solo).toBe(false)
@@ -151,15 +149,12 @@ describe('Functional: Commander operations', () => {
         it('cleanTrack removes all notes and resets loop', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             cmd.addNote(track, 0, 0)
-            track.loopPointBeat = 2
-            track.loopPointStep = 2
+            track.loopAtStep = 2 * (track.stepsPerBeat ?? 4)
             track.loopAtStep = 10
 
             cmd.cleanTrack(track)
 
             expect(track.notes).toEqual([])
-            expect(track.loopPointStep).toBe(0)
-            expect(track.loopPointBeat).toBe(4)
             expect(track.loopAtStep).toBe(16)
         })
 
@@ -221,11 +216,10 @@ describe('Functional: Commander operations', () => {
             expect(track.synthSoundKey).toBe('saw')
         })
 
-        it('computes loopPointBeat/Step after update', () => {
+        it('keeps loopAtStep as written, whatever the subdivision', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             cmd.updateTrack(track, { loopAtStep: 10 })
-            expect(track.loopPointBeat).toBe(2)
-            expect(track.loopPointStep).toBe(2)
+            expect(track.loopAtStep).toBe(10)
         })
 
         it('updateTrack returns track unchanged for null updates', () => {
@@ -239,18 +233,10 @@ describe('Functional: Commander operations', () => {
             expect(cmd.updateTrack(track, 42)).toBe(track)
         })
 
-        it('computes loopPointBeat/Step from stepsPerBeat and loopAtStep', () => {
+        it('does not touch loopAtStep when only stepsPerBeat changes', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             cmd.updateTrack(track, { stepsPerBeat: 8, loopAtStep: 20 })
-            expect(track.loopPointBeat).toBe(2)
-            expect(track.loopPointStep).toBe(4)
-        })
-
-        it('computes loopAtStep from loopPointBeat/Step when loopAtStep undefined', () => {
-            const track = makeTrack('KICK', [], { stepsPerBeat: 4, loopPointBeat: 2, loopPointStep: 1 })
-            delete track.loopAtStep
-            cmd.updateTrack(track, {})
-            expect(track.loopAtStep).toBe(9)
+            expect(track.loopAtStep).toBe(20)
         })
 
         it('caps stepsPerBeat at 8 when steppc exceeds 100', () => {
@@ -313,8 +299,6 @@ describe('Functional: Commander operations', () => {
 
             cmd.incrLoopPoint(track)
             expect(track.loopAtStep).toBe(15)
-            expect(track.loopPointBeat).toBe(3)
-            expect(track.loopPointStep).toBe(3)
 
             for (let i = 0; i < 15; i++) {
                 cmd.incrLoopPoint(track)

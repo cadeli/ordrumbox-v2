@@ -6,8 +6,7 @@ export default class PercGenerate extends BaseGenerator {
         basic: {
             mode: 'phrases',
             scaleName: 'pentatonic minor',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 0, step: 3, source: 'randomScale' },
                 { beat: 1, step: 2, source: 'reuse', reuseIndex: 0 },
@@ -26,8 +25,7 @@ export default class PercGenerate extends BaseGenerator {
         shaker44: {
             mode: 'lockedPerc',
             scaleName: 'chromatic',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             velocityPattern: [
                 0.68, 0.42, 0.58, 0.45, 0.68, 0.42, 0.58, 0.38, 0.68, 0.42, 0.58, 0.45, 0.68, 0.42, 0.58, 0.35,
             ],
@@ -45,8 +43,7 @@ export default class PercGenerate extends BaseGenerator {
         tambourine44: {
             mode: 'lockedPerc',
             scaleName: 'chromatic',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             velocityPattern: [0.72, 0, 0.55, 0, 0.72, 0, 0.55, 0.38, 0.72, 0, 0.55, 0, 0.72, 0, 0.55, 0.32],
             accentEvery: 4,
             pitchPattern: [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3],
@@ -62,8 +59,7 @@ export default class PercGenerate extends BaseGenerator {
         clap44: {
             mode: 'lockedPerc',
             scaleName: 'chromatic',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             velocityPattern: [0.8, 0, 0, 0, 0.65, 0, 0, 0, 0.8, 0, 0, 0, 0.65, 0, 0, 0.4],
             accentEvery: 4,
             pitchPattern: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -79,8 +75,7 @@ export default class PercGenerate extends BaseGenerator {
         conversation: {
             mode: 'callResponse',
             scaleName: 'dorian',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             callSteps: [0, 2],
             responseSteps: [1, 3],
             density: 0.64,
@@ -96,8 +91,7 @@ export default class PercGenerate extends BaseGenerator {
         sparse: {
             mode: 'grid',
             scaleName: 'minor pentatonic',
-            loopPointBeat: 2,
-            loopPointStep: 0,
+            loopBeats: 2,
             probabilities: [0.16, 0.08, 0.22, 0.34],
             velocity: {
                 base: 0.64,
@@ -111,8 +105,7 @@ export default class PercGenerate extends BaseGenerator {
         fill: {
             mode: 'fill',
             scaleName: 'blues scale',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             startBeatOffset: 2,
             steps: [0, 2],
             prob: 0.3,
@@ -129,8 +122,7 @@ export default class PercGenerate extends BaseGenerator {
         texture: {
             mode: 'phrases',
             scaleName: 'pentatonic minor',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 0, step: 0, source: 'root', accent: true, euclideanFill: 4 },
                 { beat: 1, step: 2, source: 'randomScale', euclideanFill: 3 },
@@ -148,8 +140,7 @@ export default class PercGenerate extends BaseGenerator {
         },
         crash: {
             mode: 'crash',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             probability: 0.1,
             velocity: {
                 base: 0.7,

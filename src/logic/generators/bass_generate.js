@@ -9,8 +9,7 @@ export default class BassGenerate extends BaseGenerator {
             mode: 'phrases',
             scaleName: 'pentatonic minor',
             rootNote: -12,
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 0, step: 0, source: 'root' },
                 { beat: 0, step: 2, source: 'fifth' },
@@ -35,8 +34,7 @@ export default class BassGenerate extends BaseGenerator {
             rootNote: -12,
             beat: 0,
             probabilities: [0.7, 0.7, 0.6, 0.7],
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             velocity: {
                 base: 0.68,
                 accentPattern: [0.22, -0.08, 0.05, -0.02],
@@ -55,8 +53,7 @@ export default class BassGenerate extends BaseGenerator {
             strongBeatIntervals: [0, 7],
             strongBeatWeight: 0.75,
             maxLeap: 7,
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             velocity: {
                 base: 0.7,
                 accentOnBeat: 0.16,
@@ -76,8 +73,7 @@ export default class BassGenerate extends BaseGenerator {
             strongBeatIntervals: [0, 3],
             strongBeatWeight: 0.62,
             maxLeap: 5,
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             velocity: {
                 base: 0.76,
                 accentOnBeat: 0.12,
@@ -91,8 +87,7 @@ export default class BassGenerate extends BaseGenerator {
             mode: 'phrases',
             scaleName: 'dorian',
             rootNote: -12,
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 0, step: 0, source: 'root', retriggerNum: 2, rate: 86 },
                 { beat: 0, step: 2, source: 'fifth' },
@@ -121,8 +116,7 @@ export default class BassGenerate extends BaseGenerator {
             spacingJitter: 1,
             phraseLength: 6,
             startDegree: 0,
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             velocity: {
                 base: 0.74,
                 accentOnBeat: 0.14,
@@ -136,8 +130,7 @@ export default class BassGenerate extends BaseGenerator {
             mode: 'phrases',
             scaleName: 'minor',
             rootNote: -12,
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 {
                     beat: 0,

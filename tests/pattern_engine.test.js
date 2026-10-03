@@ -46,9 +46,7 @@ function buildPattern(noteOverrides = {}, trackOverrides = {}, beatCount = 4) {
         beatCount: 4,
         stepsPerBeat: 4,
         mute: false,
-        loopAtStep: undefined,
-        loopPointBeat: undefined,
-        loopPointStep: undefined,
+        loopAtStep: undefined * 4 + undefined,
         swingAmount: 0,
         swingResolution: 4,
         velocity: 1,
@@ -306,30 +304,30 @@ describe('arpeggio', () => {
 
 // ─── Loop Points Tests ────────────────────────────────────────────────────────
 
-describe('loopPointBeat / loopPointStep', () => {
+describe('loop length (loopAtStep)', () => {
     it('default loop = track.beatCount (no loop points)', () => {
         const track = { beatCount: 4, stepsPerBeat: 4 }
         expect(computeNbTickForLoop(track)).toBe(128)
     })
 
-    it('loopPointBeat=1 loops every beat', () => {
-        const track = { beatCount: 4, stepsPerBeat: 4, loopPointBeat: 1 }
+    it('loopAtStep=1 beat loops every beat', () => {
+        const track = { beatCount: 4, stepsPerBeat: 4, loopAtStep: 4 }
         expect(computeNbTickForLoop(track)).toBe(32)
     })
 
-    it('loopPointBeat=2 loops every 2 beats', () => {
-        const track = { beatCount: 4, stepsPerBeat: 4, loopPointBeat: 2 }
+    it('loopAtStep=2 beats loops every 2 beats', () => {
+        const track = { beatCount: 4, stepsPerBeat: 4, loopAtStep: 8 }
         expect(computeNbTickForLoop(track)).toBe(64)
     })
 
     it('note repeats at loop interval across pattern', () => {
-        const pattern = buildPattern({}, { beatCount: 4, loopPointBeat: 1 }, 4)
+        const pattern = buildPattern({}, { beatCount: 4, loopAtStep: 4 }, 4)
         const notes = getAllNotes(pattern)
         expect(notes.map((n) => n.tick)).toEqual([0, 32, 64, 96])
     })
 
-    it('note with loopPointBeat=2 repeats every 2 beats', () => {
-        const pattern = buildPattern({}, { beatCount: 4, loopPointBeat: 2 }, 4)
+    it('note with a 2-beat loop repeats every 2 beats', () => {
+        const pattern = buildPattern({}, { beatCount: 4, loopAtStep: 8 }, 4)
         const notes = getAllNotes(pattern)
         expect(notes.map((n) => n.tick)).toEqual([0, 64])
     })
@@ -619,9 +617,7 @@ describe('Full Pattern to FlatNotes (recomputeFlatNotes)', () => {
                 T1: {
                     name: 'T1',
                     stepsPerBeat: 4,
-                    loopAtStep: 3,
-                    loopPointBeat: 0,
-                    loopPointStep: 3,
+                    loopAtStep: 0 * 4 + 3,
                     notes: [{ beat: 0, beatStep: 1, pitch: 60, prob: 1, every: 1 }],
                 },
             },
@@ -644,9 +640,7 @@ describe('Full Pattern to FlatNotes (recomputeFlatNotes)', () => {
                 T1: {
                     name: 'T1',
                     stepsPerBeat: 4,
-                    loopAtStep: 6,
-                    loopPointBeat: 1,
-                    loopPointStep: 2,
+                    loopAtStep: 1 * 4 + 2,
                     notes: [{ beat: 1, beatStep: 0, pitch: 72, prob: 1, every: 1 }],
                 },
             },
@@ -663,9 +657,7 @@ describe('Full Pattern to FlatNotes (recomputeFlatNotes)', () => {
                 T1: {
                     name: 'T1',
                     stepsPerBeat: 4,
-                    loopAtStep: 3,
-                    loopPointBeat: 0,
-                    loopPointStep: 3,
+                    loopAtStep: 0 * 4 + 3,
                     notes: [{ beat: 0, beatStep: 3, pitch: 48, prob: 1, every: 1 }],
                 },
             },
@@ -686,10 +678,10 @@ describe('complex pattern combinations', () => {
         expect(countNotes(pattern, 2)).toBe(4)
     })
 
-    it('arp + loopPointBeat=1 on 4-beat pattern', () => {
+    it('arp + a 1-beat loop on a 4-beat pattern', () => {
         const pattern = buildPattern(
             { arp: { intervals: [0, 4, 7], mode: 'up' }, retriggerNum: 3, rate: 8 },
-            { beatCount: 4, loopPointBeat: 1 },
+            { beatCount: 4, loopAtStep: 4 },
             4,
         )
         const notes = getAllNotes(pattern)
@@ -747,15 +739,24 @@ describe.each(PARAM_SETS)('computeNbTickForLoop — spb=%i bpm=%i beats=%i (%s)'
         expect(computeNbTickForLoop(track)).toBe(beatCount * TICK)
     })
 
-    it('loopPointBeat=1 loops every TICK', () => {
-        const track = { beatCount, stepsPerBeat, loopPointBeat: 1 }
+    it('a 1-beat loop loops every TICK', () => {
+        const track = { beatCount, stepsPerBeat, loopAtStep: stepsPerBeat }
         expect(computeNbTickForLoop(track)).toBe(TICK)
     })
 
-    it('loopPointBeat=beatCount/2 loops at half the pattern', () => {
-        const half = Math.floor(beatCount / 2)
-        const track = { beatCount, stepsPerBeat, loopPointBeat: half }
+    it('a beatCount/2 loop loops at half the pattern', () => {
+        // a 1-beat pattern has no half: 0 steps is not a loop, it is "no explicit
+        // loop point", so the smallest loop a 1-beat pattern can have is 1 beat
+        const half = Math.max(1, Math.floor(beatCount / 2))
+        const track = { beatCount, stepsPerBeat, loopAtStep: half * stepsPerBeat }
         expect(computeNbTickForLoop(track)).toBe(half * TICK)
+    })
+
+    it('loopAtStep 0 and null mean "loop the whole track", not "no loop"', () => {
+        for (const loopAtStep of [0, null, undefined]) {
+            const track = { beatCount, stepsPerBeat, loopAtStep }
+            expect(computeNbTickForLoop(track), `loopAtStep=${loopAtStep}`).toBe(beatCount * TICK)
+        }
     })
 })
 
@@ -931,8 +932,8 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
         }
     })
 
-    it('loopPointBeat=1 tiles note at TICK intervals', () => {
-        const pattern = buildPattern({}, { stepsPerBeat, beatCount, loopPointBeat: 1 }, beatCount)
+    it('a 1-beat loop tiles note at TICK intervals', () => {
+        const pattern = buildPattern({}, { stepsPerBeat, beatCount, loopAtStep: stepsPerBeat }, beatCount)
         const notes = getAllNotes(pattern)
         const expected = []
         for (let t = 0; t < beatCount * TICK; t += TICK) expected.push(t)

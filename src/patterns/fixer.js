@@ -1,5 +1,5 @@
 import Utils from '../core/utils.js'
-import { recalcLoopDerived, normalizeTrack } from '../model/track_schema.js'
+import { normalizeTrack } from '../model/track_schema.js'
 import { compactArrayToNote, isCompactFormat, normalizeNote } from '../core/note_schema.js'
 import { ensurePatternId } from '../core/ids.js'
 import { normalizeSongs } from '../model/song_schema.js'
@@ -53,7 +53,6 @@ export function fixTrackDefaults(track) {
     Object.assign(track, normalized)
 
     if (track.useSoftSynth) track.useAutoAssignSound = false
-    recalcLoopDerived(track)
     if (track.useAutoAssignSound === undefined) track.useAutoAssignSound = true
     track.notes ??= []
     track.notes.forEach((note) => {

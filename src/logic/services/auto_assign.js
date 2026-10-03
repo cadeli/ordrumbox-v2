@@ -130,8 +130,8 @@ export default class AutoAssign {
 
                 // Try matching via instrument synonyms (e.g., RIMSHOT has "CL" which matches "CLAP")
                 const targetInst = InstrumentsManager.DATA?.instruments?.find((i) => i.id === targetKey)
-                if (targetInst?.name?.syn) {
-                    for (const syn of targetInst.name.syn) {
+                if (targetInst?.synonyms?.length) {
+                    for (const syn of targetInst.synonyms) {
                         // Use simple string synonyms (not regex patterns)
                         if (!syn.includes('.') && !syn.includes('*') && !syn.includes('^') && !syn.includes('$')) {
                             // Check if any sound key includes this synonym (reverse direction)

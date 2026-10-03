@@ -65,7 +65,7 @@ const TRACK_DEFAULTS = {
 
 /**
  * Build a track object. Only name is required.
- * loopAtStep and loopPointBeat default from beatCount * stepsPerBeat.
+ * loopAtStep (the loop length, in steps) defaults from beatCount * stepsPerBeat.
  * @param {string} name
  * @param {Array} [notes=[]]
  * @param {object} [opts] - override any track field
@@ -74,7 +74,6 @@ export function makeTrack(name, notes = [], opts = {}) {
     const beatCount = opts.beatCount ?? TRACK_DEFAULTS.beatCount
     const stepsPerBeat = opts.stepsPerBeat ?? TRACK_DEFAULTS.stepsPerBeat
     const loopAtStep = opts.loopAtStep ?? beatCount * stepsPerBeat
-    const loopPointBeat = opts.loopPointBeat ?? beatCount
 
     return {
         name,
@@ -84,8 +83,6 @@ export function makeTrack(name, notes = [], opts = {}) {
         beatCount,
         stepsPerBeat,
         loopAtStep,
-        loopPointBeat,
-        loopPointStep: opts.loopPointStep ?? 0,
     }
 }
 

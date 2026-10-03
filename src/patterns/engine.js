@@ -84,15 +84,16 @@ export function computeNbTickForPattern(beatCount, tick = TICK) {
 /**
  * Length of one loop of `track`, in ticks.
  *
- * Reads the derived pair (recalved from loopAtStep by recalcLoopDerived) and falls
- * back to the track's own length, so a track with no loop point loops over
- * beatCount beats rather than not at all.
+ * Reads the track's single loop field (loopAtStep, in steps) and falls back to the
+ * track's own length, so a track with no loop point loops over beatCount beats
+ * rather than not at all.
  */
 export function computeNbTickForLoop(track, tick = TICK) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
+    const declared = Number(track.loopAtStep)
     const trackBeats = Defaults.getTrackProp(track, 'beatCount')
-    const loopPointStepPc = (track.loopPointStep ?? 0) / stepsPerBeat
-    return Math.floor((loopPointStepPc + (track.loopPointBeat ?? trackBeats)) * tick)
+    const loopSteps = Number.isFinite(declared) && declared > 0 ? declared : trackBeats * stepsPerBeat
+    return Math.floor((loopSteps / stepsPerBeat) * tick)
 }
 
 export function expandLoopOccurrences(baseTick, nbTickForLoop, nbTickForPattern) {

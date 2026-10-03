@@ -4,8 +4,7 @@ export default class ClapGenerate extends BaseGenerator {
     static CLAP_GENERATION_CONFIGS = Object.freeze({
         backbeat: {
             mode: 'phrases',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 1, step: 0, accent: true },
                 { beat: 3, step: 0, accent: true },
@@ -21,8 +20,7 @@ export default class ClapGenerate extends BaseGenerator {
         },
         offbeat: {
             mode: 'grid',
-            loopPointBeat: 2,
-            loopPointStep: 0,
+            loopBeats: 2,
             probabilities: [0.05, 0.85, 0.05, 0.85],
             velocity: {
                 base: 0.72,
@@ -35,8 +33,7 @@ export default class ClapGenerate extends BaseGenerator {
         },
         sparse: {
             mode: 'phrases',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 1, step: 0 },
                 { beat: 3, step: 2 },
@@ -51,8 +48,7 @@ export default class ClapGenerate extends BaseGenerator {
         },
         fourOnFloor: {
             mode: 'grid',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             probabilities: [0.8, 0.05, 0.05, 0.05],
             velocity: {
                 base: 0.7,
@@ -65,8 +61,7 @@ export default class ClapGenerate extends BaseGenerator {
         },
         syncopated: {
             mode: 'phrases',
-            loopPointBeat: 4,
-            loopPointStep: 0,
+            loopBeats: 4,
             phrases: [
                 { beat: 0, step: 0, accent: true },
                 { beat: 0, step: 3 },
@@ -86,8 +81,7 @@ export default class ClapGenerate extends BaseGenerator {
         },
         dense: {
             mode: 'grid',
-            loopPointBeat: 1,
-            loopPointStep: 0,
+            loopBeats: 1,
             probabilities: [0.7, 0.3, 0.7, 0.3],
             velocity: {
                 base: 0.65,

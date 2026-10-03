@@ -39,7 +39,7 @@ export default class AudioEngine {
         this.getSelectedSongIdx = config.getSelectedSongIdx ?? (() => 0)
         this.getAutoGenerate = config.getAutoGenerate
         this.TICK = config.TICK
-        this.secondsPerBeat = config.secondsPerBeat
+        this.secondsPerTick = config.secondsPerTick
         this.instrumentsManager = instrumentsManager
         this.isOffline = !!config.isOffline
 
@@ -73,7 +73,7 @@ export default class AudioEngine {
                     getPlaybackMode: this.getPlaybackMode,
                     getSong: this.getSong,
                     TICK: this.TICK,
-                    secondsPerBeat: this.secondsPerBeat,
+                    secondsPerTick: this.secondsPerTick,
                     isOffline: this.isOffline,
                 })
                 this.sound = this.player.sound

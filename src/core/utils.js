@@ -1,4 +1,4 @@
-import { TRACK_DEFAULTS, TRACK_RECALCULATED } from '../model/track_schema.js'
+import { TRACK_DEFAULTS } from '../model/track_schema.js'
 import { NOTE_DEFAULTS, NOTE_RECALCULATED, NOTE_POSITION_KEYS } from './note_schema.js'
 import { logger } from './logger.js'
 
@@ -24,8 +24,6 @@ export default class Utils {
     }
 
     static TRACK_DEFAULTS = TRACK_DEFAULTS
-
-    static TRACK_RECALCULATED = TRACK_RECALCULATED
 
     static PATTERN_DEFAULTS = {
         // Stable id, assigned once at creation and never regenerated: song
@@ -117,8 +115,6 @@ export default class Utils {
                 .sort((a, b) => Utils.getNoteAbsoluteStep(a, stepsPerBeat) - Utils.getNoteAbsoluteStep(b, stepsPerBeat))
 
             track.loopAtStep = loopAtStep
-            track.loopPointBeat = Math.floor(loopAtStep / stepsPerBeat)
-            track.loopPointStep = loopAtStep % stepsPerBeat
 
             return {
                 changed: true,
@@ -151,16 +147,9 @@ export default class Utils {
     }
 
     static getTrackLoopAtStep = (track) => {
-        const stepsPerBeat = Number(track?.stepsPerBeat)
         const loopAtStep = Number(track?.loopAtStep)
         if (Number.isFinite(loopAtStep) && loopAtStep > 0) {
             return Math.floor(loopAtStep)
-        }
-
-        const loopPointBeat = Number(track?.loopPointBeat)
-        const loopPointStep = Number(track?.loopPointStep ?? 0)
-        if (Number.isFinite(loopPointBeat) && Number.isFinite(loopPointStep) && Number.isFinite(stepsPerBeat)) {
-            return Math.floor(loopPointBeat * stepsPerBeat + loopPointStep)
         }
 
         return Utils.getTrackStepLength(track)

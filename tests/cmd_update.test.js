@@ -23,9 +23,7 @@ function makeTrack(overrides = {}) {
         name: 'KICK',
         beatCount: 4,
         stepsPerBeat: 4,
-        loopAtStep: 16,
-        loopPointBeat: 4,
-        loopPointStep: 0,
+        loopAtStep: 4 * 4,
         velocity: 1,
         pitch: 0,
         notes: [],
@@ -206,8 +204,6 @@ describe('Commander — updateNote / updateTrack opts / setStepsPerBeat', () => 
             cmd.setStepsPerBeat(track, 2)
 
             expect(track.loopAtStep).toBe(8)
-            expect(track.loopPointBeat).toBe(4)
-            expect(track.loopPointStep).toBe(0)
         })
 
         it('undo restores stepsPerBeat, loop point and note beatSteps', () => {
@@ -219,12 +215,10 @@ describe('Commander — updateNote / updateTrack opts / setStepsPerBeat', () => 
 
             history.undo()
             expect(track.stepsPerBeat).toBe(4)
-            expect(track.loopPointBeat).toBe(4)
             expect(track.notes[0].beatStep).toBe(2)
 
             history.redo()
             expect(track.stepsPerBeat).toBe(8)
-            expect(track.loopPointBeat).toBe(2)
             expect(track.notes[0].beatStep).toBe(4)
         })
 

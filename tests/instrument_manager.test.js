@@ -36,7 +36,7 @@ describe('Instrument', () => {
             id: 'SNARE',
             drum: true,
             pan: '3',
-            name: { syn: ['SN', '.*SNAR.*'] },
+            synonyms: ['SN', '.*SNAR.*'],
             midi: [{ ch: '9', name: 'Acoustic Snare', key: '38' }],
         })
         const str = inst.toString()

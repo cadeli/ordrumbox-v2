@@ -92,8 +92,6 @@ describe('MCP server stays aligned with the app model', () => {
         expect(track).toHaveProperty('delayDepth')
         expect(track).toHaveProperty('swingAmount')
         expect(track).toHaveProperty('prob_pitch')
-        expect(track).not.toHaveProperty('loopPointBeat')
-        expect(track).not.toHaveProperty('loopPointStep')
 
         const kits = await handleToolCall('listKitSamples', {})
         expect(JSON.parse(kits.content[0].text).count).toBeGreaterThan(0)

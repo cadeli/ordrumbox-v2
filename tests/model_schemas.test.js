@@ -5,13 +5,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import FlatNote from '../src/model/flatnote.js'
 import Instrument from '../src/model/instrument.js'
 import { logger } from '../src/core/logger.js'
-import {
-    TRACK_DEFAULTS,
-    normalizeTrack,
-    TRACK_RECALCULATED,
-    TRACK_VALUE_RANGES,
-    recalcLoopDerived,
-} from '../src/model/track_schema.js'
+import { TRACK_DEFAULTS, normalizeTrack, TRACK_VALUE_RANGES } from '../src/model/track_schema.js'
 
 afterEach(() => {
     vi.restoreAllMocks()
@@ -39,7 +33,7 @@ describe('Instrument', () => {
         expect(Instrument.NOT_FOUND).toBe('NOT_FOUND')
         expect(inst.drum).toBe(false)
         expect(inst.pan).toBe('0')
-        expect(inst.name).toEqual({ syn: [] })
+        expect(inst.synonyms).toEqual([])
         expect(inst.subst).toEqual({})
         expect(inst.midi).toEqual([])
     })
@@ -49,14 +43,14 @@ describe('Instrument', () => {
             id: 'kick',
             drum: true,
             pan: '1',
-            name: { syn: ['bd', 'sub'] },
+            synonyms: ['bd', 'sub'],
             subst: { alt: 'x' },
             midi: [{ ch: '1', name: 'C', key: 3 }, {}],
         })
         expect(inst.id).toBe('kick')
         expect(inst.drum).toBe(true)
         expect(inst.pan).toBe('1')
-        expect(inst.name).toEqual({ syn: ['bd', 'sub'] })
+        expect(inst.synonyms).toEqual(['bd', 'sub'])
         expect(inst.subst).toEqual({ alt: 'x' })
         expect(inst.midi).toHaveLength(2)
         expect(inst.midi[0]).toMatchObject({ ch: '1', name: 'C', key: 3, programm: null, key_based: null })
@@ -68,24 +62,24 @@ describe('Instrument', () => {
         expect(inst.midi).toEqual([])
     })
 
-    it('toString renders key, type, pan, syn names and midi entries', () => {
+    it('toString renders key, type, pan, synonyms and midi entries', () => {
         const drum = new Instrument({
             id: 'kick',
             drum: true,
             pan: '1',
-            name: { syn: ['bd', 'sub'] },
+            synonyms: ['bd', 'sub'],
             midi: [{ name: 'GM', key: 36 }],
         })
         const text = drum.toString()
         expect(text).toContain('key : kick')
         expect(text).toContain('type: Drum')
         expect(text).toContain('pan: 1')
-        expect(text).toContain('syn: [bd|sub]')
+        expect(text).toContain('synonyms: [bd|sub]')
         expect(text).toContain('[GM key:36]')
 
         const melo = new Instrument({ id: 'lead', drum: false })
         expect(melo.toString()).toContain('type: Melo')
-        expect(melo.toString()).not.toContain('syn: [')
+        expect(melo.toString()).not.toContain('synonyms: [')
     })
 })
 
@@ -133,10 +127,6 @@ describe('track_schema', () => {
         expect(normalized.notes).toEqual([])
     })
 
-    it('TRACK_RECALCULATED lists the derived keys that are never serialized', () => {
-        expect(TRACK_RECALCULATED).toEqual(['loopPointBeat', 'loopPointStep'])
-    })
-
     it('TRACK_VALUE_RANGES documents the clamp ranges used by updateTrack', () => {
         expect(TRACK_VALUE_RANGES.velocity).toEqual({ min: 0, max: 1 })
         expect(TRACK_VALUE_RANGES.pan).toEqual({ min: -1, max: 1 })
@@ -152,17 +142,5 @@ describe('track_schema', () => {
             expect(Number.isFinite(range.max), `${key}.max`).toBe(true)
             expect(range.min <= range.max, `${key} range order`).toBe(true)
         }
-    })
-
-    it('recalcLoopDerived splits loopAtStep into beat and step', () => {
-        const track = { loopAtStep: 13, stepsPerBeat: 4 }
-        recalcLoopDerived(track)
-        expect(track.loopPointBeat).toBe(3)
-        expect(track.loopPointStep).toBe(1)
-
-        const aligned = { loopAtStep: 16, stepsPerBeat: 4 }
-        recalcLoopDerived(aligned)
-        expect(aligned.loopPointBeat).toBe(4)
-        expect(aligned.loopPointStep).toBe(0)
     })
 })
