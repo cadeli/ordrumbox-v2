@@ -88,6 +88,21 @@ export function barsForPattern(pattern) {
 }
 
 /**
+ * How far the arrangement reaches: the furthest end across its clips.
+ *
+ * The measure after the last one, so a clip on bar 8 lasting 4 bars ends at 12.
+ * The grid width and the loop length are both derived from this — see
+ * songLengthBars and SongCommands.
+ * @param {Song|null|undefined} song a normalized song
+ * @returns {number} bars, 0 when the song has no clip
+ */
+export function songContentBars(song) {
+    let end = 0
+    for (const clip of song?.clips ?? []) end = Math.max(end, (clip.startBar ?? 0) + clip.bars)
+    return end
+}
+
+/**
  * Total length of a song in bars: the furthest end across its clips, or
  * `loopBars` when the song declares one.
  * @param {Song|null|undefined} song a normalized song
@@ -98,9 +113,7 @@ export function songLengthBars(song) {
     if (Number.isFinite(Number(song.loopBars)) && Number(song.loopBars) > 0) {
         return Math.max(1, Math.floor(Number(song.loopBars)))
     }
-    let end = 0
-    for (const clip of song.clips ?? []) end = Math.max(end, (clip.startBar ?? 0) + clip.bars)
-    return end
+    return songContentBars(song)
 }
 
 /**

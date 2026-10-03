@@ -8,6 +8,7 @@ import {
     uniqueId,
     ensurePatternId,
     barsForPattern,
+    songContentBars,
     songLengthBars,
     songBpm,
     normalizeSong,
@@ -126,6 +127,39 @@ describe('songLengthBars', () => {
     it('is 0 with no clip', () => {
         expect(songLengthBars(song([]))).toBe(0)
         expect(songLengthBars(null)).toBe(0)
+    })
+})
+
+// What the arrangement actually occupies: the grid width and the loop both
+// follow it, so a declared loopBars can never disagree with it unnoticed.
+describe('songContentBars', () => {
+    it('is the measure after the last one occupied', () => {
+        expect(
+            songContentBars({
+                clips: [
+                    { startBar: 0, bars: 2 },
+                    { startBar: 8, bars: 4 },
+                    { startBar: 16, bars: 8 },
+                ],
+            }),
+        ).toBe(24)
+    })
+
+    // A clip may last a fraction of a bar, so the extent can be fractional.
+    it('keeps a sub-bar clip fractional', () => {
+        expect(songContentBars({ clips: [{ startBar: 20, bars: 0.75 }] })).toBe(20.75)
+    })
+
+    // The content does not care what loopBars says — that is the whole point of
+    // keeping the two apart.
+    it('ignores a declared loop length', () => {
+        expect(songContentBars({ clips: [{ startBar: 0, bars: 2 }], loopBars: 64 })).toBe(2)
+    })
+
+    it('is 0 with no song or no clip', () => {
+        expect(songContentBars({ clips: [] })).toBe(0)
+        expect(songContentBars(null)).toBe(0)
+        expect(songContentBars({})).toBe(0)
     })
 })
 

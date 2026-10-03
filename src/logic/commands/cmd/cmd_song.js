@@ -1,6 +1,12 @@
 import { appState } from '../../../state/app_state.js'
 import { reportUserError } from '../../../core/notify.js'
-import { barsForPattern, ensurePatternId, normalizeSong, uniqueId } from '../../../model/song_schema.js'
+import {
+    barsForPattern,
+    ensurePatternId,
+    normalizeSong,
+    songContentBars,
+    uniqueId,
+} from '../../../model/song_schema.js'
 import Utils from '../../../core/utils.js'
 
 /**
@@ -14,7 +20,8 @@ import Utils from '../../../core/utils.js'
  * @property {string}  [name]
  * @property {string}  [description]
  * @property {number}  [bpm]        clamped to SONG_MIN_BPM..SONG_MAX_BPM
- * @property {number}  [loopBars]   0 = the whole arrangement loops
+ * @property {number}  [loopBars]   starting loop length; every later clip edit
+ *                                  moves it onto the last occupied measure
  */
 
 /**
@@ -33,6 +40,11 @@ import Utils from '../../../core/utils.js'
  *
  * Clips reference a pattern by its **stable id**, never by index or name, so
  * every high-level command resolves the caller's reference first.
+ *
+ * Every clip edit also moves the arrangement's loop onto the last measure it
+ * occupies (#followContent), so the grid and the playback loop never show or play
+ * measures nothing is placed on — and never miss a clip that was just added past
+ * the old loop.
  *
  * Arrangements themselves are created by `addArrangement` (empty by design: its
  * clips are placed afterwards, so none can reference a pattern that is gone)
@@ -92,6 +104,35 @@ export default class SongCommands {
     }
 
     /**
+     * Point the loop at the last measure the arrangement occupies.
+     *
+     * `loopBars` is both the grid width and what the player loops over, so a loop
+     * left at its old value draws measures nothing occupies any more, and a clip
+     * added past it would never sound at all. Every clip edit therefore moves the
+     * loop onto the content: a `loopBars` written by a song file is honoured when
+     * it loads, but it stops being a promise once the arrangement is edited.
+     *
+     * @param {import('../../../model/song_schema.js').Song} song
+     * @returns {number} the loop length now in force, 0 when nothing is placed
+     */
+    #followContent(song) {
+        const bars = songContentBars(song)
+        this.#setLoop(song, bars)
+        return bars
+    }
+
+    /**
+     * Set the loop length, or drop the field when there is none: an arrangement
+     * with no clip has no loop, and a stored 0 would be meaningless.
+     * @param {import('../../../model/song_schema.js').Song} song
+     * @param {number|null|undefined} bars
+     */
+    #setLoop(song, bars) {
+        if (bars == null || !(bars > 0)) delete song.loopBars
+        else song.loopBars = bars
+    }
+
+    /**
      * Place a pattern on the bar timeline of a song. One undo step.
      * @param {{pattern: string, startBar: number, bars: number}} clip
      * @param {number} [songIdx] defaults to the selected song
@@ -105,18 +146,22 @@ export default class SongCommands {
             startBar: Math.max(0, Math.floor(Number(clip.startBar) || 0)),
             bars: Number(clip.bars) > 0 ? Number(clip.bars) : 1,
         }
+        const loopBefore = song.loopBars
         song.clips.push(added)
+        const loopAfter = this.#followContent(song)
         this.#host.persist()
         this.#host.record({
             desc: `Add "${added.pattern}" at bar ${added.startBar + 1}`,
             params: { pattern: added.pattern, startBar: added.startBar, song: index },
             execute: () => {
                 song.clips.push({ ...added })
+                this.#setLoop(song, loopAfter)
                 this.#host.persist()
             },
             undo: () => {
                 const i = song.clips.lastIndexOf(added)
                 if (i >= 0) song.clips.splice(i, 1)
+                this.#setLoop(song, loopBefore)
                 this.#host.persist()
             },
         })
@@ -142,7 +187,9 @@ export default class SongCommands {
         // reorder the arrangement (removing a and c from [a,b,c] then undoing
         // by pushing them back yields [b,a,c]).
         const removed = targets.map((i) => ({ clip: song.clips[i], index: i }))
+        const loopBefore = song.loopBars
         for (const i of targets) song.clips.splice(i, 1)
+        const loopAfter = this.#followContent(song)
         this.#host.persist()
         this.#host.record({
             desc: removed.length === 1 ? `Remove clip "${removed[0].clip.pattern}"` : `Remove ${removed.length} clips`,
@@ -153,6 +200,7 @@ export default class SongCommands {
                     .filter((i) => i >= 0)
                     .sort((a, b) => b - a)
                 for (const i of positions) song.clips.splice(i, 1)
+                this.#setLoop(song, loopAfter)
                 this.#host.persist()
             },
             undo: () => {
@@ -160,6 +208,7 @@ export default class SongCommands {
                 for (const { clip, index: at } of [...removed].sort((a, b) => a.index - b.index)) {
                     song.clips.splice(Math.min(at, song.clips.length), 0, { ...clip })
                 }
+                this.#setLoop(song, loopBefore)
                 this.#host.persist()
             },
         })

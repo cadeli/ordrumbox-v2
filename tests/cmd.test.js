@@ -691,6 +691,93 @@ describe('Functional: Commander operations', () => {
         })
     })
 
+    // The loop is the grid width and what the player loops over, so it has to
+    // follow the content instead of freezing at whatever the file declared.
+    describe('arrangement loop follows the content', () => {
+        let history
+
+        beforeEach(() => {
+            history = new HistoryManager(50)
+            serviceRegistry.history = history
+            appState.patterns = [makePattern({ name: 'Rock', id: 'rock', beatCount: 4 })]
+        })
+
+        const song = (clips, loopBars) => {
+            appState.songs = [{ id: 'demo', name: 'Demo', bpm: 120, clips, ...(loopBars ? { loopBars } : {}) }]
+            appState.selectedSongIdx = 0
+            return appState.songs[0]
+        }
+        const loop = () => appState.songs[0].loopBars
+
+        it('grows to cover a clip added past the old loop', () => {
+            song([{ pattern: 'rock', startBar: 0, bars: 1 }], 4)
+            expect(cmd.addPatternAtBar('rock', 20)).not.toBeNull()
+            // otherwise the clip would be placed where nothing ever plays
+            expect(loop()).toBe(21)
+        })
+
+        // A length declared by a song file is honoured on load, but it is not a promise:
+        // the first edit snaps the loop onto what is actually placed.
+        it('snaps a declared length onto the content on the first edit', () => {
+            song([{ pattern: 'rock', startBar: 0, bars: 1 }], 32)
+            cmd.addPatternAtBar('rock', 4)
+            expect(loop()).toBe(5)
+        })
+
+        it('shrinks when the last clip is removed', () => {
+            const s = song([
+                { pattern: 'rock', startBar: 0, bars: 2 },
+                { pattern: 'rock', startBar: 10, bars: 4 },
+            ])
+            s.loopBars = 14
+            cmd.removeSongClips([1])
+            expect(loop()).toBe(2)
+        })
+
+        it('takes the furthest end, not the last one in the list', () => {
+            song([
+                { pattern: 'rock', startBar: 0, bars: 2 },
+                { pattern: 'rock', startBar: 10, bars: 4 },
+                { pattern: 'rock', startBar: 4, bars: 1 },
+            ])
+            cmd.addPatternAtBar('rock', 0)
+            expect(loop()).toBe(14)
+        })
+
+        it('drops the loop when the last clip goes', () => {
+            song([{ pattern: 'rock', startBar: 0, bars: 2 }])
+            cmd.removeSongClips([0])
+            expect(appState.songs[0].clips).toHaveLength(0)
+            expect(loop()).toBeUndefined()
+        })
+
+        it('undo puts the previous loop length back', () => {
+            song([{ pattern: 'rock', startBar: 0, bars: 1 }], 8)
+            cmd.removeSongClips([0])
+            expect(loop()).toBeUndefined()
+
+            history.undo()
+            expect(loop()).toBe(8)
+
+            // and the loop it shrinks to is itself undone
+            cmd.addPatternAtBar('rock', 30)
+            expect(loop()).toBe(31)
+            history.undo()
+            expect(loop()).toBe(8)
+        })
+
+        it('redo replays the loop change too', () => {
+            song([{ pattern: 'rock', startBar: 0, bars: 1 }])
+            cmd.addPatternAtBar('rock', 6)
+            expect(loop()).toBe(7)
+
+            history.undo()
+            expect(loop()).toBeUndefined()
+            history.redo()
+            expect(loop()).toBe(7)
+        })
+    })
+
     // ── placement API (pattern name/id → clip) ──────────────────────────────────
 
     describe('arrangement placement API', () => {

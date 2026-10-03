@@ -197,6 +197,25 @@ test.describe('Song arrangement context menus', () => {
         expect(await clipsWhere(page, "c.pattern === 'funkfill' && c.startBar === 38")).toBe(0)
     })
 
+    // The loop is both the grid width and what playback loops over, so it
+    // follows the clips instead of freezing at the length song.json declares.
+    test('deleting the last clip shortens the arrangement', async ({ page }) => {
+        await openSongView(page)
+        const bars = () => page.evaluate(() => Number(document.getElementById('sa-list').dataset.totalBars))
+        const last = await page.evaluate(() => window.__e2e.appState.songs[0].clips.at(-1))
+        const before = last.startBar + last.bars
+        expect(await bars()).toBe(before)
+
+        await page
+            .locator(`.sa-clip[data-pattern="${last.pattern}"][data-start-bar="${last.startBar}"]`)
+            .click({ button: 'right' })
+        await page.locator('.pp-context-menu-item', { hasText: 'Delete' }).click()
+
+        await expect.poll(() => bars()).toBeLessThan(before)
+        // the playback loop followed, not only the drawing
+        expect(await page.evaluate(() => window.__e2e.appState.songs[0].loopBars)).toBe(await bars())
+    })
+
     test('on a pattern name: Add at bar places that pattern in the arrangement', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
