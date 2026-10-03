@@ -37,6 +37,14 @@ import Utils from '../src/core/utils.js'
 import Commander from '../src/logic/commands/cmd.js'
 import { PARAM_SETS } from './helpers/make_pattern.js'
 
+/**
+ * node-web-audio-api has no AudioWorklet, so every render here is silent by
+ * construction. expectAudio: false tells the exporter not to treat that as the
+ * Chromium race (which would retry and then throw) — these tests assert the WAV
+ * structure, not its samples.
+ */
+const exporter = () => new WavExporter({ expectAudio: false })
+
 // Mock OfflineAudioContext
 class MockOfflineAudioContext {
     constructor(channels, length, sampleRate) {
@@ -565,7 +573,7 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
             },
         }
 
-        wavExporter = new WavExporter()
+        wavExporter = exporter()
         pattern = createComplexPattern()
     })
 

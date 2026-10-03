@@ -158,8 +158,9 @@ export default class ExportSection {
                 `ordrumbox-${valueOrFallback(pattern.name, 'pattern', 'ToolsPanel', 'wav name fallback')}.wav`,
             )
         } catch (e) {
+            // the message matters (e.g. the Chromium silent-render race), so pass it on
             logger.error('ToolsPanel', 'WAV Export failed', e)
-            showToast('WAV Export failed', 'error')
+            showToast('WAV Export failed: ' + e.message, 'error')
         } finally {
             this.#wavBtn.disabled = false
             this.#wavBtn.textContent = originalText

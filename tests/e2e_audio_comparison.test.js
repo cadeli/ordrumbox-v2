@@ -37,6 +37,14 @@ const { OfflineAudioContext, AudioWorkletNode } = nodeWaa
 globalThis.OfflineAudioContext = OfflineAudioContext
 globalThis.AudioWorkletNode = AudioWorkletNode
 
+/**
+ * node-web-audio-api has no AudioWorklet, so every render here is silent by
+ * construction. expectAudio: false tells the exporter not to treat that as the
+ * Chromium race (which would retry and then throw) — these tests assert the WAV
+ * structure, not its samples.
+ */
+const exporter = () => new WavExporter({ expectAudio: false })
+
 const SAMPLE_RATE = 44100
 const analyzer = new AudioAnalyzer()
 
@@ -171,7 +179,7 @@ describe('E2E Audio 1 — WAV export produces valid headers', () => {
             { name: 'KICK', notes: [{ beat: 0 }, { beat: 1 }, { beat: 2 }, { beat: 3 }] },
         ])
 
-        const blob = await new WavExporter().exportPatternToWav(pat, 1)
+        const blob = await exporter().exportPatternToWav(pat, 1)
         expect(blob).not.toBeNull()
         expect(blob.type).toBe('audio/wav')
 
@@ -198,7 +206,7 @@ describe('E2E Audio 1 — WAV export produces valid headers', () => {
             { name: 'SNARE', notes: [{ beat: 1 }, { beat: 3 }] },
         ])
 
-        const blob = await new WavExporter().exportPatternToWav(pat, 1)
+        const blob = await exporter().exportPatternToWav(pat, 1)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         expect(bytes.length).toBeGreaterThan(44)
     })
@@ -223,8 +231,8 @@ describe('E2E Audio 2 — Two renders of same pattern are bit-identical', () => 
 
         const pat = makeTestPattern(cmd, 'Identical', 120, 4, [{ name: 'KICK', notes: [{ beat: 0 }, { beat: 2 }] }])
 
-        const blob1 = await new WavExporter().exportPatternToWav(pat, 1)
-        const blob2 = await new WavExporter().exportPatternToWav(pat, 1)
+        const blob1 = await exporter().exportPatternToWav(pat, 1)
+        const blob2 = await exporter().exportPatternToWav(pat, 1)
 
         const bytes1 = new Uint8Array(await blob1.arrayBuffer())
         const bytes2 = new Uint8Array(await blob2.arrayBuffer())
@@ -281,8 +289,8 @@ describe('E2E Audio 3 — WAV duration scales with BPM and loops', () => {
 
         const pat = makeTestPattern(cmd, 'Loops', 120, 2, [{ name: 'KICK', notes: [{ beat: 0 }] }])
 
-        const bytes1 = new Uint8Array(await (await new WavExporter().exportPatternToWav(pat, 1)).arrayBuffer())
-        const bytes2 = new Uint8Array(await (await new WavExporter().exportPatternToWav(pat, 2)).arrayBuffer())
+        const bytes1 = new Uint8Array(await (await exporter().exportPatternToWav(pat, 1)).arrayBuffer())
+        const bytes2 = new Uint8Array(await (await exporter().exportPatternToWav(pat, 2)).arrayBuffer())
 
         expect(bytes2.length).toBeGreaterThan(bytes1.length)
         // Verify data chunk grows proportionally
@@ -301,8 +309,8 @@ describe('E2E Audio 3 — WAV duration scales with BPM and loops', () => {
         const patSlow = makeTestPattern(cmd, 'Slow', 80, 4, [{ name: 'KICK', notes: [{ beat: 0 }] }])
         const patFast = makeTestPattern(cmd, 'Fast', 160, 4, [{ name: 'KICK', notes: [{ beat: 0 }] }])
 
-        const bytesSlow = new Uint8Array(await (await new WavExporter().exportPatternToWav(patSlow, 1)).arrayBuffer())
-        const bytesFast = new Uint8Array(await (await new WavExporter().exportPatternToWav(patFast, 1)).arrayBuffer())
+        const bytesSlow = new Uint8Array(await (await exporter().exportPatternToWav(patSlow, 1)).arrayBuffer())
+        const bytesFast = new Uint8Array(await (await exporter().exportPatternToWav(patFast, 1)).arrayBuffer())
 
         // Slower BPM = longer duration = more data
         expect(bytesSlow.length).toBeGreaterThan(bytesFast.length)
@@ -316,8 +324,8 @@ describe('E2E Audio 3 — WAV duration scales with BPM and loops', () => {
         const patShort = makeTestPattern(cmd, 'Short', 120, 2, [{ name: 'KICK', notes: [{ beat: 0 }] }])
         const patLong = makeTestPattern(cmd, 'Long', 120, 4, [{ name: 'KICK', notes: [{ beat: 0 }] }])
 
-        const bytesShort = new Uint8Array(await (await new WavExporter().exportPatternToWav(patShort, 1)).arrayBuffer())
-        const bytesLong = new Uint8Array(await (await new WavExporter().exportPatternToWav(patLong, 1)).arrayBuffer())
+        const bytesShort = new Uint8Array(await (await exporter().exportPatternToWav(patShort, 1)).arrayBuffer())
+        const bytesLong = new Uint8Array(await (await exporter().exportPatternToWav(patLong, 1)).arrayBuffer())
 
         expect(bytesLong.length).toBeGreaterThan(bytesShort.length)
     })
