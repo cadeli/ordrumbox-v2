@@ -240,13 +240,6 @@ describe('Mobile tab bar', () => {
     })
 
     describe('mobile panel layout', () => {
-        it('pattern panel is visible below toolbar when mobileSeqToggle dispatched', () => {
-            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
-            const el = document.getElementById('pattern-panel')
-            expect(el).not.toBeNull()
-            expect(el.classList.contains('ui-hidden')).toBe(false)
-        })
-
         it('track editor is visible below toolbar when mobileTrackToggle dispatched', () => {
             playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
             const el = document.getElementById('te-panel')

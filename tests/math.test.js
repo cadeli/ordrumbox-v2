@@ -1,14 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
-import {
-    safeDisconnect,
-    computeOscFrequency,
-    computeNoteRatio,
-    computeLfoValue,
-    getLfoWaveformValue,
-    computeAccent,
-    syncToHz,
-} from '../src/audio/math.js'
-import { TICK, C3_FREQ, MIN_NOTE_RATIO } from '../src/core/constants.js'
+import { safeDisconnect, computeOscFrequency, computeNoteRatio, computeAccent, syncToHz } from '../src/audio/math.js'
+import { C3_FREQ, MIN_NOTE_RATIO } from '../src/core/constants.js'
+
+// The LFO waveform and value functions of this module are covered in
+// tests/lfo_engine.test.js, which pins their exact output at each phase.
 
 describe('safeDisconnect', () => {
     it('calls disconnect on node', () => {
@@ -72,88 +67,6 @@ describe('computeOscFrequency', () => {
         const base = computeOscFrequency(1, 0, 0)
         const detuned = computeOscFrequency(1, 0, 100)
         expect(detuned).toBeCloseTo(base * 2, 1)
-    })
-})
-
-describe('getLfoWaveformValue', () => {
-    it('sine returns 0 at phase 0.25', () => {
-        expect(getLfoWaveformValue(0.25, 0)).toBeCloseTo(0, 2)
-    })
-
-    it('sine returns ~1 at phase 0.5', () => {
-        expect(getLfoWaveformValue(0.5, 0)).toBeCloseTo(1, 2)
-    })
-
-    it('tri returns expected value at key phases', () => {
-        const v0 = getLfoWaveformValue(0.25, 1)
-        expect(v0).toBeCloseTo(-1, 1)
-        const v1 = getLfoWaveformValue(0.75, 1)
-        expect(v1).toBeCloseTo(1, 1)
-    })
-
-    it('saw returns expected values', () => {
-        const p = 0 - 0.25 - Math.floor(0 - 0.25)
-        expect(getLfoWaveformValue(0, 2)).toBeCloseTo(p * 2 - 1, 2)
-    })
-
-    it('square returns 1 for first half of phase', () => {
-        const v = getLfoWaveformValue(0.375, 3)
-        expect(v).toBe(1)
-    })
-
-    it('square returns -1 for second half of phase', () => {
-        const v = getLfoWaveformValue(0.875, 3)
-        expect(v).toBe(-1)
-    })
-
-    it('S&H returns values in [-1, 1]', () => {
-        for (let i = 0; i < 20; i++) {
-            const v = getLfoWaveformValue(i, 4)
-            expect(v).toBeGreaterThanOrEqual(-1)
-            expect(v).toBeLessThanOrEqual(1)
-        }
-    })
-})
-
-describe('computeLfoValue', () => {
-    it('returns 0 for null lfo', () => {
-        expect(computeLfoValue(null, 0)).toBe(0)
-    })
-
-    it('returns value in [min, max] range', () => {
-        const lfo = { freq: 1, min: 0.2, max: 0.8, phase: 0, type: 'sine' }
-        const val = computeLfoValue(lfo, 0, TICK * 4)
-        expect(val).toBeGreaterThanOrEqual(0.2)
-        expect(val).toBeLessThanOrEqual(0.8)
-    })
-
-    it('returns min at phase=0.25 offset', () => {
-        const lfo = { freq: 1, min: 0.5, max: 0.5, phase: 0, type: 'sine' }
-        const val = computeLfoValue(lfo, TICK, TICK * 4)
-        expect(val).toBe(0.5)
-    })
-
-    it('time-based mode uses audioTime', () => {
-        const lfo = { freq: 1, min: 0, max: 1, phase: 0, type: 'sine' }
-        const val = computeLfoValue(lfo, null, null, null, 0, 120)
-        expect(typeof val).toBe('number')
-        expect(val).toBeGreaterThanOrEqual(0)
-        expect(val).toBeLessThanOrEqual(1)
-    })
-
-    it('unknown waveform name falls back to 0 (sine)', () => {
-        const lfo = { freq: 1, min: 0, max: 1, phase: 0, type: 'unknown' }
-        const sine = { freq: 1, min: 0, max: 1, phase: 0, type: 'sine' }
-        const val = computeLfoValue(lfo, 0, TICK * 4)
-        const ref = computeLfoValue(sine, 0, TICK * 4)
-        expect(val).toBeCloseTo(ref, 6)
-    })
-
-    it('uses waveform alias (waveform prop)', () => {
-        const lfo = { freq: 1, min: 0, max: 1, phase: 0, waveform: 'square' }
-        const val = computeLfoValue(lfo, 0, TICK * 4)
-        expect(val).toBeGreaterThanOrEqual(0)
-        expect(val).toBeLessThanOrEqual(1)
     })
 })
 

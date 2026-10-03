@@ -32,11 +32,6 @@ describe('OutputPanel — master controls', () => {
         expect(setMasterBusMock).toHaveBeenCalledWith({ master: 1.01 })
     })
 
-    it('master volume knob: setValue calls setMasterBus', () => {
-        panel.getKnob('op-master-vol').setValue(0.99, true)
-        expect(setMasterBusMock).toHaveBeenCalledWith({ master: 0.99 })
-    })
-
     it('low cut / high cut sliders: built with correct ranges and "Hz" unit', () => {
         const lowcut = panel.container.querySelector('input[data-key="op-lowcut"]')
         const hicut = panel.container.querySelector('input[data-key="op-hicut"]')

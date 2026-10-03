@@ -9,6 +9,10 @@
  * 3. Panel show/hide mutual exclusion
  * 4. Transport → Player tick chain
  * 5. Pattern rendering roundtrip
+ *
+ * The per-command behaviour itself (defaults, whitelists, clamping, cleanups) is
+ * asserted in tests/cmd.test.js and tests/cmd_update.test.js: what is left here is
+ * only what crosses layers — the state wiring, the bus, the transport and the DOM.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
@@ -68,18 +72,6 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
         expect(found[0]).toBe(note1)
     })
 
-    it('renames pattern, sets BPM, sets description', () => {
-        const pat = cmd.addPattern('OrigName')
-        cmd.renamePattern(0, 'NewName')
-        expect(pat.name).toBe('NewName')
-
-        cmd.setPatternBpm(pat, 140)
-        expect(pat.bpm).toBe(140)
-
-        cmd.setPatternDescription(pat, 'A test pattern')
-        expect(pat.description).toBe('A test pattern')
-    })
-
     it('removes pattern with min-1 guard', () => {
         cmd.addPattern('P1')
         cmd.addPattern('P2')
@@ -92,78 +84,6 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
         const fail = cmd.removePattern(0)
         expect(fail).toBe(false)
         expect(appState.patterns).toHaveLength(1)
-    })
-
-    it('getPatternByName is case-insensitive', () => {
-        cmd.addPattern('MyPattern')
-        expect(cmd.getPatternByName('mypattern')).not.toBeNull()
-        expect(cmd.getPatternByName('NOTEXIST')).toBeNull()
-    })
-
-    it('addNote auto-increments steppc and pushes to notes array', () => {
-        const pat = cmd.addPattern('NoteTest')
-        const track = cmd.addTrack(pat, 'SNARE', 4)
-        const note = cmd.addNote(track, 1, 3, -2)
-        expect(note.steppc).toBe(75) // round((3*100)/4)
-        expect(note.beat).toBe(1)
-        expect(note.beatStep).toBe(3)
-        expect(note.pitch).toBe(-2)
-    })
-
-    it('deleteNote removes the correct note', () => {
-        const pat = cmd.addPattern('DelTest')
-        const track = cmd.addTrack(pat, 'CLAP', 4)
-        const n1 = cmd.addNote(track, 0, 0, 0)
-        const n2 = cmd.addNote(track, 0, 1, 0)
-        const n3 = cmd.addNote(track, 0, 2, 0)
-        expect(track.notes).toHaveLength(3)
-
-        cmd.deleteNote(track, n2)
-        expect(track.notes).toHaveLength(2)
-        expect(track.notes).toContain(n1)
-        expect(track.notes).toContain(n3)
-        expect(track.notes).not.toContain(n2)
-    })
-
-    it('updateTrack applies whitelisted keys and clamps values', () => {
-        const pat = cmd.addPattern('UpdTest')
-        const track = cmd.addTrack(pat, 'HIHAT', 4)
-        cmd.updateTrack(track, { velocity: 0.5, pan: 0.8, pitch: -5 })
-        expect(track.velocity).toBe(0.5)
-        expect(track.pan).toBe(0.8)
-        expect(track.pitch).toBe(-5)
-
-        cmd.updateTrack(track, { velocity: 99 })
-        expect(track.velocity).toBe(1)
-
-        // Unknown keys are ignored
-        cmd.updateTrack(track, { bogusKey: 42 })
-        expect(track.bogusKey).toBeUndefined()
-    })
-
-    it('cleanTrack clears notes and resets loop point', () => {
-        const pat = cmd.addPattern('CleanTest')
-        const track = cmd.addTrack(pat, 'KICK', 4)
-        cmd.addNote(track, 0, 0, 0)
-        cmd.addNote(track, 1, 0, 0)
-        expect(track.notes).toHaveLength(2)
-
-        cmd.cleanTrack(track)
-        expect(track.notes).toHaveLength(0)
-        expect(track.loopPointBeat).toBe(track.beatCount)
-        expect(track.loopPointStep).toBe(0)
-    })
-
-    it('cleanPattern clears all tracks', () => {
-        const pat = cmd.addPattern('CleanAll')
-        const t1 = cmd.addTrack(pat, 'KICK', 4)
-        const t2 = cmd.addTrack(pat, 'SNARE', 4)
-        cmd.addNote(t1, 0, 0, 0)
-        cmd.addNote(t2, 0, 0, 0)
-
-        cmd.cleanPattern(pat)
-        expect(t1.notes).toHaveLength(0)
-        expect(t2.notes).toHaveLength(0)
     })
 
     it('importPatternFromJson creates a full pattern from JSON', () => {
@@ -184,12 +104,6 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
         expect(pat.tracks).toHaveLength(1)
         expect(pat.tracks[0].notes).toHaveLength(2)
         expect(pat.bpm).toBe(128)
-    })
-
-    it('createPattern generates default name when none provided', () => {
-        cmd.addPattern('Existing')
-        const p = cmd.createPattern()
-        expect(p.name).toMatch(/^NewPat_/)
     })
 
     it('full lifecycle: create → add tracks/notes → export → import roundtrip', () => {
@@ -522,22 +436,9 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
         document.body.innerHTML = ''
     })
 
-    it('renders correct number of tracks', () => {
-        // Only count regular track names, not the master track
-        const trackNames = panel.container.querySelectorAll('.pp-track:not(.pp-master-track) .pp-track-name')
-        expect(trackNames.length).toBe(2)
-        expect(trackNames[0].textContent).toBe('KICK')
-        expect(trackNames[1].textContent).toBe('SNARE')
-    })
-
     it('renders correct number of cells (2 beats × 4 steps = 8 per track)', () => {
         const cells = panel.container.querySelectorAll('.pp-cell')
         expect(cells.length).toBe(16)
-    })
-
-    it('marks cells with notes as "filled"', () => {
-        const filled = panel.container.querySelectorAll('.pp-cell.filled')
-        expect(filled.length).toBe(4)
     })
 
     it('renders note slices inside filled cells', () => {
@@ -558,17 +459,6 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
     it('does not render pitch-beat markers (removed for cleaner note look)', () => {
         const pitchBeats = panel.container.querySelectorAll('.pp-pitch-beat')
         expect(pitchBeats.length).toBe(0)
-    })
-
-    it('does not mark empty cells as filled', () => {
-        const emptyCells = panel.container.querySelectorAll('.pp-cell:not(.filled)')
-        expect(emptyCells.length).toBe(12)
-    })
-
-    it('render loop point at correct position', () => {
-        const loopCell = panel.container.querySelector('.pp-cell.pp-loop')
-        expect(loopCell).not.toBeNull()
-        expect(loopCell.dataset.pos).toBe('7')
     })
 
     it('re-render after adding a note shows new filled cell', () => {

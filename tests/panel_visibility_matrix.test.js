@@ -468,30 +468,6 @@ describe('Panel visibility matrix — Mobile (768×480)', () => {
         ctx = setupApp(MOBILE)
     })
 
-    describe('mobileSeq', () => {
-        it('pattern panel visible', () => {
-            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
-            expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(false)
-        })
-
-        it('track editor hidden', () => {
-            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
-            expect(ctx.trackEditor.isVisible).toBe(false)
-        })
-    })
-
-    describe('mobileTrack', () => {
-        it('track editor visible', () => {
-            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
-            expect(ctx.trackEditor.isVisible).toBe(true)
-        })
-
-        it('pattern panel hidden', () => {
-            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
-            expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
-        })
-    })
-
     describe('synth on mobile', () => {
         it('soft-synth-panel element exists', () => {
             playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
@@ -511,6 +487,8 @@ describe('Panel visibility matrix — Mobile (768×480)', () => {
         })
     })
 
+    // One test for the whole mobile cycle, instead of one per step: it asserts
+    // the same four visibility facts plus their ordering.
     describe('mobileSeq → mobileTrack → mobileSeq cycle', () => {
         it('clean switch between views', () => {
             playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)

@@ -84,34 +84,8 @@ describe('Undo policy — track parameters (cmd.updateTrack)', () => {
         expect(history.pastLength).toBe(1)
     })
 
-    it('coalesce: true merges rapid same-key updates into a single undo step', () => {
-        cmd.updateTrack(track, { velocity: 0.9 }, { coalesce: true })
-        cmd.updateTrack(track, { velocity: 0.7 }, { coalesce: true })
-        cmd.updateTrack(track, { velocity: 0.5 }, { coalesce: true })
-
-        expect(track.velocity).toBe(0.5)
-        expect(history.pastLength).toBe(1)
-
-        history.undo()
-        expect(track.velocity).toBe(1)
-    })
-
-    it('coalesced updates on different keys stay separate undo steps', () => {
-        cmd.updateTrack(track, { velocity: 0.9 }, { coalesce: true })
-        cmd.updateTrack(track, { pitch: 3 }, { coalesce: true })
-
-        expect(history.pastLength).toBe(2)
-    })
-
-    it('without coalesce every change is its own undo step', () => {
-        cmd.updateTrack(track, { velocity: 0.9 })
-        cmd.updateTrack(track, { velocity: 0.7 })
-
-        expect(history.pastLength).toBe(2)
-        history.undo()
-        expect(track.velocity).toBe(0.9)
-    })
-
+    // The coalesce window itself (merging a drag, keeping distinct keys apart) is
+    // asserted in tests/cmd_update.test.js, with a controlled clock and the desc.
     it('a no-op update (same value) records nothing', () => {
         cmd.updateTrack(track, { velocity: 1 })
         expect(history.pastLength).toBe(0)

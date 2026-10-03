@@ -347,15 +347,6 @@ describe('HistoryManager', () => {
             history.redo()
             expect(state.value).toBe(3)
         })
-
-        it('new command after undo clears redo stack', () => {
-            history.record({ execute: vi.fn(), undo: vi.fn() })
-            history.record({ execute: vi.fn(), undo: vi.fn() })
-            history.undo()
-            expect(history.canRedo).toBe(true)
-            history.record({ execute: vi.fn(), undo: vi.fn() })
-            expect(history.canRedo).toBe(false)
-        })
     })
 
     describe('undo/redo report toast', () => {

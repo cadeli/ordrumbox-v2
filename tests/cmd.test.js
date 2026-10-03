@@ -67,6 +67,23 @@ describe('Functional: Commander operations', () => {
             cmd.setPatternBpm(pattern, 0)
             expect(pattern.bpm).toBe(120)
         })
+
+        // The library entry itself is a command too: undo has to take the
+        // pattern out of the library, not only revert what happened inside it
+        // (see tests/undo_roundtrip.test.js for everything below that level).
+        it('undo removes the pattern it added to the library', () => {
+            const history = new HistoryManager(50)
+            serviceRegistry.history = history
+            expect(appState.patterns).toHaveLength(0)
+            cmd.addPattern('UndoMe')
+            expect(appState.patterns).toHaveLength(1)
+
+            history.undo()
+            expect(appState.patterns).toHaveLength(0)
+
+            history.redo()
+            expect(appState.patterns).toHaveLength(1)
+        })
     })
 
     describe('Track operations', () => {

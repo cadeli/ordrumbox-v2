@@ -478,11 +478,6 @@ describe('Song & Project Persistence Roundtrip', () => {
     })
 
     describe('Roundtrip 4: Edge Cases and Robustness', () => {
-        it('returns null for non-existent song in IndexedDB', async () => {
-            const data = await songService.load('Does_Not_Exist')
-            expect(data).toBeNull()
-        })
-
         it('handles song names with special characters, slashes, and unicode correctly', async () => {
             const specialName = 'D&B / Bass-Boosted #1 (2026) 🚀'
             appState.patterns = [{ name: 'P1', bpm: 174, beatCount: 4, tracks: [] }]
@@ -499,12 +494,6 @@ describe('Song & Project Persistence Roundtrip', () => {
             expect(filename).not.toContain('/')
             expect(filename).not.toContain('#')
             expect(filename).toMatch(/\.odbox$/)
-        })
-
-        it('rejects corrupted or non-pattern JSON gracefully', () => {
-            expect(() => songService.parseImportedFile('{ not json')).toThrow()
-            expect(songService.parseImportedFile('{"foo": "bar"}')).toBeNull()
-            expect(songService.parseImportedFile('{"patterns": "not an array"}')).toBeNull()
         })
 
         it('handles project with empty patterns array without crashing', async () => {

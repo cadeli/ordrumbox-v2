@@ -2,6 +2,12 @@
  * Song playback mode: when the Song view is visible the transport follows the
  * arrangement, and every clip covering the current bar sounds at once.
  *
+ * What the *arrangement* means at a given tick — overlap, per-clip phase, the loop
+ * length — is asserted on the pure resolver in tests/song_playback.test.js. What is
+ * left here is the Player side: that it enters song mode only from the Song view,
+ * forwards the transport tick, layers every source it is handed, and keeps pattern
+ * mode intact.
+ *
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach } from 'vitest'
@@ -114,44 +120,10 @@ describe('Player — song playback mode', () => {
         expect(played.map((n) => n.track.name)).toEqual(['lead'])
     })
 
-    it('is silent in a gap of the arrangement', async () => {
-        song.clips = [{ pattern: 'rock', startBar: 0, bars: 1 }]
-        song.loopBars = 8
-        const { player, played } = makePlayer({ patterns, song })
-        await player.playNotes(3 * BAR, 0)
-        expect(played).toHaveLength(0)
-    })
-
-    // bass is 2 bars long and starts on bar 1, so on bar 3 it has completed one
-    // cycle and is back on beat 0. A naive `tick % patternTicks` would put it on
-    // beat 4 instead: the phase must be measured from the clip's own start.
-    it('keeps each pattern in phase with its own clip', async () => {
-        song.clips = [{ pattern: 'bass', startBar: 1, bars: 4 }]
-        const { player, played } = makePlayer({ patterns, song })
-        await player.playNotes(3 * BAR, 0)
-        expect(played).toHaveLength(1)
-        expect(played[0].note.beat).toBe(0)
-    })
-
-    it('loops the arrangement at loopBars', async () => {
-        song.clips = [{ pattern: 'rock', startBar: 0, bars: 2 }]
-        song.loopBars = 4
-        const { player, played } = makePlayer({ patterns, song })
-        await player.playNotes(4 * BAR, 0)
-        expect(played.map((n) => n.track.name)).toEqual(['rock']) // bar 0 again
-    })
-
     it('reports its position in the song for the UI', async () => {
         const { player } = makePlayer({ patterns, song })
         await player.playNotes(4 * BAR + 64, 0)
         expect(player.currentSongBar).toBeCloseTo(4.5, 5)
-    })
-
-    it('reports the arrangement tempo, not a pattern one', () => {
-        const { player } = makePlayer({ patterns, song })
-        expect(player.getSongTempo()).toBe(120)
-        song.bpm = 95
-        expect(player.getSongTempo()).toBe(95)
     })
 
     it('has no song tempo in pattern mode', () => {

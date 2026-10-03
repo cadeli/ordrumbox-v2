@@ -6,8 +6,11 @@
  * Exercises the complete lifecycle a real user would go through:
  *
  *   Create pattern → Add tracks → Add notes → Set triggers/params
- *   → Compute flat notes → Export (MIDI + JSON) → Import → Undo/Redo
+ *   → Compute flat notes → Export (MIDI + JSON) → Import
  *   → Transport (play/stop) → State consistency checks
+ *
+ * Undo/Redo is covered where the commands live: tests/cmd.test.js and
+ * tests/undo_roundtrip.test.js.
  *
  * This verifies that all layers (Commander, PatternEngine, MidiExporter,
  * PatternExporter, Transport, HistoryManager, AppState) work together
@@ -587,94 +590,9 @@ describe('E2E Flow 6 — Export to JSON and roundtrip', () => {
     })
 })
 
-// ─── PHASE 7: Undo/Redo ─────────────────────────────────────────────────────
+// ─── PHASE 7: Transport (play/stop) ─────────────────────────────────────────
 
-describe('E2E Flow 7 — Undo and Redo operations', () => {
-    let cmd, history
-
-    beforeEach(() => {
-        resetAll()
-        cmd = new Commander()
-        serviceRegistry.cmd = cmd
-        history = cmd.getHistory()
-    })
-
-    it('undo removes last added pattern', () => {
-        expect(appState.patterns).toHaveLength(0)
-        cmd.addPattern('UndoMe')
-        expect(appState.patterns).toHaveLength(1)
-
-        history.undo()
-        expect(appState.patterns).toHaveLength(0)
-    })
-
-    it('undo removes last added track', () => {
-        const pat = cmd.addPattern('TrackUndo')
-        cmd.addTrack(pat, 'KICK', 4)
-        expect(pat.tracks).toHaveLength(1)
-
-        history.undo()
-        expect(pat.tracks).toHaveLength(0)
-    })
-
-    it('undo removes last added note', () => {
-        const pat = cmd.addPattern('NoteUndo')
-        const kick = cmd.addTrack(pat, 'KICK', 4)
-        cmd.addNote(kick, 0, 0, 0)
-        expect(kick.notes).toHaveLength(1)
-
-        history.undo()
-        expect(kick.notes).toHaveLength(0)
-    })
-
-    it('undo reverts track parameter update', () => {
-        const pat = cmd.addPattern('ParamUndo')
-        const kick = cmd.addTrack(pat, 'KICK', 4)
-        cmd.updateTrack(kick, { velocity: 0.5 })
-        expect(kick.velocity).toBe(0.5)
-
-        history.undo()
-        expect(kick.velocity).toBe(1)
-    })
-
-    it('undo reverts BPM change', () => {
-        const pat = cmd.addPattern('BpmUndo')
-        cmd.setPatternBpm(pat, 180)
-        expect(pat.bpm).toBe(180)
-
-        history.undo()
-        expect(pat.bpm).toBe(120)
-    })
-
-    it('undo reverts pattern rename', () => {
-        const pat = cmd.addPattern('OldName')
-        cmd.renamePattern(0, 'NewName')
-        expect(pat.name).toBe('NewName')
-
-        history.undo()
-        expect(pat.name).toBe('OldName')
-    })
-
-    it('multiple undo cycles maintain consistency', () => {
-        const pat = cmd.addPattern('Cycle')
-        const kick = cmd.addTrack(pat, 'KICK', 4)
-        cmd.addNote(kick, 0, 0, 0)
-        cmd.addNote(kick, 1, 0, 0)
-
-        history.undo()
-        expect(kick.notes).toHaveLength(1)
-
-        history.undo()
-        expect(kick.notes).toHaveLength(0)
-
-        history.undo()
-        expect(pat.tracks).toHaveLength(0)
-    })
-})
-
-// ─── PHASE 8: Transport (play/stop) ─────────────────────────────────────────
-
-describe('E2E Flow 8 — Transport lifecycle', () => {
+describe('E2E Flow 7 — Transport lifecycle', () => {
     let cmd, transport
 
     beforeEach(async () => {
@@ -742,9 +660,9 @@ describe('E2E Flow 8 — Transport lifecycle', () => {
     })
 })
 
-// ─── PHASE 9: Full user session (combined) ──────────────────────────────────
+// ─── PHASE 8: Full user session (combined) ──────────────────────────────────
 
-describe('E2E Flow 9 — Full user session simulation', () => {
+describe('E2E Flow 8 — Full user session simulation', () => {
     let cmd, history
 
     beforeEach(() => {

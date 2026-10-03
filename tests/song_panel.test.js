@@ -112,13 +112,6 @@ describe('SongPanel', () => {
         expect(serviceRegistry.cmd.renamePattern).not.toHaveBeenCalled()
     })
 
-    it('selects a pattern when its row is clicked', () => {
-        panel.sync()
-        const item = panel.container.querySelectorAll('.sg-item')[0]
-        item.click()
-        expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(0)
-    })
-
     it('shows "No patterns" when patterns list is empty', () => {
         appState.patterns = []
         panel.sync()

@@ -148,8 +148,12 @@ function setupApp(viewport) {
     return { viewManager, trackEditor, noteEditor, toolsPanel, outputPanel, aboutPanel, mobileTabBar }
 }
 
+// The visibility matrix (which panel is shown for which tab) lives in
+// tests/panel_visibility_matrix.test.js; what is left here is what the matrix does
+// not assert: the inline display value and the layout classes behind it.
+
 // ══════════════════════════════════════════════════════════════════
-// SEQUENCER TAB — Panel visibility & properties
+// SEQUENCER TAB — Panel properties
 // ══════════════════════════════════════════════════════════════════
 
 describe('Mobile tab: Sequencer — panel visibility & position', () => {
@@ -158,21 +162,10 @@ describe('Mobile tab: Sequencer — panel visibility & position', () => {
         ctx = setupApp(MOBILE)
     })
 
-    it('pattern panel is visible (no ui-hidden class)', () => {
-        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
-        const el = document.getElementById('pattern-panel')
-        expect(el.classList.contains('ui-hidden')).toBe(false)
-    })
-
     it('pattern panel has display: block', () => {
         playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         const el = document.getElementById('pattern-panel')
         expect(el.style.display).not.toBe('none')
-    })
-
-    it('track editor is hidden', () => {
-        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
-        expect(ctx.trackEditor.isVisible).toBe(false)
     })
 
     it('synth panel is hidden', () => {
@@ -187,37 +180,9 @@ describe('Mobile tab: Sequencer — panel visibility & position', () => {
         expect(el.classList.contains('workspace-panel')).toBe(true)
     })
 
-    it('pattern panel carries workspace-panel (grants the tab bar clearance)', () => {
-        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
-        const el = document.getElementById('pattern-panel')
-        expect(el.classList.contains('workspace-panel')).toBe(true)
-    })
-})
-
-// ══════════════════════════════════════════════════════════════════
-// TRACK TAB — Panel visibility & properties
-// ══════════════════════════════════════════════════════════════════
-
-describe('Mobile tab: Track — panel visibility & position', () => {
-    let ctx
-    beforeEach(() => {
-        ctx = setupApp(MOBILE)
-    })
-
-    it('track editor is visible', () => {
-        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
-        expect(ctx.trackEditor.isVisible).toBe(true)
-    })
-
     it('track editor has display: flex on mobile', () => {
         playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         expect(ctx.trackEditor.container.style.display).toBe('flex')
-    })
-
-    it('pattern panel is hidden (ui-hidden)', () => {
-        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
-        const el = document.getElementById('pattern-panel')
-        expect(el.classList.contains('ui-hidden')).toBe(true)
     })
 
     it('synth panel is hidden', () => {
