@@ -235,7 +235,7 @@ export default class SynthEditor {
             this.#bindEvents()
             this.#waveform.draw()
         } catch (e) {
-            logger.error('SynthEditor', '_renderEditor failed', e)
+            logger.error('SynthEditor', '#renderEditor failed', e)
         }
     }
 
@@ -383,7 +383,7 @@ export default class SynthEditor {
                 }
             }
         } catch (e) {
-            logger.warn('SynthEditor', '_hydrateDraft failed', e)
+            logger.warn('SynthEditor', '#hydrateDraft failed', e)
         }
     }
 
@@ -418,7 +418,7 @@ export default class SynthEditor {
             if (this.#handleAction(target)) return
             this.#handlePresetNav(target)
         } catch (err) {
-            logger.warn('SynthEditor', '_handleClick failed', err)
+            logger.warn('SynthEditor', '#handleClick failed', err)
         }
     }
 
@@ -546,7 +546,7 @@ export default class SynthEditor {
             if (enabled.length) this.#refreshSynthControls(enabled)
             this.#previewDraft(deferPreview)
         } catch (e) {
-            logger.warn('SynthEditor', '_setValue failed', e)
+            logger.warn('SynthEditor', '#setValue failed', e)
         }
     }
 
@@ -690,7 +690,7 @@ export default class SynthEditor {
                 this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.host.track])
             })
         } catch (e) {
-            logger.error('SynthEditor', '_revertPreset failed', e)
+            logger.error('SynthEditor', '#revertPreset failed', e)
         }
     }
 
@@ -706,7 +706,7 @@ export default class SynthEditor {
             downloadJson(sounds, 'ordrumbox-synth-sounds.json')
             showToast('Synth sounds exported', 'success')
         } catch (e) {
-            logger.error('SynthEditor', '_exportSynth failed', e)
+            logger.error('SynthEditor', '#exportSynth failed', e)
             showToast('Export failed', 'error')
         }
     }
@@ -764,7 +764,7 @@ export default class SynthEditor {
                 this.host.sync()
             }
         } catch (e) {
-            logger.error('SynthEditor', '_closeEditor failed', e)
+            logger.error('SynthEditor', '#closeEditor failed', e)
         } finally {
             this.#editKey = null
             this.#original = null

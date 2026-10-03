@@ -17,9 +17,9 @@ export default class SelectionSection {
         const track = this.#editor.resolveTrack(trackIdx)
         if (!track) return
         this.#editor.rangeAnchor = null
-        this.#editor.cursorTrackIdx = trackIdx
+        this.#editor.focusRowIdx = trackIdx
 
-        if (this.#editor.selectedTrackIdx === trackIdx && !this.#editor.selectedNote) {
+        if (this.#editor.gridTrackIdx === trackIdx && !this.#editor.selectedNote) {
             if (isMobileViewport()) {
                 this.#editor.playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx })
             } else {
@@ -27,7 +27,7 @@ export default class SelectionSection {
             }
         } else {
             this.#editor.selectedNote = null
-            this.#editor.selectedTrackIdx = trackIdx
+            this.#editor.gridTrackIdx = trackIdx
             this.#editor.applySelection()
             this.#editor.playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx })
             this.#editor.serviceRegistry.seq?.simpleBeep(trackIdx)
@@ -37,7 +37,7 @@ export default class SelectionSection {
     ensureRangeAnchor() {
         if (this.#editor.rangeAnchor) return
         this.#editor.rangeAnchor = {
-            trackIdx: this.#editor.cursorTrackIdx,
+            trackIdx: this.#editor.focusRowIdx,
             beat: this.#editor.cursorBeat,
             beatStep: this.#editor.cursorBeatStep,
         }
@@ -49,17 +49,17 @@ export default class SelectionSection {
     }
 
     #getRangeInfo(tracks) {
-        if (!this.#editor.rangeAnchor || this.#editor.cursorTrackIdx === -1) return null
+        if (!this.#editor.rangeAnchor || this.#editor.focusRowIdx === -1) return null
         const a = this.#editor.rangeAnchor
         const tA = tracks[a.trackIdx]
-        const tC = tracks[this.#editor.cursorTrackIdx]
+        const tC = tracks[this.#editor.focusRowIdx]
         if (!tA || !tC) return null
         const fracA = this.#fracPos(tA, a.beat, a.beatStep)
         const fracC = this.#fracPos(tC, this.#editor.cursorBeat, this.#editor.cursorBeatStep)
-        if (fracA === fracC && a.trackIdx === this.#editor.cursorTrackIdx) return null
+        if (fracA === fracC && a.trackIdx === this.#editor.focusRowIdx) return null
         return {
-            trackMin: Math.min(a.trackIdx, this.#editor.cursorTrackIdx),
-            trackMax: Math.max(a.trackIdx, this.#editor.cursorTrackIdx),
+            trackMin: Math.min(a.trackIdx, this.#editor.focusRowIdx),
+            trackMax: Math.max(a.trackIdx, this.#editor.focusRowIdx),
             fracMin: Math.min(fracA, fracC),
             fracMax: Math.max(fracA, fracC),
         }
@@ -91,7 +91,7 @@ export default class SelectionSection {
             this.#editor.updateTrackCellsInPlace(t, track, pattern)
         }
         this.#editor.selectedNote = null
-        this.#editor.selectedTrackIdx = this.#editor.cursorTrackIdx
+        this.#editor.gridTrackIdx = this.#editor.focusRowIdx
         this.#editor.applySelection()
     }
 
@@ -111,7 +111,7 @@ export default class SelectionSection {
 
     clearSelection() {
         this.#editor.selectedNote = null
-        this.#editor.selectedTrackIdx = -1
+        this.#editor.gridTrackIdx = -1
         this.#editor.rangeAnchor = null
         const selected = this.#editor.container.querySelectorAll(
             '.pp-cell.selected, .pp-track-name.selected, .pp-track.pp-selected, .pp-note-slice.selected, .pp-cell.pp-range',
@@ -133,11 +133,11 @@ export default class SelectionSection {
         const tracks = pattern ? Utils.getTracksArray(pattern) : []
         if (this.#editor.rangeAnchor && tracks.length > 0) this.#applyRangeClasses(tracks)
 
-        const currentTrackIdx = this.#editor.activeTrackIdx
+        const currentTrackIdx = this.#editor.effectiveTrackIdx
 
-        if (this.#editor.selectedTrackIdx !== -1) {
+        if (this.#editor.gridTrackIdx !== -1) {
             if (this.#editor.selectedNote) {
-                const trackIdx = this.#editor.selectedTrackIdx
+                const trackIdx = this.#editor.gridTrackIdx
                 const beat = this.#editor.selectedNote.beat
                 const step = this.#editor.selectedNote.beatStep
                 const sel = this.#editor.cellMap.get(`${trackIdx}:${beat}:${step}`)
@@ -156,18 +156,18 @@ export default class SelectionSection {
                         if (idx >= 0 && idx < slices.length) slices[idx].classList.add('selected')
                     }
                 }
-            } else if (this.#editor.cursorTrackIdx !== -1) {
+            } else if (this.#editor.focusRowIdx !== -1) {
                 const sel = this.#editor.cellMap.get(
-                    `${this.#editor.cursorTrackIdx}:${this.#editor.cursorBeat}:${this.#editor.cursorBeatStep}`,
+                    `${this.#editor.focusRowIdx}:${this.#editor.cursorBeat}:${this.#editor.cursorBeatStep}`,
                 )
                 if (sel) sel.classList.add('cursor')
                 const trackSel = this.#editor.container.querySelector(
-                    `.pp-track-name[data-track="${this.#editor.cursorTrackIdx}"]`,
+                    `.pp-track-name[data-track="${this.#editor.focusRowIdx}"]`,
                 )
                 if (trackSel) trackSel.classList.add('selected')
             } else {
                 const sel = this.#editor.container.querySelector(
-                    `.pp-track-name[data-track="${this.#editor.selectedTrackIdx}"]`,
+                    `.pp-track-name[data-track="${this.#editor.gridTrackIdx}"]`,
                 )
                 if (sel) sel.classList.add('selected')
             }

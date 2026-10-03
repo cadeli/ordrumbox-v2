@@ -21,13 +21,19 @@ import { EVENTS } from '../core/events.js'
 import { MASTER_BUS_DEFAULTS, SESSION_DEFAULTS } from '../core/constants.js'
 
 /**
- * Instantané de session persiste dans soundRegistry.settings.session. Rempli
- * champ par champ par saveSession(), donc tous optionnels a la creation.
+ * Session snapshot persisted in soundRegistry.settings.session, filled field by
+ * field by saveSession(), so every field is optional when loading.
+ *
+ * The `…Num` properties are the pre-rename spellings: still read (legacy
+ * snapshots are never rewritten), never written.
  * @typedef {object} SessionSnapshot
- * @property {number} [selectedDrumkitNum]
- * @property {number} [selectedPatternNum]
- * @property {number} [selectedTrackNum]
+ * @property {number} [selectedDrumkitIdx]
+ * @property {number} [selectedPatternIdx]
+ * @property {number} [selectedTrackIdx]
  * @property {string} [currentView]
+ * @property {number} [selectedDrumkitNum] legacy name of selectedDrumkitIdx
+ * @property {number} [selectedPatternNum] legacy name of selectedPatternIdx
+ * @property {number} [selectedTrackNum] legacy name of selectedTrackIdx
  */
 
 export default class ResourcesLoader {
@@ -255,20 +261,32 @@ export default class ResourcesLoader {
         // soundRegistry.settings.session is a serialization buffer for IDB only.
         const settings = /** @type {{session?: SessionSnapshot}} */ (soundRegistry.settings)
         const s = (settings.session ??= {})
-        s.selectedDrumkitNum = appState.selectedDrumkitIdx
-        s.selectedPatternNum = appState.selectedPatternIdx
-        s.selectedTrackNum = appState.selectedTrackIdx
+        s.selectedDrumkitIdx = appState.selectedDrumkitIdx
+        s.selectedPatternIdx = appState.selectedPatternIdx
+        s.selectedTrackIdx = appState.selectedTrackIdx
+        // the legacy keys are dropped on save, so a snapshot only carries one spelling
+        delete s.selectedDrumkitNum
+        delete s.selectedPatternNum
+        delete s.selectedTrackNum
         s.currentView = serviceRegistry.viewManager?.currentView ?? appState.currentView ?? 'edit'
         appState.currentView = s.currentView
         this.saveSettings()
     }
 
     restoreSession = () => {
-        const s = soundRegistry.settings.session
+        // typed as the snapshot, not as SESSION_DEFAULTS: a stored snapshot may
+        // still carry the legacy `…Num` spellings
+        const s = /** @type {SessionSnapshot|undefined} */ (soundRegistry.settings.session)
         if (!s) return
-        if (typeof s.selectedDrumkitNum === 'number') appState.selectedDrumkitIdx = s.selectedDrumkitNum
-        if (typeof s.selectedPatternNum === 'number') appState.selectedPatternIdx = s.selectedPatternNum
-        if (typeof s.selectedTrackNum === 'number') appState.selectedTrackIdx = s.selectedTrackNum
+        // `?? legacy` rather than a migration: the settings store is not
+        // version-gated, and a rename without it would reset the selection of
+        // every existing user to 0.
+        const drumkitIdx = s.selectedDrumkitIdx ?? s.selectedDrumkitNum
+        const patternIdx = s.selectedPatternIdx ?? s.selectedPatternNum
+        const trackIdx = s.selectedTrackIdx ?? s.selectedTrackNum
+        if (typeof drumkitIdx === 'number') appState.selectedDrumkitIdx = drumkitIdx
+        if (typeof patternIdx === 'number') appState.selectedPatternIdx = patternIdx
+        if (typeof trackIdx === 'number') appState.selectedTrackIdx = trackIdx
         if (typeof s.currentView === 'string') appState.currentView = s.currentView
     }
 

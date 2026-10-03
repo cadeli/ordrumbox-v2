@@ -89,15 +89,15 @@ export default class TrackCommands {
         if (clampStepsPerBeat(track)) {
             reportUserError('Track.stepsPerBeat', `"${track.name}" uses ${track.stepsPerBeat} steps per beat`)
         }
-        const trackIndex = pattern.tracks.length
+        const trackIdx = pattern.tracks.length
         pattern.tracks.push(track)
         this.#host.persist()
         this.#host.record({
             desc: `Add track ${track.name}`,
-            params: { track: track.name, index: trackIndex, type, stepsPerBeat },
+            params: { track: track.name, index: trackIdx, type, stepsPerBeat },
             execute: () => {
                 if (!pattern.tracks.includes(track)) {
-                    pattern.tracks.splice(Math.min(trackIndex, pattern.tracks.length), 0, track)
+                    pattern.tracks.splice(Math.min(trackIdx, pattern.tracks.length), 0, track)
                     this.#host.persist()
                 }
             },

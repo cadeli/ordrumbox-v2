@@ -319,8 +319,8 @@ export default class MidiManager extends EventTarget {
             return
         }
 
-        const trackIndex = this.instrumentsManager.findTrackIndexFromMidi(pattern, 9, noteNumber)
-        if (trackIndex < 0) {
+        const trackIdx = this.instrumentsManager.findTrackIndexFromMidi(pattern, 9, noteNumber)
+        if (trackIdx < 0) {
             logger.info(
                 'MidiManager',
                 `${MidiManager.TAG}: No GM track mapped for MIDI note ${noteNumber} on channel 9`,
@@ -337,7 +337,7 @@ export default class MidiManager extends EventTarget {
         }
 
         if (serviceRegistry.seq) {
-            serviceRegistry.seq.simpleBeep(trackIndex)
+            serviceRegistry.seq.simpleBeep(trackIdx)
         }
     }
 }

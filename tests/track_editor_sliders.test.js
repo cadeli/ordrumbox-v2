@@ -247,7 +247,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
         appState.patterns = [{ tracks: [track] }]
         appState.selectedPatternIdx = 0
         editor.track = track
-        editor.trackIdx = 0
+        editor.selectedTrackIdx = 0
         editor.selectedLfoTarget = 'filterFreq'
         editor.sync()
 

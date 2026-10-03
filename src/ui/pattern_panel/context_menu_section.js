@@ -96,8 +96,8 @@ export default class ContextMenuSection {
     }
 
     #menuCopyTrack(tracks, trackIdx) {
-        this.#editor.selectedTrackIdx = trackIdx
-        this.#editor.cursorTrackIdx = trackIdx
+        this.#editor.gridTrackIdx = trackIdx
+        this.#editor.focusRowIdx = trackIdx
         this.#editor.clipboardSection.copyTrack(tracks)
     }
 
@@ -106,7 +106,7 @@ export default class ContextMenuSection {
             showToast('Clipboard does not contain a track', 'info')
             return
         }
-        this.#editor.cursorTrackIdx = trackIdx
+        this.#editor.focusRowIdx = trackIdx
         this.#editor.clipboardSection.pasteTrack(pattern, tracks)
     }
 
@@ -125,10 +125,10 @@ export default class ContextMenuSection {
             return
         }
         this.#editor.serviceRegistry.cmd.removeTrack(pattern, trackIdx)
-        this.#editor.selectedTrackIdx = -1
+        this.#editor.gridTrackIdx = -1
         this.#editor.rangeAnchor = null
-        if (this.#editor.cursorTrackIdx === trackIdx) this.#editor.cursorTrackIdx = -1
-        else if (this.#editor.cursorTrackIdx > trackIdx) this.#editor.cursorTrackIdx--
+        if (this.#editor.focusRowIdx === trackIdx) this.#editor.focusRowIdx = -1
+        else if (this.#editor.focusRowIdx > trackIdx) this.#editor.focusRowIdx--
         this.#editor.emitStructureChange()
         showToast('Track deleted', 'success')
     }
@@ -156,7 +156,7 @@ export default class ContextMenuSection {
             .filter((n) => n.beat === beat && n.beatStep === beatStep)
             .map((n) => ({ ...n }))
         this.#editor.clipboard = { type: 'step', notes }
-        this.#editor.cursorTrackIdx = trackIdx
+        this.#editor.focusRowIdx = trackIdx
         this.#editor.cursorBeat = beat
         this.#editor.cursorBeatStep = beatStep
         const stepLabel = `beat ${beat + 1}.${beatStep + 1}`
@@ -181,7 +181,7 @@ export default class ContextMenuSection {
         if (!track) return
         const notes = this.#editor.clipboard.notes
         this.#editor.serviceRegistry.cmd.pasteStepNotes(track, beat, beatStep, notes)
-        this.#editor.cursorTrackIdx = trackIdx
+        this.#editor.focusRowIdx = trackIdx
         this.#editor.cursorBeat = beat
         this.#editor.cursorBeatStep = beatStep
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
@@ -202,12 +202,12 @@ export default class ContextMenuSection {
         for (const note of [...notes]) {
             this.#editor.serviceRegistry.cmd.deleteNote(track, note)
         }
-        this.#editor.cursorTrackIdx = trackIdx
+        this.#editor.focusRowIdx = trackIdx
         this.#editor.cursorBeat = beat
         this.#editor.cursorBeatStep = beatStep
         if (this.#editor.selectedNote && notes.includes(this.#editor.selectedNote)) {
             this.#editor.selectedNote = null
-            this.#editor.selectedTrackIdx = -1
+            this.#editor.gridTrackIdx = -1
         }
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
         this.#editor.applySelection()
@@ -222,11 +222,11 @@ export default class ContextMenuSection {
         const range = Math.max(1, track.pitch_range ?? 12)
         const pitch = Math.floor(Math.random() * (range * 2 + 1)) - range
         const note = this.#editor.serviceRegistry.cmd.addNote(track, beat, beatStep, pitch)
-        this.#editor.cursorTrackIdx = trackIdx
+        this.#editor.focusRowIdx = trackIdx
         this.#editor.cursorBeat = beat
         this.#editor.cursorBeatStep = beatStep
         this.#editor.selectedNote = note ?? null
-        this.#editor.selectedTrackIdx = trackIdx
+        this.#editor.gridTrackIdx = trackIdx
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
         this.#editor.applySelection()
         emitNotesChanged(track, this.#editor.playbackEvents)

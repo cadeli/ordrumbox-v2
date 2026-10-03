@@ -107,16 +107,16 @@ export default class MenuSection {
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
             playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-            playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#editor.trackIdx })
+            playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#editor.selectedTrackIdx })
             playbackEvents.emit(EVENTS.NOTE_SELECT, {
                 track,
-                trackIdx: this.#editor.trackIdx,
+                trackIdx: this.#editor.selectedTrackIdx,
                 note: newNote,
                 beat,
                 beatStep,
             })
         })
-        serviceRegistry.seq?.simpleBeep(this.#editor.trackIdx, newNote)
+        serviceRegistry.seq?.simpleBeep(this.#editor.selectedTrackIdx, newNote)
         showToast(`Added note (pitch ${relativePitch}) — ${track.name} @ beat ${beat + 1}.${beatStep + 1}`, 'success')
     }
 
@@ -156,10 +156,10 @@ export default class MenuSection {
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
             playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-            playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#editor.trackIdx })
+            playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#editor.selectedTrackIdx })
             playbackEvents.emit(EVENTS.NOTE_SELECT, {
                 track,
-                trackIdx: this.#editor.trackIdx,
+                trackIdx: this.#editor.selectedTrackIdx,
                 note: this.#editor.selectedNote,
                 beat,
                 beatStep,
@@ -222,11 +222,11 @@ export default class MenuSection {
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
             playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-            playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#editor.trackIdx })
+            playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#editor.selectedTrackIdx })
             if (firstNote) {
                 playbackEvents.emit(EVENTS.NOTE_SELECT, {
                     track,
-                    trackIdx: this.#editor.trackIdx,
+                    trackIdx: this.#editor.selectedTrackIdx,
                     note: firstNote,
                     beat: firstNote.beat,
                     beatStep: firstNote.beatStep ?? 0,

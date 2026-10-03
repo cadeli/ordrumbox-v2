@@ -345,7 +345,7 @@ describe('Pattern Panel UI Grid', () => {
 
             expect(track.notes).not.toContain(note)
             expect(panel.selectedNote).toBeNull()
-            expect(panel.selectedTrackIdx).toBe(-1)
+            expect(panel.gridTrackIdx).toBe(-1)
             expect(document.querySelector('.pp-cell[data-pos="0"]').classList.contains('selected')).toBe(false)
         })
 
@@ -415,16 +415,16 @@ describe('Pattern Panel UI Grid', () => {
         it('Escape clears cursor and selection state', () => {
             setupCmd()
             pressKey('ArrowRight')
-            expect(panel.cursorTrackIdx).toBe(0)
+            expect(panel.focusRowIdx).toBe(0)
 
             document.querySelector('.pp-cell[data-pos="0"]').click()
             expect(panel.selectedNote).not.toBeNull()
 
             pressKey('Escape')
 
-            expect(panel.cursorTrackIdx).toBe(-1)
+            expect(panel.focusRowIdx).toBe(-1)
             expect(panel.selectedNote).toBeNull()
-            expect(panel.selectedTrackIdx).toBe(-1)
+            expect(panel.gridTrackIdx).toBe(-1)
         })
 
         it('Escape removes cursor and selected classes from the grid', () => {
@@ -452,11 +452,11 @@ describe('Pattern Panel UI Grid', () => {
             setupCmd()
             pressKey('ArrowRight')
             pressKey('Escape')
-            expect(panel.cursorTrackIdx).toBe(-1)
+            expect(panel.focusRowIdx).toBe(-1)
 
             pressKey('ArrowRight')
 
-            expect(panel.cursorTrackIdx).toBe(0)
+            expect(panel.focusRowIdx).toBe(0)
             expect(panel.cursorBeat).toBe(0)
             expect(panel.cursorBeatStep).toBe(1)
             const cell = document.querySelector('.pp-cell[data-pos="1"]')
@@ -585,7 +585,7 @@ describe('Pattern Panel UI Grid', () => {
         it('Ctrl+Shift+C copies the track when cursor is inactive', () => {
             setupCmd()
             pressKey('Escape')
-            expect(panel.cursorTrackIdx).toBe(-1)
+            expect(panel.focusRowIdx).toBe(-1)
 
             pressMod('c', { shift: true })
 
@@ -625,7 +625,7 @@ describe('Pattern Panel UI Grid', () => {
             setupCmd()
             initCursor()
             pressKey('Escape')
-            expect(panel.cursorTrackIdx).toBe(-1)
+            expect(panel.focusRowIdx).toBe(-1)
 
             pressMod('c')
 
@@ -769,7 +769,7 @@ describe('Pattern Panel UI Grid', () => {
 
             pressArrow('ArrowDown', { shift: true })
 
-            expect(panel.cursorTrackIdx).toBe(1)
+            expect(panel.focusRowIdx).toBe(1)
             expect(panel.rangeAnchor.trackIdx).toBe(0)
             expect(rangeCells().length).toBe(2)
             const cells = [...rangeCells()]
@@ -800,7 +800,7 @@ describe('Pattern Panel UI Grid', () => {
 
             expect(panel.rangeAnchor).toBeNull()
             expect(rangeCells().length).toBe(0)
-            expect(panel.cursorTrackIdx).toBe(-1)
+            expect(panel.focusRowIdx).toBe(-1)
         })
 
         it('click clears the range selection', () => {

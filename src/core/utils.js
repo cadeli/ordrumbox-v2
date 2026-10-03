@@ -303,8 +303,8 @@ export default class Utils {
         const keys = Object.keys(obj)
         if (keys.length === 0) return null
 
-        const randomIndex = Math.floor(Math.random() * keys.length)
-        return keys[randomIndex]
+        const randomIdx = Math.floor(Math.random() * keys.length)
+        return keys[randomIdx]
     }
 
     static TRACK_NAME_TO_INDEX = {

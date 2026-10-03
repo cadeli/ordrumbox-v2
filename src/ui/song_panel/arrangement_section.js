@@ -354,7 +354,7 @@ export default class ArrangementSection {
         return rows
     }
 
-    #rowIndex(id) {
+    #rowIdx(id) {
         return this.#rows.findIndex((p) => p.id === id)
     }
 
@@ -397,8 +397,8 @@ export default class ArrangementSection {
             .join('')
 
         const clips = (song.clips ?? [])
-            .map((clip, clipIndex) => {
-                const index = this.#rowIndex(clip.pattern)
+            .map((clip, clipIdx) => {
+                const index = this.#rowIdx(clip.pattern)
                 if (index < 0) return ''
                 // Width along X is the duration; a clip may last a fraction of
                 // a bar (a 3-beat pattern is 0.75), so it is not rounded to a cell.
@@ -409,7 +409,7 @@ export default class ArrangementSection {
                     `style="left:${clip.startBar * BAR_WIDTH}px;top:${index * ROW_HEIGHT + CLIP_INSET / 2}px;` +
                     `width:${width}px;height:${ROW_HEIGHT - 2 * CLIP_INSET}px" ` +
                     `data-pattern="${escapeHtml(clip.pattern)}" ` +
-                    `data-index="${clipIndex}" ` +
+                    `data-index="${clipIdx}" ` +
                     `data-start-bar="${clip.startBar}" ` +
                     `data-bars="${clip.bars}" ` +
                     `title="${escapeHtml(clip.pattern)} — bar ${clip.startBar + 1}, ${clip.bars} bar(s)"></div>`
@@ -444,7 +444,7 @@ export default class ArrangementSection {
     clipRects() {
         const out = []
         for (const clip of this.#song?.clips ?? []) {
-            const row = this.#rowIndex(clip.pattern)
+            const row = this.#rowIdx(clip.pattern)
             if (row < 0) continue
             out.push({ pattern: clip.pattern, row, startBar: clip.startBar, bars: clip.bars })
         }

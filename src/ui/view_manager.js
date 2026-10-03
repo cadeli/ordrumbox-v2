@@ -150,7 +150,7 @@ export default class ViewManager {
             const track = pattern?.tracks?.[idx]
             if (track) {
                 this.#trackEditor.track = track
-                this.#trackEditor.trackIdx = idx
+                this.#trackEditor.selectedTrackIdx = idx
                 this.#trackEditor.sync()
             }
         }

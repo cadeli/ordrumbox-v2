@@ -136,7 +136,7 @@ describe('TrackEditor PATTERN_CHANGE handling', () => {
         const oldTrack = { name: 'KICK', velocity: 0.7 }
         const newTrack = { name: 'KICK', velocity: 0.3 }
         editor.track = oldTrack
-        editor.trackIdx = 0
+        editor.selectedTrackIdx = 0
         appState.patterns = [{ tracks: [newTrack] }]
         appState.selectedPatternIdx = 0
         editor.show({ track: oldTrack, trackIdx: 0 })
@@ -146,7 +146,7 @@ describe('TrackEditor PATTERN_CHANGE handling', () => {
         playbackEvents.emit(EVENTS.PATTERN_CHANGE)
 
         expect(editor.track).toBe(newTrack)
-        expect(editor.trackIdx).toBe(0)
+        expect(editor.selectedTrackIdx).toBe(0)
         expect(syncSpy).toHaveBeenCalled()
     })
 
@@ -154,7 +154,7 @@ describe('TrackEditor PATTERN_CHANGE handling', () => {
         const editor = new TrackEditor()
         editor.init()
         editor.track = { name: 'KICK', velocity: 0.7 }
-        editor.trackIdx = 0
+        editor.selectedTrackIdx = 0
         appState.patterns = [{ tracks: [{ name: 'SNARE' }] }]
         appState.selectedPatternIdx = 0
         editor.show({ track: editor.track, trackIdx: 0 })
@@ -164,7 +164,7 @@ describe('TrackEditor PATTERN_CHANGE handling', () => {
         playbackEvents.emit(EVENTS.PATTERN_CHANGE)
 
         expect(editor.track).toBeNull()
-        expect(editor.trackIdx).toBe(-1)
+        expect(editor.selectedTrackIdx).toBe(-1)
         expect(syncSpy).toHaveBeenCalled()
     })
 

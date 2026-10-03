@@ -20,7 +20,8 @@ import { TICK } from '../core/constants.js'
  * container class and the way it is shown moved.
  */
 export default class SongPanel extends BasePanel {
-    #selectedIdx = null
+    /** Index of the selected PATTERN in the library list, not the selected song. */
+    #selectedPatternIdx = null
     #songName = 'Untitled'
     #listEl
     /** Menu of the pattern list, for placing a pattern in the arrangement. */
@@ -140,7 +141,7 @@ export default class SongPanel extends BasePanel {
     }
 
     sync() {
-        this.#selectedIdx = appState.selectedPatternIdx
+        this.#selectedPatternIdx = appState.selectedPatternIdx
         if (appState.songInfos?.name) this.#songName = appState.songInfos.name
         this.#songNameEl.textContent = this.#songName
         this.#songDateEl.textContent = appState.songInfos?.date ?? ''
@@ -205,7 +206,7 @@ export default class SongPanel extends BasePanel {
         this.#listEl.innerHTML = ''
         for (let i = 0; i < patterns.length; i++) {
             const pat = patterns[i]
-            const isSelected = i === this.#selectedIdx
+            const isSelected = i === this.#selectedPatternIdx
 
             const item = document.createElement('div')
             item.className = 'sg-item' + (isSelected ? ' sg-selected' : '')
@@ -311,7 +312,7 @@ export default class SongPanel extends BasePanel {
             playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
             playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
-        this.#selectedIdx = idx
+        this.#selectedPatternIdx = idx
         this.#renderList()
     }
 

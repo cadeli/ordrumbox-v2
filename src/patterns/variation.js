@@ -16,12 +16,12 @@ function weightedShuffle(ops, weightFn) {
     return ops
 }
 
-function removeNote(flatNotes, fn) {
-    const notes = flatNotes.get(fn.tick)
+function removeNote(flatNotes, flatNote) {
+    const notes = flatNotes.get(flatNote.tick)
     if (!notes) return
-    const idx = notes.indexOf(fn)
+    const idx = notes.indexOf(flatNote)
     if (idx !== -1) notes.splice(idx, 1)
-    if (notes.length === 0) flatNotes.delete(fn.tick)
+    if (notes.length === 0) flatNotes.delete(flatNote.tick)
 }
 
 function pickPitch(track) {
@@ -71,23 +71,23 @@ function applyOps(flatNotes, track, ops, budget) {
 
         switch (op.type) {
             case 'silence':
-                removeNote(flatNotes, op.fn)
+                removeNote(flatNotes, op.flatNote)
                 remaining -= op.cost
                 break
             case 'velocity':
-                op.fn.note = { ...op.fn.note, velocity: Math.round(Math.random() * 100) / 100 }
+                op.flatNote.note = { ...op.flatNote.note, velocity: Math.round(Math.random() * 100) / 100 }
                 remaining -= op.cost
                 break
             case 'pitch':
-                op.fn.note = { ...op.fn.note, pitch: pickPitch(track) }
+                op.flatNote.note = { ...op.flatNote.note, pitch: pickPitch(track) }
                 remaining -= op.cost
                 break
             case 'anticipation': {
                 const note = {
                     ...Utils.NOTE_DEFAULTS,
-                    pitch: op.fn.note.pitch ?? 0,
-                    velocity: Math.round(Math.max(0.2, (op.fn.note.velocity ?? 0.8) * 0.7) * 100) / 100,
-                    pan: op.fn.note.pan ?? 0,
+                    pitch: op.flatNote.note.pitch ?? 0,
+                    velocity: Math.round(Math.max(0.2, (op.flatNote.note.velocity ?? 0.8) * 0.7) * 100) / 100,
+                    pan: op.flatNote.note.pan ?? 0,
                     beat: op.target.beat,
                     beatStep: op.target.beatStep,
                 }
@@ -100,9 +100,9 @@ function applyOps(flatNotes, track, ops, budget) {
             case 'double': {
                 const note = {
                     ...Utils.NOTE_DEFAULTS,
-                    pitch: op.fn.note.pitch ?? 0,
-                    velocity: Math.round((op.fn.note.velocity ?? 0.8) * 0.8 * 100) / 100,
-                    pan: op.fn.note.pan ?? 0,
+                    pitch: op.flatNote.note.pitch ?? 0,
+                    velocity: Math.round((op.flatNote.note.velocity ?? 0.8) * 0.8 * 100) / 100,
+                    pan: op.flatNote.note.pan ?? 0,
                     beat: op.target.beat,
                     beatStep: op.target.beatStep,
                 }
@@ -251,10 +251,10 @@ export default class TrackVariation {
                 if (t >= nbTickForPattern) continue
 
                 const existing = flatNotes.get(t)
-                const fn = existing?.find((n) => n.track === track)
-                if (fn) {
+                const flatNote = existing?.find((n) => n.track === track)
+                if (flatNote) {
                     occupied.add(step)
-                    byStep.set(step, fn)
+                    byStep.set(step, flatNote)
                 }
             }
 
@@ -265,7 +265,7 @@ export default class TrackVariation {
 
             for (let i = 0; i < sortedSteps.length; i++) {
                 const step = sortedSteps[i]
-                const fn = byStep.get(step)
+                const flatNote = byStep.get(step)
 
                 const prevStep = step > 0 ? step - 1 : -1
                 const nextStep = step < totalStepsInLoop - 1 ? step + 1 : -1
@@ -278,24 +278,24 @@ export default class TrackVariation {
                     ops.push({
                         type: 'anticipation',
                         cost: COST_ADD,
-                        fn,
+                        flatNote,
                         target: { t, ...Utils.stepToBeat(nextStep, stepsPerBeat) },
                     })
                 }
 
                 if (hasPrev && hasNext) {
-                    ops.push({ type: 'silence', cost: COST_DELETE, fn })
+                    ops.push({ type: 'silence', cost: COST_DELETE, flatNote })
                 }
 
-                ops.push({ type: 'velocity', cost: COST_VELOCITY, fn })
-                ops.push({ type: 'pitch', cost: COST_PITCH, fn })
+                ops.push({ type: 'velocity', cost: COST_VELOCITY, flatNote })
+                ops.push({ type: 'pitch', cost: COST_PITCH, flatNote })
 
                 if (!hasNext && nextStep >= 0 && !occupied.has(nextStep)) {
                     const t = loop * nbTickForLoop + Utils.stepToTick(nextStep, stepsPerBeat, tick)
                     ops.push({
                         type: 'double',
                         cost: COST_ADD,
-                        fn,
+                        flatNote,
                         target: { t, ...Utils.stepToBeat(nextStep, stepsPerBeat) },
                     })
                 }

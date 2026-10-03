@@ -59,9 +59,9 @@ class DrumkitService {
         if (!instruments.length) throw new Error('No valid instruments')
 
         const kit = { name: data.name, instruments: structuredClone(instruments) }
-        const existingIndex = soundRegistry.drumkitList.findIndex((entry) => entry.name === kit.name)
-        if (existingIndex === -1) soundRegistry.drumkitList.push(kit)
-        else soundRegistry.drumkitList.splice(existingIndex, 1, kit)
+        const existingIdx = soundRegistry.drumkitList.findIndex((entry) => entry.name === kit.name)
+        if (existingIdx === -1) soundRegistry.drumkitList.push(kit)
+        else soundRegistry.drumkitList.splice(existingIdx, 1, kit)
         soundRegistry.drumkits[kit.name] = { name: kit.name, instruments: structuredClone(instruments) }
 
         for (const sample of instruments) {
@@ -70,8 +70,8 @@ class DrumkitService {
             Object.assign(sound, sample, { kit_name: kit.name })
         }
 
-        const kitIndex = soundRegistry.drumkitList.findIndex((entry) => entry.name === kit.name)
-        appState.selectedDrumkitIdx = kitIndex
+        const kitIdx = soundRegistry.drumkitList.findIndex((entry) => entry.name === kit.name)
+        appState.selectedDrumkitIdx = kitIdx
         appState.selectedDrumkit = kit.name
         try {
             await serviceRegistry.resourcesLoader?.loadMissingSamplesFromDrumkits([kit])

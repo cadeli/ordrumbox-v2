@@ -17,7 +17,7 @@ import { BEATS_PER_PAGE } from '../core/constants.js'
 
 export default class PianoRollPanel extends BasePanel {
     #track
-    #trackIdx
+    #selectedTrackIdx
     #cellWidth
     #firstShow
     #resizeObserver
@@ -36,7 +36,7 @@ export default class PianoRollPanel extends BasePanel {
     constructor() {
         super('piano-roll-panel')
         this.#track = null
-        this.#trackIdx = -1
+        this.#selectedTrackIdx = -1
         this.#cellWidth = 24
         this.#firstShow = true
         this.#resizeObserver = null
@@ -84,9 +84,9 @@ export default class PianoRollPanel extends BasePanel {
         })
         this.sub(playbackEvents, EVENTS.TRACK_SELECT, (data) => {
             if (!data) return
-            const trackChanged = data.track !== this.#track || data.trackIdx !== this.#trackIdx
+            const trackChanged = data.track !== this.#track || data.trackIdx !== this.#selectedTrackIdx
             this.#track = data.track
-            this.#trackIdx = data.trackIdx
+            this.#selectedTrackIdx = data.trackIdx
             if (this.isVisible && trackChanged) {
                 this.#firstShow = true
                 this.#keysDirty = true
@@ -130,7 +130,7 @@ export default class PianoRollPanel extends BasePanel {
         const track = Utils.getTracksArray(pattern)?.[idx]
         if (track) {
             this.#track = track
-            this.#trackIdx = idx
+            this.#selectedTrackIdx = idx
         }
     }
 
@@ -143,7 +143,7 @@ export default class PianoRollPanel extends BasePanel {
         this.container.style.display = 'flex'
         this.sync()
         if (this.#track) {
-            playbackEvents.emit(EVENTS.TRACK_SELECT, { track: this.#track, trackIdx: this.#trackIdx })
+            playbackEvents.emit(EVENTS.TRACK_SELECT, { track: this.#track, trackIdx: this.#selectedTrackIdx })
         }
         const scrollEl = this.container.querySelector('#pp-piano-scroll')
         if (scrollEl && this.#resizeObserver) {
@@ -236,9 +236,15 @@ export default class PianoRollPanel extends BasePanel {
                 this.#cursorStep = step
                 this.#cursorRow = row
                 this.applySelection()
-                playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#trackIdx })
-                playbackEvents.emit(EVENTS.NOTE_SELECT, { track, trackIdx: this.#trackIdx, note: hit, beat, beatStep })
-                serviceRegistry.seq?.simpleBeep(this.#trackIdx, hit)
+                playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#selectedTrackIdx })
+                playbackEvents.emit(EVENTS.NOTE_SELECT, {
+                    track,
+                    trackIdx: this.#selectedTrackIdx,
+                    note: hit,
+                    beat,
+                    beatStep,
+                })
+                serviceRegistry.seq?.simpleBeep(this.#selectedTrackIdx, hit)
             }
         } else {
             const newNote = cmd.addNote(track, beat, beatStep, relativePitch)
@@ -248,9 +254,15 @@ export default class PianoRollPanel extends BasePanel {
             this.applySelection()
             playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
             playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-            playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#trackIdx })
-            playbackEvents.emit(EVENTS.NOTE_SELECT, { track, trackIdx: this.#trackIdx, note: newNote, beat, beatStep })
-            serviceRegistry.seq?.simpleBeep(this.#trackIdx, newNote)
+            playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#selectedTrackIdx })
+            playbackEvents.emit(EVENTS.NOTE_SELECT, {
+                track,
+                trackIdx: this.#selectedTrackIdx,
+                note: newNote,
+                beat,
+                beatStep,
+            })
+            serviceRegistry.seq?.simpleBeep(this.#selectedTrackIdx, newNote)
         }
     }
 
@@ -333,7 +345,7 @@ export default class PianoRollPanel extends BasePanel {
             if (this.#selectedNote)
                 playbackEvents.emit(EVENTS.NOTE_SELECT, {
                     track,
-                    trackIdx: this.#trackIdx,
+                    trackIdx: this.#selectedTrackIdx,
                     note: this.#selectedNote,
                     beat,
                     beatStep,
@@ -367,8 +379,8 @@ export default class PianoRollPanel extends BasePanel {
         playbackEvents.emit(
             EVENTS.NOTE_SELECT,
             note
-                ? { track, trackIdx: this.#trackIdx, note, beat, beatStep }
-                : { track, trackIdx: this.#trackIdx, note: null, beat, beatStep },
+                ? { track, trackIdx: this.#selectedTrackIdx, note, beat, beatStep }
+                : { track, trackIdx: this.#selectedTrackIdx, note: null, beat, beatStep },
         )
         this.sync()
     }
@@ -415,8 +427,13 @@ export default class PianoRollPanel extends BasePanel {
         return this.#track
     }
 
-    get trackIdx() {
-        return this.#trackIdx
+    /**
+     * Index of the track being edited: a mirror of appState.selectedTrackIdx, but
+     * -1 while no pattern/track is loaded.
+     * @returns {number}
+     */
+    get selectedTrackIdx() {
+        return this.#selectedTrackIdx
     }
 
     get firstShow() {

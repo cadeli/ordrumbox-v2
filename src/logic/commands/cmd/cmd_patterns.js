@@ -38,15 +38,15 @@ export default class PatternCommands {
 
     addPattern(name) {
         const pattern = this.createPattern(name)
-        const patternIndex = appState.patterns.length
+        const patternIdx = appState.patterns.length
         appState.patterns.push(pattern)
         this.#host.persist()
         this.#host.record({
             desc: `Add pattern "${pattern.name}"`,
-            params: { pattern: pattern.name, index: patternIndex },
+            params: { pattern: pattern.name, index: patternIdx },
             execute: () => {
                 if (!appState.patterns.includes(pattern)) {
-                    appState.patterns.splice(Math.min(patternIndex, appState.patterns.length), 0, pattern)
+                    appState.patterns.splice(Math.min(patternIdx, appState.patterns.length), 0, pattern)
                     this.#host.persist()
                 }
             },

@@ -2,11 +2,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { logger } from '../src/core/logger.js'
 import { idbClearStore } from '../src/core/idb.js'
 import ResourcesLoader from '../src/loader/resources_loader.js'
+import { appState } from '../src/state/app_state.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
 
 const CACHE_STORES = ['patterns', 'drumkits', 'samples', 'generated_sounds']
 
 vi.mock('../src/state/app_state.js', () => {
-    const state = { patterns: [] }
+    const state = {
+        patterns: [],
+        selectedDrumkitIdx: 0,
+        selectedPatternIdx: 0,
+        selectedTrackIdx: 0,
+        currentView: 'edit',
+    }
     return { appState: state, __esModule: true }
 })
 
@@ -16,7 +24,7 @@ vi.mock('../src/state/sound_registry.js', () => {
         sounds: {},
         scales: {},
         generatedSounds: {},
-        settings: { version: 1, sampleDirs: [], maxSampleDirs: 10 },
+        settings: { version: 1, sampleDirs: [], maxSampleDirs: 10, session: {} },
         reset() {
             this.drumkitList = []
             this.sounds = {}
@@ -415,6 +423,65 @@ describe('ResourcesLoader', () => {
             expect(firstDone).toBe(false)
             expect(secondDone).toBe(false)
             expect(fetchSpy).not.toHaveBeenCalled()
+        })
+    })
+
+    // The settings store is not version-gated, so the session snapshot has no
+    // migration: renaming its keys needs a compat read or every existing user
+    // comes back on pattern 0.
+    describe('session snapshot', () => {
+        beforeEach(() => {
+            soundRegistry.settings.session = {}
+        })
+
+        it('round-trips the selection under the current key names', () => {
+            appState.selectedDrumkitIdx = 2
+            appState.selectedPatternIdx = 3
+            appState.selectedTrackIdx = 1
+            loader.saveSession()
+
+            appState.selectedDrumkitIdx = 0
+            appState.selectedPatternIdx = 0
+            appState.selectedTrackIdx = 0
+            loader.restoreSession()
+
+            expect(appState.selectedDrumkitIdx).toBe(2)
+            expect(appState.selectedPatternIdx).toBe(3)
+            expect(appState.selectedTrackIdx).toBe(1)
+        })
+
+        it('reads a legacy snapshot that still uses the …Num keys', () => {
+            soundRegistry.settings.session = {
+                selectedDrumkitNum: 1,
+                selectedPatternNum: 2,
+                selectedTrackNum: 0,
+                currentView: 'proll',
+            }
+
+            loader.restoreSession()
+
+            expect(appState.selectedDrumkitIdx).toBe(1)
+            expect(appState.selectedPatternIdx).toBe(2)
+            expect(appState.selectedTrackIdx).toBe(0)
+            expect(appState.currentView).toBe('proll')
+        })
+
+        it('prefers the current key when a snapshot carries both spellings', () => {
+            soundRegistry.settings.session = { selectedPatternIdx: 4, selectedPatternNum: 2 }
+
+            loader.restoreSession()
+
+            expect(appState.selectedPatternIdx).toBe(4)
+        })
+
+        it('drops the legacy keys on save, so a snapshot has one spelling', () => {
+            soundRegistry.settings.session = { selectedPatternNum: 2 }
+            appState.selectedPatternIdx = 5
+
+            loader.saveSession()
+
+            expect(soundRegistry.settings.session.selectedPatternIdx).toBe(5)
+            expect('selectedPatternNum' in soundRegistry.settings.session).toBe(false)
         })
     })
 

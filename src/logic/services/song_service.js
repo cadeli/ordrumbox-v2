@@ -20,7 +20,8 @@ const SONG_VERSION = 2
  * @property {number} [exportedAt]
  * @property {Array<object & {id?: string}>} patterns
  * @property {import('../../model/song_schema.js').Song[]} songs
- * @property {number} [selectedPatternNum]
+ * @property {number} [selectedPatternIdx]
+ * @property {number} [selectedPatternNum] legacy name of selectedPatternIdx
  * @property {number} [selectedSongIdx]
  */
 
@@ -37,7 +38,7 @@ class SongService {
             description: appState.songInfos?.description ?? '',
             date: appState.songInfos?.date ?? '',
             patterns: JSON.parse(JSON.stringify(appState.patterns)),
-            selectedPatternNum: appState.selectedPatternIdx,
+            selectedPatternIdx: appState.selectedPatternIdx,
             songs: JSON.parse(JSON.stringify(appState.songs ?? [])),
             selectedSongIdx: appState.selectedSongIdx ?? 0,
         }
@@ -106,7 +107,8 @@ class SongService {
                 showToast(`Ignored ${dropped.length} song clip(s) referencing an unknown pattern: ${names}`, 'warning')
             }
 
-            await serviceRegistry.cmd.setSelectedPatternIdx(data.selectedPatternNum ?? 0)
+            // .odbox files exported before the rename still carry selectedPatternNum
+            await serviceRegistry.cmd.setSelectedPatternIdx(data.selectedPatternIdx ?? data.selectedPatternNum ?? 0)
             serviceRegistry.cmd.resetPage()
         })
 

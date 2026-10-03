@@ -55,10 +55,10 @@ export default class GridSection {
         if (notesAtStep && notesAtStep.length > 0) {
             const slicePct = (100 / notesAtStep.length).toFixed(2)
             noteSlicesHtml = notesAtStep
-                .map((note, ni) => {
+                .map((note, voiceIdx) => {
                     const vel = note.velocity ?? 0.8
                     const alpha = 0.25 + vel * 0.75
-                    return `<div class="pp-note-slice" data-note-idx="${ni}" style="width:${slicePct}%;opacity:${alpha.toFixed(2)}"></div>`
+                    return `<div class="pp-note-slice" data-voice-idx="${voiceIdx}" style="width:${slicePct}%;opacity:${alpha.toFixed(2)}"></div>`
                 })
                 .join('')
         }
@@ -127,12 +127,12 @@ export default class GridSection {
     /**
      * @param {any[]} tracks
      * @param {any} pattern
-     * @param {{startBeat: number, endBeatPage: number, activeTrackIdx: number, cachedPage?: any, cachedVersion?: any, trackDataDirty?: any, trackDataCache: Map<number, any>}} opts
+     * @param {{startBeat: number, endBeatPage: number, effectiveTrackIdx: number, cachedPage?: any, cachedVersion?: any, trackDataDirty?: any, trackDataCache: Map<number, any>}} opts
      * @returns {string} tracks HTML (including toolbar row + waveform canvas)
      */
     render(tracks, pattern, opts) {
         const editor = this.#editor
-        const { startBeat, endBeatPage, activeTrackIdx } = opts
+        const { startBeat, endBeatPage, effectiveTrackIdx } = opts
         const totalSteps = (track) => (track.beatCount ?? 4) * (track.stepsPerBeat ?? 4)
 
         let html = '<div class="pp-tracks">'
@@ -186,7 +186,7 @@ export default class GridSection {
             }
             beatsHtml += '</div>'
 
-            const isSelected = activeTrackIdx === tIdx
+            const isSelected = effectiveTrackIdx === tIdx
             const isMuted = track.mute === true
             const isSolo = track.solo === true
             const soundUrl =

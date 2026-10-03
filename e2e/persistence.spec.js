@@ -16,11 +16,19 @@ test.describe('E2E-B: Persistence between sessions', () => {
 
         await waitForPatternsPersisted(page)
 
+        // a non-zero selection, so the restored one cannot pass on the default
+        const second = await page.evaluate(() => {
+            const patterns = window.__e2e.appState.patterns
+            window.__e2e.serviceRegistry.cmd.setSelectedPatternIdx(1)
+            return patterns.length > 1 ? patterns[1].name : null
+        })
+        expect(second, 'the fixture must have a second pattern').not.toBeNull()
+        await page.waitForFunction(() => window.__e2e.appState.selectedPatternIdx === 1)
+
         const snapshot = await page.evaluate(() => ({
             patternCount: window.__e2e.appState.patterns.length,
             patternNames: window.__e2e.appState.patterns.map((p) => p.name),
             trackCounts: window.__e2e.appState.patterns.map((p) => (p.tracks ?? []).length),
-            selectedDrumkit: window.__e2e.appState.selectedDrumkit,
             selectedPatternIdx: window.__e2e.appState.selectedPatternIdx,
         }))
 
@@ -33,14 +41,14 @@ test.describe('E2E-B: Persistence between sessions', () => {
             patternCount: window.__e2e.appState.patterns.length,
             patternNames: window.__e2e.appState.patterns.map((p) => p.name),
             trackCounts: window.__e2e.appState.patterns.map((p) => (p.tracks ?? []).length),
-            selectedDrumkit: window.__e2e.appState.selectedDrumkit,
             selectedPatternIdx: window.__e2e.appState.selectedPatternIdx,
         }))
 
         expect(restored.patternCount).toBe(snapshot.patternCount)
         expect(restored.patternNames).toEqual(snapshot.patternNames)
         expect(restored.trackCounts).toEqual(snapshot.trackCounts)
-        expect(restored.selectedDrumkit).toBe(snapshot.selectedDrumkit)
+        // the session snapshot is what carries the selection across a reload
+        expect(restored.selectedPatternIdx).toBe(snapshot.selectedPatternIdx)
     })
 
     test('IDB entry with different APP_VERSION is rejected (stale cache)', async ({ page }) => {

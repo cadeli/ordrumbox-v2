@@ -46,7 +46,7 @@ describe('SongService', () => {
             expect(data.date).toBe('2025-01-01')
             expect(data.patterns).toHaveLength(1)
             expect(data.patterns[0].name).toBe('A')
-            expect(data.selectedPatternNum).toBe(0)
+            expect(data.selectedPatternIdx).toBe(0)
         })
 
         // Arrangements travel with the song: v2 of the .odbox format added them.
@@ -131,7 +131,7 @@ describe('SongService', () => {
                 description: 'desc',
                 date: '2025-06-01',
                 patterns: [{ name: 'new1' }, { name: 'new2' }],
-                selectedPatternNum: 1,
+                selectedPatternIdx: 1,
             }
             const name = await songService.applyToAppState(data, 'fallback')
             expect(name).toBe('Loaded')
@@ -144,14 +144,32 @@ describe('SongService', () => {
             expect(appState.currentPage).toBe(0)
         })
 
+        // .odbox files exported before the selectedPatternNum → selectedPatternIdx
+        // rename still have to select their pattern.
+        it('reads the legacy selectedPatternNum of an older file', async () => {
+            const data = { patterns: [{ name: 'A' }, { name: 'B' }], selectedPatternNum: 1 }
+            await songService.applyToAppState(data, 'Legacy')
+            expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(1)
+        })
+
+        it('prefers selectedPatternIdx when a file carries both spellings', async () => {
+            const data = {
+                patterns: [{ name: 'A' }, { name: 'B' }],
+                selectedPatternIdx: 0,
+                selectedPatternNum: 1,
+            }
+            await songService.applyToAppState(data, 'Both')
+            expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(0)
+        })
+
         it('uses fallback name when data.name is null', async () => {
-            const data = { patterns: [], selectedPatternNum: 0 }
+            const data = { patterns: [], selectedPatternIdx: 0 }
             const name = await songService.applyToAppState(data, 'FallbackName')
             expect(name).toBe('FallbackName')
             expect(appState.songInfos.name).toBe('FallbackName')
         })
 
-        it('defaults selectedPatternNum to 0 when missing', async () => {
+        it('defaults the selected pattern to 0 when missing', async () => {
             const data = { patterns: [{ name: 'A' }] }
             await songService.applyToAppState(data, 'X')
             expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(0)

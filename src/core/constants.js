@@ -35,11 +35,17 @@ export const MASTER_BUS_DEFAULTS = Object.freeze({
     makeup: 8,
 })
 
-/** Persisted UI session snapshot defaults (also the loader's merge baseline). */
+/**
+ * Persisted UI session snapshot defaults (also the loader's merge baseline).
+ *
+ * The keys mirror the appState fields they carry. Snapshots written before the
+ * `…Num` → `…Idx` rename are still read: see restoreSession() in
+ * src/loader/resources_loader.js.
+ */
 export const SESSION_DEFAULTS = Object.freeze({
-    selectedDrumkitNum: 0,
-    selectedPatternNum: 0,
-    selectedTrackNum: 0,
+    selectedDrumkitIdx: 0,
+    selectedPatternIdx: 0,
+    selectedTrackIdx: 0,
     currentView: 'edit',
 })
 

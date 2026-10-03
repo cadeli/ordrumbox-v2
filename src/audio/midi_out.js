@@ -23,19 +23,19 @@ export function createMidiMappingResolver() {
  * Send note-on/off MIDI messages for every note scheduled at `tick`.
  * No-op when MIDI is not ready.
  *
- * @param {object} ctx
- * @param {AudioContext} ctx.audioCtx
- * @param {Array<{beatCount?: number, tracks: object}>} ctx.patterns
- * @param {() => number} ctx.getSelectedPatternIdx
- * @param {number} ctx.TICK
- * @param {{getCurrentFlatNotesMap: () => Map<number, object[]>, loop: number}} ctx.player
- * @param {(loop: number) => Map} ctx.getFlatNotes
- * @param {(trackId: string) => {ch?: string|number, key?: string|number}|null} ctx.resolveMapping
+ * @param {object} deps
+ * @param {AudioContext} deps.audioCtx
+ * @param {Array<{beatCount?: number, tracks: object}>} deps.patterns
+ * @param {() => number} deps.getSelectedPatternIdx
+ * @param {number} deps.TICK
+ * @param {{getCurrentFlatNotesMap: () => Map<number, object[]>, loop: number}} deps.player
+ * @param {(loop: number) => Map} deps.getFlatNotes
+ * @param {(trackId: string) => {ch?: string|number, key?: string|number}|null} deps.resolveMapping
  * @param {number} tick
  * @param {number} atTime - AudioContext time
  */
-export function sendMidiNotes(ctx, tick, atTime) {
-    const { audioCtx, patterns, getSelectedPatternIdx, TICK, player, getFlatNotes, resolveMapping } = ctx
+export function sendMidiNotes(deps, tick, atTime) {
+    const { audioCtx, patterns, getSelectedPatternIdx, TICK, player, getFlatNotes, resolveMapping } = deps
 
     const midi = serviceRegistry.midiManager
     if (!midi || !midi.isReady || !midi.selectedOutputId) return

@@ -32,11 +32,11 @@ export default class PatternPanel extends BasePanel {
     #serviceRegistry
     #playbackEvents
     #selectedNote
-    #selectedTrackIdx
+    #gridTrackIdx
     #syncRafId
     #syncPending
     #beatRectsCache
-    #cursorTrackIdx
+    #focusRowIdx
     #cursorBeat
     #cursorBeatStep
     #cellMap
@@ -76,11 +76,11 @@ export default class PatternPanel extends BasePanel {
         this.#playbackEvents = deps.playbackEvents ?? playbackEvents
 
         this.#selectedNote = null
-        this.#selectedTrackIdx = -1
+        this.#gridTrackIdx = -1
         this.#syncRafId = null
         this.#syncPending = false
         this.#beatRectsCache = []
-        this.#cursorTrackIdx = -1
+        this.#focusRowIdx = -1
         this.#cursorBeat = 0
         this.#cursorBeatStep = 0
         this.#cellMap = new Map()
@@ -192,12 +192,12 @@ export default class PatternPanel extends BasePanel {
         })
         this.sub(this.#playbackEvents, EVENTS.TRACK_SELECT, (data) => {
             if (data) {
-                if (this.#selectedTrackIdx !== data.trackIdx) {
+                if (this.#gridTrackIdx !== data.trackIdx) {
                     this.#selectedNote = null
                 }
-                this.#selectedTrackIdx = data.trackIdx
+                this.#gridTrackIdx = data.trackIdx
             } else {
-                this.#selectedTrackIdx = -1
+                this.#gridTrackIdx = -1
                 this.#selectedNote = null
             }
             this.applySelection()
@@ -445,7 +445,7 @@ export default class PatternPanel extends BasePanel {
         const tracksHtml = this.#grid.render(tracks, pattern, {
             startBeat,
             endBeatPage,
-            activeTrackIdx: this.activeTrackIdx,
+            effectiveTrackIdx: this.effectiveTrackIdx,
             cachedPage: this.#cachedPage,
             cachedVersion: this.#cachedVersion,
             trackDataDirty: this.#trackDataDirty,
@@ -494,16 +494,28 @@ export default class PatternPanel extends BasePanel {
         return this.#tracksEl
     }
 
-    /** @returns {number} grid selection when set, else the pattern's selected track */
-    get activeTrackIdx() {
-        return this.#selectedTrackIdx !== -1 ? this.#selectedTrackIdx : (this.#appState.selectedTrackIdx ?? -1)
+    /**
+     * The track the grid paints as active: the grid selection when there is one,
+     * else appState's (the editor's current track).
+     *
+     * Distinct from gridTrackIdx (-1 = nothing selected in the grid) and from
+     * appState.selectedTrackIdx (never -1: the editor always has a current track).
+     * @returns {number}
+     */
+    get effectiveTrackIdx() {
+        return this.#gridTrackIdx !== -1 ? this.#gridTrackIdx : (this.#appState.selectedTrackIdx ?? -1)
     }
 
-    get selectedTrackIdx() {
-        return this.#selectedTrackIdx
+    /**
+     * Row selected *in the grid*, -1 when nothing is: appState.selectedTrackIdx
+     * is a different thing and never -1.
+     * @returns {number}
+     */
+    get gridTrackIdx() {
+        return this.#gridTrackIdx
     }
-    set selectedTrackIdx(value) {
-        this.#selectedTrackIdx = value
+    set gridTrackIdx(value) {
+        this.#gridTrackIdx = value
     }
     get selectedNote() {
         return this.#selectedNote
@@ -523,11 +535,16 @@ export default class PatternPanel extends BasePanel {
     set cursorBeatStep(value) {
         this.#cursorBeatStep = value
     }
-    get cursorTrackIdx() {
-        return this.#cursorTrackIdx
+    /**
+     * Row the keyboard roving focus sits on (also set by a click on the row name,
+     * and used as the paste target), -1 when none.
+     * @returns {number}
+     */
+    get focusRowIdx() {
+        return this.#focusRowIdx
     }
-    set cursorTrackIdx(value) {
-        this.#cursorTrackIdx = value
+    set focusRowIdx(value) {
+        this.#focusRowIdx = value
     }
     get clipboard() {
         return this.#clipboardSection.clipboard

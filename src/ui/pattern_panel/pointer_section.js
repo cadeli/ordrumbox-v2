@@ -38,8 +38,8 @@ export default class PointerSection {
         if (notesAtStep.length === 0) return
 
         const sliceEl = e.target.closest('.pp-note-slice')
-        const noteIdx = sliceEl ? parseInt(sliceEl.dataset.noteIdx, 10) : 0
-        const note = notesAtStep[Math.min(noteIdx, notesAtStep.length - 1)]
+        const voiceIdx = sliceEl ? parseInt(sliceEl.dataset.voiceIdx, 10) : 0
+        const note = notesAtStep[Math.min(voiceIdx, notesAtStep.length - 1)]
 
         const trackPitch = track.pitch ?? 0
 
@@ -168,10 +168,10 @@ export default class PointerSection {
             if (!pattern) return
             const tracks = Utils.getTracksArray(pattern)
             if (tracks.length <= 1) return
-            const trackIdx = this.#editor.activeTrackIdx
+            const trackIdx = this.#editor.effectiveTrackIdx
             if (trackIdx < 0 || trackIdx >= tracks.length) return
             this.#editor.serviceRegistry.cmd?.removeTrack(pattern, trackIdx)
-            this.#editor.selectedTrackIdx = -1
+            this.#editor.gridTrackIdx = -1
             this.#editor.emitStructureChange()
             return
         }
@@ -183,7 +183,7 @@ export default class PointerSection {
         const beatStep = parseInt(cell.dataset.step, 10)
         if (isNaN(trackIdx) || isNaN(beat) || isNaN(beatStep)) return
 
-        this.#editor.cursorTrackIdx = trackIdx
+        this.#editor.focusRowIdx = trackIdx
         this.#editor.cursorBeat = beat
         this.#editor.cursorBeatStep = beatStep
 
@@ -193,16 +193,16 @@ export default class PointerSection {
 
         if (notesAtStep.length > 0) {
             const sliceEl = e.target.closest('.pp-note-slice')
-            const noteIdx = sliceEl ? parseInt(sliceEl.dataset.noteIdx, 10) : 0
-            const note = notesAtStep[Math.min(noteIdx, notesAtStep.length - 1)]
+            const voiceIdx = sliceEl ? parseInt(sliceEl.dataset.voiceIdx, 10) : 0
+            const note = notesAtStep[Math.min(voiceIdx, notesAtStep.length - 1)]
 
-            if (this.#editor.selectedNote === note && this.#editor.selectedTrackIdx === trackIdx) {
+            if (this.#editor.selectedNote === note && this.#editor.gridTrackIdx === trackIdx) {
                 this.#editor.serviceRegistry.cmd.deleteNote(track, note)
                 this.#editor.clearSelection()
                 this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
             } else {
                 this.#editor.selectedNote = note
-                this.#editor.selectedTrackIdx = trackIdx
+                this.#editor.gridTrackIdx = trackIdx
                 this.#editor.applySelection()
                 const pos = Utils.getNoteAbsoluteStep({ beat, beatStep }, track.stepsPerBeat ?? 4)
                 this.#editor.playbackEvents.batch(() => {
@@ -216,7 +216,7 @@ export default class PointerSection {
 
         const newNote = this.#editor.serviceRegistry.cmd.addNote(track, beat, beatStep)
         this.#editor.selectedNote = newNote
-        this.#editor.selectedTrackIdx = trackIdx
+        this.#editor.gridTrackIdx = trackIdx
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
         this.#editor.applySelection()
 

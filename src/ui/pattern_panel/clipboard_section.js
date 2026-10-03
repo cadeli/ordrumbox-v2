@@ -19,7 +19,7 @@ export default class ClipboardSection {
 
     copyStep(tracks) {
         const editor = this.#editor
-        const track = tracks[editor.cursorTrackIdx]
+        const track = tracks[editor.focusRowIdx]
         if (!track) return
         const notes = (track.notes ?? [])
             .filter((n) => n.beat === editor.cursorBeat && n.beatStep === editor.cursorBeatStep)
@@ -37,10 +37,10 @@ export default class ClipboardSection {
     copyTrack(tracks) {
         const editor = this.#editor
         const idx =
-            editor.selectedTrackIdx !== -1
-                ? editor.selectedTrackIdx
-                : editor.cursorTrackIdx !== -1
-                  ? editor.cursorTrackIdx
+            editor.gridTrackIdx !== -1
+                ? editor.gridTrackIdx
+                : editor.focusRowIdx !== -1
+                  ? editor.focusRowIdx
                   : (editor.appState.selectedTrackIdx ?? -1)
         const track = tracks[idx]
         if (!track) return
@@ -59,16 +59,16 @@ export default class ClipboardSection {
             this.pasteTrack(pattern, tracks)
             return
         }
-        if (editor.cursorTrackIdx === -1) {
-            editor.cursorTrackIdx = 0
+        if (editor.focusRowIdx === -1) {
+            editor.focusRowIdx = 0
             editor.cursorBeat = 0
             editor.cursorBeatStep = 0
         }
-        const track = tracks[editor.cursorTrackIdx]
+        const track = tracks[editor.focusRowIdx]
         if (!track) return
         const notes = this.clipboard.notes ?? []
         editor.serviceRegistry.cmd.pasteStepNotes(track, editor.cursorBeat, editor.cursorBeatStep, notes)
-        editor.updateTrackCellsInPlace(editor.cursorTrackIdx, track, pattern)
+        editor.updateTrackCellsInPlace(editor.focusRowIdx, track, pattern)
         editor.applySelection()
         editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
         const at = stepLabel(editor.cursorBeat, editor.cursorBeatStep)
@@ -84,10 +84,10 @@ export default class ClipboardSection {
         const editor = this.#editor
         if (!this.clipboard || this.clipboard.type !== 'track') return
         const insertAfter =
-            editor.cursorTrackIdx !== -1
-                ? editor.cursorTrackIdx
-                : editor.selectedTrackIdx !== -1
-                  ? editor.selectedTrackIdx
+            editor.focusRowIdx !== -1
+                ? editor.focusRowIdx
+                : editor.gridTrackIdx !== -1
+                  ? editor.gridTrackIdx
                   : tracks.length - 1
         const clone = editor.serviceRegistry.cmd.pasteTrack(pattern, insertAfter + 1, this.clipboard.track)
         if (!clone) return

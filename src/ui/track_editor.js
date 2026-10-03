@@ -43,7 +43,7 @@ export default class TrackEditor extends BasePanel {
 
     // ── State ─────────────────────────────────────────────────────
     #track
-    #trackIdx
+    #selectedTrackIdx
     #selectedPropKey
     #isDragging
     #selectedLfoTarget
@@ -92,7 +92,7 @@ export default class TrackEditor extends BasePanel {
 
         // ── Shared state (read/write through the public API below) ─
         this.#track = null
-        this.#trackIdx = -1
+        this.#selectedTrackIdx = -1
         this.#selectedPropKey = null
         this.#rafId = null
         this.#lastTick = -1
@@ -146,11 +146,17 @@ export default class TrackEditor extends BasePanel {
         this.#track = v
     }
 
-    get trackIdx() {
-        return this.#trackIdx
+    /**
+     * Index of the track being edited: a mirror of appState.selectedTrackIdx, but
+     * -1 while no pattern/track is loaded.
+     * @returns {number}
+     */
+    get selectedTrackIdx() {
+        return this.#selectedTrackIdx
     }
-    set trackIdx(v) {
-        this.#trackIdx = v
+    /** @param {number} v */
+    set selectedTrackIdx(v) {
+        this.#selectedTrackIdx = v
     }
 
     get selectedPropKey() {
@@ -247,7 +253,7 @@ export default class TrackEditor extends BasePanel {
             if (!data) return
             if (this.isVisible) {
                 this.#track = data.track
-                this.#trackIdx = data.trackIdx
+                this.#selectedTrackIdx = data.trackIdx
                 this.sync()
                 this.showNoteEditorForTrack(data.track, data.trackIdx)
             }
@@ -267,12 +273,12 @@ export default class TrackEditor extends BasePanel {
             if (newIdx === -1) newIdx = pattern.tracks.findIndex((t) => t?.name === currentTrack.name)
             if (newIdx === -1) {
                 this.#track = null
-                this.#trackIdx = -1
+                this.#selectedTrackIdx = -1
                 if (this.isVisible) this.sync()
                 return
             }
             this.#track = pattern.tracks[newIdx]
-            this.#trackIdx = newIdx
+            this.#selectedTrackIdx = newIdx
             if (this.isVisible) this.sync()
         })
     }
@@ -361,7 +367,7 @@ export default class TrackEditor extends BasePanel {
 
     show({ track, trackIdx }) {
         this.#track = track
-        this.#trackIdx = trackIdx
+        this.#selectedTrackIdx = trackIdx
         this.container.style.display = isMobileViewport() ? 'flex' : 'block'
         this.sync()
         void this.synthEditor.ensureGeneratedSoundsLoaded()
@@ -474,7 +480,7 @@ export default class TrackEditor extends BasePanel {
     #syncMobileLayout() {
         if (isMobileLandscape()) {
             applyLayout(this.container)
-            if (this.#track) this.showNoteEditorForTrack(this.#track, this.#trackIdx)
+            if (this.#track) this.showNoteEditorForTrack(this.#track, this.#selectedTrackIdx)
         } else {
             removeLayout(this.container)
         }
@@ -868,7 +874,7 @@ export default class TrackEditor extends BasePanel {
         if (key === 'loopAtStep') {
             this.#playbackEvents.batch(() => {
                 this.#playbackEvents.emit(EVENTS.LOOP_POINT_CHANGE, {
-                    trackIdx: this.#trackIdx,
+                    trackIdx: this.#selectedTrackIdx,
                     loopAtStep: this.#track.loopAtStep,
                 })
                 this.#emitTrackChange()
@@ -903,7 +909,7 @@ export default class TrackEditor extends BasePanel {
         this.container?.classList.remove('pp-split')
 
         this.#track = null
-        this.#trackIdx = -1
+        this.#selectedTrackIdx = -1
         this.#selectedPropKey = null
         this.#lastTick = -1
         this.#knobs.forEach((k) => k.destroy())

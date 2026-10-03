@@ -360,17 +360,17 @@ export default class SongCommands {
         song.id = uniqueId(song.id, taken)
         if (!appState.songs) appState.songs = []
         appState.songs.push(song)
-        const songIndex = appState.songs.length - 1
+        const songIdx = appState.songs.length - 1
         const previousIdx = appState.selectedSongIdx ?? 0
-        appState.selectedSongIdx = songIndex
+        appState.selectedSongIdx = songIdx
         this.#host.persist()
         this.#host.record({
             desc: `Add arrangement "${song.name}"`,
-            params: { song: song.name, index: songIndex },
+            params: { song: song.name, index: songIdx },
             execute: () => {
                 if (!appState.songs.includes(song)) {
-                    appState.songs.splice(Math.min(songIndex, appState.songs.length), 0, song)
-                    appState.selectedSongIdx = Math.min(songIndex, appState.songs.length - 1)
+                    appState.songs.splice(Math.min(songIdx, appState.songs.length), 0, song)
+                    appState.selectedSongIdx = Math.min(songIdx, appState.songs.length - 1)
                 }
                 this.#host.persist()
             },

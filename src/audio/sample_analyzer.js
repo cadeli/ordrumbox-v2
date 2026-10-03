@@ -47,7 +47,7 @@ export function clearAnalysisCache(audioBuffer) {
 
 /**
  * Draw an envelope waveform on a canvas context.
- * @param {CanvasRenderingContext2D} ctx
+ * @param {CanvasRenderingContext2D} canvasCtx
  * @param {number[]} envelope - array of amplitude values (0..1)
  * @param {number} width
  * @param {number} height
@@ -60,33 +60,33 @@ export function clearAnalysisCache(audioBuffer) {
  * Vertical marker at the decay position of a sample. Both sample panels drew
  * this identical 14-line block (one even carried a comment saying it mirrored
  * the other), so any tweak had to be made twice.
- * @param {CanvasRenderingContext2D} ctx
+ * @param {CanvasRenderingContext2D} canvasCtx
  * @param {{decay?: number, buffer?: {duration: number}, duration?: number}} sound
  * @param {number} width canvas width in CSS px
  * @param {number} height canvas height in CSS px
  * @param {{marker: string, lineWidth: number}} theme
  * @param {number} dpr devicePixelRatio (marker dashes are scaled by it)
  */
-export function drawDecayMarker(ctx, sound, width, height, theme, dpr) {
+export function drawDecayMarker(canvasCtx, sound, width, height, theme, dpr) {
     const totalSec = sound?.buffer?.duration ?? sound?.duration ?? 0
     if (!(totalSec > 0)) return
     const ratio = Math.min((sound.decay ?? 0) / 1000 / totalSec, 1)
     const x = ratio * width
-    ctx.beginPath()
-    ctx.setLineDash([4 * dpr, 4 * dpr])
-    ctx.strokeStyle = theme.marker
-    ctx.shadowColor = theme.marker
-    ctx.shadowBlur = 6 * dpr
-    ctx.lineWidth = theme.lineWidth
-    ctx.moveTo(x, 0)
-    ctx.lineTo(x, height)
-    ctx.stroke()
-    ctx.setLineDash([])
-    ctx.shadowBlur = 0
-    ctx.shadowColor = 'transparent'
+    canvasCtx.beginPath()
+    canvasCtx.setLineDash([4 * dpr, 4 * dpr])
+    canvasCtx.strokeStyle = theme.marker
+    canvasCtx.shadowColor = theme.marker
+    canvasCtx.shadowBlur = 6 * dpr
+    canvasCtx.lineWidth = theme.lineWidth
+    canvasCtx.moveTo(x, 0)
+    canvasCtx.lineTo(x, height)
+    canvasCtx.stroke()
+    canvasCtx.setLineDash([])
+    canvasCtx.shadowBlur = 0
+    canvasCtx.shadowColor = 'transparent'
 }
 
-export function drawEnvelope(ctx, envelope, width, height, strokeOrColors) {
+export function drawEnvelope(canvasCtx, envelope, width, height, strokeOrColors) {
     if (!envelope?.length) return
 
     const colors = typeof strokeOrColors === 'string' ? { stroke: strokeOrColors } : (strokeOrColors ?? {})
@@ -96,26 +96,26 @@ export function drawEnvelope(ctx, envelope, width, height, strokeOrColors) {
     const fill = colors.fill ?? 'rgba(32,35,33,0.08)'
     const lineWidth = colors.lineWidth ?? 1.5
 
-    ctx.clearRect(0, 0, width, height)
-    ctx.fillStyle = background
-    ctx.fillRect(0, 0, width, height)
+    canvasCtx.clearRect(0, 0, width, height)
+    canvasCtx.fillStyle = background
+    canvasCtx.fillRect(0, 0, width, height)
 
-    ctx.beginPath()
-    ctx.strokeStyle = stroke
-    ctx.lineWidth = lineWidth
+    canvasCtx.beginPath()
+    canvasCtx.strokeStyle = stroke
+    canvasCtx.lineWidth = lineWidth
 
     const step = width / (envelope.length - 1)
     for (let i = 0; i < envelope.length; i++) {
         const x = i * step
         const y = height - envelope[i] * height
-        if (i === 0) ctx.moveTo(x, y)
-        else ctx.lineTo(x, y)
+        if (i === 0) canvasCtx.moveTo(x, y)
+        else canvasCtx.lineTo(x, y)
     }
-    ctx.stroke()
+    canvasCtx.stroke()
 
-    ctx.lineTo(width, height)
-    ctx.lineTo(0, height)
-    ctx.closePath()
-    ctx.fillStyle = fill
-    ctx.fill()
+    canvasCtx.lineTo(width, height)
+    canvasCtx.lineTo(0, height)
+    canvasCtx.closePath()
+    canvasCtx.fillStyle = fill
+    canvasCtx.fill()
 }

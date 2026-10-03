@@ -15,12 +15,12 @@ export default class KeyboardSection {
     }
 
     onFocus() {
-        if (this.#editor.cursorTrackIdx === -1) {
+        if (this.#editor.focusRowIdx === -1) {
             const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
             if (!pattern) return
             const tracks = Utils.getTracksArray(pattern)
             if (tracks.length === 0) return
-            this.#editor.cursorTrackIdx = 0
+            this.#editor.focusRowIdx = 0
             this.#editor.cursorBeat = 0
             this.#editor.cursorBeatStep = 0
             this.#editor.applySelection()
@@ -48,7 +48,7 @@ export default class KeyboardSection {
         if (isMod && keyC) {
             e.preventDefault()
             if (e.shiftKey) this.#editor.clipboardSection.copyTrack(tracks)
-            else if (this.#editor.cursorTrackIdx !== -1) this.#editor.clipboardSection.copyStep(tracks)
+            else if (this.#editor.focusRowIdx !== -1) this.#editor.clipboardSection.copyStep(tracks)
             else this.#editor.clipboardSection.copyTrack(tracks)
             return
         }
@@ -62,16 +62,16 @@ export default class KeyboardSection {
 
         if (e.key === 'Escape') {
             e.preventDefault()
-            this.#editor.cursorTrackIdx = -1
+            this.#editor.focusRowIdx = -1
             this.#editor.selectedNote = null
-            this.#editor.selectedTrackIdx = -1
+            this.#editor.gridTrackIdx = -1
             this.#editor.rangeAnchor = null
             this.#editor.applySelection()
             return
         }
 
-        if (this.#editor.cursorTrackIdx === -1) {
-            this.#editor.cursorTrackIdx = 0
+        if (this.#editor.focusRowIdx === -1) {
+            this.#editor.focusRowIdx = 0
             this.#editor.cursorBeat = 0
             this.#editor.cursorBeatStep = 0
         }
@@ -82,7 +82,7 @@ export default class KeyboardSection {
             else this.#editor.rangeAnchor = null
         }
 
-        const stepsPerBeat = tracks[this.#editor.cursorTrackIdx]?.stepsPerBeat ?? 4
+        const stepsPerBeat = tracks[this.#editor.focusRowIdx]?.stepsPerBeat ?? 4
         const beatCount = pattern.beatCount ?? 4
 
         switch (e.key) {
@@ -110,16 +110,16 @@ export default class KeyboardSection {
                 break
             case 'ArrowUp':
                 e.preventDefault()
-                if (this.#editor.cursorTrackIdx > 0) this.#editor.cursorTrackIdx--
+                if (this.#editor.focusRowIdx > 0) this.#editor.focusRowIdx--
                 break
             case 'ArrowDown':
                 e.preventDefault()
-                if (this.#editor.cursorTrackIdx < tracks.length - 1) this.#editor.cursorTrackIdx++
+                if (this.#editor.focusRowIdx < tracks.length - 1) this.#editor.focusRowIdx++
                 break
             case 'Enter':
                 e.preventDefault()
                 {
-                    const track = tracks[this.#editor.cursorTrackIdx]
+                    const track = tracks[this.#editor.focusRowIdx]
                     if (!track) return
                     this.handleNoteEnter(track)
                     break
@@ -134,7 +134,7 @@ export default class KeyboardSection {
                 return
         }
 
-        const track = tracks[this.#editor.cursorTrackIdx]
+        const track = tracks[this.#editor.focusRowIdx]
         if (!track) return
 
         const startBeat = this.#editor.appState.currentPage * BEATS_PER_PAGE
@@ -147,22 +147,22 @@ export default class KeyboardSection {
             (n) => n.beat === this.#editor.cursorBeat && n.beatStep === this.#editor.cursorBeatStep,
         )
         this.#editor.selectedNote = note ?? null
-        this.#editor.selectedTrackIdx = this.#editor.cursorTrackIdx
+        this.#editor.gridTrackIdx = this.#editor.focusRowIdx
         this.#editor.applySelection()
         if (note) {
             this.#editor.playbackEvents.emit(EVENTS.NOTE_SELECT, {
                 track,
-                trackIdx: this.#editor.cursorTrackIdx,
+                trackIdx: this.#editor.focusRowIdx,
                 note,
                 pos: this.#editor.cursorBeat * stepsPerBeat + this.#editor.cursorBeatStep,
                 beat: this.#editor.cursorBeat,
                 beatStep: this.#editor.cursorBeatStep,
             })
-            this.#editor.serviceRegistry.seq?.simpleBeep(this.#editor.cursorTrackIdx, note)
+            this.#editor.serviceRegistry.seq?.simpleBeep(this.#editor.focusRowIdx, note)
         } else {
             this.#editor.playbackEvents.emit(EVENTS.NOTE_SELECT, {
                 track,
-                trackIdx: this.#editor.cursorTrackIdx,
+                trackIdx: this.#editor.focusRowIdx,
                 note: null,
                 beat: this.#editor.cursorBeat,
                 beatStep: this.#editor.cursorBeatStep,
@@ -176,7 +176,7 @@ export default class KeyboardSection {
         if (!pattern) return
 
         const cell = this.#editor.cellMap.get(
-            `${this.#editor.cursorTrackIdx}:${this.#editor.cursorBeat}:${this.#editor.cursorBeatStep}`,
+            `${this.#editor.focusRowIdx}:${this.#editor.cursorBeat}:${this.#editor.cursorBeatStep}`,
         )
         if (cell) {
             const notesAtStep = (track.notes ?? []).filter(
@@ -184,27 +184,24 @@ export default class KeyboardSection {
             )
             if (notesAtStep.length > 0) {
                 const note = notesAtStep[0]
-                if (
-                    this.#editor.selectedNote === note &&
-                    this.#editor.selectedTrackIdx === this.#editor.cursorTrackIdx
-                ) {
+                if (this.#editor.selectedNote === note && this.#editor.gridTrackIdx === this.#editor.focusRowIdx) {
                     this.#editor.serviceRegistry.cmd.deleteNote(track, note)
                     this.#editor.clearSelection()
-                    this.#editor.updateTrackCellsInPlace(this.#editor.cursorTrackIdx, track, pattern)
+                    this.#editor.updateTrackCellsInPlace(this.#editor.focusRowIdx, track, pattern)
                 } else {
                     this.#editor.selectedNote = note
-                    this.#editor.selectedTrackIdx = this.#editor.cursorTrackIdx
+                    this.#editor.gridTrackIdx = this.#editor.focusRowIdx
                     this.#editor.applySelection()
                     const pos = this.#editor.cursorBeat * (track.stepsPerBeat ?? 4) + this.#editor.cursorBeatStep
                     this.#editor.playbackEvents.emit(EVENTS.NOTE_SELECT, {
                         track,
-                        trackIdx: this.#editor.cursorTrackIdx,
+                        trackIdx: this.#editor.focusRowIdx,
                         note,
                         pos,
                         beat: this.#editor.cursorBeat,
                         beatStep: this.#editor.cursorBeatStep,
                     })
-                    this.#editor.serviceRegistry.seq?.simpleBeep(this.#editor.cursorTrackIdx, note)
+                    this.#editor.serviceRegistry.seq?.simpleBeep(this.#editor.focusRowIdx, note)
                 }
             } else {
                 const newNote = this.#editor.serviceRegistry.cmd.addNote(
@@ -213,26 +210,26 @@ export default class KeyboardSection {
                     this.#editor.cursorBeatStep,
                 )
                 this.#editor.selectedNote = newNote
-                this.#editor.selectedTrackIdx = this.#editor.cursorTrackIdx
-                this.#editor.updateTrackCellsInPlace(this.#editor.cursorTrackIdx, track, pattern)
+                this.#editor.gridTrackIdx = this.#editor.focusRowIdx
+                this.#editor.updateTrackCellsInPlace(this.#editor.focusRowIdx, track, pattern)
                 this.#editor.applySelection()
 
                 const pos = this.#editor.cursorBeat * (track.stepsPerBeat ?? 4) + this.#editor.cursorBeatStep
                 this.#editor.playbackEvents.emit(EVENTS.NOTE_SELECT, {
                     track,
-                    trackIdx: this.#editor.cursorTrackIdx,
+                    trackIdx: this.#editor.focusRowIdx,
                     note: newNote,
                     pos,
                     beat: this.#editor.cursorBeat,
                     beatStep: this.#editor.cursorBeatStep,
                 })
-                this.#editor.serviceRegistry.seq?.simpleBeep(this.#editor.cursorTrackIdx, newNote)
+                this.#editor.serviceRegistry.seq?.simpleBeep(this.#editor.focusRowIdx, newNote)
             }
         }
     }
 
     handleNoteDelete(tracks) {
-        const track = tracks[this.#editor.cursorTrackIdx]
+        const track = tracks[this.#editor.focusRowIdx]
         if (!track) return
         const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
         if (!pattern) return
@@ -244,7 +241,7 @@ export default class KeyboardSection {
             for (const note of notesAtStep) {
                 this.#editor.serviceRegistry.cmd.deleteNote(track, note)
             }
-            this.#editor.updateTrackCellsInPlace(this.#editor.cursorTrackIdx, track, pattern)
+            this.#editor.updateTrackCellsInPlace(this.#editor.focusRowIdx, track, pattern)
         }
         this.#editor.clearSelection()
     }

@@ -31,8 +31,8 @@ function getSelectedPattern() {
     return appState.patterns[appState.selectedPatternIdx]
 }
 
-function toggleTrackMute(trackIndex) {
-    const track = getSelectedPattern()?.tracks?.[trackIndex]
+function toggleTrackMute(trackIdx) {
+    const track = getSelectedPattern()?.tracks?.[trackIdx]
     if (track) {
         track.mute = !track.mute
         playbackEvents.batch(() => {
@@ -42,8 +42,8 @@ function toggleTrackMute(trackIndex) {
     }
 }
 
-function previewTrack(trackIndex) {
-    serviceRegistry.seq.simpleBeep(trackIndex)
+function previewTrack(trackIdx) {
+    serviceRegistry.seq.simpleBeep(trackIdx)
 }
 
 async function generatePattern() {
@@ -267,14 +267,14 @@ function getModShortcut(event) {
 }
 
 function getKeyboardShortcut(code, key) {
-    const muteTrackIndex = PHYSICAL_TRACK_MUTE_KEYS.indexOf(code)
-    if (muteTrackIndex !== -1) {
-        return () => toggleTrackMute(muteTrackIndex)
+    const muteTrackIdx = PHYSICAL_TRACK_MUTE_KEYS.indexOf(code)
+    if (muteTrackIdx !== -1) {
+        return () => toggleTrackMute(muteTrackIdx)
     }
 
-    const previewTrackIndex = PHYSICAL_TRACK_PREVIEW_KEYS.indexOf(code)
-    if (previewTrackIndex !== -1) {
-        return () => previewTrack(previewTrackIndex)
+    const previewTrackIdx = PHYSICAL_TRACK_PREVIEW_KEYS.indexOf(code)
+    if (previewTrackIdx !== -1) {
+        return () => previewTrack(previewTrackIdx)
     }
 
     if (code === 'Space' || key === ' ') {
