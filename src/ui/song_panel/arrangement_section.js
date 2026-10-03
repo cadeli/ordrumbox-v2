@@ -4,8 +4,9 @@
 //   - each pattern is a ROW, named in a frozen first column;
 //   - each clip is a rectangle spanning its bars along X.
 //
-// Read-only for now — playback of an arrangement is not implemented, so nothing
-// here drives the transport. It shows the arrangement and lets it be picked.
+// Read-only for now: clips are placed and removed from the right-click menus,
+// never dragged. The one thing the grid drives is the transport — clicking a
+// measure in the ruler aims the cursor, which is where the next play starts.
 
 import { appState } from '../../state/app_state.js'
 import { songLengthBars, songBpm } from '../../model/song_schema.js'
@@ -39,10 +40,16 @@ export default class ArrangementSection {
     #rows = []
     /** @type {HTMLDivElement | null} */
     #playheadEl = null
+    /** Ruler cells, indexed by the measure they number. */
+    #barHeads = []
     /** @type {number | null} */
     #rafId = null
     /** last px written, so the hot loop touches the DOM only when it moved */
     #prevPlayheadPx = -1
+    /** measure the ruler currently highlights, -1 when none */
+    #prevBar = -1
+    /** whether the cursor is painted as parked (transport stopped) */
+    #cursorIdle = false
 
     /**
      * @param {import('../song_panel.js').default} panel host, for listen/dispose
@@ -57,6 +64,7 @@ export default class ArrangementSection {
         this.#listEl = listEl
         // Delegated so it survives every re-render of the grid.
         this.#panel.listen(this.#listEl, 'contextmenu', (e) => this.#onContextMenu(e))
+        this.#panel.listen(this.#listEl, 'click', (e) => this.#onGridClick(e))
 
         this.#panel.sub(playbackEvents, EVENTS.PLAYBACK_START, () => this.startPlayhead())
         this.#panel.sub(playbackEvents, EVENTS.PLAYBACK_STOP, () => this.stopPlayhead())
@@ -87,6 +95,20 @@ export default class ArrangementSection {
     }
 
     /**
+     * Measure the cursor sits on: where the transport is while it runs, and the
+     * measure the next play starts from once it is stopped.
+     * @returns {number}
+     */
+    #cursorBar() {
+        const bar = serviceRegistry.transport?.isRunning
+            ? this.#transportBar()
+            : (serviceRegistry.seq?.songCursorBar ?? 0)
+        // The running position already wraps on the loop length, but a parked
+        // cursor aimed on a longer arrangement must not be drawn off this grid.
+        return Math.min(bar, Math.max(0, songLengthBars(this.#song) - 1))
+    }
+
+    /**
      * Playhead animation, driven by rAF while the transport runs.
      *
      * Position is polled rather than pushed: the player publishes it per tick,
@@ -99,18 +121,9 @@ export default class ArrangementSection {
             this.#rafId = null
             // Stops on its own once the transport does, so a STOP event that
             // never arrives (panel torn down mid-play) cannot leak the loop.
-            if (!serviceRegistry.transport?.isRunning || !this.#song) {
-                this.#hidePlayhead()
-                return
-            }
-            try {
-                this.#updatePlayhead()
-            } catch (err) {
-                reportUserError('SongPanel.playhead', 'Song playhead stopped updating', { cause: err })
-                this.#hidePlayhead()
-                return
-            }
-            this.#rafId = requestAnimationFrame(loop)
+            const running = !!serviceRegistry.transport?.isRunning && !!this.#song
+            this.#paintCursor()
+            if (running) this.#rafId = requestAnimationFrame(loop)
         }
         this.#rafId = requestAnimationFrame(loop)
     }
@@ -120,22 +133,76 @@ export default class ArrangementSection {
             cancelAnimationFrame(this.#rafId)
             this.#rafId = null
         }
-        this.#hidePlayhead()
+        // The cursor does not vanish with the playback: it stays on the measure
+        // the next play will start from.
+        this.#paintCursor()
+    }
+
+    /** Paints the cursor once, reporting a failure instead of swallowing it. */
+    #paintCursor() {
+        if (!this.#playheadEl) return
+        try {
+            this.#updatePlayhead()
+        } catch (err) {
+            reportUserError('SongPanel.playhead', 'Song playhead stopped updating', { cause: err })
+            this.#hidePlayhead()
+        }
     }
 
     #updatePlayhead() {
         const el = this.#playheadEl
         if (!el) return
-        const px = Math.round(this.#transportBar() * BAR_WIDTH)
-        if (px === this.#prevPlayheadPx) return
-        this.#prevPlayheadPx = px
-        el.style.display = ''
-        el.style.transform = `translateX(${px}px)`
+        const bar = this.#cursorBar()
+        const px = Math.round(bar * BAR_WIDTH)
+        if (px !== this.#prevPlayheadPx) {
+            this.#prevPlayheadPx = px
+            el.style.display = ''
+            el.style.transform = `translateX(${px}px)`
+        }
+        // Parked reads differently from running: a stopped cursor marks where
+        // play will start, it is not a measure sounding.
+        const idle = !serviceRegistry.transport?.isRunning
+        if (idle !== this.#cursorIdle) {
+            this.#cursorIdle = idle
+            el.classList.toggle('sa-cursor-idle', idle)
+        }
+        this.#markRulerBar(Math.floor(bar))
+    }
+
+    /**
+     * Highlights the measure number under the cursor, so its position is
+     * readable in the ruler instead of only as a line across the rows.
+     * @param {number} bar
+     */
+    #markRulerBar(bar) {
+        if (bar === this.#prevBar) return
+        this.#barHeads[this.#prevBar]?.classList.remove('sa-bar-current')
+        this.#barHeads[bar]?.classList.add('sa-bar-current')
+        this.#prevBar = bar
     }
 
     #hidePlayhead() {
         this.#prevPlayheadPx = -1
+        this.#markRulerBar(-1)
         if (this.#playheadEl) this.#playheadEl.style.display = 'none'
+    }
+
+    /**
+     * Left click on the ruler aims the arrangement cursor at that measure;
+     * pressing play then starts there. Nothing else in the grid takes a left
+     * click — the clips are edited from the right-click menu.
+     * @param {MouseEvent} e
+     */
+    #onGridClick(e) {
+        const target = e.target instanceof Element ? e.target : null
+        const headEl = /** @type {HTMLElement | null} */ (target?.closest('.sa-bar-head'))
+        if (!headEl || !this.#song) return
+        const bar = Number(headEl.dataset.bar)
+        if (!Number.isInteger(bar) || bar < 0) return
+        serviceRegistry.seq?.setSongCursor(bar)
+        // Repaint now: while the transport runs the rAF loop would follow on the
+        // next frame, and stopped there is no loop at all.
+        this.#paintCursor()
     }
 
     /**
@@ -307,6 +374,8 @@ export default class ArrangementSection {
             this.#listEl.innerHTML = '<div class="sa-empty">No arrangement — this song has no clips yet.</div>'
             this.#root?.classList.remove('sa-has-song')
             this.#playheadEl = null
+            this.#barHeads = []
+            this.#prevBar = -1
             return
         }
         this.#root?.classList.add('sa-has-song')
@@ -316,10 +385,11 @@ export default class ArrangementSection {
         const gridWidth = LABEL_WIDTH + totalBars * BAR_WIDTH
         const gridHeight = HEADER_HEIGHT + rowCount * ROW_HEIGHT
 
-        // Ruler: one measure per cell, numbered, running along X.
+        // Ruler: one measure per cell, numbered, running along X. data-bar is
+        // both what a click aims the cursor at and what the cursor highlights.
         const ruler = Array.from({ length: totalBars }, (_, bar) => {
             const marked = bar % 4 === 0
-            return `<div class="sa-bar-head${marked ? ' sa-bar-major' : ''}" style="left:${LABEL_WIDTH + bar * BAR_WIDTH}px;width:${BAR_WIDTH}px">${bar + 1}</div>`
+            return `<div class="sa-bar-head${marked ? ' sa-bar-major' : ''}" data-bar="${bar}" style="left:${LABEL_WIDTH + bar * BAR_WIDTH}px;width:${BAR_WIDTH}px">${bar + 1}</div>`
         }).join('')
 
         // One row per pattern. The name lives in the frozen first column, so it
@@ -365,11 +435,16 @@ export default class ArrangementSection {
             '</div>' +
             '</div>'
 
-        // innerHTML was just rebuilt, so the reference to the old node is dead.
+        // innerHTML was just rebuilt, so the references to the old nodes are dead.
         this.#playheadEl = this.#listEl.querySelector('.sa-playhead')
+        this.#barHeads = [...this.#listEl.querySelectorAll('.sa-bar-head')]
         this.#prevPlayheadPx = -1
+        this.#prevBar = -1
         this.#listEl.dataset.totalBars = String(totalBars)
         this.#listEl.dataset.bpm = String(songBpm(song))
+        // A re-render happens with no playhead loop running too (the arrangement
+        // was edited while stopped), so the cursor is painted again here.
+        this.#paintCursor()
     }
 
     /** Clip rectangles, as plain data — used by the tests. */

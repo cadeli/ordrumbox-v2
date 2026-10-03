@@ -248,6 +248,98 @@ describe('Sequencer', () => {
         expect(seq.stop).not.toHaveBeenCalled()
     })
 
+    // ── arrangement cursor: the ruler click ─────────────────────────────
+
+    describe('song cursor', () => {
+        // one bar is 4 beats of 32 ticks
+        const BAR_TICKS = 4 * 32
+
+        /** A transport stub the cursor tests can aim. */
+        function makeTransport(isRunning) {
+            return {
+                isRunning,
+                tick: 0,
+                nextStepTime: 0,
+                setBpm: vi.fn(),
+                stop: vi.fn(),
+                // like the real Transport: starting re-anchors on zero
+                start: vi.fn(function () {
+                    this.isRunning = true
+                    this.tick = 0
+                }),
+            }
+        }
+
+        it('starts a song from the measure the cursor was put on', async () => {
+            appState.currentView = 'song'
+            const seq = new Sequencer()
+            serviceRegistry.transport = makeTransport(false)
+            serviceRegistry.audioEngine = {
+                start: vi.fn().mockResolvedValue(undefined),
+                invalidateCache: vi.fn(),
+            }
+            seq.setSongCursor(3)
+            expect(seq.songCursorBar).toBe(3)
+
+            await seq.start()
+            // transport.start() re-anchors to zero, the cursor re-aims it right after
+            expect(serviceRegistry.transport.tick).toBe(3 * BAR_TICKS)
+        })
+
+        // A song measure would land mid-pattern, so the pattern view keeps its
+        // own zero even after the cursor was moved.
+        it('starts a pattern from its own zero', async () => {
+            appState.currentView = 'edit'
+            const seq = new Sequencer()
+            serviceRegistry.transport = makeTransport(false)
+            serviceRegistry.audioEngine = {
+                start: vi.fn().mockResolvedValue(undefined),
+                invalidateCache: vi.fn(),
+            }
+            seq.setSongCursor(3)
+
+            await seq.start()
+            expect(serviceRegistry.transport.tick).toBe(0)
+        })
+
+        it('jumps a running transport there, re-anchored on the audio clock', () => {
+            const seq = new Sequencer()
+            serviceRegistry.transport = makeTransport(true)
+            serviceRegistry.audioCtx.currentTime = 12
+            serviceRegistry.audioEngine = { invalidateCache: vi.fn() }
+            serviceRegistry.transport.tick = 99
+
+            seq.setSongCursor(5)
+            expect(serviceRegistry.transport.tick).toBe(5 * BAR_TICKS)
+            expect(serviceRegistry.transport.nextStepTime).toBe(12)
+            expect(serviceRegistry.audioEngine.invalidateCache).toHaveBeenCalled()
+        })
+
+        // Stopped: there is nothing to jump, the cursor only has to be remembered.
+        it('only remembers the measure while the transport is stopped', () => {
+            const seq = new Sequencer()
+            serviceRegistry.transport = makeTransport(false)
+            serviceRegistry.transport.tick = 99
+
+            seq.setSongCursor(2)
+            expect(serviceRegistry.transport.tick).toBe(99)
+            expect(serviceRegistry.transport.nextStepTime).toBe(0)
+            expect(seq.songCursorBar).toBe(2)
+        })
+
+        it('clamps and floors the measure it is given', () => {
+            const seq = new Sequencer()
+            serviceRegistry.transport = makeTransport(false)
+
+            seq.setSongCursor(4.7)
+            expect(seq.songCursorBar).toBe(4)
+            seq.setSongCursor(-3)
+            expect(seq.songCursorBar).toBe(0)
+            seq.setSongCursor(Number.NaN)
+            expect(seq.songCursorBar).toBe(0)
+        })
+    })
+
     describe.each(PARAM_SETS)('Sequencer — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
         it('creates transport and can set bpm', () => {
             appState.patterns = [makePattern({ bpm, beatCount })]

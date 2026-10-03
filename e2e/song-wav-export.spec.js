@@ -180,10 +180,13 @@ test.describe('Song WAV export', () => {
         expect(message).toMatch(/no playable clip/i)
     })
 
-    // The button itself, on the demo song: 21 bars at 120 bpm = 42 s.
+    // The button itself, on the demo song. Its loop is shortened first: the demo
+    // arrangement is 66 bars (132 s of audio to render), far too long for a test,
+    // and the export follows the arrangement exactly as it is configured.
     test('the Export Song button downloads the whole arrangement', async ({ page }) => {
         test.setTimeout(180_000)
         await bootApp(page)
+        await page.evaluate(() => (window.__e2e.appState.songs[0].loopBars = 2))
 
         // the Export tab is not the one shown when the panel opens
         await page.locator('.tb-tools').click()
@@ -204,7 +207,8 @@ test.describe('Song WAV export', () => {
         expect(String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3))).toBe('RIFF')
         expect(dv.getUint16(22, true)).toBe(2)
         const frames = dv.getUint32(40, true) / (2 * 2)
-        expect(frames / dv.getUint32(24, true)).toBeCloseTo(42, 1)
+        // 2 bars of 4/4 at 120 bpm = 2 * 4 * 0.5 s
+        expect(frames / dv.getUint32(24, true)).toBeCloseTo(4, 1)
     })
 
     // cross-check the numbers above against the shared constants, so the
@@ -212,7 +216,8 @@ test.describe('Song WAV export', () => {
     test('the expected lengths match the engine constants', () => {
         expect(BEATS_PER_BAR).toBe(4)
         expect(BEATS_PER_BAR * TICK).toBe(128)
+        // 2 bars of 4/4, at 120 bpm and then at 240 bpm
         expect(2 * BEATS_PER_BAR * (60 / 120)).toBeCloseTo(4, 6)
-        expect(21 * BEATS_PER_BAR * (60 / 120)).toBeCloseTo(42, 6)
+        expect(2 * BEATS_PER_BAR * (60 / 240)).toBeCloseTo(2, 6)
     })
 })

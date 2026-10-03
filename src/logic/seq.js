@@ -3,7 +3,7 @@ import AudioEngine from '../audio/engine.js'
 import AudioStallDetector from '../audio/stall_detector.js'
 import Transport from './transport/transport.js'
 import { TICK } from '../core/constants.js'
-import { songPatterns, songTempo } from './song_playback.js'
+import { barToTick, songPatterns, songTempo } from './song_playback.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
@@ -19,6 +19,8 @@ export default class Sequencer {
     #stallDetector
     #starting
     #pendingStop
+    /** Measure the arrangement cursor is on; the song ruler sets it. */
+    #songCursorBar = 0
 
     /**
      * Offline export flag: keeps the transport on the pattern's own bpm instead
@@ -43,6 +45,10 @@ export default class Sequencer {
     }
     get tick() {
         return this.serviceRegistry.transport?.tick ?? 0
+    }
+    /** @returns {number} measure the arrangement cursor is on */
+    get songCursorBar() {
+        return this.#songCursorBar
     }
 
     ensureTransport = () => {
@@ -187,6 +193,10 @@ export default class Sequencer {
         this.serviceRegistry.audioEngine.invalidateCache()
         await this.serviceRegistry.audioEngine.start(selectedPattern)
         this.serviceRegistry.transport.start()
+        // An arrangement plays from the cursor the user aimed with the ruler. A
+        // pattern view has no bars, so it always starts from its own zero: a
+        // song measure would land mid-pattern.
+        if (this.appState.currentView === 'song') this.#applySongCursor()
         this.#stallDetector = new AudioStallDetector({
             audioCtx: this.serviceRegistry.audioCtx,
             transport: this.serviceRegistry.transport,
@@ -230,6 +240,36 @@ export default class Sequencer {
         } else {
             this.stop()
         }
+    }
+
+    /**
+     * Aim the arrangement cursor at a measure — the DAW gesture of clicking the
+     * ruler to move the playhead.
+     *
+     * The cursor is what the next play starts from; while the transport already
+     * runs it is also jumped to at once, so playback follows the click.
+     *
+     * @param {number} bar 0-based measure
+     */
+    setSongCursor = (bar) => {
+        this.#songCursorBar = Math.max(0, Math.floor(Number(bar) || 0))
+        this.#applySongCursor()
+    }
+
+    /**
+     * Put the running transport on the cursor.
+     *
+     * Re-anchored on the audio clock, so the measure jumped to sounds right away
+     * instead of after whatever the scheduler had already queued.
+     * @returns {boolean} false when there is no transport to aim
+     */
+    #applySongCursor = () => {
+        const transport = this.serviceRegistry.transport
+        if (!transport?.isRunning) return false
+        transport.tick = barToTick(this.#songCursorBar, TICK)
+        transport.nextStepTime = this.serviceRegistry.audioCtx?.currentTime ?? 0
+        this.serviceRegistry.audioEngine?.invalidateCache()
+        return true
     }
 
     /** Tempo of the arrangement when a song is selected and being played. */

@@ -2859,6 +2859,12 @@ body {
     border-left-color: var(--line);
     background: color-mix(in srgb, var(--line) 22%, transparent);
 }
+/* The measure the cursor sits on, so its position is readable in the ruler and
+   not only as a line across the rows. */
+.sa-bar-head.sa-bar-current {
+    color: var(--text);
+    background: color-mix(in srgb, var(--toy-pink) 40%, transparent);
+}
 
 /* Body: scrolled in both directions; row names are pulled into the frozen
    first column by a negative left offset. */
@@ -2921,6 +2927,11 @@ body {
     pointer-events: none;
     z-index: 2;
     will-change: transform;
+}
+/* Parked cursor (transport stopped): same line, dimmer — it marks the measure
+   the next play starts from, not one that is sounding. */
+.sa-playhead.sa-cursor-idle {
+    opacity: 0.5;
 }
 
 /* ---- Song Panel ---- */

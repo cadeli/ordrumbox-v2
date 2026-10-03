@@ -9,7 +9,7 @@
 // how many patterns sound on a tick.
 
 import { test, expect } from '@playwright/test'
-import { bootApp } from './fixtures.js'
+import { bootApp, stackClipOnBar } from './fixtures.js'
 
 /**
  * Records which patterns the engine resolves flat notes for.
@@ -103,10 +103,12 @@ test.describe('Song playback mode follows the visible view', () => {
         await page.evaluate(() => window.__e2e.serviceRegistry.seq.toggleStartStop?.())
     })
 
-    // The arrangement demo starts rock + basrock together on bar 0.
+    // The demo arrangement stacks nothing, so a second clip is placed on bar 0
+    // first: this is about the resolver layering, not about the demo song.
     test('overlapping clips are resolved together, not one after the other', async ({ page }) => {
         await bootApp(page)
         await page.locator('.tb-view-btn[data-view="song"]').click()
+        await stackClipOnBar(page, 0)
         await startPlayback(page)
         await spyOnFlatNotes(page)
         await page.waitForTimeout(600)

@@ -5,11 +5,11 @@
 // left to right on X (a ruler, one cell per measure), one row per pattern named
 // in a frozen first column, one rectangle per clip whose width is its duration.
 //
-// Playback of an arrangement is NOT implemented yet — nothing here asserts it
-// drives the transport.
+// Playback of an arrangement runs from the transport: clicking a measure in the
+// ruler aims the cursor, which is where the next play starts.
 
 import { test, expect } from '@playwright/test'
-import { bootApp } from './fixtures.js'
+import { bootApp, stackClipOnBar } from './fixtures.js'
 
 async function openSongView(page) {
     await bootApp(page)
@@ -101,9 +101,12 @@ test.describe('Song arrangement grid', () => {
     })
 
     // Overlapping clips is the whole point of the feature: two patterns starting
-    // on the same bar must sit on two rows at the same X position.
+    // on the same bar must sit on two rows at the same X position. The demo
+    // arrangement stacks nothing, so the second clip is placed on the spot.
     test('shows overlapping clips on separate rows', async ({ page }) => {
         await openSongView(page)
+        await stackClipOnBar(page, 0)
+
         const overlap = await page.evaluate(() => {
             const song = window.__e2e.appState.songs[0]
             const at0 = song.clips.filter((c) => c.startBar === 0)
@@ -174,22 +177,24 @@ test.describe('Song arrangement context menus', () => {
     test('on a clip: Next repeats the pattern right after it', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
-        await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="2"]').click({ button: 'right' })
+        // the demo arrangement's smrock clip: one bar long, on measure 4 (index 3)
+        await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="3"]').click({ button: 'right' })
         await expect(page.locator('.pp-context-menu')).toBeVisible()
         await page.locator('.pp-context-menu-item', { hasText: 'Next' }).click()
 
         await expect.poll(() => clips(page)).toBe(before + 1)
-        expect(await clipsWhere(page, "c.pattern === 'smrock' && c.startBar === 3")).toBe(1)
+        // so Next lands right after it, on measure 5
+        expect(await clipsWhere(page, "c.pattern === 'smrock' && c.startBar === 4")).toBe(1)
     })
 
     test('on a clip: Delete removes just that clip', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
-        await page.locator('.sa-clip[data-pattern="funkfill"][data-start-bar="11"]').click({ button: 'right' })
+        await page.locator('.sa-clip[data-pattern="funkfill"][data-start-bar="38"]').click({ button: 'right' })
         await page.locator('.pp-context-menu-item', { hasText: 'Delete' }).click()
 
         await expect.poll(() => clips(page)).toBe(before - 1)
-        expect(await clipsWhere(page, "c.pattern === 'funkfill' && c.startBar === 11")).toBe(0)
+        expect(await clipsWhere(page, "c.pattern === 'funkfill' && c.startBar === 38")).toBe(0)
     })
 
     test('on a pattern name: Add at bar places that pattern in the arrangement', async ({ page }) => {
@@ -275,7 +280,7 @@ test.describe('Song arrangement context menus', () => {
 
     test('clicking a filled cell offers the clip menu, not Add here', async ({ page }) => {
         await openSongView(page)
-        await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="2"]').click({ button: 'right' })
+        await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="3"]').click({ button: 'right' })
         await expect(page.locator('.pp-context-menu-item', { hasText: 'Add here' })).toHaveCount(0)
         await expect(page.locator('.pp-context-menu-item', { hasText: 'Delete' })).toBeVisible()
     })
@@ -283,7 +288,7 @@ test.describe('Song arrangement context menus', () => {
     test('Escape closes the menu without changing anything', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
-        await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="2"]').click({ button: 'right' })
+        await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="3"]').click({ button: 'right' })
         await expect(page.locator('.pp-context-menu')).toBeVisible()
         await page.keyboard.press('Escape')
         await expect(page.locator('.pp-context-menu')).toHaveCount(0)
@@ -293,7 +298,7 @@ test.describe('Song arrangement context menus', () => {
     test('arrangement edits are undoable', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
-        await page.locator('.sa-clip[data-pattern="funkfill"][data-start-bar="11"]').click({ button: 'right' })
+        await page.locator('.sa-clip[data-pattern="funkfill"][data-start-bar="38"]').click({ button: 'right' })
         await page.locator('.pp-context-menu-item', { hasText: 'Delete' }).click()
         await expect.poll(() => clips(page)).toBe(before - 1)
 
@@ -306,9 +311,11 @@ test.describe('Song arrangement context menus', () => {
 })
 
 /**
- * Playhead: a cursor on the measure currently playing. The transport keeps
+ * The cursor: a line on the measure the arrangement is on. The transport keeps
  * counting past the end of the arrangement, so the cursor is also checked for
- * wrapping back inside the grid instead of running off it.
+ * wrapping back inside the grid instead of running off it. While the transport is
+ * stopped it marks where the next play starts — clicking a measure in the ruler
+ * is what moves it.
  */
 test.describe('Song arrangement playhead', () => {
     const head = (page) => page.locator('.sa-playhead')
@@ -319,11 +326,14 @@ test.describe('Song arrangement playhead', () => {
             return m ? Number(m[1]) : null
         })
     const start = (page) => page.evaluate(() => window.__e2e.serviceRegistry.seq.toggleStartStop?.())
-    const tickTo = (page, tick) => page.evaluate((t) => (window.__e2e.serviceRegistry.transport.tick = t), tick)
 
-    test('stays hidden while the transport is stopped', async ({ page }) => {
+    // 24px per measure
+    const BAR = 24
+
+    test('rests on the first measure while the transport is stopped', async ({ page }) => {
         await openSongView(page)
-        await expect(head(page)).toBeHidden()
+        await expect(head(page)).toBeVisible()
+        expect(await px(page)).toBe(0)
     })
 
     test('appears on play and advances with the transport', async ({ page }) => {
@@ -336,8 +346,61 @@ test.describe('Song arrangement playhead', () => {
         const later = await px(page)
         expect(later).toBeGreaterThan(first)
 
+        // stopping does not lose the cursor: it falls back on the marker, so the
+        // next play starts where the user aimed it
         await start(page)
-        await expect(head(page)).toBeHidden()
+        await expect(head(page)).toBeVisible()
+        expect(await px(page)).toBe(0)
+    })
+
+    // The ruler click: aim the cursor, then play from there.
+    test('clicking a measure in the ruler aims the cursor there', async ({ page }) => {
+        await openSongView(page)
+        await page.locator('.sa-bar-head[data-bar="3"]').click()
+
+        await expect(head(page)).toBeVisible()
+        expect(await px(page)).toBe(3 * BAR)
+        expect(await page.evaluate(() => window.__e2e.serviceRegistry.seq.songCursorBar)).toBe(3)
+        // and the ruler says which measure that is
+        await expect(page.locator('.sa-bar-head.sa-bar-current')).toHaveText('4')
+    })
+
+    test('play starts from the measure the cursor was put on', async ({ page }) => {
+        await openSongView(page)
+        await page.locator('.sa-bar-head[data-bar="3"]').click()
+        await start(page)
+        await expect(head(page)).toBeVisible()
+
+        const first = await px(page)
+        expect(first).toBeGreaterThanOrEqual(3 * BAR)
+        expect(first).toBeLessThan(4 * BAR)
+
+        await start(page)
+    })
+
+    // The playhead follows a click while playback runs, it is not a start-only
+    // marker: the transport is re-anchored on the clicked measure.
+    test('clicking the ruler while playing moves the playhead there', async ({ page }) => {
+        await openSongView(page)
+        await start(page)
+        await expect(head(page)).toBeVisible()
+
+        await page.locator('.sa-bar-head[data-bar="20"]').click()
+        const jumped = await px(page)
+        expect(jumped).toBeGreaterThanOrEqual(20 * BAR)
+        expect(jumped).toBeLessThan(21 * BAR)
+        expect(await page.evaluate(() => window.__e2e.serviceRegistry.seq.tick)).toBeGreaterThanOrEqual(20 * 128)
+
+        await start(page)
+    })
+
+    // A left click on a clip edits nothing: the clips are right-click only, so a
+    // stray selection cannot re-aim playback.
+    test('a click on a clip leaves the cursor alone', async ({ page }) => {
+        await openSongView(page)
+        await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="3"]').click()
+        expect(await page.evaluate(() => window.__e2e.serviceRegistry.seq.songCursorBar)).toBe(0)
+        expect(await px(page)).toBe(0)
     })
 
     // The sequencer derives transport.tick from the audio clock and overwrites

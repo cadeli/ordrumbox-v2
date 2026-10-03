@@ -6,6 +6,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 import ArrangementSection from '../src/ui/song_panel/arrangement_section.js'
 
 const ROW_HEIGHT = 22
@@ -21,18 +22,42 @@ function build() {
     root.innerHTML = '<span class="t"></span><div class="l"></div>'
     document.body.appendChild(root)
     const list = root.querySelector('.l')
-    // the host panel supplies listen() for the delegated contextmenu and sub()
-    // for the playback subscriptions (playhead loop)
-    const panel = { listen: vi.fn(), sub: vi.fn() }
+    // the host panel supplies listen() for the two delegated grid listeners and
+    // sub() for the playback subscriptions (playhead loop)
+    const handlers = new Map()
+    const panel = { listen: vi.fn((el, type, fn) => handlers.set(type, fn)), sub: vi.fn() }
     const section = new ArrangementSection(panel, root, root.querySelector('.t'), list)
-    return { root, section, list, panel }
+    return { root, section, list, panel, handlers }
 }
 
 const clips = () => [...build2.list.querySelectorAll('.sa-clip')]
 
+/** Fires the delegated grid click the way the host panel binds it. */
+const clickOn = (el) => build2.handlers.get('click')({ target: el })
+/** Clicks the ruler cell of a 0-based measure. */
+const clickBar = (bar) => clickOn(build2.list.querySelector(`.sa-bar-head[data-bar="${bar}"]`))
+const cursorPx = () => {
+    const el = build2.list.querySelector('.sa-playhead')
+    return Number(/translateX\((-?[\d.]+)px\)/.exec(el?.style.transform ?? '')?.[1])
+}
+const markedBar = () => build2.list.querySelector('.sa-bar-head.sa-bar-current')?.dataset.bar
+
 let build2
 beforeEach(() => {
     appState.reset()
+    // the grid asks the sequencer where the transport is and aims it, so the
+    // tests drive that one collaborator instead of the whole audio stack
+    serviceRegistry.transport = null
+    serviceRegistry.seq = {
+        // mirrors Sequencer.tick, so a test can drive the transport alone
+        get tick() {
+            return serviceRegistry.transport?.tick ?? 0
+        },
+        songCursorBar: 0,
+        setSongCursor: vi.fn(function (bar) {
+            this.songCursorBar = bar
+        }),
+    }
     appState.patterns = [
         { id: 'rock', name: 'Rock' },
         { id: 'bass', name: 'Bass' },
@@ -168,5 +193,89 @@ describe('ArrangementSection', () => {
         appState.songs[0].clips = [{ pattern: 'rock', startBar: 0, bars: 1 }]
         build2.section.sync()
         expect(build2.list.querySelector('img')).toBeNull()
+    })
+})
+
+/**
+ * The ruler click: aim the arrangement cursor at a measure, and play from there.
+ * The cursor stays put while the transport is stopped (it marks where the next
+ * play starts) and hands over to the transport once playback runs.
+ */
+describe('ArrangementSection — ruler cursor', () => {
+    it('numbers every ruler cell with the measure it stands for', () => {
+        build2.section.sync()
+        const heads = [...build2.list.querySelectorAll('.sa-bar-head')]
+        expect(heads.map((h) => h.dataset.bar)).toEqual(heads.map((_, i) => String(i)))
+        expect(heads[5].textContent).toBe('6')
+    })
+
+    it('rests on the first measure until the user aims it somewhere', () => {
+        build2.section.sync()
+        expect(cursorPx()).toBe(0)
+        expect(markedBar()).toBe('0')
+        expect(build2.list.querySelector('.sa-playhead').classList.contains('sa-cursor-idle')).toBe(true)
+    })
+
+    it('clicking a measure aims the cursor there', () => {
+        build2.section.sync()
+        clickBar(5)
+        expect(serviceRegistry.seq.setSongCursor).toHaveBeenCalledWith(5)
+        expect(cursorPx()).toBe(5 * BAR_WIDTH)
+        expect(markedBar()).toBe('5')
+    })
+
+    // The highlighted measure must follow the cursor, not accumulate.
+    it('marks a single measure at a time', () => {
+        build2.section.sync()
+        clickBar(5)
+        clickBar(2)
+        expect(build2.list.querySelectorAll('.sa-bar-head.sa-bar-current')).toHaveLength(1)
+        expect(markedBar()).toBe('2')
+    })
+
+    // Clips are edited from the right-click menu; a left click must not move the
+    // cursor, or every selection would re-aim playback.
+    it('ignores a click outside the ruler', () => {
+        build2.section.sync()
+        clickOn(clips()[0])
+        clickOn(build2.list.querySelector('.sa-row-name'))
+        expect(serviceRegistry.seq.setSongCursor).not.toHaveBeenCalled()
+        expect(cursorPx()).toBe(0)
+    })
+
+    // A re-render rebuilds the whole grid, the cursor has to come back with it.
+    it('survives a re-render', () => {
+        build2.section.sync()
+        clickBar(3)
+        build2.section.sync()
+        expect(cursorPx()).toBe(3 * BAR_WIDTH)
+        expect(markedBar()).toBe('3')
+    })
+
+    // Another arrangement can be shorter than the mark the cursor was left on.
+    it('keeps a cursor aimed on a longer song inside the grid', () => {
+        serviceRegistry.seq.songCursorBar = 40
+        build2.section.sync()
+        expect(cursorPx()).toBe(11 * BAR_WIDTH)
+        expect(markedBar()).toBe('11')
+    })
+
+    it('follows the transport while it runs, and drops the idle look', async () => {
+        build2.section.sync()
+        clickBar(3)
+        serviceRegistry.transport = { isRunning: true, tick: 5 * 128 }
+        build2.section.startPlayhead()
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+
+        expect(cursorPx()).toBe(5 * BAR_WIDTH)
+        expect(markedBar()).toBe('5')
+        expect(build2.list.querySelector('.sa-playhead').classList.contains('sa-cursor-idle')).toBe(false)
+
+        // stopping falls back on the marker the user aimed, not on where the
+        // playback happened to be
+        serviceRegistry.transport = { isRunning: false, tick: 9 * 128 }
+        build2.section.stopPlayhead()
+        expect(cursorPx()).toBe(3 * BAR_WIDTH)
+        expect(build2.list.querySelector('.sa-playhead').classList.contains('sa-cursor-idle')).toBe(true)
     })
 })
