@@ -22,13 +22,6 @@ export default class Sequencer {
     /** Measure the arrangement cursor is on; the song ruler sets it. */
     #songCursorBar = 0
 
-    /**
-     * Offline export flag: keeps the transport on the pattern's own bpm instead
-     * of the arrangement's. Nothing assigns it today, so it always reads false.
-     * @type {boolean}
-     */
-    isOffline
-
     constructor(options = {}) {
         this.serviceRegistry = options.serviceRegistry ?? serviceRegistry
         this.appState = options.appState ?? appState
@@ -175,7 +168,7 @@ export default class Sequencer {
         // A song plays every pattern at one tempo; the arrangement's bpm wins.
         // Offline export deliberately keeps the pattern's own bpm so a render
         // never depends on which view happens to be open.
-        const songBpm = this.isOffline ? null : this.currentSongTempo()
+        const songBpm = this.currentSongTempo()
         this.serviceRegistry.transport.setBpm(songBpm ?? selectedPattern.bpm)
         const autoAssign = await getAutoAssignService()
         // A song sounds every pattern its clips reference, not only the selected
@@ -280,7 +273,7 @@ export default class Sequencer {
      * @returns {object[]}
      */
     patternsToPlay = (selectedPattern) => {
-        if (this.isOffline || this.appState.currentView !== 'song') return [selectedPattern]
+        if (this.appState.currentView !== 'song') return [selectedPattern]
         const song = this.appState.songs?.[this.appState.selectedSongIdx ?? 0]
         const patterns = songPatterns(song, this.appState.patterns)
         return patterns.length ? patterns : [selectedPattern]

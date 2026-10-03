@@ -14,11 +14,16 @@ export function safeDisconnect(node) {
     }
 }
 
-export function computeOscFrequency(noteRatio, octave = 0, detune = 0) {
+/**
+ * @param {number} detuneSemitones  detune in SEMITONES, clamped to +-1 (the
+ *   worklet's own oscNDetune is in cents and is a different quantity — do not
+ *   feed one to the other)
+ */
+export function computeOscFrequency(noteRatio, octave = 0, detuneSemitones = 0) {
     const nRatio = computeNoteRatio(noteRatio)
     const oct = Utils.clamp(Utils.toFiniteNumber(octave, 0), -4, 4)
-    const det = Utils.clamp(Utils.toFiniteNumber(detune, 0), -100, 100)
-    return C3_FREQ * nRatio * Math.pow(2, oct + det / 100)
+    const det = Utils.clamp(Utils.toFiniteNumber(detuneSemitones, 0), -1, 1)
+    return C3_FREQ * nRatio * Math.pow(2, oct + det)
 }
 
 export function computeNoteRatio(fpitch) {

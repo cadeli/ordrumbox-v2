@@ -7,7 +7,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import { instrumentsManager } from '../logic/services/instrument_manager/index.js'
 import Utils from '../core/utils.js'
 import { applyParamsToStrip } from './strip_sync.js'
-import { logger, nameOr } from '../core/logger.js'
+import { logger, valueOrFallback } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
 import { pushStepLfo } from './step_lfo.js'
 import { createMidiMappingResolver, sendMidiNotes, sendTriggerMidi } from './midi_out.js'
@@ -29,7 +29,7 @@ export default class AudioEngine {
     constructor(config) {
         this.audioCtx = config.audioCtx
         this.sounds = config.sounds
-        this.generatedSounds = nameOr(config.generatedSounds, {}, 'AudioEngine', 'generatedSounds fallback')
+        this.generatedSounds = valueOrFallback(config.generatedSounds, {}, 'AudioEngine', 'generatedSounds fallback')
         this.patterns = config.patterns
         this.getSelectedPatternIdx = config.getSelectedPatternIdx ?? (() => config.selectedPatternIdx ?? 0)
         // Injected like the pattern index: the audio layer reads appState only

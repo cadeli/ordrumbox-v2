@@ -152,7 +152,7 @@ function cloneVaried(varied, source) {
  * value is a Map<sourceNote, variedClone> so callers can look up the varied
  * variant while source data stays pristine (it is never persisted).
  */
-function applyNoteVariation(sourceNotes, budget, track) {
+function varyNotes(sourceNotes, budget, track) {
     const varied = new Map()
     if (budget <= 0 || !sourceNotes || sourceNotes.length === 0) return varied
 
@@ -331,6 +331,6 @@ export default class TrackVariation {
 
         const budget = Math.round((variation2 * 16) / 100)
         const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? {})
-        return applyNoteVariation(notes, budget, track)
+        return varyNotes(notes, budget, track)
     }
 }

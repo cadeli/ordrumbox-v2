@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -49,32 +49,14 @@ describe('Granular patternChange events', () => {
         serviceRegistry.audioEngine = { invalidateCache: vi.fn(), syncAllTracks: vi.fn(), syncTrack: vi.fn() }
 
         document.body.innerHTML = ''
-        HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
-            fillRect: vi.fn(),
-            clearRect: vi.fn(),
-            getImageData: vi.fn(),
-            putImageData: vi.fn(),
-            createImageData: vi.fn(),
-            setTransform: vi.fn(),
-            drawImage: vi.fn(),
-            save: vi.fn(),
-            fillText: vi.fn(),
-            restore: vi.fn(),
-            beginPath: vi.fn(),
-            moveTo: vi.fn(),
-            lineTo: vi.fn(),
-            closePath: vi.fn(),
-            stroke: vi.fn(),
-            translate: vi.fn(),
-            scale: vi.fn(),
-            rotate: vi.fn(),
-            arc: vi.fn(),
-            fill: vi.fn(),
-            measureText: vi.fn().mockReturnValue({ width: 0 }),
-            transform: vi.fn(),
-            rect: vi.fn(),
-            clip: vi.fn(),
-        })
+    })
+
+    afterEach(() => {
+        // The panels built below subscribe to playbackEvents and are never
+        // destroyed, so their handlers would stay live for the rest of the file
+        // (and EventBus swallows their errors). BasePanel.destroy() would do the
+        // same thing through the `off` handles it keeps.
+        playbackEvents.clearListeners()
     })
 
     function captureGranular() {

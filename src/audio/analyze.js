@@ -4,9 +4,7 @@ import Utils from '../core/utils.js'
  * Metriques produites par AudioAnalyzer.
  * @typedef {object} AudioAnalysis
  * @property {number[]} envelope
- * @property {number|null} pitch
- * @property {number} volume
- * @property {number} length
+ * @property {number} durationSec  length in SECONDS (multiply by 1000 for ms)
  * @property {number} peakDb
  * @property {number} rmsDb
  * @property {number} [peakLinear]
@@ -66,9 +64,7 @@ export default class AudioAnalyzer {
         if (samples.length === 0) {
             return {
                 envelope: [],
-                pitch: null,
-                volume: 0,
-                length: 0,
+                durationSec: 0,
                 peakDb: -Infinity,
                 rmsDb: -Infinity,
                 fundamentalHz: null,
@@ -94,9 +90,7 @@ export default class AudioAnalyzer {
 
         return {
             envelope,
-            pitch: pitchMetrics.fundamentalHz,
-            volume: rmsLinear,
-            length: samples.length / sampleRate,
+            durationSec: samples.length / sampleRate,
             peakDb,
             rmsDb,
             fundamentalHz: pitchMetrics.fundamentalHz,

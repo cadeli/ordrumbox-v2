@@ -76,7 +76,9 @@
  *   - 19: release    (s, 0..0.5)
  *   - 20: master     (linear, 0..2)
  *   - 21: pan        (-1..1)
- *   - 22: velocity   (linear, 0..1)
+ *   - 22: velocity   the note's PEAK amplitude (linear 0..1), already multiplied by
+ *                    masterVolume, accent and NOTE_VELO_BALANCE by the host — not the
+ *                    note velocity itself
  *   - 23: filterEnvAmt (linear, 0..1)
  */
 

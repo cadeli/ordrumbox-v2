@@ -11,8 +11,8 @@ import { EVENTS } from '../core/events.js'
  * patterns/step_resolver.js for the pass-scoped cache strategy), so nothing
  * has to be invalidated here.
  */
-export function applyFlatNotes(djtPattern, loop = 0) {
-    const flatNotes = recomputeFlatNotes(djtPattern, loop, TICK)
+export function applyFlatNotes(pattern, loop = 0) {
+    const flatNotes = recomputeFlatNotes(pattern, loop, TICK)
     appState.flatNotes = flatNotes
     playbackEvents.batch(() => {
         playbackEvents.emit(EVENTS.NOTE_CHANGE)

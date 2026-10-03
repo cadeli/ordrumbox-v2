@@ -20,6 +20,7 @@ const stubContext = () => ({
     closePath: vi.fn(),
     stroke: vi.fn(),
     translate: vi.fn(),
+    rotate: vi.fn(),
     scale: vi.fn(),
     arc: vi.fn(),
     fill: vi.fn(),

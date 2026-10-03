@@ -1,5 +1,4 @@
 import { playbackEvents } from '../state/playback_events.js'
-import { isMobileViewport } from '../core/constants.js'
 import { logger } from '../core/logger.js'
 import { EVENTS } from '../core/events.js'
 
@@ -96,9 +95,5 @@ export default class MobileTabBar {
         this.container?.querySelectorAll('.mtb-btn').forEach((btn) => {
             btn.classList.toggle('active', /** @type {HTMLElement} */ (btn).dataset.tab === this.#currentTab)
         })
-    }
-
-    isVisible() {
-        return isMobileViewport()
     }
 }

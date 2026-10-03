@@ -55,11 +55,6 @@ export default class Sound {
         this.#stripParamCache = new Map()
     }
 
-    getStrip = async (track) => {
-        if (!track?.name || !this.mixer) return null
-        return await this.mixer.getOrCreateStrip(track.name)
-    }
-
     connectToStripInput = (sourceNode, strip) => {
         if (!sourceNode || !strip) return
         const entry = strip.voicesInput ?? strip.filter1

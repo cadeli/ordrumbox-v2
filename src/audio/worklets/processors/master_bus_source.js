@@ -110,8 +110,10 @@ class MasterBusProcessor extends AudioWorkletProcessor {
             let xL = inL[i];
             let xR = inR[i];
 
+            // bypass takes out pre-gain + compressor + HPF + LPF together (see
+            // Mixer.setMasterBus bypass), the master gain below always applies
             if (bypass < 0.5) {
-                // Pre-gain
+                // Pre-gain (pre-compressor, not pre-limiter: there is no limiter)
                 xL *= preGainLin;
                 xR *= preGainLin;
 

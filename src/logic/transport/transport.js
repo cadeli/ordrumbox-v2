@@ -114,6 +114,10 @@ export default class Transport {
         }
     }
 
+    /**
+     * Advance one tick: schedule the next tick time and move the counter on.
+     * Nothing is "noted" here — the caller (onSchedule) is what sounds a tick.
+     */
     nextNote = () => {
         this.nextStepTime += 0.25 * appState.secondsPerBeat
         this.tick++

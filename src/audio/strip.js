@@ -7,7 +7,6 @@ import STRIP_SOURCE from './worklets/processors/strip_source.js'
 
 WorkletLoader.register('strip', STRIP_SOURCE)
 
-const SATURATION_TYPES = Object.freeze(['soft', 'hard', 'tape'])
 const REVERB_PRESETS = Object.freeze({
     none: { duration: 0, decay: 0, preDelay: 0, tone: 1, room: 0.0, damp: 0.5, width: 0.0, pre: 0 },
     room: { duration: 0.8, decay: 2.2, preDelay: 0.008, tone: 0.85, room: 0.5, damp: 0.5, width: 0.8, pre: 0.008 },
@@ -73,12 +72,6 @@ export default class Strip {
         this.levelData = new Uint8Array(this.levelAnalyser.frequencyBinCount)
 
         this.currentFilterType = 'allpass'
-        this.currentSaturationType = 'soft'
-        this.currentSaturationAmount = 0
-        this.currentReverbType = 'none'
-        this.currentReverbAmount = 0
-        this.currentDelayType = 'tape'
-        this.currentDelayAmount = 0
     }
 
     static async create(name, audioCtx, mixer) {
@@ -172,8 +165,6 @@ export default class Strip {
         const params = this.stripNode.parameters
 
         const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
-        this.currentSaturationType = SATURATION_TYPES.includes(type) ? type : 'soft'
-        this.currentSaturationAmount = normalizedAmount
 
         const typeIdx = SATURATION_TYPES_IDX[type] ?? 0
         const drive = 1 + normalizedAmount * 6
@@ -194,9 +185,6 @@ export default class Strip {
         const normalizedType = mapStripEnum(REVERB_PRESETS, type, 'reverbType', 'none')
         const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
 
-        this.currentReverbType = normalizedType
-        this.currentReverbAmount = normalizedAmount
-
         const p = REVERB_PRESETS[normalizedType] ?? REVERB_PRESETS.none
         const wet = normalizedType === 'none' ? 0 : normalizedAmount
 
@@ -214,9 +202,6 @@ export default class Strip {
 
         const normalizedType = mapStripEnum(DELAY_MODES, type, 'delayType', 'tape')
         const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
-
-        this.currentDelayType = normalizedType
-        this.currentDelayAmount = normalizedAmount
 
         if (normalizedType === 'none' || normalizedAmount <= 0) {
             params.get('dlyMix')?.setTargetAtTime(0, time, RAMP_TIME)

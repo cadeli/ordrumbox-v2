@@ -67,7 +67,12 @@ describe('Audio Graph Validity', () => {
             )
 
             strip.updateSaturation('invalid', 0.5)
-            expect(strip.currentSaturationType).toBe('soft')
+            // falls back to 'soft' (index 0), and it is the AudioParam that carries it
+            expect(strip.stripNode.parameters.get('satType').setTargetAtTime).toHaveBeenLastCalledWith(
+                0,
+                expect.any(Number),
+                expect.any(Number),
+            )
         })
 
         it('updateSaturation clamps internal drive to finite values for any amount', async () => {
@@ -135,10 +140,16 @@ describe('Audio Graph Validity', () => {
                 mockCtx.currentTime,
             )
 
-            // Effect busses are set to 0 (muted)
-            expect(strip.currentReverbAmount).toBe(0)
-            expect(strip.currentDelayAmount).toBe(0)
-            expect(strip.currentSaturationAmount).toBe(0)
+            // Effect busses are muted: reverbOn/delayOn/sat are all false above
+            const zeroed = (name) =>
+                expect(strip.stripNode.parameters.get(name).setTargetAtTime).toHaveBeenLastCalledWith(
+                    0,
+                    expect.any(Number),
+                    expect.any(Number),
+                )
+            zeroed('revMix')
+            zeroed('dlyMix')
+            zeroed('satMix')
         })
     })
 

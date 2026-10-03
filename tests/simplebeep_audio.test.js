@@ -241,7 +241,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
         expect(rms(samples)).toBeGreaterThan(0.001)
     })
 
-    it('signal is silent when busInput is null (the pre-fix behavior)', async () => {
+    it('signal still reaches the destination after mixer.stop() nulls busInput', async () => {
         const { default: Mixer } = await import('../src/audio/mixer.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')

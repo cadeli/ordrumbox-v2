@@ -3,7 +3,7 @@ import FlatNote from '../model/flatnote.js'
 import NoteParams from '../patterns/note_params.js'
 import { getAutoGenerateService } from '../state/service_loader.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { logger, nameOr } from '../core/logger.js'
+import { logger, valueOrFallback } from '../core/logger.js'
 import Utils from '../core/utils.js'
 import { EVENTS } from '../core/events.js'
 import { BEATS_PER_BAR } from '../model/song_schema.js'
@@ -38,7 +38,7 @@ export default class Player {
         this.audioCtx = config.audioCtx
         this.mixer = config.mixer
         this.sounds = config.sounds
-        this.generatedSounds = nameOr(config.generatedSounds, {}, 'Player', 'generatedSounds fallback')
+        this.generatedSounds = valueOrFallback(config.generatedSounds, {}, 'Player', 'generatedSounds fallback')
         this.patterns = config.patterns
         this.getSelectedPatternIdx = config.getSelectedPatternIdx ?? (() => config.selectedPatternIdx ?? 0)
         this.computeFlatNotes = config.computeFlatNotes

@@ -24,16 +24,13 @@
  * @param {number} [opts.bpm=120]
  * @returns {Promise<Array<{channelData: number[][], sampleRate: number}>>}
  */
-/** See the note above: drain port messages before starting the render. */
-const WORKLET_FLUSH_MS = 25
-
 const PREFERRED_BASE_SYNTH_KEY = 'SYNTH2'
 
 export async function renderSynthBatch(page, configs, opts = {}) {
     const { durationPerNote = 1.0, gapSec = 0.05, pitch = 0, bpm = 120 } = opts
 
     return page.evaluate(
-        async ({ configs, durationPerNote, gapSec, pitch, bpm, preferredBaseKey, workletFlushMs }) => {
+        async ({ configs, durationPerNote, gapSec, pitch, bpm, preferredBaseKey }) => {
             const { default: AudioEngine } = await import('/src/audio/engine.js')
 
             function deepMerge(target, src) {
@@ -113,7 +110,11 @@ export async function renderSynthBatch(page, configs, opts = {}) {
                 await engine.playNotes(0, offset)
             }
 
-            await new Promise((resolve) => setTimeout(resolve, workletFlushMs))
+            // No sleep here: the port queue is flushed before the first render
+            // quantum, so every note posted above is in the processor by the time
+            // startRendering() runs. This used to wait a flat 25 ms, which was a
+            // guess — on a loaded runner the queue can drain later than that and
+            // the last note rendered silent.
             const rendered = await offlineCtx.startRendering()
             const results = []
             for (let i = 0; i < configs.length; i++) {
@@ -127,6 +128,20 @@ export async function renderSynthBatch(page, configs, opts = {}) {
                     sampleRate,
                 })
             }
+            // A silent batch means the messages never reached the processor (or the
+            // patch is genuinely silent): say so instead of letting each caller
+            // fail later on an unexplained RMS.
+            const rms = (data) => {
+                let sum = 0
+                for (let i = 0; i < data.length; i++) sum += data[i] * data[i]
+                return Math.sqrt(sum / Math.max(1, data.length))
+            }
+            const anySignal = results.some((r) => rms(r.channelData[0]) > 0)
+            if (!anySignal) {
+                throw new Error(
+                    'renderSynthBatch produced pure silence for every note — the worklet never received its messages',
+                )
+            }
             return results
         },
         {
@@ -136,7 +151,6 @@ export async function renderSynthBatch(page, configs, opts = {}) {
             pitch,
             bpm,
             preferredBaseKey: PREFERRED_BASE_SYNTH_KEY,
-            workletFlushMs: WORKLET_FLUSH_MS,
         },
     )
 }

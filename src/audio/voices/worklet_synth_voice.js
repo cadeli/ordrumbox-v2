@@ -315,7 +315,7 @@ export default class WorkletSynthVoice extends BaseVoice {
                 release: Utils.clamp(Utils.toFiniteNumber(env.release, 0.1), 0.008, 0.5),
                 master: 1.0,
                 pan: Utils.toFiniteNumber(pan, 0),
-                velocity: peak,
+                velocity: peak, // param slot 22 is named "velocity" but carries the peak amplitude
                 lfo1Target: mapEnum(LFO_TARGET_TO_INT, gs.lfo?.target, 'lfoTarget'),
                 lfo1Wave: mapEnum(WAVE_TO_INT, gs.lfo?.wave, 'wave'),
                 lfo1Freq:

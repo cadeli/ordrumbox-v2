@@ -446,16 +446,19 @@ test.describe('Song arrangement playhead', () => {
             tick: window.__e2e.serviceRegistry.seq.tick,
             loopBars: window.__e2e.appState.songs[0].loopBars,
         }))
-        // one cell is BAR_WIDTH px, one bar is BAR_TICKS ticks; +/-1px covers the
-        // frame the cursor was last painted on
+        // one cell is BAR_WIDTH px, one bar is BAR_TICKS ticks
         expect(px).toBeCloseTo((((tick / BAR_TICKS) % loopBars) * BAR_WIDTH) % BAR_WIDTH, 0)
-        expect(Math.abs(px - (tick / BAR_TICKS) * BAR_WIDTH).valueOf()).toBeLessThanOrEqual(1)
+        // The cursor is painted in a rAF while `tick` is read live, so the two can
+        // be a frame apart: tolerate one CELL of lag, not one pixel (1px was ~330ms
+        // of drift at 120bpm and only passed on a quiet machine).
+        const lagBars = Math.abs(px - (tick / BAR_TICKS) * BAR_WIDTH) / BAR_WIDTH
+        expect(lagBars).toBeLessThan(1)
     })
 
     test('wraps back inside the grid instead of running off the end', async ({ page }) => {
         await openSongView(page)
-        // a 2-bar loop makes the wrap observable in a few seconds; the grid
-        // itself stays 21 bars wide, exactly as it is with a 21-bar song
+        // a 2-bar loop makes the wrap observable in a few seconds; the grid keeps
+        // the demo arrangement's own width
         await page.evaluate(() => (window.__e2e.appState.songs[0].loopBars = 2))
         await start(page)
         await expect(head(page)).toBeVisible()

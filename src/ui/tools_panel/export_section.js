@@ -4,7 +4,7 @@ import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { showToast } from '../../core/notify.js'
 import { OrSlider } from '../components/or_slider.js'
-import { logger, nameOr } from '../../core/logger.js'
+import { logger, valueOrFallback } from '../../core/logger.js'
 import MidiExporter from '../../logic/midi/midi_exporter.js'
 
 export default class ExportSection {
@@ -83,7 +83,7 @@ export default class ExportSection {
             const loops = Math.round(this.#wavLoopsSlider.getValue())
             exporter.download(
                 pattern,
-                `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'midi name fallback')}.mid`,
+                `ordrumbox-${valueOrFallback(pattern.name, 'pattern', 'ToolsPanel', 'midi name fallback')}.mid`,
                 { loops },
             )
         } catch (e) {
@@ -103,7 +103,10 @@ export default class ExportSection {
             return
         }
         if (!song.clips?.length) {
-            showToast(`"${nameOr(song.name, 'song', 'ToolsPanel', 'song name fallback')}" has no clip`, 'warning')
+            showToast(
+                `"${valueOrFallback(song.name, 'song', 'ToolsPanel', 'song name fallback')}" has no clip`,
+                'warning',
+            )
             return
         }
 
@@ -119,9 +122,12 @@ export default class ExportSection {
             const blob = await serviceRegistry.wavExporter.exportSongToWav(song)
             serviceRegistry.wavExporter.downloadWav(
                 blob,
-                `ordrumbox-${nameOr(song.name, 'song', 'ToolsPanel', 'song wav name fallback')}.wav`,
+                `ordrumbox-${valueOrFallback(song.name, 'song', 'ToolsPanel', 'song wav name fallback')}.wav`,
             )
-            showToast(`Song "${nameOr(song.name, 'song', 'ToolsPanel', 'song name fallback')}" exported`, 'success')
+            showToast(
+                `Song "${valueOrFallback(song.name, 'song', 'ToolsPanel', 'song name fallback')}" exported`,
+                'success',
+            )
         } catch (e) {
             logger.error('ToolsPanel', 'Song WAV Export failed', e)
             showToast('Song WAV export failed: ' + e.message, 'error')
@@ -149,7 +155,7 @@ export default class ExportSection {
             const blob = await serviceRegistry.wavExporter.exportPatternToWav(pattern, loops)
             serviceRegistry.wavExporter.downloadWav(
                 blob,
-                `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'wav name fallback')}.wav`,
+                `ordrumbox-${valueOrFallback(pattern.name, 'pattern', 'ToolsPanel', 'wav name fallback')}.wav`,
             )
         } catch (e) {
             logger.error('ToolsPanel', 'WAV Export failed', e)

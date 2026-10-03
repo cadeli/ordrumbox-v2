@@ -700,6 +700,8 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
         const wav2 = await wavExporter.exportPatternToWav(importedPattern, 1)
         expect(wav2).toBeDefined()
         expect(wav2.type).toBe('audio/wav')
+        // the point of the round trip: the same audio comes back out
+        expect(wav2.size).toBe(wav1.size)
     })
 
     // ── Parameterized: MIDI roundtrip across different subdivisions ───────────────

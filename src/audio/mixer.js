@@ -15,7 +15,6 @@ export default class Mixer {
 
     constructor(audioCtx) {
         this.audioCtx = audioCtx
-        this.trackName = 'all'
         this.strips = {}
 
         this.analyser = null
@@ -228,8 +227,11 @@ export default class Mixer {
      * @property {number} [attack]    Compressor attack (s)
      * @property {number} [release]   Compressor release (s)
      * @property {number} [makeup]    Compressor makeup gain (dB)
-     * @property {number} [preGain]   Pre-limiter gain (dB)
-     * @property {boolean} [bypass]   Bypass the limiter stage
+     * @property {number} [preGain]   Gain in dB applied BEFORE the compressor (there is
+     *                                 no limiter in the chain: pre-gain -> compressor
+     *                                 -> highpass -> lowpass -> master gain)
+     * @property {boolean} [bypass]   Bypasses that whole block — pre-gain, compressor
+     *                                 AND both filters, not the compressor alone
      */
 
     /** @param {MasterBusOptions} options */

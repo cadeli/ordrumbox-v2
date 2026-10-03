@@ -42,7 +42,7 @@ export const logger = {
  * @param {string} msg   - warning message
  * @returns {T}
  */
-export function nameOr(value, fallback, tag, msg) {
+export function valueOrFallback(value, fallback, tag, msg) {
     if (value != null) return value
     logger.warn(tag, msg)
     return fallback

@@ -346,9 +346,10 @@ export default class Utils {
     }
 
     /**
-     * Remove melodic tracks (BASS, PIANO, ORGAN) that have no notes.
+     * Keep only the melodic tracks (BASS, PIANO, ORGAN) that have notes.
+     * Returns a NEW array; `tracks` is left untouched.
      * @param {Array} tracks
-     * @returns {Array} filtered tracks array (mutated in place)
+     * @returns {Array}
      */
     static filterEmptyMelodicTracks(tracks) {
         return tracks.filter((t) => !Utils.isMelodicTrack(t) || (t.notes && t.notes.length > 0))

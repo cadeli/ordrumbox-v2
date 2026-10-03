@@ -4,7 +4,7 @@ import { bufferToWav } from './wav_encoder.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { getAutoGenerateService } from '../../state/service_loader.js'
 import { soundRegistry } from '../../state/sound_registry.js'
-import { nameOr } from '../../core/logger.js'
+import { valueOrFallback } from '../../core/logger.js'
 import { downloadBlob } from '../../core/download.js'
 import { appState } from '../../state/app_state.js'
 import { BEATS_PER_BAR, songLengthBars } from '../../model/song_schema.js'
@@ -188,6 +188,6 @@ export default class WavExporter {
     }
 
     downloadWav = (blob, filename) => {
-        downloadBlob(blob, nameOr(filename, 'pattern.wav', 'WavExporter', 'filename fallback'))
+        downloadBlob(blob, valueOrFallback(filename, 'pattern.wav', 'WavExporter', 'filename fallback'))
     }
 }

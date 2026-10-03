@@ -537,7 +537,7 @@ export default class TrackEditor extends BasePanel {
         if (!sound?.buffer) return ''
         const analysis = analyzeSample(sound.buffer)
         const pitchStr = analysis?.noteInfo ? `${analysis.noteInfo.note}${analysis.noteInfo.octave}` : '—'
-        const durStr = analysis?.length != null ? (analysis.length * 1000).toFixed(0) + ' ms' : '—'
+        const durStr = analysis?.durationSec != null ? (analysis.durationSec * 1000).toFixed(0) + ' ms' : '—'
         const peakStr = analysis?.peakDb != null ? analysis.peakDb.toFixed(1) + ' dB' : '—'
         return `<div class="te-sample-bar">
             <div class="te-sample-left">

@@ -212,11 +212,11 @@ export function generateSubNotesWithEuclidean(
     }
 }
 
-export function recomputeFlatNotes(djtPattern, loop = 0, tick = TICK) {
+export function recomputeFlatNotes(pattern, loop = 0, tick = TICK) {
     const flatNotes = new Map()
-    const nbTickForPattern = computeNbTickForPattern(djtPattern.beatCount, tick)
+    const nbTickForPattern = computeNbTickForPattern(pattern.beatCount, tick)
 
-    for (const track of Object.values(djtPattern.tracks)) {
+    for (const track of Object.values(pattern.tracks)) {
         const nbTickForLoop = computeNbTickForLoop(track, tick)
 
         // variation2 layer: lookup of per-source-note clones, source data untouched

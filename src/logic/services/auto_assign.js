@@ -106,8 +106,13 @@ export default class AutoAssign {
         }
     }
 
-    findSoundEquivalence = (soundId, selectedDrumkitName, track) => {
-        if (soundId !== NOT_FOUND) return soundId
+    /**
+     * Resolve the instrument's substitution chain.
+     * @param {string} notFoundId always the NOT_FOUND sentinel: the caller only
+     *   calls this when it has no sound, so the parameter is the sentinel itself
+     */
+    findSoundEquivalence = (notFoundId, selectedDrumkitName, track) => {
+        if (notFoundId !== NOT_FOUND) return notFoundId
 
         const instData = InstrumentsManager.DATA?.instruments?.find((i) => i.id === track.name)
         const replacements = instData?.subst ? Object.values(instData.subst) : null
@@ -139,7 +144,8 @@ export default class AutoAssign {
                 }
             }
         }
-        return soundId
+        // no substitution matched: the caller keeps the sentinel and auto-assigns
+        return notFoundId
     }
 
     getSoundIdByKeyContaining = (drumkitName, searchStr) => {

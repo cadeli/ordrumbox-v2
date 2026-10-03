@@ -163,19 +163,6 @@ describe('Sound', () => {
         expect(offlineSound.voiceFactory.synthNodePool).toBeNull()
     })
 
-    // ── getStrip ──────────────────────────────────────────────────────
-
-    it('getStrip returns null when track has no name', async () => {
-        expect(await sound.getStrip({ name: '' })).toBeNull()
-    })
-    it('getStrip returns null when track is null', async () => {
-        expect(await sound.getStrip(null)).toBeNull()
-    })
-    it('getStrip calls mixer.getOrCreateStrip with track name', async () => {
-        await sound.getStrip({ name: 'KICK' })
-        expect(mixer.getOrCreateStrip).toHaveBeenCalledWith('KICK')
-    })
-
     // ── registerVoice / stopPreviousVoice ─────────────────────────────
 
     it('registerVoice stores voice for mono track', () => {

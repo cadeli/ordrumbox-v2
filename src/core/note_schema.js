@@ -65,7 +65,11 @@ const NOTE_KEY_ORDER = [
  * @property {number} pan                   - Stereo pan (-1=left, 0=center, 1=right). Default: 0
  * @property {number} every                 - Play every N steps (1=every step, 2=every other, etc). Default: 1
  * @property {number} prob                  - Trigger probability (0-1). Default: 1 (certain)
- * @property {number} rate                  - Playback rate multiplier (1=normal). Default: 1
+ * @property {number} rate                  - Ghost/retrigger spacing CODE, decoded by
+ *                                          Utils.getStepSpacing (`<8` -> value/8,
+ *                                          `>=8` -> value-7 steps). Bigger = WIDER, and
+ *                                          1 is the tightest setting, not "normal".
+ *                                          Default: 1
  * @property {number} retriggerNum          - Number of retriggers per step (1=no retrigger). Default: 1
  * @property {Array|null} arp               - Arpeggio intervals (e.g. [0, 4, 7]). Default: null (disabled)
  * @property {number} arpTriggerProbability - Probability of arpeggio trigger (0-1). Default: 1

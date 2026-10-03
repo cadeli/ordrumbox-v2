@@ -299,16 +299,6 @@ describe('InstrumentsManager', () => {
         })
     })
 
-    describe('getAllIds', () => {
-        it('returns object with all instrument IDs', () => {
-            const ids = manager.getAllIds()
-            expect(ids).toHaveProperty('KICK')
-            expect(ids).toHaveProperty('SNARE')
-            expect(ids).toHaveProperty('CHH')
-            expect(ids).toHaveProperty('OHH')
-        })
-    })
-
     describe('DATA integrity', () => {
         it('has instruments array', () => {
             expect(Array.isArray(InstrumentsManager.DATA.instruments)).toBe(true)

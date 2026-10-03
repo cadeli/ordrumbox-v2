@@ -60,10 +60,6 @@ export default class InstrumentsManager {
         return null
     }
 
-    getAllIds() {
-        return Object.fromEntries(this.byId)
-    }
-
     findInstrumentFromFileName(fileName) {
         const normFileName = fileName.trim().toUpperCase()
         let instrument = this.byId.get(normFileName)

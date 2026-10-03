@@ -271,7 +271,7 @@ export default class DrumkitManager extends BasePanel {
         const noteStr = analysis?.noteInfo ? formatNote(analysis.noteInfo) : '—'
         const peakDb = analysis?.peakDb != null ? analysis.peakDb.toFixed(1) : '—'
         const rmsDb = analysis?.rmsDb != null ? analysis.rmsDb.toFixed(1) : '—'
-        const duration = analysis?.length != null ? (analysis.length * 1000).toFixed(0) + ' ms' : '—'
+        const duration = analysis?.durationSec != null ? (analysis.durationSec * 1000).toFixed(0) + ' ms' : '—'
         const decayStr = sound.decay != null ? sound.decay + ' ms' : '—'
         const tooltipText = `${detected.id !== 'NOT_FOUND' ? 'Detected: ' + detected.id : 'No instrument detected'}\nPeak: ${peakDb} dB\nRMS: ${rmsDb} dB\nDuration: ${duration}\nDecay: ${decayStr}`
 

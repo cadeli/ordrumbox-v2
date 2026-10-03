@@ -728,10 +728,11 @@ describe('MidiExporter — functional end-to-end', () => {
             const fm = recomputeFlatNotes(pattern, 0)
             let total = 0
             for (const v of fm.values()) total += v.length
-            // rate=2 → spacing=4 engine ticks; start at tick=24; pattern=32 ticks
-            // notes at 24, 28 → 2 notes fit inside [0,32)
-            expect(total).toBeLessThan(10)
-            expect(total).toBeGreaterThan(0)
+            // rate=2 → Utils.getStepSpacing(2) = 0.25 step = 2 engine ticks, and
+            // retriggerNum=10 would keep going: from tick 24 the notes are 24, 26,
+            // 28, 30 inside [0,32); the 5th (32) is past the pattern and dropped.
+            expect(total).toBe(4)
+            expect(fm.get(32)).toBeUndefined()
 
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)

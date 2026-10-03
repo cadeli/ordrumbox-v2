@@ -1,4 +1,4 @@
-import { nameOr } from '../core/logger.js'
+import { valueOrFallback } from '../core/logger.js'
 /**
  * track_schema.js — Single source of truth for the track structure.
  *
@@ -116,7 +116,7 @@ export const TRACK_DEFAULTS = {
  * @param {Partial<TrackDefaults>} [track]
  */
 export function normalizeTrack(track = {}) {
-    const t = nameOr(track, {}, 'TrackSchema', 'track null/undefined')
+    const t = valueOrFallback(track, {}, 'TrackSchema', 'track null/undefined')
     const { notes: inputNotes, ...rest } = t
     const normalized = { ...TRACK_DEFAULTS, ...rest }
     normalized.notes = Array.isArray(inputNotes) ? [...inputNotes] : []

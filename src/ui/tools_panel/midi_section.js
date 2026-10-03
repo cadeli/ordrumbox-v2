@@ -3,7 +3,7 @@
 import { serviceRegistry } from '../../state/service_registry.js'
 import { escapeHtml, renderOptions } from '../components/ui_utils.js'
 import { showToast } from '../../core/notify.js'
-import { nameOr } from '../../core/logger.js'
+import { valueOrFallback } from '../../core/logger.js'
 import MidiIndicatorView from '../midi_indicator_view.js'
 
 export default class MidiSection {
@@ -119,10 +119,10 @@ export default class MidiSection {
 
             if (outputSelect.options.length !== outputs.length) {
                 const values = outputs.map((o) => o.id)
-                const labels = outputs.map((o) => nameOr(o.name, 'Unknown', 'ToolsPanel', 'name fallback'))
+                const labels = outputs.map((o) => valueOrFallback(o.name, 'Unknown', 'ToolsPanel', 'name fallback'))
                 outputSelect.innerHTML = renderOptions(values, currentOutputId, { labels, escape: escapeHtml })
             } else {
-                outputSelect.value = nameOr(currentOutputId, '', 'ToolsPanel', 'outputId fallback')
+                outputSelect.value = valueOrFallback(currentOutputId, '', 'ToolsPanel', 'outputId fallback')
             }
         } else {
             this.#midiView.disconnect()
