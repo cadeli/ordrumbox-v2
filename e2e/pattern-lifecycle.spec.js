@@ -5,8 +5,7 @@
 //        parameter (knobs via their numeric prompt, sliders via fill, selects,
 //        toggles, icons), change drumkit, assign sample and synth sounds.
 //   T2 — persist to IndexedDB, reload the page, verify nothing was lost and
-//        assert the documented design losses (track pan rewrite, auto-assigned
-//        soundId reset).
+//        assert the documented design losses (auto-assigned soundId reset).
 //   T3 — export the pattern as a JSON file, verify its content, then re-import
 //        it through the "replace" action and verify the round-trip.
 //
@@ -805,9 +804,12 @@ test.describe.serial('Full session lifecycle', () => {
         expect(afterTracks).toHaveLength(4)
         expect(afterTracks.map((track) => (track.notes ?? []).length)).toEqual([3, 2, 1, 0])
 
-        // documented loss 1: pan is rewritten from PAN_MAP on every load
+        // Pans survive the reload. This used to be "documented loss 1": the pan was
+        // rewritten on every load from Utils.PAN_MAP using the track's POSITION in
+        // the pattern, so what the user panned was replaced by the pan of whatever
+        // drum type sat in that slot.
         expect(beforeTracks.map((track) => track.pan)).toEqual([0.25, 0, 0, 0])
-        expect(afterTracks.map((track) => track.pan)).toEqual([0, 0.3, 0.5, -0.4])
+        expect(afterTracks.map((track) => track.pan)).toEqual(beforeTracks.map((track) => track.pan))
 
         // documented loss 2: auto-assigned soundId is reset to NOT_DEFINED
         // documented loss 2: the persisted soundId of an auto track is discarded

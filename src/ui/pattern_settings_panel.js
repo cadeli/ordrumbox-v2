@@ -320,7 +320,7 @@ export default class PatternSettingsPanel {
     #subscribeEvents() {
         playbackEvents.on(EVENTS.PATTERN_META_CHANGE, () => this.sync())
         playbackEvents.on(EVENTS.PATTERN_STRUCTURE_CHANGE, () => this.sync())
-        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => this.syncDrumkits())
+        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => this.syncSelects())
         playbackEvents.on(EVENTS.PATTERN_SETTINGS_TOGGLE, (show) => {
             if (show) this.show()
             else this.hide()
@@ -339,7 +339,8 @@ export default class PatternSettingsPanel {
         this.#nextPageBtn.disabled = appState.currentPage >= maxPage
     }
 
-    syncDrumkits() {
+    /** Rebuilds BOTH the drumkit and the pattern <select> (it is called on DRUMKIT_CHANGE). */
+    syncSelects() {
         this.#drumkitSelect.innerHTML = ''
         soundRegistry.drumkitList.forEach((kit, i) => {
             const opt = document.createElement('option')
@@ -366,7 +367,7 @@ export default class PatternSettingsPanel {
         this.#isOpen = true
         this.container.classList.add('open')
         this.sync()
-        this.syncDrumkits()
+        this.syncSelects()
     }
 
     hide() {

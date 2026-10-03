@@ -2,6 +2,9 @@ import { logger } from '../core/logger.js'
 import { TICK, C3_FREQ, MIN_NOTE_RATIO } from '../core/constants.js'
 import Utils from '../core/utils.js'
 
+/** Beats in one LFO cycle: `freq` counts cycles per 4 beats. */
+const BEATS_PER_LFO_CYCLE = 4
+
 export function safeDisconnect(node) {
     if (!node || typeof node.disconnect !== 'function') return
     try {
@@ -26,21 +29,19 @@ export function computeNoteRatio(fpitch) {
  * Single source of truth for the LFO value calculation.
  *
  * Returns the LFO value in the same units as the base value of the control.
- * For 'filterFreq' and 'filterQ', if the LFO config {min,max} is in Hz/Q
- * (i.e. > 1), it is converted to normalized [0,1] so the result matches
- * the worklet's normalized domain.
  *
- * The worklet `strip_source.js` inlines the same formula. Both must
+ * The worklet `lfo_ui_source.js` inlines the same formula. Both must
  * produce the same value for the same input (verified by tests).
  *
- * Two modes:
- *   - tick-based: computeLfoValue(lfo, tick, nbTicks, controlKey)
- *   - time-based: computeLfoValue(lfo, null, null, controlKey, audioTime, bpm)
+ * One cycle spans 4 beats in both modes (`freq` = cycles per 4 beats):
+ *   - tick-based: computeLfoValue(lfo, tick, ...) — the only mode src uses;
+ *   - time-based: computeLfoValue(lfo, null, ..., audioTime, bpm) — reached only
+ *     when a caller passes an audioTime, which none does today.
  *
  * @param {Object|null} lfo  LFO config: { freq, min, max, phase }
  * @param {number|null} tick      Current tick position (for tick-based mode)
- * @param {number|null} nbTicks   Total ticks in the pattern (for tick-based mode)
- * @param {string|null} [controlKey]  Optional control key for normalization
+ * @param {number|null} nbTicks   unused, kept for the call signature
+ * @param {string|null} [controlKey]  unused, kept for the call signature
  * @param {number|null} audioTime   AudioContext.currentTime (for time-based mode)
  * @param {number|null} bpm         Current BPM (for time-based mode)
  * @returns {number} LFO value in base units
@@ -61,12 +62,14 @@ export function computeLfoValue(lfo, tick, nbTicks, controlKey, audioTime = null
 
     let currentPhase
     if (audioTime != null && bpm != null) {
-        // Time-based: matches worklet computeLfo exactly
-        const patternDuration = 16 * (60 / bpm) // 4 beats = 16 beats in seconds
-        currentPhase = (audioTime / patternDuration) * freqClamped + phase
+        // Time-based, same 4-beat cycle as the tick branch. This used to divide by
+        // 16 * (60 / bpm), i.e. 16 beats, which ran the LFO 4x slower than `freq`
+        // claims (and 4x slower than the tick branch and the worklet).
+        const cycleSeconds = BEATS_PER_LFO_CYCLE * (60 / bpm)
+        currentPhase = (audioTime / cycleSeconds) * freqClamped + phase
     } else {
         // Tick-based: for MIDI export and tests
-        currentPhase = (tick / (TICK * 4)) * freqClamped + phase
+        currentPhase = (tick / (TICK * BEATS_PER_LFO_CYCLE)) * freqClamped + phase
     }
 
     let val = getLfoWaveformValue(currentPhase, wave)

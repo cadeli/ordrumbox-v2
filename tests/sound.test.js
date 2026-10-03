@@ -575,12 +575,12 @@ describe('Sound', () => {
 
         // First call registers voice1
         await sound.playSample(fn1, 1.0)
-        expect(sound.activeVoices.get(track)).toBe(voice1)
+        expect(sound.monoVoiceByTrack.get(track)).toBe(voice1)
         expect(voice1.start).toHaveBeenCalled()
 
         // Second call: stopPreviousVoice stops voice1, registers voice2
         await sound.playSample(fn2, 1.1)
-        expect(sound.activeVoices.get(track)).toBe(voice2)
+        expect(sound.monoVoiceByTrack.get(track)).toBe(voice2)
         expect(voice2.start).toHaveBeenCalled()
         // voice1 should have been stopped
         expect(voice1.stop).toHaveBeenCalled()

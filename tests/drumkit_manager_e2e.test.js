@@ -9,6 +9,7 @@ import { EVENTS } from '../src/core/events.js'
 
 const mockDrumkitService = {
     getCurrentKitSounds: vi.fn().mockReturnValue([]),
+    getAllSounds: vi.fn().mockReturnValue([]),
     exportCurrentKit: vi.fn().mockReturnValue(null),
     restoreDrumkit: vi.fn().mockResolvedValue('Restored Kit'),
     moveToKit: vi.fn().mockReturnValue('Moved'),

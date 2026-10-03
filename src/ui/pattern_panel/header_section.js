@@ -1,8 +1,8 @@
 // src/ui/pattern_panel/HeaderSection.js
 // Pattern header: name, BPM/meta, page info, action buttons.
 
-import Utils from '../../core/utils.js'
 import { nameOr } from '../../core/logger.js'
+import { BEATS_PER_BAR } from '../../model/song_schema.js'
 
 export default class HeaderSection {
     #editor
@@ -18,10 +18,11 @@ export default class HeaderSection {
      * @returns {string} header HTML
      */
     render(pattern, currentPage) {
-        const tracks = Utils.getTracksArray(pattern)
         const totalBeats = pattern.beatCount ?? 4
-        const firstStepsPerBeat = tracks[0]?.stepsPerBeat ?? 4
-        const totalMeasures = Math.ceil(totalBeats / firstStepsPerBeat)
+        // a measure is BEATS_PER_BAR beats of the time signature, NOT one step
+        // group: dividing by stepsPerBeat made the number move when the user
+        // changed the grid subdivision
+        const totalMeasures = Math.ceil(totalBeats / BEATS_PER_BAR)
 
         return `<div class="pp-header">
             <div class="pp-actions">

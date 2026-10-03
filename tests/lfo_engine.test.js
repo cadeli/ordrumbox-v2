@@ -199,11 +199,20 @@ describe('computeLfoValue time-based mode', () => {
         expect(typeof val).toBe('number')
     })
 
-    it('differs from tick-based at non-zero time', () => {
+    // One cycle is 4 beats in BOTH modes, so the same musical position gives the
+    // same value. The time branch used to divide by 16 beats, which made it run 4x
+    // slower than `freq` claims — and this test asserted that mismatch.
+    it('agrees with the tick branch on the same musical position', () => {
         const lfo = { freq: 1, min: 0, max: 1, phase: 0, waveform: 'sine' }
-        const tickVal = computeLfoValue(lfo, 32, 128)
-        const timeVal = computeLfoValue(lfo, null, 128, null, 0.5, 120)
-        expect(tickVal).not.toBe(timeVal)
+        // tick 32 = beat 1 = 0.5 s at 120 bpm
+        expect(computeLfoValue(lfo, null, 128, null, 0.5, 120)).toBe(computeLfoValue(lfo, 32, 128))
+    })
+
+    it('still tracks time: a different position gives a different value', () => {
+        const lfo = { freq: 1, min: 0, max: 1, phase: 0, waveform: 'sine' }
+        expect(computeLfoValue(lfo, null, 128, null, 0.25, 120)).not.toBe(
+            computeLfoValue(lfo, null, 128, null, 0.5, 120),
+        )
     })
 })
 

@@ -68,9 +68,12 @@ export function clearAnalysisCache(audioBuffer) {
  * @param {number} dpr devicePixelRatio (marker dashes are scaled by it)
  */
 export function drawDecayMarker(canvasCtx, sound, width, height, theme, dpr) {
-    const totalSec = sound?.buffer?.duration ?? sound?.duration ?? 0
-    if (!(totalSec > 0)) return
-    const ratio = Math.min((sound.decay ?? 0) / 1000 / totalSec, 1)
+    // AudioBuffer.duration is in seconds, sound.duration is in ms (that is how the
+    // loader writes it), and decay is in ms: mixing them put the marker at 1/1000
+    // of its place whenever the buffer was missing.
+    const durationSec = sound?.buffer?.duration ?? (Number(sound?.duration) || 0) / 1000
+    if (!(durationSec > 0)) return
+    const ratio = Math.min((sound.decay ?? 0) / 1000 / durationSec, 1)
     const x = ratio * width
     canvasCtx.beginPath()
     canvasCtx.setLineDash([4 * dpr, 4 * dpr])

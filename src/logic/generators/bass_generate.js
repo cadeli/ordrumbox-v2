@@ -196,10 +196,10 @@ export default class BassGenerate extends BaseGenerator {
         if (this.isScalesLoading || !serviceRegistry.resourcesLoader) return
         this.isScalesLoading = true
         await serviceRegistry.resourcesLoader.loadScales(ResourcesLoader.SCALES_URL)
-        this.checkResources()
+        this.finishScalesLoad()
     }
 
-    checkResources = () => {
+    finishScalesLoad = () => {
         this.isScalesLoading = false
     }
 

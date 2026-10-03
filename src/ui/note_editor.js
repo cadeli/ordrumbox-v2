@@ -228,13 +228,13 @@ export default class NoteEditor extends BasePanel {
     }
 
     /** Show with default note values as standalone popup. */
-    async showEmpty(data) {
+    async showDefaultNote(data) {
         await this.#initEmptyData(data)
         super.show()
     }
 
     /** Show with default note values inline inside track editor container. */
-    async showEmptyInline(data) {
+    async showDefaultNoteInline(data) {
         await this.#initEmptyData(data)
         this.container.style.display = 'block'
         this.sync()

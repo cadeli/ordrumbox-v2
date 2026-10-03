@@ -74,11 +74,11 @@ export default class BaseGenerator {
      * Compute the absolute loop point step from config and track.
      * @param {{stepsPerBeat?: number}} track - track with stepsPerBeat
      * @param {GeneratorConfig} config - generator config with loopPointBeat/loopPointStep
-     * @param {number} [defaultBar=1] - default loopPointBeat if not in config
+     * @param {number} [defaultLoopBeats=1] - default loopPointBeat if not in config
      * @returns {number} absolute step index
      */
-    getLoopPointAbsolute = (track, config, defaultBar = 1) => {
-        const loopPointBeat = config.loopPointBeat ?? defaultBar
+    getLoopPointAbsolute = (track, config, defaultLoopBeats = 1) => {
+        const loopPointBeat = config.loopPointBeat ?? defaultLoopBeats
         const loopPointStep = config.loopPointStep ?? 0
         const stepsPerBeat = track.stepsPerBeat ?? 4
         return loopPointBeat * stepsPerBeat + loopPointStep
@@ -165,8 +165,8 @@ export default class BaseGenerator {
     }
 
     generateGridVariant = (track, config, getAccentContext, getGhostContext, density = 1, opts = {}) => {
-        const defaultBar = opts.defaultBar ?? 1
-        const loopPointAbsolute = this.getLoopPointAbsolute(track, config, defaultBar)
+        const defaultLoopBeats = opts.defaultLoopBeats ?? 1
+        const loopPointAbsolute = this.getLoopPointAbsolute(track, config, defaultLoopBeats)
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const pitchResolver = opts.pitchResolver ?? null
         const requiredSteps = config.requiredSteps ?? null
@@ -198,8 +198,8 @@ export default class BaseGenerator {
     }
 
     generatePhraseVariant = (track, config, getPitch, getAccentContext, getGhostContext, density = 1, opts = {}) => {
-        const defaultBar = opts.defaultBar ?? 2
-        const loopPointAbsolute = this.getLoopPointAbsolute(track, config, defaultBar)
+        const defaultLoopBeats = opts.defaultLoopBeats ?? 2
+        const loopPointAbsolute = this.getLoopPointAbsolute(track, config, defaultLoopBeats)
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const cachedPitches = opts.cachedPitches ?? null
         const allowStacking = opts.allowStacking ?? false
@@ -325,7 +325,7 @@ export default class BaseGenerator {
      * @param {number}   targetQuantize - value to set during fn execution
      * @param {Function} fn             - generation function to run with overridden stepsPerBeat
      */
-    withLockedBarQuantize = (track, targetQuantize, fn) => {
+    withTemporaryStepsPerBeat = (track, targetQuantize, fn) => {
         const range = TRACK_VALUE_RANGES.stepsPerBeat
         const clamped = Utils.clamp(targetQuantize, range.min, range.max)
         const saved = track.stepsPerBeat

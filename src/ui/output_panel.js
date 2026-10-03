@@ -35,7 +35,7 @@ export default class OutputPanel extends BasePanel {
     #saveTimer = null
     #masterVol = null
     #preGain = null
-    #compSliders = null
+    #compKnobs = null
     #compBypass = false
     #compBypassBtn = null
     #compCurveCanvas = null
@@ -72,9 +72,9 @@ export default class OutputPanel extends BasePanel {
                 <div class="ne-grid" id="op-filters-grid"></div>
             </div>`
 
-        this.#buildMasterSlider()
-        this.#buildPreGainSlider()
-        this.#buildCompressorSliders()
+        this.#buildMasterKnob()
+        this.#buildPreGainKnob()
+        this.#buildCompressorKnobs()
         this.#buildFilterSliders()
 
         this.canvas = /** @type {HTMLCanvasElement} */ (this.container.querySelector('#op-spectrum'))
@@ -85,7 +85,7 @@ export default class OutputPanel extends BasePanel {
         this.#restoreMasterSettings()
     }
 
-    #buildMasterSlider() {
+    #buildMasterKnob() {
         this.#masterVol = new OrKnob({
             key: 'op-master-vol',
             label: 'Volume',
@@ -104,7 +104,7 @@ export default class OutputPanel extends BasePanel {
         this.container.querySelector('#op-master-grid').appendChild(el)
     }
 
-    #buildPreGainSlider() {
+    #buildPreGainKnob() {
         this.#preGain = new OrKnob({
             key: 'op-pregain',
             label: 'Pre-Gain',
@@ -124,8 +124,8 @@ export default class OutputPanel extends BasePanel {
         this.#preGainEl = el
     }
 
-    #buildCompressorSliders() {
-        this.#compSliders = {}
+    #buildCompressorKnobs() {
+        this.#compKnobs = {}
         const panel = this.container.querySelector('#op-comp-panel')
 
         this.#compBypass = false
@@ -185,7 +185,7 @@ export default class OutputPanel extends BasePanel {
                     }
                 },
             })
-            this.#compSliders[p.key] = knob
+            this.#compKnobs[p.key] = knob
             knobsRow.appendChild(knob.createElement())
         })
 
@@ -265,8 +265,8 @@ export default class OutputPanel extends BasePanel {
         }
 
         for (const p of COMPRESSOR_PARAMS) {
-            if (p.key in m && this.#compSliders?.[p.key]) {
-                this.#compSliders[p.key].setValue(m[p.key])
+            if (p.key in m && this.#compKnobs?.[p.key]) {
+                this.#compKnobs[p.key].setValue(m[p.key])
             }
         }
         this.#drawCompCurve()
@@ -322,7 +322,7 @@ export default class OutputPanel extends BasePanel {
     getKnob(key) {
         if (this.#masterVol?.key === key) return this.#masterVol
         if (this.#preGain?.key === key) return this.#preGain
-        return this.#compSliders?.[key] ?? null
+        return this.#compKnobs?.[key] ?? null
     }
 
     #drawSpectrum() {
@@ -403,10 +403,10 @@ export default class OutputPanel extends BasePanel {
         const w = canvas.width
         const h = canvas.height
 
-        const threshold = this.#compSliders?.threshold?.getValue() ?? -18
-        const ratio = Math.max(1, this.#compSliders?.ratio?.getValue() ?? 8)
-        const knee = Math.max(0, this.#compSliders?.knee?.getValue() ?? 3)
-        const makeup = this.#compSliders?.makeup?.getValue() ?? 8
+        const threshold = this.#compKnobs?.threshold?.getValue() ?? -18
+        const ratio = Math.max(1, this.#compKnobs?.ratio?.getValue() ?? 8)
+        const knee = Math.max(0, this.#compKnobs?.knee?.getValue() ?? 3)
+        const makeup = this.#compKnobs?.makeup?.getValue() ?? 8
         const bypass = this.#compBypass
 
         const xToPx = (db) => ((db - CURVE_X_MIN) / (CURVE_X_MAX - CURVE_X_MIN)) * w

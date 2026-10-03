@@ -113,7 +113,7 @@ export default class PercGenerate extends BaseGenerator {
             scaleName: 'blues scale',
             loopPointBeat: 4,
             loopPointStep: 0,
-            startBarOffset: 2,
+            startBeatOffset: 2,
             steps: [0, 2],
             prob: 0.3,
             euclideanFill: 3,
@@ -181,7 +181,7 @@ export default class PercGenerate extends BaseGenerator {
                 break
             case 'grid':
                 this.generateGridVariant(percTrack, config, null, null, density, {
-                    defaultBar: 2,
+                    defaultLoopBeats: 2,
                     pitchResolver: () => this.getRndTone(tones) + pitchBias,
                 })
                 break
@@ -211,7 +211,7 @@ export default class PercGenerate extends BaseGenerator {
     }
 
     generateLockedPercVariant = (percTrack, tones, pitchBias, config, density = 1) => {
-        this.withLockedBarQuantize(percTrack, 16, () => {
+        this.withTemporaryStepsPerBeat(percTrack, 16, () => {
             const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 1)
             const velocityPattern = config.velocityPattern ?? []
             const pitchPattern = config.pitchPattern ?? []
@@ -280,18 +280,18 @@ export default class PercGenerate extends BaseGenerator {
         const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const stepsPerBeat = percTrack.stepsPerBeat ?? 4
 
-        const startBar = Math.max(0, (percTrack.beatCount ?? 1) - (config.startBarOffset ?? 1))
+        const startBeat = Math.max(0, (percTrack.beatCount ?? 1) - (config.startBeatOffset ?? 1))
         config.steps.forEach((step, index) => {
             if (step >= stepsPerBeat) return
 
-            const absoluteStep = startBar * stepsPerBeat + step
+            const absoluteStep = startBeat * stepsPerBeat + step
             if (absoluteStep >= loopPointAbsolute) return
 
             const tone = tones[index % tones.length] ?? 0
             const pitch = tone + pitchBias
             const note = this.addNote(
                 percTrack,
-                startBar,
+                startBeat,
                 step,
                 pitch,
                 this.computeVelocity(config.velocity, {

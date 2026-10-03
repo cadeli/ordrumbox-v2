@@ -206,7 +206,8 @@ export default class Strip {
         params.get('revMix')?.setTargetAtTime(wet, time, RAMP_TIME)
     }
 
-    updateDelay = (type = 'tape', timeValue = 1, amount = 0) => {
+    /** @param {number} timeBeats delay length in BEATS (the model calls it a multiplier of one beat) */
+    updateDelay = (type = 'tape', timeBeats = 1, amount = 0) => {
         if (!this.stripNode) return
         const time = this.audioCtx.currentTime
         const params = this.stripNode.parameters
@@ -222,7 +223,7 @@ export default class Strip {
             return
         }
 
-        const delaySeconds = Utils.getDelayTimeInSeconds(timeValue, this.bpm)
+        const delaySeconds = Utils.getDelayTimeInSeconds(timeBeats, this.bpm)
         const mode = DELAY_MODES[normalizedType] ?? 1
         const isPP = mode >= 1.5
 

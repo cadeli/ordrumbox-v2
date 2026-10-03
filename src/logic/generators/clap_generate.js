@@ -112,7 +112,7 @@ export default class ClapGenerate extends BaseGenerator {
 
         switch (config.mode) {
             case 'grid':
-                this.generateGridVariant(clapTrack, config, null, null, density, { defaultBar: 2 })
+                this.generateGridVariant(clapTrack, config, null, null, density, { defaultLoopBeats: 2 })
                 break
             case 'phrases':
             default:

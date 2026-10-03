@@ -60,12 +60,12 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
 
         fireInput(input, 4)
         expect(span.textContent).toBe('4')
-        expect(toolsPanel.wavLoops.getValue()).toBe(4)
+        expect(toolsPanel.wavLoopsSlider.getValue()).toBe(4)
     })
 
     it('setValue on the WAV loops slider updates the value', () => {
-        toolsPanel.wavLoops.setValue(2, true)
-        expect(toolsPanel.wavLoops.getValue()).toBe(2)
+        toolsPanel.wavLoopsSlider.setValue(2, true)
+        expect(toolsPanel.wavLoopsSlider.getValue()).toBe(2)
     })
 
     it('export MIDI reads the current value from the OrSlider', async () => {

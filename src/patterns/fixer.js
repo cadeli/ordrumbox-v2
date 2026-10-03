@@ -16,12 +16,24 @@ function expandCompactNotes(track) {
     delete track.noteKeys
 }
 
-export function fixTrackPanning(track, indexTrack) {
-    track.pan = Utils.computeTrackPan(indexTrack)
+/**
+ * Fill in a missing pan from the track's drum type.
+ *
+ * Utils.PAN_MAP is indexed by DRUM TYPE (Utils.TRACK_NAME_TO_INDEX), so the pan
+ * comes from the type and never from the track's slot in the pattern: this used
+ * to take the array index, so loading a pattern overwrote every pan the file
+ * carried with a value picked from the track's position (a KICK in slot 1 came
+ * back panned like a SNARE).
+ *
+ * @param {{name?: string, pan?: number}} track
+ * @returns {{name?: string, pan?: number}} the same track
+ */
+export function fixTrackPanning(track) {
+    if (typeof track.pan !== 'number') track.pan = Utils.getPanFromTrackName(track.name)
     return track
 }
 
-export function fixNoteStepBar(track, note) {
+export function normalizeNoteGridPosition(track, note) {
     if (note.beatStep >= track.stepsPerBeat) {
         const pStep = note.beatStep
         note.beatStep %= track.stepsPerBeat
@@ -31,19 +43,21 @@ export function fixNoteStepBar(track, note) {
     return note
 }
 
-export function fixTrackDefaults(track, indexTrack) {
+export function fixTrackDefaults(track) {
     expandCompactNotes(track)
+    // before normalizeTrack(): that fills pan with its default, and the point here
+    // is to tell "the file carries a pan" from "the file carries none"
+    fixTrackPanning(track)
 
     const normalized = normalizeTrack(track)
     Object.assign(track, normalized)
 
-    fixTrackPanning(track, indexTrack)
     if (track.useSoftSynth) track.useAutoAssignSound = false
     recalcLoopDerived(track)
     if (track.useAutoAssignSound === undefined) track.useAutoAssignSound = true
     track.notes ??= []
     track.notes.forEach((note) => {
-        fixNoteStepBar(track, note)
+        normalizeNoteGridPosition(track, note)
         Object.assign(note, normalizeNote(note))
     })
     return track
@@ -56,9 +70,8 @@ export function fixPattern(pattern, takenIds = new Set()) {
     // place that can guarantee a stable id. Existing ids are never rewritten.
     ensurePatternId(pattern, takenIds)
     if (pattern.tracks) {
-        Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
-            fixTrackDefaults(track, indexTrack)
-        })
+        // hot path on load: no index needed, the pan comes from the track type
+        for (const track of Utils.getTracksArray(pattern)) fixTrackDefaults(track)
     }
     return pattern
 }

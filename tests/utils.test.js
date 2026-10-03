@@ -513,10 +513,13 @@ describe('recalcLoopDerived', () => {
         expect(track.loopPointStep).toBe(2)
     })
 
-    it('computes loopPointBeat=0, loopPointStep=0 for loopAtStep=0', () => {
-        const track = { loopAtStep: 0, stepsPerBeat: 4 }
+    // 0 and null both mean "no explicit loop point" (Utils.getTrackLoopAtStep only
+    // trusts loopAtStep > 0). Resolving them to a zero-length loop is what made
+    // computeNbTickForLoop answer "0 ticks" = no repetition at all.
+    it.each([0, null])('resolves loopAtStep=%s to the track length', (loopAtStep) => {
+        const track = { loopAtStep, stepsPerBeat: 4, beatCount: 4 }
         recalcLoopDerived(track)
-        expect(track.loopPointBeat).toBe(0)
+        expect(track.loopPointBeat).toBe(4)
         expect(track.loopPointStep).toBe(0)
     })
 

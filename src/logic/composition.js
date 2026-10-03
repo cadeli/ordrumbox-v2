@@ -98,9 +98,11 @@ export function getSequence(index) {
 export function buildSequenceNotes(sequence, tonic, beatCount, beatsPerMeasure = BEATS_PER_MEASURE) {
     if (!sequence || !Array.isArray(sequence.chords) || sequence.chords.length === 0) return []
     const beats = Math.max(0, Math.trunc(beatCount) || 0)
-    const spb = Math.max(1, Math.trunc(beatsPerMeasure) || BEATS_PER_MEASURE)
+    // clamped here, named for what it is: beats per measure, NOT stepsPerBeat as
+    // the `spb` shorthand it replaces claimed everywhere else
+    const measureBeats = Math.max(1, Math.trunc(beatsPerMeasure) || BEATS_PER_MEASURE)
     const notes = []
-    for (let measure = 0, beat = 0; beat < beats; measure++, beat += spb) {
+    for (let measure = 0, beat = 0; beat < beats; measure++, beat += measureBeats) {
         const chord = sequence.chords[measure % sequence.chords.length]
         const intervals = CHORD_QUALITIES[chord.quality] ?? CHORD_QUALITIES.maj
         const root = tonic + (chord.root ?? 0)

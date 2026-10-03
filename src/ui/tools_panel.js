@@ -19,8 +19,9 @@ export default class ToolsPanel extends BasePanel {
     #midi
     #cache
 
-    get wavLoops() {
-        return this.#export.wavLoops
+    /** The delay/repeat slider widget of the export section (not a count). */
+    get wavLoopsSlider() {
+        return this.#export.wavLoopsSlider
     }
 
     get exportWavBtn() {

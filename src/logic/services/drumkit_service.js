@@ -11,8 +11,20 @@ import { EVENTS } from '../../core/events.js'
 const TAG = 'DrumkitService'
 
 class DrumkitService {
-    getCurrentKitSounds() {
+    /** Every loaded sound, whatever kit it belongs to. */
+    getAllSounds() {
         return Object.entries(soundRegistry.sounds).map(([url, s]) => ({ url, ...s }))
+    }
+
+    /**
+     * Sounds of the selected kit only.
+     *
+     * This used to return every kit's sounds, so the drumkit manager listed foreign
+     * samples under the current kit and pre-selected one of them.
+     */
+    getCurrentKitSounds() {
+        const kit = this.currentKitName()
+        return this.getAllSounds().filter((sound) => sound.kit_name === kit)
     }
 
     currentKitName() {

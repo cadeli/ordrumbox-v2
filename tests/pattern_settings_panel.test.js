@@ -137,14 +137,14 @@ describe('PatternSettingsPanel', () => {
         })
     })
 
-    describe('syncDrumkits', () => {
+    describe('syncSelects', () => {
         it('populates drumkit select from soundRegistry', () => {
             soundRegistry.drumkitList = [
                 { name: 'Kit A', instruments: [] },
                 { name: 'Kit B', instruments: [] },
             ]
             appState.selectedDrumkitIdx = 0
-            panel.syncDrumkits()
+            panel.syncSelects()
             const opts = panel.drumkitSelect.querySelectorAll('option')
             expect(opts.length).toBe(2)
             expect(opts[0].textContent).toBe('Kit A')
@@ -155,7 +155,7 @@ describe('PatternSettingsPanel', () => {
                 { name: 'Pattern 1', beatCount: 4, tracks: [] },
                 { name: 'Pattern 2', beatCount: 4, tracks: [] },
             ]
-            panel.syncDrumkits()
+            panel.syncSelects()
             const opts = panel.patternSelect.querySelectorAll('option')
             expect(opts.length).toBe(2)
         })
@@ -282,7 +282,7 @@ describe('PatternSettingsPanel', () => {
                 { name: 'Kit A', instruments: [] },
                 { name: 'Kit B', instruments: [] },
             ]
-            panel.syncDrumkits()
+            panel.syncSelects()
             panel.drumkitSelect.value = '1'
             panel.drumkitSelect.dispatchEvent(new Event('change'))
             expect(serviceRegistry.cmd.setSelectedDrumkitIdx).toHaveBeenCalledWith(1)
@@ -295,7 +295,7 @@ describe('PatternSettingsPanel', () => {
                 { name: 'P1', beatCount: 4, tracks: [] },
                 { name: 'P2', beatCount: 4, tracks: [] },
             ]
-            panel.syncDrumkits()
+            panel.syncSelects()
             panel.patternSelect.value = '1'
             panel.patternSelect.dispatchEvent(new Event('change'))
             expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(1)
@@ -307,7 +307,7 @@ describe('PatternSettingsPanel', () => {
                 { name: 'P2', beatCount: 4, tracks: [] },
             ]
             appState.currentPage = 1
-            panel.syncDrumkits()
+            panel.syncSelects()
             panel.patternSelect.value = '1'
             panel.patternSelect.dispatchEvent(new Event('change'))
             expect(appState.currentPage).toBe(0)
@@ -331,7 +331,7 @@ describe('PatternSettingsPanel', () => {
 
         it('rebuilds drumkit selects on drumkitChange', () => {
             soundRegistry.drumkitList = [{ name: 'Initial', instruments: [] }]
-            panel.syncDrumkits()
+            panel.syncSelects()
             expect(panel.drumkitSelect.options.length).toBe(1)
 
             soundRegistry.drumkitList = [

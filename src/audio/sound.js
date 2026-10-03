@@ -19,7 +19,8 @@ export default class Sound {
         this.mixer = mixer
         this.sounds = sounds
         this.generatedSounds = generatedSounds ?? {}
-        this.activeVoices = new WeakMap()
+        /** Mono tracks only: the voice currently held by each mono track. */
+        this.monoVoiceByTrack = new WeakMap()
         this.activeSynthVoices = new Set()
         this.#activeVoiceSet = new Set()
         this.nodePool = new NodePool(audioCtx)
@@ -67,7 +68,7 @@ export default class Sound {
 
     registerVoice = (track, voice) => {
         if (!track?.mono || !voice) return
-        this.activeVoices.set(track, voice)
+        this.monoVoiceByTrack.set(track, voice)
     }
 
     registerSynthVoice = (voice) => {
@@ -97,10 +98,10 @@ export default class Sound {
 
     stopPreviousVoice = (track, time) => {
         if (!track?.mono) return
-        const previousVoice = this.activeVoices.get(track)
+        const previousVoice = this.monoVoiceByTrack.get(track)
         if (previousVoice) {
             this.stopVoice(previousVoice, time)
-            this.activeVoices.delete(track)
+            this.monoVoiceByTrack.delete(track)
         }
     }
 
@@ -170,7 +171,7 @@ export default class Sound {
                 if (opts.registerSynth) this.registerSynthVoice(voice)
                 // Extra guard: if another play() call registered a different
                 // voice for this track while we were awaiting setup(), skip.
-                if (flatNote.track.mono && this.activeVoices.get(flatNote.track) !== voice) {
+                if (flatNote.track.mono && this.monoVoiceByTrack.get(flatNote.track) !== voice) {
                     this.#activeVoiceSet.delete(voice)
                     voice.cleanup()
                     return null
@@ -274,7 +275,8 @@ export default class Sound {
         }
         this.#activeVoiceSet.clear()
         this.activeSynthVoices.clear()
-        this.activeVoices = new WeakMap()
+        /** Mono tracks only: the voice currently held by each mono track. */
+        this.monoVoiceByTrack = new WeakMap()
     }
 
     updateGeneratedSounds = (generatedSounds) => {

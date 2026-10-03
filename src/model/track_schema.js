@@ -199,8 +199,18 @@ export function clampStepsPerBeat(track) {
 
 /**
  * Recalculates loopPointBeat and loopPointStep from loopAtStep and stepsPerBeat.
+ *
+ * loopAtStep null is TRACK_DEFAULTS' "loop the whole track"; it is resolved here
+ * so every reader of the derived pair agrees with Utils.getTrackLoopAtStep, which
+ * treats null the same way. Resolving it to 0 instead made computeNbTickForLoop
+ * answer "0 ticks", i.e. no repetition at all, for any track that never had an
+ * explicit loop point.
  */
 export function recalcLoopDerived(track) {
-    track.loopPointBeat = Math.floor(track.loopAtStep / track.stepsPerBeat)
-    track.loopPointStep = track.loopAtStep % track.stepsPerBeat
+    const stepsPerBeat = Number(track.stepsPerBeat) > 0 ? Number(track.stepsPerBeat) : 1
+    const declared = Number(track.loopAtStep)
+    const loopAtStep =
+        Number.isFinite(declared) && declared > 0 ? Math.floor(declared) : (Number(track.beatCount) || 4) * stepsPerBeat
+    track.loopPointBeat = Math.floor(loopAtStep / stepsPerBeat)
+    track.loopPointStep = loopAtStep % stepsPerBeat
 }

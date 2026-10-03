@@ -53,6 +53,20 @@ describe('Pattern Panel UI Grid', () => {
         panel.init()
     })
 
+    // The header counts measures of the time signature: dividing by stepsPerBeat
+    // made the number change with the grid subdivision (8 beats showed "1 measure"
+    // at 8 steps/beat instead of 2).
+    it('counts measures in beats of the bar, not in step groups', () => {
+        panel.sync()
+        const meta = panel.container.querySelector('.pp-meta').textContent
+        // fixture: beatCount 2 → 2 beats, one 4/4 measure
+        expect(meta).toContain('2 beats (1 measures)')
+
+        appState.patterns[0].beatCount = 8
+        panel.sync()
+        expect(panel.container.querySelector('.pp-meta').textContent).toContain('8 beats (2 measures)')
+    })
+
     it('renders the pattern header with correct info', () => {
         const header = document.querySelector('.pp-header')
         expect(header.textContent).toContain('Test Pattern')

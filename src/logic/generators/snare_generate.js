@@ -44,7 +44,7 @@ export default class SnareGenerate extends BaseGenerator {
             mode: 'fill',
             loopPointBeat: 4,
             loopPointStep: 0,
-            startBarOffset: 1,
+            startBeatOffset: 1,
             density: 0.62,
             steps: [0, 1, 2, 3],
             velocity: {
@@ -75,7 +75,7 @@ export default class SnareGenerate extends BaseGenerator {
             mode: 'roll',
             loopPointBeat: 1,
             loopPointStep: 0,
-            startBarOffset: 1,
+            startBeatOffset: 1,
             retriggerNum: 8,
             rate: 16,
             minVelocity: 0.32,
@@ -119,7 +119,7 @@ export default class SnareGenerate extends BaseGenerator {
 
         switch (config.mode) {
             case 'grid':
-                this.generateGridVariant(snareTrack, config, null, null, density, { defaultBar: 2 })
+                this.generateGridVariant(snareTrack, config, null, null, density, { defaultLoopBeats: 2 })
                 break
             case 'fill':
                 this.generateSnareFillVariant(snareTrack, config, density)
@@ -150,13 +150,13 @@ export default class SnareGenerate extends BaseGenerator {
         const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 1)
         const stepsPerBeat = snareTrack.stepsPerBeat ?? 4
 
-        const lastBar = Math.max(0, (snareTrack.beatCount ?? 1) - 1)
+        const lastBeat = Math.max(0, (snareTrack.beatCount ?? 1) - 1)
         const lastStep = Math.max(0, stepsPerBeat - 1)
         const retriggerNum = config.retriggerNum ?? 4
         const rate = config.rate ?? 1
 
         for (let step = 0; step < stepsPerBeat; step++) {
-            const absoluteStep = lastBar * stepsPerBeat + step
+            const absoluteStep = lastBeat * stepsPerBeat + step
             if (absoluteStep >= loopPointAbsolute) continue
 
             const progress = lastStep === 0 ? 1 : step / lastStep
@@ -166,7 +166,7 @@ export default class SnareGenerate extends BaseGenerator {
 
             const note = this.addNote(
                 snareTrack,
-                lastBar,
+                lastBeat,
                 step,
                 0,
                 this.computeVelocity(config.velocity, {
@@ -187,8 +187,8 @@ export default class SnareGenerate extends BaseGenerator {
         const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 2)
         const stepsPerBeat = snareTrack.stepsPerBeat ?? 4
 
-        const startBar = Math.max(0, (snareTrack.beatCount ?? 1) - (config.startBarOffset ?? 1))
-        for (let beat = startBar; beat < (snareTrack.beatCount ?? 1); beat++) {
+        const startBeat = Math.max(0, (snareTrack.beatCount ?? 1) - (config.startBeatOffset ?? 1))
+        for (let beat = startBeat; beat < (snareTrack.beatCount ?? 1); beat++) {
             config.steps.forEach((step) => {
                 if (step >= stepsPerBeat || Math.random() >= config.density * density) return
 

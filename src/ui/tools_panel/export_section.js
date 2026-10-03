@@ -9,20 +9,20 @@ import MidiExporter from '../../logic/midi/midi_exporter.js'
 
 export default class ExportSection {
     #panel
-    #wavLoops
+    #wavLoopsSlider
     #wavBtn
     #songBtn
 
     /** @param {import('../tools_panel.js').default} panel */
     constructor(panel) {
         this.#panel = panel
-        this.#wavLoops = null
+        this.#wavLoopsSlider = null
         this.#wavBtn = null
         this.#songBtn = null
     }
 
-    get wavLoops() {
-        return this.#wavLoops
+    get wavLoopsSlider() {
+        return this.#wavLoopsSlider
     }
 
     get wavBtn() {
@@ -52,7 +52,7 @@ export default class ExportSection {
 
     bind() {
         const root = this.#panel.container
-        this.#wavLoops = new OrSlider({
+        this.#wavLoopsSlider = new OrSlider({
             key: 'tp-wav-loops',
             label: 'Loops',
             min: 1,
@@ -61,7 +61,7 @@ export default class ExportSection {
             value: 1,
             format: (v) => String(Math.round(v)),
         })
-        root.querySelector('#tp-wav-loops-slot').replaceWith(this.#wavLoops.createElement())
+        root.querySelector('#tp-wav-loops-slot').replaceWith(this.#wavLoopsSlider.createElement())
 
         this.#wavBtn = root.querySelector('#tp-export-wav')
         this.#wavBtn.addEventListener('click', () => this.exportWav())
@@ -80,7 +80,7 @@ export default class ExportSection {
                 return
             }
             const exporter = new MidiExporter()
-            const loops = Math.round(this.#wavLoops.getValue())
+            const loops = Math.round(this.#wavLoopsSlider.getValue())
             exporter.download(
                 pattern,
                 `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'midi name fallback')}.mid`,
@@ -145,7 +145,7 @@ export default class ExportSection {
                 serviceRegistry.wavExporter = new WavExporter()
             }
 
-            const loops = Math.round(this.#wavLoops.getValue())
+            const loops = Math.round(this.#wavLoopsSlider.getValue())
             const blob = await serviceRegistry.wavExporter.exportPatternToWav(pattern, loops)
             serviceRegistry.wavExporter.downloadWav(
                 blob,

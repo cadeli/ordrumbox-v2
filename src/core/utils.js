@@ -322,8 +322,8 @@ export default class Utils {
 
     static PAN_MAP = [0, 0.3, 0.5, -0.4, 0.4, -0.3, -0.2, 1]
 
-    static computeTrackPan(indexTrack) {
-        return Utils.PAN_MAP[indexTrack] ?? 0
+    static computeTrackPan(trackTypeIndex) {
+        return Utils.PAN_MAP[trackTypeIndex] ?? 0
     }
 
     static getPanFromTrackName = (type) => {

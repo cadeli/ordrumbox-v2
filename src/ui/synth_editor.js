@@ -85,7 +85,7 @@ export default class SynthEditor {
     #waveform
     #presets
     #lfoRafId
-    #previewRafId
+    #commitRafId
 
     constructor(host, deps = {}) {
         this.host = host
@@ -113,7 +113,7 @@ export default class SynthEditor {
         this.#presets = new PresetSection(this)
 
         this.#lfoRafId = null
-        this.#previewRafId = null
+        this.#commitRafId = null
     }
 
     createDOM() {
@@ -460,7 +460,7 @@ export default class SynthEditor {
 
         this.#waveform.draw()
         this.#updateLfoIndicators()
-        this.#previewDraft()
+        this.#commitDraft()
         return true
     }
 
@@ -544,7 +544,7 @@ export default class SynthEditor {
             const enabled = this.#implicitEnable(pathString)
             target[path.at(-1)] = value
             if (enabled.length) this.#refreshSynthControls(enabled)
-            this.#previewDraft(deferPreview)
+            this.#commitDraft(deferPreview)
         } catch (e) {
             logger.warn('SynthEditor', '#setValue failed', e)
         }
@@ -647,31 +647,31 @@ export default class SynthEditor {
      * clicks/selections, coalesced on the next animation frame for knob drags
      * (a drag emits one change per mousemove — one commit per frame instead).
      */
-    #previewDraft(defer = false) {
+    #commitDraft(defer = false) {
         if (!this.#editKey || !this.#draft) return
         if (!defer) {
-            this.#cancelPreview()
+            this.#cancelCommit()
             this.#presets.commitSound(this.#editKey, this.#draft)
             return
         }
-        if (this.#previewRafId) return
-        this.#previewRafId = requestAnimationFrame(() => {
-            this.#previewRafId = null
+        if (this.#commitRafId) return
+        this.#commitRafId = requestAnimationFrame(() => {
+            this.#commitRafId = null
             if (this.#editKey && this.#draft) this.#presets.commitSound(this.#editKey, this.#draft)
         })
     }
 
-    #cancelPreview() {
-        if (this.#previewRafId) {
-            cancelAnimationFrame(this.#previewRafId)
-            this.#previewRafId = null
+    #cancelCommit() {
+        if (this.#commitRafId) {
+            cancelAnimationFrame(this.#commitRafId)
+            this.#commitRafId = null
         }
     }
 
     /** Commits a pending frame-coalesced preview synchronously (before preset switch/close). */
     flushPreview() {
-        if (!this.#previewRafId) return
-        this.#cancelPreview()
+        if (!this.#commitRafId) return
+        this.#cancelCommit()
         if (this.#editKey && this.#draft) this.#presets.commitSound(this.#editKey, this.#draft)
     }
 
@@ -680,7 +680,7 @@ export default class SynthEditor {
     #revertPreset() {
         if (!this.#editKey || !this.#original) return
         try {
-            this.#cancelPreview()
+            this.#cancelCommit()
             this.#presets.commitSound(this.#editKey, this.#original)
             this.#draft = structuredClone(this.#original)
             this.#renderEditor()
@@ -747,7 +747,7 @@ export default class SynthEditor {
 
     #closeEditor(shouldSave) {
         try {
-            this.#cancelPreview()
+            this.#cancelCommit()
             if (shouldSave && this.#editKey && this.#draft) {
                 this.#presets.commitSound(this.#editKey, this.#draft)
                 this.#serviceRegistry.audioEngine?.invalidateCache?.()
@@ -775,7 +775,7 @@ export default class SynthEditor {
     reset() {
         this.panel.style.display = 'none'
         this.#stopLfoWatch()
-        this.#cancelPreview()
+        this.#cancelCommit()
         this.#editKey = null
         this.#original = null
         this.#draft = null

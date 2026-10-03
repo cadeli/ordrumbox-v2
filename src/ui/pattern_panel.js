@@ -129,7 +129,7 @@ export default class PatternPanel extends BasePanel {
         this.listen(this.container, 'contextmenu', (e) => this.#menuSection.onContextMenu(e))
         this.listen(this.container, 'mouseover', (e) => this.#pointer.onMouseOver(e))
         this.listen(this.container, 'mouseout', (e) => this.#pointer.onMouseOut(e))
-        this.#resizeObserver = new ResizeObserver(() => this.#updateBarCache())
+        this.#resizeObserver = new ResizeObserver(() => this.#updateBeatRectsCache())
         this.#resizeObserver.observe(this.container)
     }
 
@@ -153,7 +153,7 @@ export default class PatternPanel extends BasePanel {
         this.sub(this.#playbackEvents, EVENTS.DRUMKIT_CHANGE, onStructureChange)
         this.sub(this.#playbackEvents, EVENTS.LOOP_POINT_CHANGE, (data) => {
             if (data && typeof data.trackIdx === 'number' && typeof data.loopAtStep === 'number') {
-                this.updateLoopPoint(data.trackIdx, data.loopAtStep)
+                this.refreshLoopRow(data.trackIdx)
             }
         })
         this.sub(this.#playbackEvents, EVENTS.SELECTED_PATTERN_CHANGE, () => {
@@ -175,7 +175,7 @@ export default class PatternPanel extends BasePanel {
             this.#overlay.resetVuAndWaveform()
         })
         this.sub(this.#playbackEvents, EVENTS.PLAYBACK_START, () => {
-            this.#updateBarCache()
+            this.#updateBeatRectsCache()
             this.#overlay.startRafLoop()
         })
         this.sub(this.#playbackEvents, EVENTS.NOTE_TRIGGER, (data) => {
@@ -188,7 +188,7 @@ export default class PatternPanel extends BasePanel {
         })
         this.sub(this.#playbackEvents, EVENTS.TRACK_PARAM_CHANGE, () => {
             this.#overlay.syncVusVisibility()
-            this.#updateBarCache()
+            this.#updateBeatRectsCache()
         })
         this.sub(this.#playbackEvents, EVENTS.TRACK_SELECT, (data) => {
             if (data) {
@@ -212,7 +212,7 @@ export default class PatternPanel extends BasePanel {
         this.#menuSection?.destroy()
     }
 
-    #updateBarCache() {
+    #updateBeatRectsCache() {
         if (!this.container) return
         this.#beatRectsCache = []
         const tracksEl = this.container.querySelector('.pp-tracks')
@@ -259,7 +259,7 @@ export default class PatternPanel extends BasePanel {
             this.sync()
             this.#syncPending = false
             this.#syncRafId = null
-            requestAnimationFrame(() => this.#updateBarCache())
+            requestAnimationFrame(() => this.#updateBeatRectsCache())
         })
     }
 
@@ -477,7 +477,12 @@ export default class PatternPanel extends BasePanel {
         this.#overlay.syncVusVisibility()
     }
 
-    updateLoopPoint(trackIdx, _loopAtStep) {
+    /**
+     * Repaint after the loop point moved. The model is already updated by the
+     * command that emitted LOOP_POINT_CHANGE, so this only redraws.
+     * @param {number} trackIdx
+     */
+    refreshLoopRow(trackIdx) {
         const pattern = this.#appState.patterns[this.#appState.selectedPatternIdx]
         const tracks = Utils.getTracksArray(pattern)
         const track = tracks[trackIdx]

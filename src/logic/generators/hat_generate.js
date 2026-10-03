@@ -70,7 +70,7 @@ export default class HatGenerate extends BaseGenerator {
             trackType: 'CHH',
             loopPointBeat: 4,
             loopPointStep: 0,
-            rollBar: 3,
+            rollBeat: 3,
             retriggerNum: 4,
             rate: 86,
             velocity: {
@@ -153,7 +153,7 @@ export default class HatGenerate extends BaseGenerator {
             trackType: 'OHH',
             loopPointBeat: 4,
             loopPointStep: 0,
-            rollBar: 3,
+            rollBeat: 3,
             retriggerNum: 3,
             rate: 86,
             velocity: {
@@ -170,7 +170,7 @@ export default class HatGenerate extends BaseGenerator {
             trackType: 'HAT',
             loopPointBeat: 1,
             loopPointStep: 0,
-            startBarOffset: 1,
+            startBeatOffset: 1,
             retriggerNum: 6,
             rate: 8,
             velocity: {
@@ -237,7 +237,7 @@ export default class HatGenerate extends BaseGenerator {
     }
 
     generateHatLockedVariant = (hatTrack, config, _density = 1) => {
-        this.withLockedBarQuantize(hatTrack, 16, () => {
+        this.withTemporaryStepsPerBeat(hatTrack, 16, () => {
             const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 1)
             const velocityPattern = config.velocityPattern ?? []
             const accentEvery = config.accentEvery ?? 4
@@ -316,12 +316,12 @@ export default class HatGenerate extends BaseGenerator {
     }
 
     generateHatTransitionVariant = (hatTrack, config, trackType) => {
-        const lastBar = Math.max(0, (hatTrack.beatCount ?? 1) - (config.startBarOffset ?? 1))
+        const lastBeat = Math.max(0, (hatTrack.beatCount ?? 1) - (config.startBeatOffset ?? 1))
         const stepsPerBeat = hatTrack.stepsPerBeat ?? 4
         const interval = trackType === 'OHH' ? 2 : 1
 
         const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 1)
-        const lastBarAbsolute = lastBar * stepsPerBeat
+        const lastBarAbsolute = lastBeat * stepsPerBeat
 
         for (let step = 0; step < stepsPerBeat; step += interval) {
             const absoluteStep = lastBarAbsolute + step
@@ -329,7 +329,7 @@ export default class HatGenerate extends BaseGenerator {
 
             const note = this.addNote(
                 hatTrack,
-                lastBar,
+                lastBeat,
                 step,
                 0,
                 this.computeVelocity(config.velocity, {
@@ -348,12 +348,12 @@ export default class HatGenerate extends BaseGenerator {
     generateHatRollVariant = (hatTrack, config) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 4)
         const stepsPerBeat = hatTrack.stepsPerBeat ?? 4
-        const rollBar = config.rollBar ?? Math.max(0, (hatTrack.beatCount ?? 1) - 1)
+        const rollBeat = config.rollBeat ?? Math.max(0, (hatTrack.beatCount ?? 1) - 1)
         const retriggerNum = config.retriggerNum ?? 4
         const rate = config.rate ?? 1
 
         for (let step = 0; step < stepsPerBeat; step++) {
-            const absoluteStep = rollBar * stepsPerBeat + step
+            const absoluteStep = rollBeat * stepsPerBeat + step
             if (absoluteStep >= loopPointAbsolute) continue
 
             const progress = stepsPerBeat > 1 ? step / (stepsPerBeat - 1) : 1
@@ -361,7 +361,7 @@ export default class HatGenerate extends BaseGenerator {
 
             const note = this.addNote(
                 hatTrack,
-                rollBar,
+                rollBeat,
                 step,
                 0,
                 this.computeVelocity(config.velocity, {

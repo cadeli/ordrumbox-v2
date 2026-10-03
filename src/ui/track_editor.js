@@ -241,7 +241,7 @@ export default class TrackEditor extends BasePanel {
                 beatStep: firstNote.beatStep ?? 0,
             })
         } else {
-            this.#noteEditor.showEmptyInline({ track, trackIdx })
+            this.#noteEditor.showDefaultNoteInline({ track, trackIdx })
         }
     }
 
