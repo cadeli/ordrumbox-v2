@@ -2,7 +2,7 @@ import { appState } from '../state/app_state.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { detectTrackType } from '../core/drum_taxonomy.js'
+import { DRUM_TYPES, detectTrackType } from '../core/drum_taxonomy.js'
 import { filterEmptyMelodicTracks } from '../core/tracks.js'
 import { MAX_BEATS } from '../core/constants.js'
 import { prevPage, nextPage } from './page_nav.js'
@@ -239,11 +239,10 @@ export default class PatternSettingsPanel {
     async #onDrumClick() {
         const pattern = appState.selectedPattern
         if (!pattern) return
-        const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
-        const hasDrumAuto = (pattern.tracks ?? []).some((t) => t.auto && drumTypes.has(detectTrackType(t.name)))
+        const hasDrumAuto = (pattern.tracks ?? []).some((t) => t.auto && DRUM_TYPES.has(detectTrackType(t.name)))
         if (hasDrumAuto) {
             for (const track of pattern.tracks) {
-                if (drumTypes.has(detectTrackType(track.name))) track.auto = false
+                if (DRUM_TYPES.has(detectTrackType(track.name))) track.auto = false
             }
         } else {
             const { getAutoGenerateService } = await import('../state/service_loader.js')
@@ -255,7 +254,7 @@ export default class PatternSettingsPanel {
                     pattern.tracks = filterEmptyMelodicTracks(pattern.tracks)
                 }
                 for (const track of pattern.tracks) {
-                    if (drumTypes.has(detectTrackType(track.name))) track.auto = true
+                    if (DRUM_TYPES.has(detectTrackType(track.name))) track.auto = true
                 }
                 serviceRegistry.cmd.commitGenerationUndo()
             } catch (err) {

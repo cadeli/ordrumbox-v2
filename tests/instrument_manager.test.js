@@ -103,8 +103,9 @@ describe('InstrumentsManager', () => {
         it('findInstrumentFromFileName still reaches the midi.name fallback', () => {
             const found = manager.findInstrumentFromFileName('SOME_UNKNOWN_WORD')
             // whatever it resolves to, it must never be the NOT_FOUND instrument
-            // returned for a name with no synonym match at all
-            expect(found).toBeInstanceOf(Object)
+            // returned for a name with no synonym match at all — an
+            // `toBeInstanceOf(Object)` assertion would pass either way
+            expect(found.id).not.toBe(Instrument.NOT_FOUND)
         })
 
         it('findInstrumentFromMidiProgram matches the 0-based program it stored', () => {

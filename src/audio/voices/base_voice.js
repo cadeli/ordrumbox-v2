@@ -6,7 +6,12 @@ export default class BaseVoice {
 
     #pooledNodes
 
-    /** Replaced by Sound for cleanup; optional while no consumer sets it. */
+    /**
+     * Chained by Sound (sound.js: registerSynthVoice and the play path) so
+     * polyphony and node cleanup run when the voice ends. Sound assigns it to
+     * EVERY voice it creates, so the `if (this.onEnded)` guards downstream only
+     * matter for voices constructed directly, i.e. in tests.
+     */
     onEnded
 
     constructor(audioCtx, strip, nodePool = null) {

@@ -24,8 +24,10 @@ import { MASTER_BUS_DEFAULTS, SESSION_DEFAULTS } from '../core/constants.js'
  * Session snapshot persisted in soundRegistry.settings.session, filled field by
  * field by saveSession(), so every field is optional when loading.
  *
- * The `…Num` properties are the pre-rename spellings: still read (legacy
- * snapshots are never rewritten), never written.
+ * The `…Num` properties are the pre-rename spellings: read by restoreSession()
+ * as a fallback (legacy snapshots are never rewritten), never written.
+ * loadSettings() must NOT pre-fill them with SESSION_DEFAULTS — that would make
+ * `newIdx ?? legacyIdx` always resolve to the new (0) field.
  * @typedef {object} SessionSnapshot
  * @property {number} [selectedDrumkitIdx]
  * @property {number} [selectedPatternIdx]
@@ -233,7 +235,13 @@ export default class ResourcesLoader {
             const raw = await idbGet('settings', ResourcesLoader.SETTINGS_KEY)
             if (raw) {
                 if (raw.master) raw.master = { ...MASTER_BUS_DEFAULTS, ...raw.master }
-                if (raw.session) raw.session = { ...SESSION_DEFAULTS, ...raw.session }
+                // NOT merged with SESSION_DEFAULTS: that would write
+                // selectedDrumkitIdx: 0 over a legacy snapshot's
+                // selectedDrumkitNum, and `restoreSession` reads
+                // `idx ?? legacyNum` — the legacy value could then never win,
+                // i.e. exactly the reset this compat path exists to prevent.
+                // The "nothing stored" case is covered by defaults.session below.
+                if (raw.session) raw.session = { ...raw.session }
                 Object.assign(soundRegistry.settings, defaults, raw)
                 return
             }
@@ -282,7 +290,8 @@ export default class ResourcesLoader {
         if (!s) return
         // `?? legacy` rather than a migration: the settings store is not
         // version-gated, and a rename without it would reset the selection of
-        // every existing user to 0.
+        // every existing user to 0. Only reachable because loadSettings() leaves
+        // a stored session unmerged — see the note there.
         const drumkitIdx = s.selectedDrumkitIdx ?? s.selectedDrumkitNum
         const patternIdx = s.selectedPatternIdx ?? s.selectedPatternNum
         const trackIdx = s.selectedTrackIdx ?? s.selectedTrackNum

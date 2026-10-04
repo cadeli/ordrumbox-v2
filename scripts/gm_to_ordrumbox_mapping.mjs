@@ -12,7 +12,7 @@ const buildRealKitSounds = () => {
         for (const inst of kit.instruments) {
             idx++
             sounds[inst.url] = {
-                kit_name: kit.name,
+                kitName: kit.name,
                 url: inst.url,
                 key: inst.key,
                 index: idx,
@@ -94,7 +94,7 @@ const runAutoAssign = (trackName) => {
     const soundUrl =
         track.soundId && track.soundId !== 'NOT_DEFINED' ? (realSounds[track.soundId]?.url ?? track.soundId) : 'NONE'
     const soundKit =
-        track.soundId && track.soundId !== 'NOT_DEFINED' ? (realSounds[track.soundId]?.kit_name ?? '?') : '-'
+        track.soundId && track.soundId !== 'NOT_DEFINED' ? (realSounds[track.soundId]?.kitName ?? '?') : '-'
 
     return { track, soundUrl, soundKit, info, tier }
 }

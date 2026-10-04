@@ -3,7 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { injectUiCss } from './components/ui_utils.js'
 import { isMobileViewport } from '../core/constants.js'
-import { detectTrackType } from '../core/drum_taxonomy.js'
+import { DRUM_TYPES, detectTrackType } from '../core/drum_taxonomy.js'
 import { getTracksArray } from '../core/tracks.js'
 
 import TransportControls from './toolbar/transport_controls.js'
@@ -130,10 +130,9 @@ export default class Toolbar {
         this.redoBtn.title = canRedo ? `Redo: ${this.#nextRedoDesc ?? ''} (Ctrl+Y)` : 'Redo (Ctrl+Y)'
 
         const tracks = pat ? getTracksArray(pat) : []
-        const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
         this.drumBtn.classList.toggle(
             'active',
-            tracks.some((t) => t._toolbarAuto && drumTypes.has(detectTrackType(t.name))),
+            tracks.some((t) => t._toolbarAuto && DRUM_TYPES.has(detectTrackType(t.name))),
         )
         this.bassBtn.classList.toggle(
             'active',

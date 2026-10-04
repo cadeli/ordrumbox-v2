@@ -11,7 +11,9 @@ export default class StructureSong {
      * STRUCTURES[genre].BASS used to be the ONLY bass a genre could get, so house,
      * hiphop and funk all played the same `groove` line, while `melodic` and
      * `arpege` were never picked by the pipeline at all. Generation now draws one
-     * at random from the genre's list (see AutoGenerate.generateTrack).
+     * at random from the genre's list (see AutoGenerate.generateTrack) — an
+     * unconditional draw for BASS, so it also overrides a hand-set
+     * `track.auto_variant`.
      */
     static BASS_VARIANTS_BY_GENRE = Object.freeze({
         house: ['groove', 'stepping', 'basic', 'melodic'],

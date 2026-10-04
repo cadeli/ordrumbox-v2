@@ -501,7 +501,6 @@
                 "decay": 5000
             },
             {
-                "kit_name": "generated",
                 "display_name": "tom.wav",
                 "key": "TOM",
                 "url": "generated/tom.wav",

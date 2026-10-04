@@ -154,7 +154,11 @@ export default class AutoGenerate {
         const type = detectTrackType(track.name)
         this.#applyGenreSwing(track, pattern)
         this.#applyVariation(track, type)
-        const variant = type === 'BASS' ? (StructureSong.randomBassVariant(pattern?._autoGenGenre) ?? config) : config
+        // The BASS draw is UNCONDITIONAL: randomBassVariant() never returns
+        // nullish, so it also overrides a track.auto_variant the user (or a
+        // previous loop) had set. That is deliberate — a hand-picked bass
+        // variant would otherwise never survive an auto-generate.
+        const variant = type === 'BASS' ? StructureSong.randomBassVariant(pattern?._autoGenGenre) : config
         if (variant !== config) {
             logger.info(
                 AutoGenerate.TAG,
@@ -201,7 +205,9 @@ export default class AutoGenerate {
      * every loop. Melodic parts get more than percussion: a bass line is a handful
      * of notes repeated for minutes, which is where repetition shows.
      *
-     * Only fills the defaults: a value the user set is never overwritten.
+     * Only fills the defaults: a NON-ZERO value the user set is never
+     * overwritten — the guard is `if (!track.variation)`, so an explicit 0 is
+     * refilled.
      *
      * @param {any} track
      * @param {string} type detectTrackType() result

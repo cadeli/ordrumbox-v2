@@ -238,9 +238,10 @@ export default class NoteEditor extends BasePanel {
         this.#beat = data.beat ?? 0
         this.#beatStep = data.beatStep ?? 0
         // NOTE_DEFAULTS, not a second table: this one used to disagree on velocity
-        // (1 vs 0.8) and arpTriggerProbability (0 vs 1), so a note created in the
-        // editor was quieter and never arp-triggered compared to one created
-        // anywhere else.
+        // (1 vs 0.8) and arpTriggerProbability (0 vs 1), so the editor's empty
+        // state displayed values no note ever had — louder, and never
+        // arp-triggered. Notes themselves are created by cmd.addNote(), which
+        // spreads the same table.
         this.#note = { ...NOTE_DEFAULTS }
         await loadScales()
     }

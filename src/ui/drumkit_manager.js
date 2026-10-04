@@ -5,6 +5,7 @@ import InstrumentsManager, { instrumentsManager } from '../logic/services/instru
 import drumkitService from '../logic/services/drumkit_service.js'
 import { drawDecayMarker, drawEnvelope } from '../audio/sample_analyzer.js'
 import { formatNote } from '../core/hz_to_note.js'
+import { NOT_FOUND } from '../core/constants.js'
 import { showToast } from '../core/notify.js'
 import { downloadJson, renderOptions, knobFormat } from './components/ui_utils.js'
 import { escapeHtml } from './components/ui_utils.js'
@@ -273,7 +274,7 @@ export default class DrumkitManager extends BasePanel {
         const rmsDb = analysis?.rmsDb != null ? analysis.rmsDb.toFixed(1) : '—'
         const duration = analysis?.durationSec != null ? (analysis.durationSec * 1000).toFixed(0) + ' ms' : '—'
         const decayStr = sound.decay != null ? sound.decay + ' ms' : '—'
-        const tooltipText = `${detected.id !== 'NOT_FOUND' ? 'Detected: ' + detected.id : 'No instrument detected'}\nPeak: ${peakDb} dB\nRMS: ${rmsDb} dB\nDuration: ${duration}\nDecay: ${decayStr}`
+        const tooltipText = `${detected.id !== NOT_FOUND ? 'Detected: ' + detected.id : 'No instrument detected'}\nPeak: ${peakDb} dB\nRMS: ${rmsDb} dB\nDuration: ${duration}\nDecay: ${decayStr}`
 
         const kitNames = soundRegistry.drumkitList.map((k) => k.name)
         if (sound.kitName && !kitNames.includes(sound.kitName)) {

@@ -8,8 +8,9 @@ export default class BassGenerate extends BaseGenerator {
         basic: {
             mode: 'phrases',
             scaleName: 'pentatonic minor',
-            // per-variant register: every variant used to sit at -12, so two lines
-            // could differ in rhythm and still read as the same bass
+            // Every variant used to sit at -12, so two lines could differ in
+            // rhythm and still read as the same bass. Only groove (-17) and
+            // melodic (-5) now leave the bass register; the rest stay at -12.
             rootNote: -12,
             approachNotes: [-1, -2, -3],
             loopBeats: 4,
@@ -60,7 +61,7 @@ export default class BassGenerate extends BaseGenerator {
             scaleName: 'major',
             rootNote: -12,
             beat: 0,
-            // two rows: which steps are candidates changes from generation to
+            // three rows: which steps are candidates changes from generation to
             // generation, not just how likely each one is
             probabilitySets: [
                 [0.7, 0.7, 0.6, 0.7],

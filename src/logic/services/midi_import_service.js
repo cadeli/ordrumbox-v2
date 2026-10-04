@@ -124,7 +124,7 @@ export default class MidiImportService {
 
             if (!isDrumChannel) {
                 const melodicInst = im.findInstrumentFromMidiProgram(program)
-                if (melodicInst.id !== 'NOT_FOUND' && !melodicInst.drum) {
+                if (melodicInst.id !== NOT_FOUND && !melodicInst.drum) {
                     const trackName = melodicInst.id
                     if (!trackDefs.some((d) => d.trackName === trackName)) {
                         trackDefs.push(
@@ -155,7 +155,9 @@ export default class MidiImportService {
                 // findByName answers with a NOT_FOUND instrument, never null:
                 // testing the object would push a track literally named NOT_FOUND.
                 const nameInst = im.findByName(midiTrackName)
-                if (nameInst.id !== NOT_FOUND) {
+                // `!nameInst.drum` as in tier-1: a melodic instrument found by
+                // NAME on a non-drum channel belongs to the melodic tier, not here.
+                if (nameInst.id !== NOT_FOUND && !nameInst.drum) {
                     const trackName = nameInst.id
                     if (!trackDefs.some((d) => d.trackName === trackName)) {
                         trackDefs.push(
@@ -213,15 +215,15 @@ export default class MidiImportService {
         let drumFound = false
         for (const [noteNum, grpNotes] of noteGroups) {
             let drumInst = im.findInstrumentFromMidi(channel, noteNum)
-            let matchMethod = drumInst.id !== 'NOT_FOUND' ? 'findInstrumentFromMidi' : null
-            if (drumInst.id === 'NOT_FOUND') {
+            let matchMethod = drumInst.id !== NOT_FOUND ? 'findInstrumentFromMidi' : null
+            if (drumInst.id === NOT_FOUND) {
                 const gmName = GM_DRUM_NAMES[noteNum]
                 if (gmName) {
                     drumInst = im.findInstrumentFromFileName(gmName)
-                    if (drumInst.id !== 'NOT_FOUND')
+                    if (drumInst.id !== NOT_FOUND)
                         matchMethod = `GM_DRUM_NAMES[${noteNum}]="${gmName}" → findInstrumentFromFileName`
                 }
-                if (drumInst.id === 'NOT_FOUND') {
+                if (drumInst.id === NOT_FOUND) {
                     logger.warn('MidiImport', `  note ${noteNum}: no instrument found`)
                     continue
                 }

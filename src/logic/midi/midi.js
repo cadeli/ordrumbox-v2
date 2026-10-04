@@ -315,7 +315,7 @@ export default class MidiManager extends EventTarget {
     /**
      * Audition the track a GM drum note maps to: resolves the track then plays one
      * short beep of its sound. It does NOT trigger the track in the pattern and
-     * does not touch the sequencer (the name used to imply it did).
+     * does not touch the sequencer.
      * @param {number} noteNumber
      */
     previewMappedTrack = async (noteNumber) => {
