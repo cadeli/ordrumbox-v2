@@ -6,8 +6,7 @@ export default class BaseVoice {
 
     #pooledNodes
 
-    /** Remplace par Sound pour le nettoyage ; optionnel tant qu'aucun
-     *  consommateur ne l'a pose. */
+    /** Replaced by Sound for cleanup; optional while no consumer sets it. */
     onEnded
 
     constructor(audioCtx, strip, nodePool = null) {

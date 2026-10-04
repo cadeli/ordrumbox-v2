@@ -50,8 +50,22 @@ import { valueOrFallback } from '../core/logger.js'
  * @property {boolean} sat                  - Saturation enabled. Default: true
  * @property {boolean} reverbOn             - Reverb enabled. Default: true
  * @property {boolean} delayOn              - Delay enabled. Default: true
- * @property {string|null} synthSoundKey    - Synth preset key. Default: null
+ * @property {string}  synthSoundKey    - Synth preset key. Default: null
  * @property {Array}   notes                - Note array (objects or compact arrays). Default: []
+ * @property {number}  probability          - Base probability of every note on the track (0-1). Default: 1
+ * @property {number}  prob_pitch            - Per-note chance the PITCH is randomized (0-100). Default: 50
+ * @property {number}  prob_velocity         - Per-note chance the VELOCITY is randomized (0-100). Default: 50
+ * @property {number}  prob_silence          - Per-note chance of a silent rest (0-100). Default: 50
+ * @property {number}  prob_fill             - Per-note chance of a fill instead of the note (0-100). Default: 50
+ * @property {number}  prob_ghost            - Per-note chance of a ghost note (0-100). Default: 50
+ * @property {number}  prob_retrig           - Per-note chance of retriggers (0-100). Default: 50
+ * @property {number}  prob_euclid           - Per-note chance of the euclidean variant (0-100). Default: 50
+ * @property {number}  prob_note             - Per-note chance the note is kept at all (0-100). Default: 50
+ * @property {number}  prob_arp              - Per-note chance of an arpeggio (0-100). Default: 50
+ * @property {number}  pitch_range           - Semitone span of pitch randomization (1-24). Default: 12
+ * @property {boolean} pitch_scale_lock      - Restrict pitch randomization to the scale. Default: false
+ * @property {string}  auto_variant          - Per-loop variation id applied by auto mode ("" = none). Default: ""
+ * @property {number}  auto_density          - Per-loop density offset (-1-1), -1 = auto. Default: -1
  */
 export const TRACK_DEFAULTS = {
     name: '',

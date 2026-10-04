@@ -69,9 +69,9 @@ export default class MidiImportService {
         }
 
         const baseName = file.name.replace(/\.midi?$/i, '')
-        // Le parseur ne lit pas le meta 0x51 : tempo est toujours absent et
-        // l'import retombe sur 120 bpm. Le cast garde le comportement actuel
-        // en signalant le champ manquant.
+        // The parser does not read the 0x51 meta event, so tempo is always
+        // absent and the import falls back to 120 bpm. The cast keeps that
+        // behaviour while flagging the field as possibly missing.
         const tempo = /** @type {{tempo?: number}} */ (midiData.header).tempo
         const bpm = tempo ? Math.round(60000000 / tempo) : 120
         const PPQN = midiData.header.division ?? 96

@@ -203,8 +203,6 @@ export default class SongPanel extends BasePanel {
         this.#listEl.innerHTML = ''
         for (let i = 0; i < patterns.length; i++) {
             const pat = patterns[i]
-            // Read appState live: this used to be a #selectedPatternIdx mirror,
-            // which could not desync but had nothing to add.
             const isSelected = i === appState.selectedPatternIdx
 
             const item = document.createElement('div')

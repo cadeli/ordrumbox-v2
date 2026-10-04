@@ -700,7 +700,7 @@ The engine uses an internal resolution of **TICK = 32 ticks per beat**.
 
 **Engine tick duration:**
 
-- `tickDuration = 60 × 4 / (bpm × TICK)` = `240 / (bpm × 32)`
+- `tickDuration = 60 / (bpm × TICK)` = `60 / (bpm × 32)`
 - One step = `tickDuration × (TICK / stepsPerBeat)` = `tickDuration × 8` (for stepsPerBeat=4)
 
 **Converting beat/beatStep to absolute tick:**
@@ -714,7 +714,7 @@ The engine uses an internal resolution of **TICK = 32 ticks per beat**.
 - Formula: `beat = floor(loopAtStep / stepsPerBeat)` and `beatStep = loopAtStep % stepsPerBeat`
 - Example: `loopAtStep: 8` with `stepsPerBeat: 4` → beat `2`, beatStep `0`
 - Example: `loopAtStep: 32` with `stepsPerBeat: 8` → beat `4`, beatStep `0`
-- By default `loopAtStep` is null (= track plays once without looping)
+- By default `loopAtStep` is `null` (= auto): the track repeats over its whole length, i.e. `beatCount × stepsPerBeat` steps (or the last note, whichever is further). Set it to shorten that — do NOT duplicate the notes instead.
 
 ### Use Loop Points Instead of Repeated Notes
 

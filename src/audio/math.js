@@ -36,7 +36,7 @@ export function computeNoteRatio(fpitch) {
  *
  * Returns the LFO value in the same units as the base value of the control.
  *
- * The worklet `lfo_ui_source.js` inlines the same formula. Both must
+ * The worklet `audio/worklets/processors/lfo_ui_source.js` inlines the same formula. Both must
  * produce the same value for the same input (verified by tests).
  *
  * One cycle spans 4 beats in both modes (`freq` = cycles per 4 beats):

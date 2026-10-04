@@ -33,7 +33,7 @@ export function initGlobalListeners() {
     })
 
     if (window.orientation > 1) {
-        // Prefixes vendor absents des types DOM
+        // Vendor-prefixed variants are missing from the DOM types
         const de = /** @type {Document['documentElement'] & Record<string, () => void>} */ (document.documentElement)
         if (de.requestFullscreen) {
             de.requestFullscreen()

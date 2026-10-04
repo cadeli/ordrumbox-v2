@@ -14,9 +14,10 @@ export function getSelectedDrumkitName(editor) {
 /**
  * Every sample of every kit, copied and tagged with its kit name.
  *
- * The tag is a no-op now that entries carry `kitName` themselves — it used to be
- * the ONLY place kitName existed, which is why reading it off a raw entry gave
- * undefined and the sound section showed no kit at all.
+ * The tag is a no-op now that entries carry `kitName` themselves. Reading
+ * `kitName` off a raw entry is what the sound section must do: when the tag was
+ * the only place kitName existed, every real entry read undefined and the kit
+ * column stayed empty.
  *
  * @param {import('../track_editor.js').default} editor
  * @returns {Array<import('../../state/sound_registry.js').SoundEntry>}

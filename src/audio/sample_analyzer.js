@@ -25,7 +25,7 @@ export function analyzeSample(audioBuffer) {
         return cache.get(audioBuffer)
     }
 
-    // Etendu plutot que mute : noteInfo n'appartient pas a AudioAnalysis.
+    // Extended rather than mutated: noteInfo does not belong to AudioAnalysis.
     const base = analyzer.analyzeAudioBuffer(audioBuffer)
     const result = { ...base, noteInfo: base.fundamentalHz ? hzToNote(base.fundamentalHz) : null }
 

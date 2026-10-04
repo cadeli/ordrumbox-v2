@@ -14,9 +14,9 @@ import OverflowMenu from './toolbar/overflow_menu.js'
 import { EVENTS } from '../core/events.js'
 
 export default class Toolbar {
-    // Boutons et champs attaches par les sous-modules (transport, nav, view
-    // switch, overflow). Declares ici pour que le type les connaisse ; ils ne
-    // sont initialises qu'a l'init().
+    // Buttons and fields attached by the sub-modules (transport, nav, view
+    // switch, overflow). Declared here so the type sees them; they are only
+    // assigned at init().
     /** @type {HTMLButtonElement} */
     undoBtn
     /** @type {HTMLButtonElement} */

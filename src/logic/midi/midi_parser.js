@@ -76,8 +76,8 @@ function parseMTrkEvents(bytes, dataOffset, length) {
 }
 
 /**
- * En-tete MThD. `tempo` (microsecondes par noir) n'est pas produit par le
- * parseur : le meta evenement 0x51 n'est pas lu, donc il reste absent.
+ * MThD header. `tempo` (microseconds per quarter note) is NOT produced by the
+ * parser: the 0x51 meta event is not read, so it stays absent.
  * @typedef {object} MidiHeader
  * @property {number} format
  * @property {number} numTracks

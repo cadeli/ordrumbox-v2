@@ -160,7 +160,7 @@ export function bindTabToggles(container, onChange) {
 }
 
 /**
- * Nom de vue, tel qu'enregistre dans ViewManager#viewHandlers.
+ * View name, as registered in ViewManager#viewHandlers.
  * @typedef {'synth' | 'edit' | 'proll' | 'song' | 'mobileSeq' | 'mobileTrack'} ViewName
  */
 

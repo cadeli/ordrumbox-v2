@@ -143,9 +143,8 @@ export default class SynthEditor {
 
     /**
      * Shows the panel and loads the current track's synth preset into the editor
-     * (the first available preset when the track has none). This is the only
-     * entry point: an openEditor() twin used to exist here, identical minus
-     * that fallback, and no src file called it.
+     * (the first available preset when the track has none). The only entry
+     * point.
      */
     async showPanel() {
         try {

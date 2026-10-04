@@ -148,10 +148,6 @@ export default class NoteEditor extends BasePanel {
         super.createDOM()
     }
 
-    setTrackEditor(_te) {
-        // Intentionally unused: kept for API compatibility with callers.
-    }
-
     subscribe() {
         this.sub(playbackEvents, EVENTS.NOTE_SELECT, (data) => {
             if (!data) return

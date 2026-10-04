@@ -6,8 +6,8 @@ import { EVENTS } from '../core/events.js'
 
 // Recomputes a pattern's flat notes, writes them to appState and dispatches the
 // change events. This is the whole module: it creates, reads, updates and deletes
-// no pattern and keeps no state (it used to be `patterns/manager.js`, and
-// `serviceRegistry.flatNotes` read like the pattern library).
+// no pattern and keeps no state. Hence the service key `serviceRegistry.flatNotes`
+// — it is a projection of one pattern, not the pattern library.
 
 /**
  * Recompute flat notes from a pattern, write to appState, and dispatch change events.

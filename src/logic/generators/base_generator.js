@@ -12,7 +12,7 @@
  */
 
 /**
- * Sections de config lues par le generateur de base.
+ * Config sections read by the base generator.
  * @typedef {object} GeneratorConfig
  * @property {number} [loopBeats]  Loop length in beats (converted to loopAtStep)
  * @property {number} [stepsPerBeat]
