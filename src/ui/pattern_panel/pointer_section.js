@@ -1,7 +1,8 @@
 // src/ui/pattern_panel/pointer_section.js
 // Mouse interactions on the grid: click routing, volume sliders, hover tooltip.
 
-import Utils from '../../core/utils.js'
+import { getNoteAbsoluteStep, notesAtStep } from '../../core/notes.js'
+import { getTracksArray } from '../../core/tracks.js'
 import { EVENTS } from '../../core/events.js'
 import { formatNoteTooltip } from '../components/ui_utils.js'
 
@@ -62,11 +63,11 @@ export default class PointerSection {
     #resolveNotesAtStep(trackIdx, beat, beatStep) {
         const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return null
-        const tracks = Utils.getTracksArray(pattern)
+        const tracks = getTracksArray(pattern)
         const track = tracks[trackIdx]
         if (!track) return null
-        const notesAtStep = Utils.notesAtStep(track, beat, beatStep)
-        return { track, notesAtStep, pattern }
+        const stepNotes = notesAtStep(track, beat, beatStep)
+        return { track, notesAtStep: stepNotes, pattern }
     }
 
     #toggleTrackProp(idx, prop) {
@@ -157,7 +158,7 @@ export default class PointerSection {
         if (e.target.closest('#pp-add-track')) {
             const pattern = this.#editor.appState.selectedPattern
             if (!pattern) return
-            const trackNum = Utils.getTracksArray(pattern).length + 1
+            const trackNum = getTracksArray(pattern).length + 1
             this.#editor.serviceRegistry.cmd?.addTrack(pattern, `T${trackNum}`)
             this.#editor.emitStructureChange()
             return
@@ -166,7 +167,7 @@ export default class PointerSection {
         if (e.target.closest('#pp-delete-track')) {
             const pattern = this.#editor.appState.selectedPattern
             if (!pattern) return
-            const tracks = Utils.getTracksArray(pattern)
+            const tracks = getTracksArray(pattern)
             if (tracks.length <= 1) return
             const trackIdx = this.#editor.effectiveTrackIdx
             if (trackIdx < 0 || trackIdx >= tracks.length) return
@@ -204,7 +205,7 @@ export default class PointerSection {
                 this.#editor.selectedNote = note
                 this.#editor.gridTrackIdx = trackIdx
                 this.#editor.applySelection()
-                const pos = Utils.getNoteAbsoluteStep({ beat, beatStep }, track.stepsPerBeat ?? 4)
+                const pos = getNoteAbsoluteStep({ beat, beatStep }, track.stepsPerBeat ?? 4)
                 this.#editor.playbackEvents.batch(() => {
                     this.#editor.playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx })
                     this.#editor.playbackEvents.emit(EVENTS.NOTE_SELECT, { track, trackIdx, note, pos, beat, beatStep })
@@ -220,7 +221,7 @@ export default class PointerSection {
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
         this.#editor.applySelection()
 
-        const pos = Utils.getNoteAbsoluteStep({ beat, beatStep }, track.stepsPerBeat ?? 4)
+        const pos = getNoteAbsoluteStep({ beat, beatStep }, track.stepsPerBeat ?? 4)
         this.#editor.playbackEvents.batch(() => {
             this.#editor.playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx })
             this.#editor.playbackEvents.emit(EVENTS.NOTE_SELECT, {
@@ -242,7 +243,7 @@ export default class PointerSection {
             const trackIdx = parseInt(volSlider.dataset.track, 10)
             if (isNaN(trackIdx)) return
             const pattern = this.#editor.appState.selectedPattern
-            const tracks = Utils.getTracksArray(pattern)
+            const tracks = getTracksArray(pattern)
             const track = tracks[trackIdx]
             if (!track) return
             track.velocity = parseFloat(volSlider.value)

@@ -1,4 +1,4 @@
-import Utils from '../core/utils.js'
+import { getTracksArray } from '../core/tracks.js'
 import AudioEngine from '../audio/engine.js'
 import AudioStallDetector from '../audio/stall_detector.js'
 import Transport from './transport/transport.js'
@@ -336,7 +336,7 @@ export default class Sequencer {
         this.ensureAudioEngine()
         const pat = this.appState.selectedPattern
         if (!pat) return
-        const tracks = Utils.getTracksArray(pat)
+        const tracks = getTracksArray(pat)
         const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat.tracks?.[indexTrack]
         if (!track) return
         if ((track.soundId === 'NOT_DEFINED' || !track.soundId) && !track.useSoftSynth) {

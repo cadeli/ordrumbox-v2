@@ -2,7 +2,8 @@
 // Right-click menus for the pattern grid: track menu and cell (notes) menu.
 
 import ContextMenu from '../components/context_menu.js'
-import Utils from '../../core/utils.js'
+import { notesAtStep } from '../../core/notes.js'
+import { getTracksArray } from '../../core/tracks.js'
 import { showToast } from '../../core/notify.js'
 import { EVENTS } from '../../core/events.js'
 import { beatLabel, notesLabel } from './labels.js'
@@ -47,12 +48,12 @@ export default class ContextMenuSection {
         this.#contextMenu.hide()
         const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return
-        const tracks = Utils.getTracksArray(pattern)
+        const tracks = getTracksArray(pattern)
         const track = tracks[trackIdx]
         if (!track) return
 
         const canPasteNotes = this.#editor.clipboard?.type === 'step' && (this.#editor.clipboard.notes?.length ?? 0) > 0
-        const notesAtStep = Utils.notesAtStep(track, beat, beatStep)
+        const stepNotes = notesAtStep(track, beat, beatStep)
         const header = `${track.name ?? 'Track'} @ ${beat + 1}.${beatStep + 1}`
         const actions = [
             { label: 'Copy notes', run: () => this.#menuCopyNotes(tracks, trackIdx, beat, beatStep) },
@@ -63,7 +64,7 @@ export default class ContextMenuSection {
             },
             {
                 label: 'Delete note',
-                disabled: notesAtStep.length === 0,
+                disabled: stepNotes.length === 0,
                 run: () => this.#menuDeleteNote(pattern, tracks, trackIdx, beat, beatStep),
             },
             { label: 'Add rnd note', run: () => this.#menuAddRndNote(pattern, tracks, trackIdx, beat, beatStep) },
@@ -75,7 +76,7 @@ export default class ContextMenuSection {
         this.#contextMenu.hide()
         const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return
-        const tracks = Utils.getTracksArray(pattern)
+        const tracks = getTracksArray(pattern)
         const track = tracks[trackIdx]
         if (!track) return
 
@@ -194,7 +195,7 @@ export default class ContextMenuSection {
     #menuDeleteNote(pattern, tracks, trackIdx, beat, beatStep) {
         const track = tracks[trackIdx]
         if (!track) return
-        const notes = Utils.notesAtStep(track, beat, beatStep)
+        const notes = notesAtStep(track, beat, beatStep)
         if (notes.length === 0) {
             showToast('No note to delete', 'info')
             return

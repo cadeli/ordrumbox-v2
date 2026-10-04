@@ -3,7 +3,7 @@
 import Mixer from './mixer.js'
 import Sound from './sound.js'
 import NoteParams from '../patterns/note_params.js'
-import Utils from '../core/utils.js'
+import { hasAnySolo, shouldTrackPlay } from '../core/tracks.js'
 import { logger } from '../core/logger.js'
 
 /**
@@ -60,7 +60,7 @@ export async function exportOffline(deps, pattern, numLoops, OfflineAudioContext
 
         const truePatternDuration = samplesPerPattern / sampleRate
 
-        const anySolo = Utils.hasAnySolo(pattern.tracks)
+        const anySolo = hasAnySolo(pattern.tracks)
         for (let loop = 0; loop < totalLoops; loop++) {
             const loopStartTime = loop * truePatternDuration
             const flatNotes = computeFlatNotes(pattern, loop)
@@ -72,7 +72,7 @@ export async function exportOffline(deps, pattern, numLoops, OfflineAudioContext
                     const absoluteTime = loopStartTime + noteTime
                     NoteParams.applyNoteParams(flatNote, secondsPerTick)
 
-                    if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
+                    if (shouldTrackPlay(flatNote.track, anySolo)) {
                         await offlineSound.play(flatNote, absoluteTime + flatNote.swingTime)
                     }
                 }

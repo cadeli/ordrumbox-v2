@@ -4,7 +4,7 @@
 import { TICK, BEATS_PER_PAGE } from '../../core/constants.js'
 
 import { appState } from '../../state/app_state.js'
-import Utils from '../../core/utils.js'
+import { getTracksArray } from '../../core/tracks.js'
 import { color } from '../theme.js'
 import { EVENTS } from '../../core/events.js'
 import { reportUserError } from '../../core/notify.js'
@@ -103,7 +103,7 @@ export default class PlaybackOverlaySection {
         const strips = mixer.strips
         const vuEls = this.#vuElCache
         const currentPattern = appState.selectedPattern
-        const tracks = Utils.getTracksArray(currentPattern)
+        const tracks = getTracksArray(currentPattern)
         for (let i = 0; i < vuEls.length; i++) {
             const vuEl = vuEls[i]
             let tIdx = vuEl._tIdx

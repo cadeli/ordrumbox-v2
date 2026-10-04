@@ -1,7 +1,7 @@
 // src/ui/pattern_panel/selection_section.js
 // Track/note selection and shift-range selection for the pattern grid.
 
-import Utils from '../../core/utils.js'
+import { getTracksArray } from '../../core/tracks.js'
 import { isMobileViewport } from '../../core/constants.js'
 import { EVENTS } from '../../core/events.js'
 
@@ -130,7 +130,7 @@ export default class SelectionSection {
         selected.forEach((el) => el.classList.remove('selected', 'cursor', 'pp-selected', 'pp-range'))
 
         const pattern = this.#editor.appState.selectedPattern
-        const tracks = pattern ? Utils.getTracksArray(pattern) : []
+        const tracks = pattern ? getTracksArray(pattern) : []
         if (this.#editor.rangeAnchor && tracks.length > 0) this.#applyRangeClasses(tracks)
 
         const currentTrackIdx = this.#editor.effectiveTrackIdx
@@ -147,7 +147,7 @@ export default class SelectionSection {
                     if (slices.length > 0) {
                         const notes = (
                             this.#editor.appState.selectedPattern
-                                ? (Utils.getTracksArray(this.#editor.appState.selectedPattern)?.[trackIdx]?.notes ?? [])
+                                ? (getTracksArray(this.#editor.appState.selectedPattern)?.[trackIdx]?.notes ?? [])
                                 : []
                         ).filter((n) => n.beat === beat && n.beatStep === step)
                         const idx = notes.indexOf(this.#editor.selectedNote)

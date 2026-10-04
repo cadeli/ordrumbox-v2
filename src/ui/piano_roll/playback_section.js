@@ -6,7 +6,7 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { EVENTS } from '../../core/events.js'
 import { BEATS_PER_PAGE, TICK } from '../../core/constants.js'
-import Utils from '../../core/utils.js'
+import { getNoteAbsoluteStep } from '../../core/notes.js'
 import { createStepResolver } from '../../patterns/step_resolver.js'
 import { getNoteSubPositions } from '../../patterns/note_positions.js'
 import { reportUserError } from '../../core/notify.js'
@@ -115,7 +115,7 @@ export default class PlaybackSection {
         for (const el of gridEl.querySelectorAll('.pp-pr-note')) {
             const note = notes[parseInt(el.dataset.note, 10)]
             if (!note) continue
-            const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
+            const basePos = getNoteAbsoluteStep(note, stepsPerBeat)
             if (basePos >= loopAtStep) continue
             const matchesBase = absStep % loopAtStep === basePos
             const matchesSub = getNoteSubPositions(note, track, totalSteps, resolveSpanEnd).some(

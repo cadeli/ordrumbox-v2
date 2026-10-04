@@ -1,5 +1,6 @@
 import { clamp } from '../../../core/numbers.js'
-import Utils from '../../../core/utils.js'
+import { getPanFromTrackName } from '../../../core/drum_taxonomy.js'
+import { addLoopToTrackIfPossible, getTracksArray } from '../../../core/tracks.js'
 import { NOT_FOUND } from '../../../core/constants.js'
 import { clampStepsPerBeat, normalizeTrack, TRACK_VALUE_RANGES } from '../../../model/track_schema.js'
 import { reportUserError } from '../../../core/notify.js'
@@ -108,7 +109,7 @@ export default class TrackCommands {
 
     removeTrack(pattern, trackIdx) {
         if (!Array.isArray(pattern.tracks)) {
-            pattern.tracks = Utils.getTracksArray(pattern)
+            pattern.tracks = getTracksArray(pattern)
         }
         const tracks = pattern.tracks
         if (trackIdx < 0 || trackIdx >= tracks.length) return
@@ -135,7 +136,7 @@ export default class TrackCommands {
     pasteTrack(pattern, insertIdx, sourceTrack) {
         if (!pattern || !sourceTrack) return null
         if (!Array.isArray(pattern.tracks)) {
-            pattern.tracks = Utils.getTracksArray(pattern)
+            pattern.tracks = getTracksArray(pattern)
         }
         const tracks = pattern.tracks
         const existingNames = new Set(tracks.map((t) => t?.name))
@@ -176,7 +177,7 @@ export default class TrackCommands {
             beatCount: beatCount,
             stepsPerBeat,
             loopAtStep: beatCount * stepsPerBeat,
-            pan: Utils.getPanFromTrackName(name),
+            pan: getPanFromTrackName(name),
         })
         return newTrack
     }
@@ -247,7 +248,7 @@ export default class TrackCommands {
     }
 
     cleanPattern(pattern) {
-        Utils.getTracksArray(pattern).forEach((track) => {
+        getTracksArray(pattern).forEach((track) => {
             this.cleanTrack(track)
         })
     }
@@ -261,7 +262,7 @@ export default class TrackCommands {
 
     compactTrack(track) {
         const before = this.#snapshotTrack(track, TRACK_STATE_KEYS)
-        const result = Utils.addLoopToTrackIfPossible(track)
+        const result = addLoopToTrackIfPossible(track)
         if (result.changed) {
             const after = this.#snapshotTrack(track, TRACK_STATE_KEYS)
             this.#host.record({

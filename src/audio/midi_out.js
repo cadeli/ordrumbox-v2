@@ -1,6 +1,6 @@
 // src/audio/midi_out.js — Real-time MIDI note output for playback and triggers.
 
-import Utils from '../core/utils.js'
+import { hasAnySolo, shouldTrackPlay } from '../core/tracks.js'
 import { logger, valueOrFallback } from '../core/logger.js'
 import InstrumentsManager from '../logic/services/instrument_manager/index.js'
 import { serviceRegistry } from '../state/service_registry.js'
@@ -55,9 +55,9 @@ export function sendMidiNotes(deps, tick, atTime) {
     const audioNow = audioCtx.currentTime
     const midiTime = perfNow + (atTime - audioNow) * 1000
 
-    const anySolo = Utils.hasAnySolo(selectedPattern.tracks)
+    const anySolo = hasAnySolo(selectedPattern.tracks)
     notesToPlay.forEach((flatNote) => {
-        if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
+        if (shouldTrackPlay(flatNote.track, anySolo)) {
             const mapping = resolveMapping(flatNote.track.id)
             if (mapping) {
                 const channel = Number.isFinite(parseInt(String(mapping.channel), 10))

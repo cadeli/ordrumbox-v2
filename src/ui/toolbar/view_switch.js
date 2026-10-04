@@ -5,7 +5,8 @@ import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { showToast } from '../../core/notify.js'
 import { playbackEvents } from '../../state/playback_events.js'
-import Utils from '../../core/utils.js'
+import { DRUM_TYPES, detectTrackType } from '../../core/drum_taxonomy.js'
+import { filterEmptyMelodicTracks } from '../../core/tracks.js'
 import { EVENTS } from '../../core/events.js'
 
 export default class ViewSwitch {
@@ -152,15 +153,15 @@ export default class ViewSwitch {
         })
 
         this.listen(tb.drumBtn, 'click', async () => {
-            await this.toggleAutoGen(Utils.DRUM_TYPES, async (pattern, autoGen) => {
+            await this.toggleAutoGen(DRUM_TYPES, async (pattern, autoGen) => {
                 if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
                 await autoGen.generatePattern()
 
                 if (pattern.tracks) {
-                    pattern.tracks = Utils.filterEmptyMelodicTracks(pattern.tracks)
+                    pattern.tracks = filterEmptyMelodicTracks(pattern.tracks)
                 }
                 for (const track of pattern.tracks) {
-                    if (Utils.DRUM_TYPES.has(Utils.detectTrackType(track.name))) {
+                    if (DRUM_TYPES.has(detectTrackType(track.name))) {
                         track.auto = true
                         track._toolbarAuto = true
                     }
@@ -171,7 +172,7 @@ export default class ViewSwitch {
 
         this.listen(tb.bassBtn, 'click', async () => {
             await this.toggleAutoGen('BASS', async (pattern, autoGen) => {
-                let bassTrack = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === 'BASS')
+                let bassTrack = pattern.tracks?.find((t) => detectTrackType(t.name) === 'BASS')
 
                 if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
                 if (!bassTrack) {
@@ -202,7 +203,7 @@ export default class ViewSwitch {
 
         this.listen(tb.chordsBtn, 'click', async () => {
             await this.toggleAutoGen('PIANO', async (pattern, autoGen) => {
-                let pianoTrack = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === 'PIANO')
+                let pianoTrack = pattern.tracks?.find((t) => detectTrackType(t.name) === 'PIANO')
 
                 if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
                 if (!pianoTrack) {
@@ -238,11 +239,11 @@ export default class ViewSwitch {
 
         const types =
             typeOrTypes instanceof Set ? typeOrTypes : new Set(Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes])
-        const hasAuto = (pattern.tracks ?? []).some((t) => t._toolbarAuto && types.has(Utils.detectTrackType(t.name)))
+        const hasAuto = (pattern.tracks ?? []).some((t) => t._toolbarAuto && types.has(detectTrackType(t.name)))
 
         if (hasAuto) {
             for (const track of pattern.tracks) {
-                if (types.has(Utils.detectTrackType(track.name))) {
+                if (types.has(detectTrackType(track.name))) {
                     track.auto = false
                     track._toolbarAuto = false
                 }

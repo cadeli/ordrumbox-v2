@@ -1,5 +1,5 @@
 import { clamp } from '../../core/numbers.js'
-import Utils from '../../core/utils.js'
+import { getTracksArray } from '../../core/tracks.js'
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
@@ -297,7 +297,7 @@ export default class Commander {
             appState.songInfos = { ...snap.songInfos }
         }
         appState.selectedPatternIdx = clamp(snap.selectedPatternIdx ?? 0, 0, Math.max(0, appState.patterns.length - 1))
-        const tracks = Utils.getTracksArray(appState.selectedPattern ?? {})
+        const tracks = getTracksArray(appState.selectedPattern ?? {})
         appState.selectedTrackIdx = clamp(snap.selectedTrackIdx ?? 0, 0, Math.max(0, tracks.length - 1))
         this.persist()
     }
@@ -308,7 +308,7 @@ export default class Commander {
 
     incrementPatternVersionByTrack(track) {
         for (const pattern of appState.patterns) {
-            if (Utils.getTracksArray(pattern).includes(track)) {
+            if (getTracksArray(pattern).includes(track)) {
                 pattern._revision = (pattern._revision ?? 0) + 1
                 break
             }

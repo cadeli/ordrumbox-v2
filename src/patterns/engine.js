@@ -1,5 +1,5 @@
 import { clamp } from '../core/numbers.js'
-import Utils from '../core/utils.js'
+import { getNoteAbsoluteStep, getStepSpacing, stepToTick } from '../core/notes.js'
 import FlatNote from '../model/flatnote.js'
 import Defaults from './defaults.js'
 import TrackVariation from './variation.js'
@@ -82,7 +82,7 @@ export function getArpNoteCount(note) {
 }
 
 export function computeTickForNote(note, track, tick = TICK) {
-    return Utils.stepToTick(Utils.getNoteAbsoluteStep(note, track.stepsPerBeat), track.stepsPerBeat, tick)
+    return stepToTick(getNoteAbsoluteStep(note, track.stepsPerBeat), track.stepsPerBeat, tick)
 }
 
 export function computeNbTickForPattern(beatCount, tick = TICK) {
@@ -120,7 +120,7 @@ export function expandLoopOccurrences(baseTick, nbTickForLoop, nbTickForPattern)
 }
 
 export function computeTickSpacing(track, rate, tick = TICK) {
-    return Math.round((tick / track.stepsPerBeat) * Utils.getStepSpacing(rate))
+    return Math.round((tick / track.stepsPerBeat) * getStepSpacing(rate))
 }
 
 export function createArpFlatNote(tick, track, note, semitoneOffset) {
@@ -195,7 +195,7 @@ export function generateSubNotesWithEuclidean(
 
     // Positions are computed in discrete steps first (identical to the UI
     // views), then converted to ticks — never the other way around.
-    const startStep = Utils.getNoteAbsoluteStep(note, track.stepsPerBeat ?? 4)
+    const startStep = getNoteAbsoluteStep(note, track.stepsPerBeat ?? 4)
     const endStep = (computeNextStep ?? createStepResolver(track))(note, track)
     const stepsSpan = endStep - startStep
     const ticksPerStep = tick / track.stepsPerBeat

@@ -1,6 +1,8 @@
+import Utils from '../core/utils.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
-import Utils from '../core/utils.js'
+import { stepToBeat } from '../core/notes.js'
+import { getTracksArray } from '../core/tracks.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import FlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
@@ -127,7 +129,7 @@ export default class PianoRollPanel extends BasePanel {
     #resolveTrack() {
         const pattern = appState.selectedPattern
         const idx = appState.selectedTrackIdx
-        const track = Utils.getTracksArray(pattern)?.[idx]
+        const track = getTracksArray(pattern)?.[idx]
         if (track) {
             this.#track = track
             this.#selectedTrackIdx = idx
@@ -321,7 +323,7 @@ export default class PianoRollPanel extends BasePanel {
 
         if (e.key === 'Enter') {
             if (this.#cursorStep < 0 || this.#cursorRow < 0) return
-            const { beat, beatStep } = Utils.stepToBeat(this.#cursorStep, stepsPerBeat)
+            const { beat, beatStep } = stepToBeat(this.#cursorStep, stepsPerBeat)
             const midi = MIDI_MIN + this.#cursorRow
             const relativePitch = midi - MIDDLE_C - (track.pitch ?? 0)
             const note = findNoteAt(track, beat, beatStep, midi)
@@ -370,7 +372,7 @@ export default class PianoRollPanel extends BasePanel {
         }
         const track = this.#track
         if (!track) return
-        const { beat, beatStep } = Utils.stepToBeat(this.#cursorStep, stepsPerBeat)
+        const { beat, beatStep } = stepToBeat(this.#cursorStep, stepsPerBeat)
         const midi = MIDI_MIN + this.#cursorRow
         const note = findNoteAt(track, beat, beatStep, midi)
         this.#selectedNote = note

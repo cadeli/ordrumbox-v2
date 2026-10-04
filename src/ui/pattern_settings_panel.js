@@ -2,7 +2,8 @@ import { appState } from '../state/app_state.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import Utils from '../core/utils.js'
+import { detectTrackType } from '../core/drum_taxonomy.js'
+import { filterEmptyMelodicTracks } from '../core/tracks.js'
 import { MAX_BEATS } from '../core/constants.js'
 import { prevPage, nextPage } from './page_nav.js'
 import { maxPageFor } from './page_nav.js'
@@ -239,10 +240,10 @@ export default class PatternSettingsPanel {
         const pattern = appState.selectedPattern
         if (!pattern) return
         const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
-        const hasDrumAuto = (pattern.tracks ?? []).some((t) => t.auto && drumTypes.has(Utils.detectTrackType(t.name)))
+        const hasDrumAuto = (pattern.tracks ?? []).some((t) => t.auto && drumTypes.has(detectTrackType(t.name)))
         if (hasDrumAuto) {
             for (const track of pattern.tracks) {
-                if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = false
+                if (drumTypes.has(detectTrackType(track.name))) track.auto = false
             }
         } else {
             const { getAutoGenerateService } = await import('../state/service_loader.js')
@@ -251,10 +252,10 @@ export default class PatternSettingsPanel {
             try {
                 await autoGen.generatePattern()
                 if (pattern.tracks) {
-                    pattern.tracks = Utils.filterEmptyMelodicTracks(pattern.tracks)
+                    pattern.tracks = filterEmptyMelodicTracks(pattern.tracks)
                 }
                 for (const track of pattern.tracks) {
-                    if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = true
+                    if (drumTypes.has(detectTrackType(track.name))) track.auto = true
                 }
                 serviceRegistry.cmd.commitGenerationUndo()
             } catch (err) {
@@ -274,13 +275,13 @@ export default class PatternSettingsPanel {
     async #toggleMelodicAutoGen(trackType, { synthSoundKey, defaultVariant }) {
         const pattern = appState.selectedPattern
         if (!pattern) return
-        const hasAuto = (pattern.tracks ?? []).some((t) => t.auto && Utils.detectTrackType(t.name) === trackType)
+        const hasAuto = (pattern.tracks ?? []).some((t) => t.auto && detectTrackType(t.name) === trackType)
         if (hasAuto) {
             for (const track of pattern.tracks) {
-                if (Utils.detectTrackType(track.name) === trackType) track.auto = false
+                if (detectTrackType(track.name) === trackType) track.auto = false
             }
         } else {
-            let track = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === trackType)
+            let track = pattern.tracks?.find((t) => detectTrackType(t.name) === trackType)
             const { getAutoGenerateService } = await import('../state/service_loader.js')
             const autoGen = await getAutoGenerateService()
             if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return

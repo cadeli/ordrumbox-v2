@@ -3,7 +3,7 @@
 import { appState } from '../../state/app_state.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import Utils from '../../core/utils.js'
+import { getTracksArray } from '../../core/tracks.js'
 import { EVENTS } from '../../core/events.js'
 
 export default class PatternSection {
@@ -37,7 +37,7 @@ export default class PatternSection {
         const pattern = appState.selectedPattern
         if (!pattern || !pattern.tracks) return
 
-        Utils.getTracksArray(pattern).forEach((track) => {
+        getTracksArray(pattern).forEach((track) => {
             serviceRegistry.cmd?.compactTrack(track)
         })
 
@@ -51,7 +51,7 @@ export default class PatternSection {
     randomize() {
         const pattern = appState.selectedPattern
         if (!pattern) return
-        const tracks = Utils.getTracksArray(pattern)
+        const tracks = getTracksArray(pattern)
         for (const track of tracks) {
             serviceRegistry.cmd?.randomizeTrack(track, pattern)
         }

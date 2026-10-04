@@ -1,4 +1,4 @@
-import Utils from '../core/utils.js'
+import { getNoteAbsoluteStep } from '../core/notes.js'
 
 /**
  * Single source of truth for "where does a note's sub-note span end?" —
@@ -29,7 +29,7 @@ export function buildOccupiedSet(track) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
     const values = Array.isArray(notes) ? notes : Object.values(notes)
     for (let i = 0; i < values.length; i++) {
-        set.add(Utils.getNoteAbsoluteStep(values[i], stepsPerBeat))
+        set.add(getNoteAbsoluteStep(values[i], stepsPerBeat))
     }
     return set
 }
@@ -47,7 +47,7 @@ export function buildOccupiedSet(track) {
 export function resolveSpanEnd(note, track, occupied) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
     const last = stepsPerBeat * (track.beatCount ?? 4)
-    const first = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
+    const first = getNoteAbsoluteStep(note, stepsPerBeat)
 
     let end = last
     for (let i = first + 1; i < last; i++) {

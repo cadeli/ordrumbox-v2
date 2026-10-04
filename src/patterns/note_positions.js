@@ -2,7 +2,7 @@
 // Shared sub-note position math (retrigger/arp ghosts + euclidean fills)
 // for the pattern grid and the piano roll.
 
-import Utils from '../core/utils.js'
+import { getNoteAbsoluteStep, getStepSpacing } from '../core/notes.js'
 import { computeEuclideanFillPositions } from '../core/euclidean.js'
 import { getArpNoteCount, normalizeArp } from './engine.js'
 import { createStepResolver } from './step_resolver.js'
@@ -20,7 +20,7 @@ import { createStepResolver } from './step_resolver.js'
  */
 export function getNoteSubPositions(note, track, totalSteps, resolveSpanEnd = createStepResolver(track)) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
-    const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
+    const basePos = getNoteAbsoluteStep(note, stepsPerBeat)
     const rate = note.rate ?? 1
     const euclideanFill = note.euclideanFill ?? 0
     const arpConfig = normalizeArp(note.arp)
@@ -31,7 +31,7 @@ export function getNoteSubPositions(note, track, totalSteps, resolveSpanEnd = cr
     const positions = []
     if (!hasTriggers) return positions
 
-    const stepSpacing = Utils.getStepSpacing(rate)
+    const stepSpacing = getStepSpacing(rate)
     const seq = arpConfig?.sequence
 
     for (let i = 1; i < retriggerNum; i++) {

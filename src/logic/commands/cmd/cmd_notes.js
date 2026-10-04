@@ -1,10 +1,11 @@
 import Utils from '../../../core/utils.js'
+import { getTracksArray } from '../../../core/tracks.js'
 import { appState } from '../../../state/app_state.js'
 import { clampStepsPerBeat } from '../../../model/track_schema.js'
 import { reportUserError } from '../../../core/notify.js'
 
 function findPatternForTrack(track) {
-    return appState.patterns.find((p) => Utils.getTracksArray(p).includes(track))
+    return appState.patterns.find((p) => getTracksArray(p).includes(track))
 }
 
 /**

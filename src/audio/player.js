@@ -4,7 +4,8 @@ import NoteParams from '../patterns/note_params.js'
 import { getAutoGenerateService } from '../state/service_loader.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { logger, valueOrFallback } from '../core/logger.js'
-import Utils from '../core/utils.js'
+import { isMelodicTrack } from '../core/drum_taxonomy.js'
+import { getTracksArray, hasAnySolo, shouldTrackPlay } from '../core/tracks.js'
 import { EVENTS } from '../core/events.js'
 import { BEATS_PER_BAR } from '../model/song_schema.js'
 import { PLAYBACK_MODE, resolveSongSources, songTempo, tickToSongBars } from '../logic/song_playback.js'
@@ -82,7 +83,7 @@ export default class Player {
             const promises = []
             for (let i = 0; i < trackKeys.length; i++) {
                 const track = tracks[trackKeys[i]]
-                if (!isHarmonicBoundary && !Utils.isMelodicTrack(track)) continue
+                if (!isHarmonicBoundary && !isMelodicTrack(track)) continue
                 promises.push(autoGen.changeTrack(loop, selectedPattern, track))
             }
             await Promise.all(promises)
@@ -196,10 +197,10 @@ export default class Player {
 
             // Trigger all notes at the same tick concurrently
             const promises = []
-            const anySolo = Utils.hasAnySolo(selectedPattern.tracks)
+            const anySolo = hasAnySolo(selectedPattern.tracks)
             for (let i = 0; i < notesToPlay.length; i++) {
                 const flatNote = notesToPlay[i]
-                if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
+                if (shouldTrackPlay(flatNote.track, anySolo)) {
                     NoteParams.applyNoteParams(flatNote, secondsPerTick)
                     promises.push(sound.play(flatNote, atTime + flatNote.swingTime))
                     playbackEvents.emit(EVENTS.NOTE_TRIGGER, {
@@ -251,14 +252,14 @@ export default class Player {
             // a SongSource only types its pattern as {object}
             const tracks = /** @type {{tracks: object}} */ (pattern).tracks
             const trackIdxMap = this.#trackIndexMap(tracks)
-            const anySolo = Utils.hasAnySolo(tracks)
+            const anySolo = hasAnySolo(tracks)
             // Only the pattern the user is looking at drives the grid playhead;
             // the others are heard but must not repaint another pattern's cells.
             const isVisible = pattern === visiblePattern
 
             for (let i = 0; i < notesToPlay.length; i++) {
                 const flatNote = notesToPlay[i]
-                if (!Utils.shouldTrackPlay(flatNote.track, anySolo)) continue
+                if (!shouldTrackPlay(flatNote.track, anySolo)) continue
                 NoteParams.applyNoteParams(flatNote, secondsPerTick)
                 promises.push(sound.play(flatNote, atTime + flatNote.swingTime))
                 if (isVisible) {
@@ -309,7 +310,7 @@ export default class Player {
         if (this.audioCtx == null) return
         const pat = this.patterns[this.getSelectedPatternIdx()]
         if (!pat) return
-        const tracks = Utils.getTracksArray(pat)
+        const tracks = getTracksArray(pat)
         const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat.tracks?.[indexTrack]
         if (!track) return
 

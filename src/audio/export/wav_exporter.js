@@ -9,7 +9,7 @@ import { downloadBlob } from '../../core/download.js'
 import { appState } from '../../state/app_state.js'
 import { BEATS_PER_BAR, songLengthBars } from '../../model/song_schema.js'
 import { songTempo } from '../../logic/song_playback.js'
-import Utils from '../../core/utils.js'
+import { getTracksArray } from '../../core/tracks.js'
 
 /** Flush delays used by #renderUntilAudible, in ms, one per attempt. */
 const WORKLET_FLUSH_MS = [25, 150, 400]
@@ -26,7 +26,7 @@ const SILENCE_PEAK = 1e-5
  */
 function expectsAudio(patterns) {
     return patterns.some((pattern) =>
-        Utils.getTracksArray(pattern).some((track) => !track.mute && Object.keys(track.notes ?? {}).length > 0),
+        getTracksArray(pattern).some((track) => !track.mute && Object.keys(track.notes ?? {}).length > 0),
     )
 }
 

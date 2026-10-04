@@ -20,7 +20,7 @@ import {
     computeTickForNote,
 } from '../src/patterns/engine.js'
 import { createStepResolver } from '../src/patterns/step_resolver.js'
-import Utils from '../src/core/utils.js'
+import { getNoteAbsoluteStep, stepToTick } from '../src/core/notes.js'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -966,7 +966,7 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
 })
 
 describe('computeTickForNote', () => {
-    it('is exactly Utils.stepToTick (single tick formula, no local copy)', () => {
+    it('is exactly stepToTick (single tick formula, no local copy)', () => {
         const cases = [
             [0, 0, 4, 32],
             [1, 0, 4, 32],
@@ -983,7 +983,7 @@ describe('computeTickForNote', () => {
             const legacy = beat * tick + Math.round((beatStep * tick) / stepsPerBeat)
             expect(computeTickForNote(note, track, tick)).toBe(legacy)
             expect(computeTickForNote(note, track, tick)).toBe(
-                Utils.stepToTick(Utils.getNoteAbsoluteStep(note, stepsPerBeat), stepsPerBeat, tick),
+                stepToTick(getNoteAbsoluteStep(note, stepsPerBeat), stepsPerBeat, tick),
             )
         }
     })

@@ -1,7 +1,7 @@
 // src/ui/piano_roll/menu_section.js
 // Right-click menus of the piano roll: keyboard menu, grid menu and note actions.
 
-import Utils from '../../core/utils.js'
+import { notesAtStep } from '../../core/notes.js'
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
@@ -138,7 +138,7 @@ export default class MenuSection {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd
         if (!track || !cmd) return
-        const existing = new Set(Utils.notesAtStep(track, beat, beatStep).map((n) => n.pitch ?? 0))
+        const existing = new Set(notesAtStep(track, beat, beatStep).map((n) => n.pitch ?? 0))
         const added = []
         for (const interval of intervals) {
             const pitch = rootPitch + interval

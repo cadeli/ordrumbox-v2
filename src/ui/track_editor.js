@@ -9,7 +9,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { reportUserError, showToast } from '../core/notify.js'
-import Utils from '../core/utils.js'
+import { getNoteAbsoluteStep } from '../core/notes.js'
 
 import SynthEditor from './synth_editor.js'
 import { OrTab } from './components/or_tab.js'
@@ -231,7 +231,7 @@ export default class TrackEditor extends BasePanel {
         const firstNote = track.notes?.[0]
         if (firstNote) {
             const stepsPerBeat = track.stepsPerBeat ?? 4
-            const pos = Utils.getNoteAbsoluteStep(firstNote, stepsPerBeat)
+            const pos = getNoteAbsoluteStep(firstNote, stepsPerBeat)
             this.#noteEditor.showInline({
                 track,
                 trackIdx,

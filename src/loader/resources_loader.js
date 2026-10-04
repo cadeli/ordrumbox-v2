@@ -14,7 +14,7 @@ import {
     cacheGeneratedSounds,
     getCachedGeneratedSounds,
 } from '../cache/idb_cache.js'
-import Utils from '../core/utils.js'
+import { getTracksArray } from '../core/tracks.js'
 import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'
@@ -361,7 +361,7 @@ export default class ResourcesLoader {
         serviceRegistry.cmd.withSuppressedRecord(() => {
             fixedPatterns.forEach((pattern) => {
                 if (pattern?.tracks) {
-                    Utils.getTracksArray(pattern).forEach((trk) => {
+                    getTracksArray(pattern).forEach((trk) => {
                         if (trk?.soundId && trk.soundId !== 'NOT_DEFINED') {
                             if (trk.useAutoAssignSound !== false) {
                                 trk.soundId = 'NOT_DEFINED'

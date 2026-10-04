@@ -1,7 +1,7 @@
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { clamp } from '../../core/numbers.js'
-import Utils from '../../core/utils.js'
+import { detectTrackType } from '../../core/drum_taxonomy.js'
 import CowbellGenerate from './cowbell_generate.js'
 import BassGenerate from './bass_generate.js'
 import ClapGenerate from './clap_generate.js'
@@ -46,12 +46,12 @@ export default class AutoGenerate {
      * Prefers exact name match, falls back to first config of same type.
      */
     #findTrackConfig(structure, track) {
-        const type = Utils.detectTrackType(track.name)
+        const type = detectTrackType(track.name)
         const trackNameUpper = track.name.toUpperCase()
         let config = null
 
         for (const [name, cfg] of Object.entries(structure)) {
-            if (Utils.detectTrackType(name) === type) {
+            if (detectTrackType(name) === type) {
                 config = cfg
                 if (trackNameUpper.includes(name.toUpperCase())) {
                     break
@@ -78,7 +78,7 @@ export default class AutoGenerate {
      * optional parts vary a lot between generations.
      */
     #randomDensity = (track) => {
-        const type = Utils.detectTrackType(track.name)
+        const type = detectTrackType(track.name)
         const min = type === 'KICK' || type === 'SNARE' || type === 'BASS' ? 0.85 : 0.6
         const max = type === 'KICK' || type === 'SNARE' || type === 'BASS' ? 1.05 : 1.2
         return Number((min + Math.random() * (max - min)).toFixed(2))
@@ -125,7 +125,7 @@ export default class AutoGenerate {
                 }
             }
 
-            const hasBassTrack = pattern.tracks.some((t) => Utils.detectTrackType(t.name) === 'BASS')
+            const hasBassTrack = pattern.tracks.some((t) => detectTrackType(t.name) === 'BASS')
             if (!hasBassTrack) {
                 const bassTrack = serviceRegistry.cmd.addTrack(pattern, 'BASS')
                 bassTrack.useSoftSynth = false
@@ -151,7 +151,7 @@ export default class AutoGenerate {
     }
 
     generateTrack = async (track, config, density = 1, pattern = null, harmony = { root: 0, scale: null }) => {
-        const type = Utils.detectTrackType(track.name)
+        const type = detectTrackType(track.name)
         this.#applyGenreSwing(track, pattern)
         this.#applyVariation(track, type)
         const variant = type === 'BASS' ? (StructureSong.randomBassVariant(pattern?._autoGenGenre) ?? config) : config
@@ -204,7 +204,7 @@ export default class AutoGenerate {
      * Only fills the defaults: a value the user set is never overwritten.
      *
      * @param {any} track
-     * @param {string} type Utils.detectTrackType() result
+     * @param {string} type detectTrackType() result
      */
     #applyVariation = (track, type) => {
         const melodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
@@ -249,7 +249,7 @@ export default class AutoGenerate {
                     : ((this.#cachedGenre = genre),
                       (this.#cachedStructure = this.structureGen.generateStructure(genre)))
 
-            const type = Utils.detectTrackType(track.name)
+            const type = detectTrackType(track.name)
             const config = track.auto_variant || this.#findTrackConfig(structure, track)
 
             if (config) {

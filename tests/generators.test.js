@@ -13,7 +13,7 @@ import RandomGenerate from '../src/logic/generators/random_generate.js'
 import ClapGenerate from '../src/logic/generators/clap_generate.js'
 import CowbellGenerate from '../src/logic/generators/cowbell_generate.js'
 import MelodyGenerate from '../src/logic/generators/melody_generate.js'
-import Utils from '../src/core/utils.js'
+import { detectTrackType } from '../src/core/drum_taxonomy.js'
 import { appState } from '../src/state/app_state.js'
 import { makeTrack, makeNote, PARAM_SETS } from './helpers/make_pattern.js'
 import * as flatNotesService from '../src/patterns/flat_notes.js'
@@ -561,7 +561,7 @@ describe('Generators', () => {
             ['COWBELL', 'COWBELL'],
             ['CLAP', 'CLAP'],
         ])('detectTrackType("%s") → "%s"', (name, expected) => {
-            expect(Utils.detectTrackType(name)).toBe(expected)
+            expect(detectTrackType(name)).toBe(expected)
         })
 
         it.each(['KICK', 'SNARE', 'CHH', 'BASS', 'PERC'])('generateTrack for %s does not throw', async (name) => {
@@ -733,8 +733,8 @@ describe('Generators', () => {
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern({ genre: 'techno' })
 
-            const bass = Object.values(pattern.tracks).find((t) => Utils.detectTrackType(t.name) === 'BASS')
-            const kick = Object.values(pattern.tracks).find((t) => Utils.detectTrackType(t.name) === 'KICK')
+            const bass = Object.values(pattern.tracks).find((t) => detectTrackType(t.name) === 'BASS')
+            const kick = Object.values(pattern.tracks).find((t) => detectTrackType(t.name) === 'KICK')
             if (bass && kick) expect(bass.variation).toBeGreaterThan(kick.variation)
         })
 

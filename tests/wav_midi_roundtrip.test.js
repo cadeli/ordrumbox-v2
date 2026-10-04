@@ -33,7 +33,7 @@ import {
 } from '../src/logic/midi/midi_parser.js'
 import { recomputeFlatNotes } from '../src/patterns/engine.js'
 import { TICK } from '../src/core/constants.js'
-import Utils from '../src/core/utils.js'
+import { getTracksArray } from '../src/core/tracks.js'
 import Commander from '../src/logic/commands/cmd.js'
 import { PARAM_SETS } from './helpers/make_pattern.js'
 
@@ -405,7 +405,7 @@ function importMidiToPattern(midiBytes, originalPattern) {
     const MIDI_RATIO = PPQN / TICK
 
     const importedPattern = { ...originalPattern, tracks: originalPattern.tracks.map((t) => ({ ...t, notes: [] })) }
-    const tracks = Utils.getTracksArray(importedPattern)
+    const tracks = getTracksArray(importedPattern)
 
     const im = new InstrumentsManager()
     const channelPrograms = extractProgramChanges(midiData)

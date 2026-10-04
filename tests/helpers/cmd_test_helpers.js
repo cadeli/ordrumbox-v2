@@ -1,4 +1,5 @@
-import Utils from '../../src/core/utils.js'
+import { getTracksArray } from '../../src/core/tracks.js'
+
 import { soundRegistry } from '../../src/state/sound_registry.js'
 
 /**
@@ -17,7 +18,7 @@ export function kitIsLoaded(drumkit) {
 }
 
 export function getTrackFromType(pattern, type) {
-    return Utils.getTracksArray(pattern).find((track) => track.name === type) ?? null
+    return getTracksArray(pattern).find((track) => track.name === type) ?? null
 }
 
 export function getAllSoundsForType(soundKey) {

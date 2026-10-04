@@ -70,7 +70,7 @@ const NOTE_KEY_ORDER = [
  *                                          isTriggered(pos, every, loop). Default: 1
  * @property {number} prob                  - Trigger probability (0-1). Default: 1 (certain)
  * @property {number} rate                  - Ghost/retrigger spacing CODE, decoded by
- *                                          Utils.getStepSpacing (`<8` -> value/8,
+ *                                          getStepSpacing (`<8` -> value/8,
  *                                          `>=8` -> value-7 steps). Bigger = WIDER, and
  *                                          1 is the tightest setting, not "normal".
  *                                          Default: 1

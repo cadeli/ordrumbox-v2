@@ -3,7 +3,8 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { injectUiCss } from './components/ui_utils.js'
 import { isMobileViewport } from '../core/constants.js'
-import Utils from '../core/utils.js'
+import { detectTrackType } from '../core/drum_taxonomy.js'
+import { getTracksArray } from '../core/tracks.js'
 
 import TransportControls from './toolbar/transport_controls.js'
 import { maxPageFor } from './page_nav.js'
@@ -128,19 +129,19 @@ export default class Toolbar {
         this.undoBtn.title = canUndo ? `Undo: ${this.#nextUndoDesc ?? ''} (Ctrl+Z)` : 'Undo (Ctrl+Z)'
         this.redoBtn.title = canRedo ? `Redo: ${this.#nextRedoDesc ?? ''} (Ctrl+Y)` : 'Redo (Ctrl+Y)'
 
-        const tracks = pat ? Utils.getTracksArray(pat) : []
+        const tracks = pat ? getTracksArray(pat) : []
         const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
         this.drumBtn.classList.toggle(
             'active',
-            tracks.some((t) => t._toolbarAuto && drumTypes.has(Utils.detectTrackType(t.name))),
+            tracks.some((t) => t._toolbarAuto && drumTypes.has(detectTrackType(t.name))),
         )
         this.bassBtn.classList.toggle(
             'active',
-            tracks.some((t) => t._toolbarAuto && Utils.detectTrackType(t.name) === 'BASS'),
+            tracks.some((t) => t._toolbarAuto && detectTrackType(t.name) === 'BASS'),
         )
         this.chordsBtn.classList.toggle(
             'active',
-            tracks.some((t) => t._toolbarAuto && Utils.detectTrackType(t.name) === 'PIANO'),
+            tracks.some((t) => t._toolbarAuto && detectTrackType(t.name) === 'PIANO'),
         )
 
         this.#patternNav.rebuildPatternSelect()

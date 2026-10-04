@@ -733,7 +733,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const fm = recomputeFlatNotes(pattern, 0)
             let total = 0
             for (const v of fm.values()) total += v.length
-            // rate=2 → Utils.getStepSpacing(2) = 0.25 step = 2 engine ticks, and
+            // rate=2 → getStepSpacing(2) = 0.25 step = 2 engine ticks, and
             // retriggerNum=10 would keep going: from tick 24 the notes are 24, 26,
             // 28, 30 inside [0,32); the 5th (32) is past the pattern and dropped.
             expect(total).toBe(4)

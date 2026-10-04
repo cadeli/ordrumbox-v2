@@ -23,24 +23,25 @@ vi.mock('../src/state/app_state.js', () => ({
     appState: makeAppStateMock({ patterns: [{ tracks: [] }] }),
 }))
 
-vi.mock('../src/core/utils.js', () => ({
-    default: {
-        DRUM_TYPES: new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC']),
-        detectTrackType: vi.fn((name) => {
-            const n = (name ?? '').toUpperCase()
-            if (n.includes('KICK') || n.includes('BD')) return 'KICK'
-            if (n.includes('SNARE') || n.includes('SD')) return 'SNARE'
-            if (n.includes('OHH') || n.includes('HAT') || n.includes('CHH')) return 'HAT'
-            if (n.includes('CLAP') || n.includes('CLP') || n.includes('CP')) return 'CLAP'
-            if (n.includes('BASS')) return 'BASS'
-            if (n.includes('PIANO')) return 'PIANO'
-            if (n.includes('COWBELL') || n.includes('COW')) return 'COWBELL'
-            if (n.includes('ORGAN')) return 'ORGAN'
-            if (n.includes('SYNTH')) return 'BASS'
-            return 'PERC'
-        }),
-        filterEmptyMelodicTracks: vi.fn((tracks) => tracks),
-    },
+vi.mock('../src/core/drum_taxonomy.js', () => ({
+    DRUM_TYPES: new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC']),
+    detectTrackType: vi.fn((name) => {
+        const n = (name ?? '').toUpperCase()
+        if (n.includes('KICK') || n.includes('BD')) return 'KICK'
+        if (n.includes('SNARE') || n.includes('SD')) return 'SNARE'
+        if (n.includes('OHH') || n.includes('HAT') || n.includes('CHH')) return 'HAT'
+        if (n.includes('CLAP') || n.includes('CLP') || n.includes('CP')) return 'CLAP'
+        if (n.includes('BASS')) return 'BASS'
+        if (n.includes('PIANO')) return 'PIANO'
+        if (n.includes('COWBELL') || n.includes('COW')) return 'COWBELL'
+        if (n.includes('ORGAN')) return 'ORGAN'
+        if (n.includes('SYNTH')) return 'BASS'
+        return 'PERC'
+    }),
+}))
+
+vi.mock('../src/core/tracks.js', () => ({
+    filterEmptyMelodicTracks: vi.fn((tracks) => tracks),
 }))
 
 vi.mock('../src/state/service_loader.js', () => ({
@@ -51,7 +52,7 @@ import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { appState } from '../src/state/app_state.js'
 import { getAutoGenerateService } from '../src/state/service_loader.js'
-import Utils from '../src/core/utils.js'
+import { DRUM_TYPES } from '../src/core/drum_taxonomy.js'
 
 function makeMockToolbar() {
     return {
@@ -229,7 +230,7 @@ describe('ViewSwitch', () => {
             appState.patterns = [{ tracks: [track1, track2, track3] }]
             appState.selectedPatternIdx = 0
 
-            await vs.toggleAutoGen(Utils.DRUM_TYPES, vi.fn())
+            await vs.toggleAutoGen(DRUM_TYPES, vi.fn())
 
             expect(track1.auto).toBe(false)
             expect(track1._toolbarAuto).toBe(false)
@@ -245,7 +246,7 @@ describe('ViewSwitch', () => {
             appState.selectedPatternIdx = 0
             const generateFn = vi.fn()
 
-            await vs.toggleAutoGen(Utils.DRUM_TYPES, generateFn)
+            await vs.toggleAutoGen(DRUM_TYPES, generateFn)
 
             expect(generateFn).toHaveBeenCalled()
         })
@@ -257,7 +258,7 @@ describe('ViewSwitch', () => {
             const mockAutoGen = { structureGen: {} }
             getAutoGenerateService.mockResolvedValue(mockAutoGen)
 
-            await vs.toggleAutoGen(Utils.DRUM_TYPES, generateFn)
+            await vs.toggleAutoGen(DRUM_TYPES, generateFn)
 
             expect(getAutoGenerateService).toHaveBeenCalled()
             expect(generateFn).toHaveBeenCalledWith(appState.patterns[0], mockAutoGen)
@@ -292,7 +293,7 @@ describe('ViewSwitch', () => {
             appState.selectedPatternIdx = 5
             const generateFn = vi.fn()
 
-            await vs.toggleAutoGen(Utils.DRUM_TYPES, generateFn)
+            await vs.toggleAutoGen(DRUM_TYPES, generateFn)
 
             expect(generateFn).not.toHaveBeenCalled()
         })
@@ -303,7 +304,7 @@ describe('ViewSwitch', () => {
             appState.patterns = [{ tracks: [drumTrack, bassTrack] }]
             appState.selectedPatternIdx = 0
 
-            await vs.toggleAutoGen(Utils.DRUM_TYPES, vi.fn())
+            await vs.toggleAutoGen(DRUM_TYPES, vi.fn())
 
             expect(drumTrack.auto).toBe(false)
             expect(drumTrack._toolbarAuto).toBe(false)

@@ -11,7 +11,7 @@ import { soundRegistry } from '../state/sound_registry.js'
 import { BEATS_PER_PAGE } from '../core/constants.js'
 import { maxPageFor } from './page_nav.js'
 
-import Utils from '../core/utils.js'
+import { getTracksArray } from '../core/tracks.js'
 import BasePanel from './base_panel.js'
 
 import HeaderSection from './pattern_panel/header_section.js'
@@ -265,7 +265,7 @@ export default class PatternPanel extends BasePanel {
 
     resolveTrack(idx) {
         const pattern = this.#appState.selectedPattern
-        const tracks = Utils.getTracksArray(pattern)
+        const tracks = getTracksArray(pattern)
         return tracks[idx] ?? null
     }
 
@@ -371,7 +371,7 @@ export default class PatternPanel extends BasePanel {
             return
         }
 
-        const tracks = Utils.getTracksArray(pattern)
+        const tracks = getTracksArray(pattern)
 
         const startBeat = this.#appState.currentPage * BEATS_PER_PAGE
         const endBeatPage = startBeat + BEATS_PER_PAGE
@@ -484,7 +484,7 @@ export default class PatternPanel extends BasePanel {
      */
     refreshLoopRow(trackIdx) {
         const pattern = this.#appState.selectedPattern
-        const tracks = Utils.getTracksArray(pattern)
+        const tracks = getTracksArray(pattern)
         const track = tracks[trackIdx]
         if (track && this.#cellMap.size > 0) {
             this.updateTrackCellsInPlace(trackIdx, track, pattern)

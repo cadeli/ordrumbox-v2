@@ -3,7 +3,8 @@ import { serviceRegistry } from './state/service_registry.js'
 import { getAutoAssignService, getAutoGenerateService } from './state/service_loader.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/playback_events.js'
-import Utils from './core/utils.js'
+import { detectTrackType } from './core/drum_taxonomy.js'
+import { getRandomKey } from './core/notes.js'
 import ResourcesLoader from './loader/resources_loader.js'
 import { logger } from './core/logger.js'
 import { showToast } from './core/notify.js'
@@ -178,10 +179,10 @@ async function convertToGeneratedSounds() {
     const randomPicks = new Map()
     const generatedSoundKeys = Object.keys(soundRegistry.generatedSounds)
     Object.values(selectedPattern.tracks).forEach((track) => {
-        const type = Utils.detectTrackType(track.name)
+        const type = detectTrackType(track.name)
         let synthKey = SYNTH_SOUND_MAP[type]
         if (!generatedSoundKeys.includes(synthKey)) {
-            synthKey = Utils.getRandomKey(soundRegistry.generatedSounds)
+            synthKey = getRandomKey(soundRegistry.generatedSounds)
             if (synthKey) randomPicks.set(type || track.name, synthKey)
         }
         track.useSoftSynth = true

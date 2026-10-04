@@ -1,7 +1,7 @@
 // src/ui/piano_roll/render_section.js
 // Renders the piano roll: key column, grid, loop point, notes and cursor.
 
-import Utils from '../../core/utils.js'
+import { getNoteAbsoluteStep } from '../../core/notes.js'
 import { createStepResolver } from '../../patterns/step_resolver.js'
 import { getNoteSubPositions } from '../../patterns/note_positions.js'
 import { formatNoteTooltip } from '../components/ui_utils.js'
@@ -120,7 +120,7 @@ export default class RenderSection {
         const fragment = document.createDocumentFragment()
 
         notes.forEach((note, noteIdx) => {
-            const step = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
+            const step = getNoteAbsoluteStep(note, stepsPerBeat)
             if (step < pageStartStep || step >= pageEndStep) return
             const row = MIDDLE_C + trackPitchOffset + (note.pitch ?? 0) - MIDI_MIN
             if (row < 0 || row >= TOTAL_KEYS) return

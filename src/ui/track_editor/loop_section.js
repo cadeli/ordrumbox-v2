@@ -1,7 +1,7 @@
 // src/ui/track_editor/LoopSection.js
 // Loop tab — stepsPerBeat, loopAtStep, swingAmount sliders.
 
-import Utils from '../../core/utils.js'
+import { stepToBeat } from '../../core/notes.js'
 import { OrSlider } from '../components/or_slider.js'
 
 export default class LoopSection {
@@ -26,7 +26,7 @@ export default class LoopSection {
         const swing = track.swingAmount ?? 0
 
         const fmtLoopPoint = (step) => {
-            const { beat } = Utils.stepToBeat(step - 1, stepsPerBeat)
+            const { beat } = stepToBeat(step - 1, stepsPerBeat)
             const b = beat + 1
             const s = ((step - 1) % stepsPerBeat) + 1
             return `${b}.${s}`

@@ -5,7 +5,7 @@ import { PLAYBACK_MODE, songPatterns } from '../logic/song_playback.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { instrumentsManager } from '../logic/services/instrument_manager/index.js'
-import Utils from '../core/utils.js'
+import { getTracksArray } from '../core/tracks.js'
 import { applyTrackParamsToStrip } from './strip_sync.js'
 import { logger, valueOrFallback } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
@@ -268,7 +268,7 @@ export default class AudioEngine {
         const midi = serviceRegistry.midiManager
         if (midi && midi.isReady && midi.selectedOutputId) {
             const pat = this.patterns[this.getSelectedPatternIdx()]
-            const tracks = Utils.getTracksArray(pat)
+            const tracks = getTracksArray(pat)
             const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat?.tracks?.[indexTrack]
             sendTriggerMidi({ track, note, resolveMapping: this.#resolveMidiMapping })
         }

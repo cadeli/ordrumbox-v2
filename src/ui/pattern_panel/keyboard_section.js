@@ -2,7 +2,7 @@
 // Keyboard navigation and note editing for the pattern grid:
 // cursor movement (arrows), copy/paste shortcuts, Enter/Delete on a cell.
 
-import Utils from '../../core/utils.js'
+import { getTracksArray } from '../../core/tracks.js'
 import { BEATS_PER_PAGE } from '../../core/constants.js'
 import { EVENTS } from '../../core/events.js'
 
@@ -18,7 +18,7 @@ export default class KeyboardSection {
         if (this.#editor.focusRowIdx === -1) {
             const pattern = this.#editor.appState.selectedPattern
             if (!pattern) return
-            const tracks = Utils.getTracksArray(pattern)
+            const tracks = getTracksArray(pattern)
             if (tracks.length === 0) return
             this.#editor.focusRowIdx = 0
             this.#editor.cursorBeat = 0
@@ -30,7 +30,7 @@ export default class KeyboardSection {
     onKeyDown(e) {
         const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return
-        const tracks = Utils.getTracksArray(pattern)
+        const tracks = getTracksArray(pattern)
         if (tracks.length === 0) return
 
         const target = e.target

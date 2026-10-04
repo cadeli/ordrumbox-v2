@@ -1,7 +1,8 @@
 import { appState as _appState } from '../../state/app_state.js'
 import { soundRegistry as soundRegistrySingleton } from '../../state/sound_registry.js'
 import InstrumentsManager, { instrumentsManager } from './instrument_manager/index.js'
-import Utils from '../../core/utils.js'
+import { getRandomKey } from '../../core/notes.js'
+import { getTracksArray } from '../../core/tracks.js'
 import { NOT_FOUND } from '../../core/constants.js'
 import { logger } from '../../core/logger.js'
 
@@ -25,7 +26,7 @@ export default class AutoAssign {
     }
 
     autoAssignSounds = (pattern) => {
-        const tracks = Utils.getTracksArray(pattern)
+        const tracks = getTracksArray(pattern)
 
         // Soft-synth tracks first, and independently of the drumkits: a track with
         // useSoftSynth and no synthSoundKey used to be left alone here, and
@@ -67,7 +68,7 @@ export default class AutoAssign {
         }
         if (track.synthSoundKey && generated[track.synthSoundKey]) return track.synthSoundKey
 
-        const picked = Utils.getRandomKey(generated)
+        const picked = getRandomKey(generated)
         const why = track.synthSoundKey ? `stale "${track.synthSoundKey}"` : 'none'
         track.synthSoundKey = picked
         logger.warn(TAG, `  ${track.name}: synth preset ${why} → ${picked} (random)`)
@@ -131,7 +132,7 @@ export default class AutoAssign {
             return
         }
 
-        soundId = Utils.getRandomKey(this.#soundRegistry.sounds)
+        soundId = getRandomKey(this.#soundRegistry.sounds)
         if (soundId !== null && soundId !== '' && soundId !== NOT_FOUND) {
             const url = this.#soundRegistry.sounds[soundId]?.url
             logger.warn(TAG, `🔴 ${originalName} [${selectedDrumkitName}] => ${url}  (random, tier4)`)

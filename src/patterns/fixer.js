@@ -1,4 +1,5 @@
-import Utils from '../core/utils.js'
+import { getPanFromTrackName } from '../core/drum_taxonomy.js'
+import { getTracksArray } from '../core/tracks.js'
 import { normalizeTrack } from '../model/track_schema.js'
 import { compactArrayToNote, isCompactFormat, normalizeNote } from '../core/note_schema.js'
 import { ensurePatternId } from '../core/ids.js'
@@ -19,7 +20,7 @@ function expandCompactNotes(track) {
 /**
  * Fill in a missing pan from the track's drum type.
  *
- * Utils.PAN_MAP is indexed by DRUM TYPE (Utils.TRACK_NAME_TO_INDEX), so the pan
+ * PAN_MAP is indexed by DRUM TYPE (TRACK_NAME_TO_INDEX), so the pan
  * comes from the type and never from the track's slot in the pattern: this used
  * to take the array index, so loading a pattern overwrote every pan the file
  * carried with a value picked from the track's position (a KICK in slot 1 came
@@ -29,7 +30,7 @@ function expandCompactNotes(track) {
  * @returns {{name?: string, pan?: number}} the same track
  */
 export function fixTrackPanning(track) {
-    if (typeof track.pan !== 'number') track.pan = Utils.getPanFromTrackName(track.name)
+    if (typeof track.pan !== 'number') track.pan = getPanFromTrackName(track.name)
     return track
 }
 
@@ -70,7 +71,7 @@ export function fixPattern(pattern, takenIds = new Set()) {
     ensurePatternId(pattern, takenIds)
     if (pattern.tracks) {
         // hot path on load: no index needed, the pan comes from the track type
-        for (const track of Utils.getTracksArray(pattern)) fixTrackDefaults(track)
+        for (const track of getTracksArray(pattern)) fixTrackDefaults(track)
     }
     return pattern
 }

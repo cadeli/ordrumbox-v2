@@ -1,5 +1,5 @@
 import { toFiniteNumber } from '../../core/numbers.js'
-import Utils from '../../core/utils.js'
+import { detectTrackType } from '../../core/drum_taxonomy.js'
 export default class StructureSong {
     static TAG = 'StructureSong'
 
@@ -305,7 +305,7 @@ export default class StructureSong {
             }
 
             if (Math.random() < 0.55) {
-                const pool = StructureSong.poolFor(trackName, Utils.detectTrackType(trackName))
+                const pool = StructureSong.poolFor(trackName, detectTrackType(trackName))
                 if (pool) result[trackName] = StructureSong.pick(pool)
             }
         }
@@ -314,7 +314,7 @@ export default class StructureSong {
             const missing = StructureSong.OPTIONAL_EXTRAS.filter((name) => !(name in result))
             if (missing.length > 0) {
                 const trackName = StructureSong.pick(missing)
-                const pool = StructureSong.poolFor(trackName, Utils.detectTrackType(trackName))
+                const pool = StructureSong.poolFor(trackName, detectTrackType(trackName))
                 if (pool) result[trackName] = StructureSong.pick(pool)
             }
         }

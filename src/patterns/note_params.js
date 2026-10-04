@@ -1,5 +1,5 @@
 import { TICK } from '../core/constants.js'
-import Utils from '../core/utils.js'
+import { semiToneToPitch } from '../core/notes.js'
 import Defaults from './defaults.js'
 import { logger } from '../core/logger.js'
 
@@ -45,7 +45,7 @@ export default class NoteParams {
     static computePitch(flatNote) {
         const notePitch = Defaults.getNoteProp(flatNote.note, 'pitch')
         const trackPitch = Defaults.getTrackProp(flatNote.track, 'pitch')
-        const fpitch = Utils.semiToneToPitch(notePitch + trackPitch)
+        const fpitch = semiToneToPitch(notePitch + trackPitch)
         return Math.floor(fpitch * 100) / 100
     }
 

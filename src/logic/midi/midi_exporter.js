@@ -32,7 +32,7 @@ import { recomputeFlatNotes, computeNbTickForPattern } from '../../patterns/engi
 import { TICK } from '../../core/constants.js'
 import { computeLfoValue } from '../../audio/math.js'
 import { clamp } from '../../core/numbers.js'
-import Utils from '../../core/utils.js'
+import { hasAnySolo, shouldTrackPlay } from '../../core/tracks.js'
 import { downloadBlob } from '../../core/download.js'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -232,12 +232,12 @@ export default class MidiExporter {
         // key: track name,  value: { midiNote, channel, events[] }
         const trackData = new Map()
 
-        const anySolo = Utils.hasAnySolo(tracks)
-        const unmutedNames = tracks.filter((t) => Utils.shouldTrackPlay(t, anySolo)).map((t) => t.name)
+        const anySolo = hasAnySolo(tracks)
+        const unmutedNames = tracks.filter((t) => shouldTrackPlay(t, anySolo)).map((t) => t.name)
         const channelMap = assignChannels(this.instrumentsManager, unmutedNames, soundRegistry)
 
         for (const track of tracks) {
-            if (!Utils.shouldTrackPlay(track, anySolo)) continue
+            if (!shouldTrackPlay(track, anySolo)) continue
             const resolved = channelMap.get(track.name) ?? {
                 midiNote: DEFAULT_MIDI_NOTE,
                 channel: DRUM_CHANNEL,

@@ -3,7 +3,7 @@ import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
-import Utils from '../src/core/utils.js'
+import { getPanFromTrackName } from '../src/core/drum_taxonomy.js'
 import { isNoteAt, kitIsLoaded, getTrackFromType, getAllSoundsForType } from './helpers/cmd_test_helpers.js'
 import { makePattern } from './helpers/make_pattern.js'
 import HistoryManager from '../src/logic/history_manager.js'
@@ -284,11 +284,11 @@ describe('Functional: Commander operations', () => {
 
     describe('Pan from track name', () => {
         it('returns correct pan values', () => {
-            expect(Utils.getPanFromTrackName('KICK')).toBe(0)
-            expect(Utils.getPanFromTrackName('SNARE')).toBe(0.3)
-            expect(Utils.getPanFromTrackName('CHH')).toBe(-0.3)
-            expect(Utils.getPanFromTrackName('CRASH')).toBe(1)
-            expect(Utils.getPanFromTrackName('UNKNOWN')).toBe(0)
+            expect(getPanFromTrackName('KICK')).toBe(0)
+            expect(getPanFromTrackName('SNARE')).toBe(0.3)
+            expect(getPanFromTrackName('CHH')).toBe(-0.3)
+            expect(getPanFromTrackName('CRASH')).toBe(1)
+            expect(getPanFromTrackName('UNKNOWN')).toBe(0)
         })
     })
 

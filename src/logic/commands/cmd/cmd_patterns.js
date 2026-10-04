@@ -3,6 +3,7 @@ import Defaults from '../../../patterns/defaults.js'
 import { importPatternFromJson } from '../pattern_import.js'
 import { logger } from '../../../core/logger.js'
 import { MAX_BEATS } from '../../../core/constants.js'
+import { getTracksArray } from '../../../core/tracks.js'
 import Utils from '../../../core/utils.js'
 import { ensurePatternId } from '../../../model/song_schema.js'
 
@@ -158,7 +159,7 @@ export default class PatternCommands {
         }
 
         const readTrackStates = () =>
-            Utils.getTracksArray(pattern).map((track) => ({
+            getTracksArray(pattern).map((track) => ({
                 track,
                 beatCount: track.beatCount,
                 loopAtStep: track.loopAtStep,
@@ -176,7 +177,7 @@ export default class PatternCommands {
             this.#host.persist()
         }
 
-        const newTrackStates = Utils.getTracksArray(pattern).map((track) => {
+        const newTrackStates = getTracksArray(pattern).map((track) => {
             const maxSteps = appliedBeatCount * (track.stepsPerBeat ?? 4)
             if (track.loopAtStep > maxSteps) {
                 track.loopAtStep = maxSteps

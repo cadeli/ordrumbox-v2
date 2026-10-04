@@ -807,7 +807,7 @@ test.describe.serial('Full session lifecycle', () => {
         expect(afterTracks.map((track) => (track.notes ?? []).length)).toEqual([3, 2, 1, 0])
 
         // Pans survive the reload. This used to be "documented loss 1": the pan was
-        // rewritten on every load from Utils.PAN_MAP using the track's POSITION in
+        // rewritten on every load from PAN_MAP using the track's POSITION in
         // the pattern, so what the user panned was replaced by the pan of whatever
         // drum type sat in that slot.
         expect(beforeTracks.map((track) => track.pan)).toEqual([0.25, 0, 0, 0])
@@ -896,19 +896,21 @@ test.describe.serial('Full session lifecycle', () => {
         expect(selectedName).toBe(NEW_PATTERN)
 
         // What the pattern engine produces right now for the tracks that
-        // actually play (Utils.shouldTrackPlay) — the exact input the exporter
+        // actually play (shouldTrackPlay) — the exact input the exporter
         // feeds into the file. velocityLfo values are resolved by the exporter
         // itself, so they are marked as "unknown" here.
         const reference = await page.evaluate(
             async ({ patternIdx, ratio }) => {
                 const { appState } = window.__e2e
-                const Utils = (await import('/src/core/utils.js')).default
                 const { recomputeFlatNotes } = await import('/src/patterns/engine.js')
+                // imported IN the page: page.evaluate runs in the browser realm,
+                // the Node-side import at the top of this file is not in scope
+                const { hasAnySolo, shouldTrackPlay } = await import('/src/core/tracks.js')
 
                 const pattern = appState.patterns[patternIdx]
                 const tracks = Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks ?? {})
-                const anySolo = Utils.hasAnySolo(tracks)
-                const playing = tracks.filter((t) => Utils.shouldTrackPlay(t, anySolo))
+                const anySolo = hasAnySolo(tracks)
+                const playing = tracks.filter((t) => shouldTrackPlay(t, anySolo))
 
                 const notes = []
                 const countByTrack = {}

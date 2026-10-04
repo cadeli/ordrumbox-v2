@@ -12,6 +12,8 @@ import { appState } from './src/state/app_state.js'
 import AudioAnalyzer from './src/audio/analyze.js'
 import InstrumentsManager from './src/logic/services/instrument_manager/index.js'
 import Utils from './src/core/utils.js'
+
+import { getTracksArray } from './src/core/tracks.js'
 import { normalizeTrack, TRACK_VALUE_RANGES } from './src/model/track_schema.js'
 import { compactArrayToNote, normalizeNote } from './src/core/note_schema.js'
 import { songLengthBars } from './src/model/song_schema.js'
@@ -135,7 +137,7 @@ function normalizePattern(source) {
     const pattern = { ...source }
     delete pattern.loopPointBeat
     delete pattern.loopPointStep
-    pattern.tracks = Utils.getTracksArray(source).map((t) => {
+    pattern.tracks = getTracksArray(source).map((t) => {
         const track = normalizeTrack(t)
         delete track.loopPointBeat
         delete track.loopPointStep
@@ -253,7 +255,7 @@ function arrangementToJson(song, index) {
 }
 
 function getTrackFromType(pattern, type) {
-    return Utils.getTracksArray(pattern).find((track) => track.name === type) ?? null
+    return getTracksArray(pattern).find((track) => track.name === type) ?? null
 }
 
 function isNoteAt(track, beat, beatStep) {
