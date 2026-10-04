@@ -25,17 +25,53 @@ export default class AutoAssign {
     }
 
     autoAssignSounds = (pattern) => {
+        const tracks = Utils.getTracksArray(pattern)
+
+        // Soft-synth tracks first, and independently of the drumkits: a track with
+        // useSoftSynth and no synthSoundKey used to be left alone here, and
+        // VoiceFactory then reported "no synth preset assigned" on EVERY note of it
+        // (a silent track plus a toast per note).
+        tracks.forEach((track) => {
+            if (track.useSoftSynth === true) this.assignSynthPatch(track)
+        })
+
         if (Object.keys(this.#soundRegistry.sounds).length > 0) {
             const drumkitList = this.#soundRegistry.drumkitList
             const selectedIdx = this.#appState.selectedDrumkitIdx
             const kitName = drumkitList?.[selectedIdx]?.name ?? '?'
             logger.warn(TAG, `── Auto-assign: kit="${kitName}", pattern="${pattern?.name ?? '?'}" ──`)
-            Utils.getTracksArray(pattern).forEach((track) => {
+            tracks.forEach((track) => {
                 if (track.useAutoAssignSound === true && track.useSoftSynth === false) {
                     this.autoAssignTrackSounds(track)
                 }
             })
         }
+    }
+
+    /**
+     * Gives a soft-synth track a preset to play.
+     *
+     * Keeps the patch the track already has as long as it exists in the registry
+     * (so an explicit choice is never overwritten), and otherwise picks one AT
+     * RANDOM — the same last resort the drum path uses when nothing matches.
+     *
+     * @param {any} track
+     * @returns {string|null} the patch key the track ends up with
+     */
+    assignSynthPatch = (track) => {
+        const generated = this.#soundRegistry.generatedSounds ?? {}
+        const keys = Object.keys(generated)
+        if (keys.length === 0) {
+            logger.warn(TAG, `  ${track.name}: no synth preset loaded, soft-synth track left unassigned`)
+            return null
+        }
+        if (track.synthSoundKey && generated[track.synthSoundKey]) return track.synthSoundKey
+
+        const picked = Utils.getRandomKey(generated)
+        const why = track.synthSoundKey ? `stale "${track.synthSoundKey}"` : 'none'
+        track.synthSoundKey = picked
+        logger.warn(TAG, `  ${track.name}: synth preset ${why} → ${picked} (random)`)
+        return picked
     }
 
     autoAssignTrackSounds = (track) => {

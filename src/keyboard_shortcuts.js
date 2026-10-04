@@ -175,15 +175,18 @@ async function convertToGeneratedSounds() {
         }
     }
 
-    // Unmapped types used to fall back to 'BASS1', so e.g. COWBELL became a
-    // bass patch with a "converted" toast and no mention of it.
-    const unmapped = new Set()
+    // A type with no patch of its own used to fall back to 'BASS1' (so e.g. COWBELL
+    // became a bass patch, silently), then to nothing at all (the track stayed on
+    // its sample, so the action silently skipped it). Now it gets a RANDOM patch:
+    // the track is converted either way, and the toast names what was random.
+    const randomPicks = new Map()
+    const generatedSoundKeys = Object.keys(soundRegistry.generatedSounds)
     Object.values(selectedPattern.tracks).forEach((track) => {
         const type = Utils.detectTrackType(track.name)
-        const synthKey = SYNTH_SOUND_MAP[type]
-        if (!synthKey) {
-            unmapped.add(type || track.name)
-            return
+        let synthKey = SYNTH_SOUND_MAP[type]
+        if (!generatedSoundKeys.includes(synthKey)) {
+            synthKey = Utils.getRandomKey(soundRegistry.generatedSounds)
+            if (synthKey) randomPicks.set(type || track.name, synthKey)
         }
         track.useSoftSynth = true
         track.useAutoAssignSound = false
@@ -194,8 +197,9 @@ async function convertToGeneratedSounds() {
     serviceRegistry.audioEngine?.invalidateCache()
     playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     logger.info('KeyboardShortcuts', 'All tracks converted to generated sounds')
-    if (unmapped.size > 0) {
-        showToast(`No synth patch for: ${[...unmapped].join(', ')} — those tracks were left on samples`, 'warning')
+    if (randomPicks.size > 0) {
+        const detail = [...randomPicks].map(([type, key]) => `${type}→${key}`).join(', ')
+        showToast(`No synth patch for: ${detail} (random)`, 'info')
     } else {
         showToast('All tracks converted to generated sounds', 'success')
     }

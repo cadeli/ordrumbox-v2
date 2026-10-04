@@ -55,17 +55,75 @@ describe('Functional: Auto-assign sounds', () => {
         expect(track.soundId).toBe('existing_sound')
     })
 
-    it('autoAssignSounds skips tracks with useSoftSynth=true', () => {
+    // A soft-synth track has no sample to assign, so the drum tiers must leave its
+    // soundId alone — but it does need a synth patch, which is the whole point of
+    // useSoftSynth.
+    it('autoAssignSounds leaves a soft-synth track soundId alone but gives it a patch', () => {
+        soundRegistry.generatedSounds = { BASS1: {}, PIANO: {} }
         const pattern = cmd.addPattern('Test')
         const track = cmd.addTrack(pattern, 'SYNTH', 4)
         track.useAutoAssignSound = true
         track.useSoftSynth = true
         track.soundId = 'NOT_DEFINED'
+        track.synthSoundKey = null
 
         autoAssign.autoAssignSounds(pattern)
 
-        // autoAssignSounds checks useSoftSynth and skips the track
-        expect(track.soundId).toBe('NOT_DEFINED')
+        expect(track.soundId).toBe('NOT_DEFINED') // the drum path still skips it
+        expect(Object.keys(soundRegistry.generatedSounds)).toContain(track.synthSoundKey)
+    })
+
+    describe('soft-synth patch assignment', () => {
+        const synthPattern = (tracks) => ({ name: 'Synth', bpm: 120, beatCount: 4, tracks })
+
+        it('assigns a random patch to a soft-synth track that has none', () => {
+            soundRegistry.generatedSounds = { BASS1: {}, PIANO: {}, SYNTH2: {} }
+            const pattern = synthPattern({ BASS: { name: 'BASS', useSoftSynth: true, synthSoundKey: null } })
+
+            autoAssign.autoAssignSounds(pattern)
+
+            const key = pattern.tracks.BASS.synthSoundKey
+            expect(key).not.toBeNull()
+            expect(Object.keys(soundRegistry.generatedSounds)).toContain(key)
+        })
+
+        it('keeps the patch the track already uses', () => {
+            soundRegistry.generatedSounds = { BASS1: {}, PIANO: {} }
+            const pattern = synthPattern({ BASS: { name: 'BASS', useSoftSynth: true, synthSoundKey: 'PIANO' } })
+
+            autoAssign.autoAssignSounds(pattern)
+
+            expect(pattern.tracks.BASS.synthSoundKey).toBe('PIANO')
+        })
+
+        it('reassigns a patch that is no longer in the registry', () => {
+            soundRegistry.generatedSounds = { BASS1: {} }
+            const pattern = synthPattern({ BASS: { name: 'BASS', useSoftSynth: true, synthSoundKey: 'DELETED' } })
+
+            autoAssign.autoAssignSounds(pattern)
+
+            expect(pattern.tracks.BASS.synthSoundKey).toBe('BASS1')
+        })
+
+        it('leaves the track alone when no synth preset is loaded', () => {
+            soundRegistry.generatedSounds = {}
+            const pattern = synthPattern({ BASS: { name: 'BASS', useSoftSynth: true, synthSoundKey: null } })
+
+            autoAssign.autoAssignSounds(pattern)
+
+            expect(pattern.tracks.BASS.synthSoundKey).toBeNull()
+        })
+
+        it('does not touch sample tracks', () => {
+            soundRegistry.generatedSounds = { BASS1: {} }
+            soundRegistry.sounds = { snd_kick: { key: 'KICK', kitName: 'real', url: 'k.wav' } }
+            soundRegistry.drumkitList = [{ name: 'real', instruments: [{ key: 'KICK', url: 'k.wav' }] }]
+            const pattern = synthPattern({ KICK: { name: 'KICK', useSoftSynth: false, useAutoAssignSound: true } })
+
+            autoAssign.autoAssignSounds(pattern)
+
+            expect(pattern.tracks.KICK.synthSoundKey).toBeUndefined()
+        })
     })
 
     it('autoAssignSounds processes all tracks in a pattern', () => {
