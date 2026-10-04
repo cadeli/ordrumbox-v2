@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import Defaults from '../src/patterns/defaults.js'
-import Utils from '../src/core/utils.js'
+import { NOTE_DEFAULTS } from '../src/core/note_schema.js'
+import { PATTERN_DEFAULTS } from '../src/model/pattern_schema.js'
+import { TRACK_DEFAULTS } from '../src/model/track_schema.js'
 
 describe('Defaults', () => {
     // ── normalizeNote ────────────────────────────────────────────────
@@ -8,7 +10,7 @@ describe('Defaults', () => {
     describe('normalizeNote', () => {
         it('returns NOTE_DEFAULTS when called with null', () => {
             const result = Defaults.normalizeNote(null)
-            expect(result).toEqual(Utils.NOTE_DEFAULTS)
+            expect(result).toEqual(NOTE_DEFAULTS)
         })
 
         it('fills missing fields with defaults', () => {
@@ -16,8 +18,8 @@ describe('Defaults', () => {
             const result = Defaults.normalizeNote(note)
             expect(result.beat).toBe(2)
             expect(result.beatStep).toBe(1)
-            expect(result.velocity).toBe(Utils.NOTE_DEFAULTS.velocity)
-            expect(result.pitch).toBe(Utils.NOTE_DEFAULTS.pitch)
+            expect(result.velocity).toBe(NOTE_DEFAULTS.velocity)
+            expect(result.pitch).toBe(NOTE_DEFAULTS.pitch)
         })
 
         it('preserves all provided fields', () => {
@@ -60,15 +62,15 @@ describe('Defaults', () => {
 
         it('returns default when property is missing', () => {
             const note = { beat: 0 }
-            expect(Defaults.getNoteProp(note, 'velocity')).toBe(Utils.NOTE_DEFAULTS.velocity)
+            expect(Defaults.getNoteProp(note, 'velocity')).toBe(NOTE_DEFAULTS.velocity)
         })
 
         it('returns default when note is null', () => {
-            expect(Defaults.getNoteProp(null, 'velocity')).toBe(Utils.NOTE_DEFAULTS.velocity)
+            expect(Defaults.getNoteProp(null, 'velocity')).toBe(NOTE_DEFAULTS.velocity)
         })
 
         it('returns default when note is undefined', () => {
-            expect(Defaults.getNoteProp(undefined, 'pitch')).toBe(Utils.NOTE_DEFAULTS.pitch)
+            expect(Defaults.getNoteProp(undefined, 'pitch')).toBe(NOTE_DEFAULTS.pitch)
         })
     })
 
@@ -82,11 +84,11 @@ describe('Defaults', () => {
 
         it('returns default when property is missing', () => {
             const track = { name: 'KICK' }
-            expect(Defaults.getTrackProp(track, 'beatCount')).toBe(Utils.TRACK_DEFAULTS.beatCount)
+            expect(Defaults.getTrackProp(track, 'beatCount')).toBe(TRACK_DEFAULTS.beatCount)
         })
 
         it('returns default when track is null', () => {
-            expect(Defaults.getTrackProp(null, 'beatCount')).toBe(Utils.TRACK_DEFAULTS.beatCount)
+            expect(Defaults.getTrackProp(null, 'beatCount')).toBe(TRACK_DEFAULTS.beatCount)
         })
     })
 
@@ -100,11 +102,11 @@ describe('Defaults', () => {
 
         it('returns default when property is missing', () => {
             const pattern = { name: 'Rock' }
-            expect(Defaults.getPatternProp(pattern, 'bpm')).toBe(Utils.PATTERN_DEFAULTS.bpm)
+            expect(Defaults.getPatternProp(pattern, 'bpm')).toBe(PATTERN_DEFAULTS.bpm)
         })
 
         it('returns default when pattern is null', () => {
-            expect(Defaults.getPatternProp(null, 'beatCount')).toBe(Utils.PATTERN_DEFAULTS.beatCount)
+            expect(Defaults.getPatternProp(null, 'beatCount')).toBe(PATTERN_DEFAULTS.beatCount)
         })
     })
 })

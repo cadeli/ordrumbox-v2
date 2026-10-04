@@ -14,7 +14,7 @@ import { reportUserError, showToast } from '../core/notify.js'
 import { bindTabToggles, downloadJson } from './components/ui_utils.js'
 import { getLfoWaveformValue, syncToHz } from '../audio/math.js'
 import { clamp } from '../core/numbers.js'
-import Utils from '../core/utils.js'
+import { WAVE_TYPES } from '../audio/fx_values.js'
 
 import GroupsSection from './synth_editor/groups_section.js'
 import WaveformSection from './synth_editor/waveform_section.js'
@@ -347,7 +347,7 @@ export default class SynthEditor {
         if (freq <= 0 || depth <= 0) return 0
 
         const waveName = lfo.wave ?? 'sine'
-        const waveIdx = Utils.waveList.indexOf(waveName)
+        const waveIdx = WAVE_TYPES.indexOf(waveName)
         // Not wrapped: getLfoWaveformValue() wraps internally and S&H needs the cycle index.
         const phase = audioTime * freq
         const raw = getLfoWaveformValue(phase, waveIdx >= 0 ? waveIdx : 0)

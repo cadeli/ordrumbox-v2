@@ -1,4 +1,5 @@
-import Utils from '../core/utils.js'
+import { PATTERN_DEFAULTS } from '../model/pattern_schema.js'
+import { TRACK_DEFAULTS } from '../model/track_schema.js'
 import { NOTE_DEFAULTS, normalizeNote } from '../core/note_schema.js'
 
 /**
@@ -18,11 +19,11 @@ export default class Defaults {
 
     /** track[key], falling back to TRACK_DEFAULTS. */
     static getTrackProp(track, key) {
-        return track?.[key] ?? Utils.TRACK_DEFAULTS[key]
+        return track?.[key] ?? TRACK_DEFAULTS[key]
     }
 
     /** pattern[key], falling back to PATTERN_DEFAULTS. */
     static getPatternProp(pattern, key) {
-        return pattern?.[key] ?? Utils.PATTERN_DEFAULTS[key]
+        return pattern?.[key] ?? PATTERN_DEFAULTS[key]
     }
 }

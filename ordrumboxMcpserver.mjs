@@ -11,7 +11,7 @@ import Commander from './src/logic/commands/cmd.js'
 import { appState } from './src/state/app_state.js'
 import AudioAnalyzer from './src/audio/analyze.js'
 import InstrumentsManager from './src/logic/services/instrument_manager/index.js'
-import Utils from './src/core/utils.js'
+import { WAVE_TYPES } from './src/audio/fx_values.js'
 
 import { getTracksArray } from './src/core/tracks.js'
 import { normalizeTrack, TRACK_VALUE_RANGES } from './src/model/track_schema.js'
@@ -376,7 +376,7 @@ const lfo = (description) => ({
     type: ['object', 'null'],
     description,
     properties: {
-        type: { type: 'string', enum: Utils.waveList },
+        type: { type: 'string', enum: WAVE_TYPES },
         freq: { type: 'number', description: 'Cycles per pattern' },
         min: { type: 'number', description: 'Modulation floor' },
         max: { type: 'number', description: 'Modulation ceiling' },

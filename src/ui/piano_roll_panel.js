@@ -1,4 +1,4 @@
-import Utils from '../core/utils.js'
+import { NOTE_DEFAULTS } from '../core/note_schema.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { stepToBeat } from '../core/notes.js'
@@ -272,7 +272,7 @@ export default class PianoRollPanel extends BasePanel {
         const track = this.#track
         if (!track || Number.isNaN(midi)) return
         const relativePitch = midi - MIDDLE_C - (track.pitch ?? 0)
-        const flatNote = new FlatNote(0, track, { ...Utils.NOTE_DEFAULTS, pitch: relativePitch })
+        const flatNote = new FlatNote(0, track, { ...NOTE_DEFAULTS, pitch: relativePitch })
         NoteParams.applyNoteParams(flatNote, appState.secondsPerTick)
         serviceRegistry.audioEngine?.sound?.play(flatNote, serviceRegistry.audioEngine.audioCtx.currentTime)
     }

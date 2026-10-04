@@ -4,7 +4,8 @@ Complete specification of the orDrumbox v2 pattern format.
 
 Source of truth files:
 
-- `src/core/utils.js` — `PATTERN_DEFAULTS`
+- `src/model/pattern_schema.js` — `PATTERN_DEFAULTS`
+- `src/core/tracks.js` — `getTracksArray()` (tracks normalization)
 - `src/model/track_schema.js` — `TRACK_DEFAULTS`, `TRACK_VALUE_RANGES`, `TRACK_RECALCULATED`
 - `src/core/note_schema.js` — `NOTE_DEFAULTS`, `NOTE_KEY_ORDER`, `NOTE_RECALCULATED`
 - `src/patterns/exporter.js` — serialization / compaction
@@ -28,7 +29,7 @@ Source of truth files:
 
 - Any missing property is filled from `PATTERN_DEFAULTS` on import.
 - `application` and `url` are stamped by the exporter; they are **not** stripped on import — they pass through as-is if present.
-- `tracks` is always normalized to an array by `Utils.getTracksArray()`. An object with numeric keys (`{ "0": {...}, "1": {...} }`) is accepted.
+- `tracks` is always normalized to an array by `getTracksArray()` (src/core/tracks.js). An object with numeric keys (`{ "0": {...}, "1": {...} }`) is accepted.
 
 ---
 

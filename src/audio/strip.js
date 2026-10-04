@@ -1,5 +1,5 @@
 import { clamp, toFiniteNumber } from '../core/numbers.js'
-import Utils from '../core/utils.js'
+import { getDelayTimeInSeconds } from './fx_values.js'
 import Defaults from '../patterns/defaults.js'
 import { RAMP_TIME } from '../core/constants.js'
 import { reportUserError } from '../core/notify.js'
@@ -220,7 +220,7 @@ export default class Strip {
 
         const normalizedType = mapStripEnum(DELAY_MODES, type, 'delayType', 'tape')
 
-        const delaySeconds = Utils.getDelayTimeInSeconds(timeBeats, this.bpm)
+        const delaySeconds = getDelayTimeInSeconds(timeBeats, this.bpm)
         const mode = DELAY_MODES[normalizedType] ?? 1
         const isPP = mode >= 1.5
 

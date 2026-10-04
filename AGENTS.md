@@ -174,12 +174,16 @@ In these specific paths **only**:
 
 ```
 src/
-  audio/           — Web Audio API engine, voices, worklets, export
+  audio/           — Web Audio API engine, voices, worklets, export,
+                    fx_values.js (waveform/filter/delay parameter values)
   cache/           — IndexedDB caching
-  core/            — constants, utils, IDB wrapper, logger, timer worker
+  core/            — constants, IDB wrapper, logger, timer worker, and the pure
+                    domain modules: numbers.js (clamp/toFiniteNumber), notes.js
+                    (step math + note signatures), tracks.js (track array/loop
+                    helpers), drum_taxonomy.js (name -> type -> pan)
   loader/          — asset/resource loading
   logic/           — seq, LFO, history, commands, generators, MIDI, services
-  model/           — data models (flatnote, instrument, track schema)
+  model/           — data models (flatnote, instrument, track/pattern schema)
   patterns/        — pattern engine, flat notes, defaults, variation
   state/           — app state, service registry/loader, sound registry
   ui/              — all UI panels and components

@@ -4,7 +4,7 @@ import { importPatternFromJson } from '../pattern_import.js'
 import { logger } from '../../../core/logger.js'
 import { MAX_BEATS } from '../../../core/constants.js'
 import { getTracksArray } from '../../../core/tracks.js'
-import Utils from '../../../core/utils.js'
+import { PATTERN_DEFAULTS } from '../../../model/pattern_schema.js'
 import { ensurePatternId } from '../../../model/song_schema.js'
 
 /**
@@ -153,7 +153,7 @@ export default class PatternCommands {
         const appliedBeatCount =
             Number.isFinite(requested) && requested >= 1 && requested <= MAX_BEATS
                 ? requested
-                : Utils.PATTERN_DEFAULTS.beatCount
+                : PATTERN_DEFAULTS.beatCount
         if (appliedBeatCount !== requested) {
             logger.warn('Command', 'beatCount out of bounds', beatCount, `→ ${appliedBeatCount}`)
         }

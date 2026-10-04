@@ -3,7 +3,7 @@
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import Utils from '../core/utils.js'
+import { PATTERN_DEFAULTS } from '../model/pattern_schema.js'
 import { EVENTS } from '../core/events.js'
 import { BEATS_PER_PAGE } from '../core/constants.js'
 
@@ -20,7 +20,7 @@ import { BEATS_PER_PAGE } from '../core/constants.js'
  * @returns {number} page count (>= 1)
  */
 export function pageCountFor(pattern) {
-    const beatCount = pattern?.beatCount ?? Utils.PATTERN_DEFAULTS.beatCount
+    const beatCount = pattern?.beatCount ?? PATTERN_DEFAULTS.beatCount
     return Math.max(1, Math.ceil(beatCount / BEATS_PER_PAGE))
 }
 

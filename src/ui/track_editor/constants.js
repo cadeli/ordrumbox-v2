@@ -2,7 +2,7 @@
 // Shared constants for TrackEditor sections — extracted from the monolith.
 
 import { toFiniteNumber } from '../../core/numbers.js'
-import Utils from '../../core/utils.js'
+import { DELAY_TIME_LABELS, DELAY_TIME_VALUES } from '../../audio/fx_values.js'
 import { TRACK_VALUE_RANGES } from '../../model/track_schema.js'
 
 // ── Format helpers ────────────────────────────────────────────────────
@@ -110,8 +110,8 @@ export const GROUPS = [
                 key: 'delayTime',
                 label: 'Time',
                 type: 'select',
-                options: Utils.delayTimeValues,
-                labels: Utils.delayTimeLabels,
+                options: DELAY_TIME_VALUES,
+                labels: DELAY_TIME_LABELS,
             },
             { key: 'delayType', label: 'Type', type: 'select', options: ['none', 'slap', 'tape', 'pingpong'] },
             { key: 'saturationAmount', label: 'Depth', step: 0.01 },

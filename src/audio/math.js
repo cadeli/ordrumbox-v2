@@ -1,7 +1,7 @@
 import { logger } from '../core/logger.js'
 import { TICK, C3_FREQ, MIN_NOTE_RATIO } from '../core/constants.js'
 import { clamp, toFiniteNumber } from '../core/numbers.js'
-import Utils from '../core/utils.js'
+import { WAVE_TYPES } from './fx_values.js'
 
 /** Beats in one LFO cycle: `freq` counts cycles per 4 beats. */
 const BEATS_PER_LFO_CYCLE = 4
@@ -59,7 +59,7 @@ export function computeLfoValue(lfo, tick, nbTicks, controlKey, audioTime = null
     const max = toFiniteNumber(parseFloat(lfo.max), 1, 'lfo.max')
     const phase = toFiniteNumber(parseFloat(lfo.phase), 0, 'lfo.phase')
     const waveName = lfo.type ?? lfo.waveform ?? 'sine'
-    let wave = Utils.waveList.indexOf(waveName)
+    let wave = WAVE_TYPES.indexOf(waveName)
     if (wave === -1) wave = toFiniteNumber(parseFloat(waveName), 0, 'waveName')
 
     // Frequency in cycles per 4 beats. 1.0 = 1 cycle per 4 beats.

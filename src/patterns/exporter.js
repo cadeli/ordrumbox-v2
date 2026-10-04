@@ -1,4 +1,5 @@
-import Utils from '../core/utils.js'
+import { PATTERN_DEFAULTS } from '../model/pattern_schema.js'
+import { TRACK_DEFAULTS } from '../model/track_schema.js'
 import { NOTE_DEFAULTS, NOTE_RECALCULATED, detectUsedKeys, noteToObjectCompact } from '../core/note_schema.js'
 
 const ROUND_2D = new Set([
@@ -50,11 +51,11 @@ export class PatternExporter {
         const cleaned = {}
         for (const [key, val] of Object.entries(track)) {
             if (key === 'noteKeys') continue
-            if (!(key in Utils.TRACK_DEFAULTS)) {
+            if (!(key in TRACK_DEFAULTS)) {
                 cleaned[key] = val
                 continue
             }
-            if (!this.isDefaultValue(val, Utils.TRACK_DEFAULTS[key])) {
+            if (!this.isDefaultValue(val, TRACK_DEFAULTS[key])) {
                 if (key === 'notes') {
                     const encoded = this.encodeNotes(val, track)
                     if (encoded) {
@@ -93,11 +94,7 @@ export class PatternExporter {
         for (const [key, val] of Object.entries(pattern)) {
             if (PATTERN_RUNTIME_KEYS.has(key)) continue
             const keepAlways = PATTERN_ALWAYS_KEEP.has(key) && typeof val === 'string' && val !== ''
-            if (
-                keepAlways ||
-                !(key in Utils.PATTERN_DEFAULTS) ||
-                !this.isDefaultValue(val, Utils.PATTERN_DEFAULTS[key])
-            ) {
+            if (keepAlways || !(key in PATTERN_DEFAULTS) || !this.isDefaultValue(val, PATTERN_DEFAULTS[key])) {
                 if (key === 'tracks') {
                     cleaned[key] = val.map((t) => this.cleanTrack(t))
                 } else {

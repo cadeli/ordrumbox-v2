@@ -3,7 +3,7 @@
 
 import { renderOptions } from '../components/ui_utils.js'
 import { ALL_TRACK_PROPS, KNOB_PROPS } from './constants.js'
-import Utils from '../../core/utils.js'
+import { WAVE_TYPES } from '../../audio/fx_values.js'
 import { fmt } from '../components/ui_utils.js'
 
 export default class ModulationSection {
@@ -68,7 +68,7 @@ export default class ModulationSection {
             <div class="ne-row">
                 <label>Type</label>
                 <select data-lfo-type-select="1">
-                    ${renderOptions(Utils.waveList, type)}
+                    ${renderOptions(WAVE_TYPES, type)}
                 </select>
             </div>
             <div class="ne-row">

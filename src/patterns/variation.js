@@ -1,4 +1,4 @@
-import Utils from '../core/utils.js'
+import { NOTE_DEFAULTS } from '../core/note_schema.js'
 import { stepToBeat, stepToTick } from '../core/notes.js'
 import FlatNote from '../model/flatnote.js'
 import { soundRegistry } from '../state/sound_registry.js'
@@ -85,7 +85,7 @@ function applyOps(flatNotes, track, ops, budget) {
                 break
             case 'anticipation': {
                 const note = {
-                    ...Utils.NOTE_DEFAULTS,
+                    ...NOTE_DEFAULTS,
                     pitch: op.flatNote.note.pitch ?? 0,
                     velocity: Math.round(Math.max(0.2, (op.flatNote.note.velocity ?? 0.8) * 0.7) * 100) / 100,
                     pan: op.flatNote.note.pan ?? 0,
@@ -100,7 +100,7 @@ function applyOps(flatNotes, track, ops, budget) {
             }
             case 'double': {
                 const note = {
-                    ...Utils.NOTE_DEFAULTS,
+                    ...NOTE_DEFAULTS,
                     pitch: op.flatNote.note.pitch ?? 0,
                     velocity: Math.round((op.flatNote.note.velocity ?? 0.8) * 0.8 * 100) / 100,
                     pan: op.flatNote.note.pan ?? 0,
@@ -115,7 +115,7 @@ function applyOps(flatNotes, track, ops, budget) {
             }
             case 'ghost': {
                 const note = {
-                    ...Utils.NOTE_DEFAULTS,
+                    ...NOTE_DEFAULTS,
                     pitch: op.source.note.pitch ?? 0,
                     velocity: Math.round((op.source.note.velocity ?? 0.8) * 0.5 * 100) / 100,
                     pan: op.source.note.pan ?? 0,

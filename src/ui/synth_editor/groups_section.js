@@ -2,7 +2,7 @@
 // Renders synth parameter groups: VCOs, filter, FM, LFO, noise, envelope.
 // Manages knob placeholders and icon rows.
 
-import Utils from '../../core/utils.js'
+import { FILTER_TYPES, WAVE_TYPES } from '../../audio/fx_values.js'
 import { escapeHtml, renderOptions, renderIconChoices } from '../components/ui_utils.js'
 import {
     WAVE_ICONS,
@@ -139,7 +139,7 @@ export default class GroupsSection {
         if (isVco || isLfo) {
             const waveVal = draft?.[groupName]?.wave ?? 'sine'
             const pathStr = `${groupName}.wave`
-            waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(Utils.waveList, waveVal, WAVE_ICONS, {
+            waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(WAVE_TYPES, waveVal, WAVE_ICONS, {
                 cssClass: 'ss-wave-icon',
                 valueDataAttr: 'data-wave-val',
                 escape: escapeHtml,
@@ -149,17 +149,12 @@ export default class GroupsSection {
             const filterKey = isFilter ? 'type' : 'filterType'
             const filterVal = draft?.[groupName]?.[filterKey] ?? 'lowpass'
             const pathStr = `${groupName}.${filterKey}`
-            waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(
-                Utils.filterTypeList,
-                filterVal,
-                FILTER_ICONS,
-                {
-                    cssClass: 'ss-ft-icon',
-                    valueDataAttr: 'data-wave-val',
-                    escape: escapeHtml,
-                    extraAttrs: () => ` data-synth-path="${escapeHtml(pathStr)}"`,
-                },
-            )}</span>`
+            waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(FILTER_TYPES, filterVal, FILTER_ICONS, {
+                cssClass: 'ss-ft-icon',
+                valueDataAttr: 'data-wave-val',
+                escape: escapeHtml,
+                extraAttrs: () => ` data-synth-path="${escapeHtml(pathStr)}"`,
+            })}</span>`
         } else if (groupName === 'fm') {
             const algoVal = draft?.fm?.algo ?? 0
             const algoOpts = Object.keys(FM_ALGO_ICONS).map(Number)
@@ -260,8 +255,8 @@ export default class GroupsSection {
 
     /** Resolves icon options from path. */
     #getIconOptions(pathStr) {
-        if (pathStr.startsWith('vco') && pathStr.endsWith('.wave')) return Utils.waveList
-        if (pathStr === 'filter.type' || pathStr === 'noise.filterType') return Utils.filterTypeList
+        if (pathStr.startsWith('vco') && pathStr.endsWith('.wave')) return WAVE_TYPES
+        if (pathStr === 'filter.type' || pathStr === 'noise.filterType') return FILTER_TYPES
         if (pathStr === 'fm.algo') return [0, 1, 2, 3, 4]
         return []
     }
@@ -290,9 +285,9 @@ export default class GroupsSection {
      */
     #getOptions(path, key, pathArr) {
         const isLfo = pathArr[0] === 'lfo' || pathArr[0] === 'lfo2'
-        if (key === 'wave') return Utils.waveList
-        if (pathArr[0] === 'filter' && key === 'type') return Utils.filterTypeList
-        if (pathArr[0] === 'noise' && key === 'filterType') return Utils.filterTypeList
+        if (key === 'wave') return WAVE_TYPES
+        if (pathArr[0] === 'filter' && key === 'type') return FILTER_TYPES
+        if (pathArr[0] === 'noise' && key === 'filterType') return FILTER_TYPES
         if (pathArr[0] === 'fm' && key === 'algo') return [0, 1, 2, 3, 4]
         if (pathArr[0] === 'modEnvelope' && key === 'target') return MOD_ENV_TARGETS
         if (isLfo && key === 'target') {

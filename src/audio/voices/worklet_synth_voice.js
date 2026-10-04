@@ -2,6 +2,7 @@ import BaseVoice from './base_voice.js'
 import WorkletLoader from '../worklets/loader.js'
 import SYNTH_VOICE_SOURCE from '../worklets/processors/synth_voice_source.js'
 import { computeOscFrequency, computeNoteRatio, computeAccent, syncToHz } from '../math.js'
+import { WAVE_TO_INT, FILTER_TO_INT } from '../fx_values.js'
 import { clamp, toFiniteNumber } from '../../core/numbers.js'
 import { RELEASE_TIME, NOTE_VELO_BALANCE } from '../../core/constants.js'
 import { serviceRegistry } from '../../state/service_registry.js'
@@ -10,9 +11,6 @@ import { logger } from '../../core/logger.js'
 // Register the synth-voice processor (idempotent)
 WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
 
-const WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3, random: 4 }
-
-const FILTER_TO_INT = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 }
 const DEFAULT_ENVELOPE = { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
 const LFO_TARGET_TO_INT = {
     NOT: 0,

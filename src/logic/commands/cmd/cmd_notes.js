@@ -1,4 +1,4 @@
-import Utils from '../../../core/utils.js'
+import { NOTE_DEFAULTS } from '../../../core/note_schema.js'
 import { getTracksArray } from '../../../core/tracks.js'
 import { appState } from '../../../state/app_state.js'
 import { clampStepsPerBeat } from '../../../model/track_schema.js'
@@ -68,7 +68,7 @@ export default class NoteCommands {
         }
         const steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
         const note = {
-            ...Utils.NOTE_DEFAULTS,
+            ...NOTE_DEFAULTS,
             beatStep,
             steppc,
             beat,
@@ -156,7 +156,7 @@ export default class NoteCommands {
         track.notes = (track.notes ?? []).filter((n) => !(n.beat === beat && n.beatStep === beatStep))
 
         const added = sourceNotes.map((src) => ({
-            ...Utils.NOTE_DEFAULTS,
+            ...NOTE_DEFAULTS,
             ...src,
             beat,
             beatStep,

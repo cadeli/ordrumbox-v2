@@ -14,7 +14,7 @@ import Commander from '../src/logic/commands/cmd.js'
 import { clampStepsPerBeat } from '../src/model/track_schema.js'
 import { areValidNoteKeys, normalizeNote } from '../src/core/note_schema.js'
 import { reportUserError, resetUserErrorReports } from '../src/core/notify.js'
-import Utils from '../src/core/utils.js'
+import { PATTERN_DEFAULTS } from '../src/model/pattern_schema.js'
 
 function makeTrack(overrides = {}) {
     return {
@@ -192,7 +192,7 @@ describe('P1a — silent failure guards', () => {
 
     describe('pattern defaults stay reachable', () => {
         it('PATTERN_DEFAULTS still exposes beatCount (pre-P5 rename)', () => {
-            expect(Utils.PATTERN_DEFAULTS.beatCount).toBe(4)
+            expect(PATTERN_DEFAULTS.beatCount).toBe(4)
         })
     })
 })
