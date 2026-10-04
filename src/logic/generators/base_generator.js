@@ -22,6 +22,17 @@ import { soundRegistry } from '../../state/sound_registry.js'
 import { TRACK_VALUE_RANGES } from '../../model/track_schema.js'
 import Utils from '../../core/utils.js'
 
+/**
+ * Uniform pick over a list. Module-local so a generator can choose between
+ * skeletons without importing StructureSong (which owns the genre tables).
+ * @template T
+ * @param {T[]} list
+ * @returns {T|undefined}
+ */
+const StructurePicker = {
+    pick: (list) => list[Math.floor(Math.random() * list.length)],
+}
+
 export default class BaseGenerator {
     #toneThreshold = 6
 
@@ -99,31 +110,64 @@ export default class BaseGenerator {
      * Resolve pitch from a phrase config.
      * Subclasses can override for different behavior.
      */
-    resolvePhrasePitch = (phrase, tones, cachedPitches, pitchBias = 0) => {
+    /**
+     * Pitch of a phrase, in scale degrees.
+     * @param {object} phrase
+     * @param {number[]} tones scale degrees
+     * @param {number[]|null} cachedPitches pitches already used (for `reuse`)
+     * @param {number} pitchBias register offset (semitones)
+     * @param {string[]|number[]} [approachNotes] semitone offsets the `approach`
+     *   source may pick from — the default is [-1, -2] for every generator, which
+     *   is why two generated lines approach their target note the same way
+     */
+    /**
+     * Semitone offset of a phrase `source` inside the scale.
+     * @param {string} source root|third|fifth|seventh|octave|approach
+     * @param {number} pitchBias register offset (semitones)
+     * @param {number[]} approachNotes semitone offsets `approach` may pick from
+     * @returns {number|null} null when the source is unknown
+     */
+    #degreeOffset = (source, pitchBias, approachNotes) => {
+        if (source === 'approach') {
+            const pool = approachNotes?.length ? approachNotes : [-1, -2]
+            return pool[Math.floor(Math.random() * pool.length)] + pitchBias
+        }
+        const sourceOffsets = { root: 0, third: 4, fifth: 7, seventh: 11, octave: 12 }
+        if (Object.hasOwn(sourceOffsets, source)) return sourceOffsets[source] + pitchBias
+        return null
+    }
+
+    /**
+     * Pitch of a phrase, in semitones.
+     * @param {{pitch?: number, source?: string, alternateSource?: string,
+     *   alternateChance?: number, reuseIndex?: number}} phrase
+     * @param {number[]} tones scale degrees, used for the unknown-source fallback
+     * @param {number[]|null} cachedPitches pitches already used (for `reuse`)
+     * @param {number} pitchBias register offset (semitones)
+     * @param {number[]} [approachNotes] semitone offsets the `approach` source may
+     *   pick from — the default is [-1, -2] for every generator, which is why two
+     *   generated lines approach their target note the same way
+     * @returns {number}
+     */
+    resolvePhrasePitch = (
+        phrase,
+        tones,
+        cachedPitches,
+        pitchBias = 0,
+        approachNotes = /** @type {number[]} */ ([-1, -2]),
+    ) => {
         if (typeof phrase.pitch === 'number') {
             return phrase.pitch + pitchBias
         }
-        if (phrase.source === 'reuse' && typeof phrase.reuseIndex === 'number') {
+        // degree colouring: `alternateSource` replaces `source` when the draw hits
+        const source =
+            phrase.alternateSource && Math.random() < (phrase.alternateChance ?? 0.35)
+                ? phrase.alternateSource
+                : phrase.source
+        if (source === 'reuse' && typeof phrase.reuseIndex === 'number') {
             return cachedPitches[phrase.reuseIndex] ?? pitchBias
         }
-
-        const sourceOffsets = {
-            root: 0,
-            third: 4,
-            fifth: 7,
-            seventh: 11,
-            octave: 12,
-            approach: Math.random() < 0.5 ? -1 : -2,
-        }
-        if (Object.hasOwn(sourceOffsets, phrase.source)) {
-            return (
-                (typeof sourceOffsets[phrase.source] === 'function'
-                    ? sourceOffsets[phrase.source]()
-                    : sourceOffsets[phrase.source]) + pitchBias
-            )
-        }
-
-        return this.getRndTone(tones) + pitchBias
+        return this.#degreeOffset(source, pitchBias, approachNotes) ?? this.getRndTone(tones) + pitchBias
     }
 
     formatCompactVelocity = (velocityConfig, defaults = {}) => {
@@ -199,8 +243,13 @@ export default class BaseGenerator {
         const allowStacking = opts.allowStacking ?? false
         const occupiedByBar = new Map()
 
-        config.phrases.forEach((phrase) => {
+        // A phrase may declare its own `chance` (0-1): the per-degree density that
+        // `density` cannot express, since it thins EVERY phrase of the skeleton the
+        // same way. Without it a phrase skeleton is all-or-nothing per note.
+        const phrases = config.phraseSets ? StructurePicker.pick(config.phraseSets) : config.phrases
+        phrases.forEach((phrase) => {
             if (density < 1 && Math.random() >= density) return
+            if (typeof phrase.chance === 'number' && Math.random() >= phrase.chance) return
 
             let step
             if (phrase.step === 'random') {

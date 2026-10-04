@@ -152,6 +152,14 @@ export default class AutoGenerate {
     generateTrack = async (track, config, density = 1, pattern = null, harmony = { root: 0, scale: null }) => {
         const type = Utils.detectTrackType(track.name)
         this.#applyGenreSwing(track, pattern)
+        this.#applyVariation(track, type)
+        const variant = type === 'BASS' ? (StructureSong.randomBassVariant(pattern?._autoGenGenre) ?? config) : config
+        if (variant !== config) {
+            logger.info(
+                AutoGenerate.TAG,
+                `  ${track.name}: bass variant ${config} → ${variant} (random for ${pattern?._autoGenGenre})`,
+            )
+        }
         switch (type) {
             case 'KICK':
                 await this.kickGen.generateNewKick(track, config, density)
@@ -176,11 +184,33 @@ export default class AutoGenerate {
                 await this.cowbellGen.generateNewCowbell(track, config, density)
                 break
             case 'BASS':
-                await this.bassGen.generateNewBass(track, config, density, harmony)
+                await this.bassGen.generateNewBass(track, variant, density, harmony)
                 break
             default:
                 logger.warn(AutoGenerate.TAG, `generateTrack: unknown type=${type} for track=${track.name}`)
         }
+    }
+
+    /**
+     * Turns on the two variation layers for a generated track.
+     *
+     * They are OFF by default (track.variation = variation2 = 0), and
+     * TrackVariation.apply()/computeNoteVariation() return immediately at 0 — so a
+     * generated line played the exact same notes, at the exact same velocities, on
+     * every loop. Melodic parts get more than percussion: a bass line is a handful
+     * of notes repeated for minutes, which is where repetition shows.
+     *
+     * Only fills the defaults: a value the user set is never overwritten.
+     *
+     * @param {any} track
+     * @param {string} type Utils.detectTrackType() result
+     */
+    #applyVariation = (track, type) => {
+        const melodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
+        const range = melodic ? [20, 40] : [10, 25]
+        const pickIn = (min, max) => min + Math.floor(Math.random() * (max - min + 1))
+        if (!track.variation) track.variation = pickIn(...range)
+        if (!track.variation2) track.variation2 = pickIn(Math.round(range[0] / 2), range[1])
     }
 
     #applyGenreSwing = (track, pattern) => {

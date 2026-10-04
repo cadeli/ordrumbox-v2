@@ -8,17 +8,44 @@ export default class BassGenerate extends BaseGenerator {
         basic: {
             mode: 'phrases',
             scaleName: 'pentatonic minor',
+            // per-variant register: every variant used to sit at -12, so two lines
+            // could differ in rhythm and still read as the same bass
             rootNote: -12,
+            approachNotes: [-1, -2, -3],
             loopBeats: 4,
-            phrases: [
-                { beat: 0, step: 0, source: 'root' },
-                { beat: 0, step: 2, source: 'fifth' },
-                { beat: 1, step: 0, source: 'root' },
-                { beat: 1, step: 3, source: 'approach' },
-                { beat: 2, step: 0, source: 'root' },
-                { beat: 2, step: 2, source: 'octave' },
-                { beat: 3, step: 0, source: 'root' },
-                { beat: 3, step: 2, source: 'fifth' },
+            // one of three skeletons per generation: a single fixed array means two
+            // generations of `basic` play the same eight notes
+            phraseSets: [
+                [
+                    { beat: 0, step: 0, source: 'root' },
+                    { beat: 0, step: 2, source: 'fifth' },
+                    { beat: 1, step: 0, source: 'root' },
+                    { beat: 1, step: 3, source: 'approach' },
+                    { beat: 2, step: 0, source: 'root' },
+                    { beat: 2, step: 2, source: 'octave' },
+                    { beat: 3, step: 0, source: 'root' },
+                    { beat: 3, step: 2, source: 'fifth' },
+                ],
+                [
+                    // sparser, with the fifth pushed off-beat and a passing seventh
+                    { beat: 0, step: 0, source: 'root' },
+                    { beat: 0, step: 3, source: 'seventh', chance: 0.5 },
+                    { beat: 1, step: 2, source: 'root' },
+                    { beat: 2, step: 0, source: 'fifth', alternateSource: 'third', alternateChance: 0.3 },
+                    { beat: 2, step: 3, source: 'approach' },
+                    { beat: 3, step: 1, source: 'root' },
+                    { beat: 3, step: 3, source: 'fifth', chance: 0.6 },
+                ],
+                [
+                    // four-on-the-floor with an octave lift on the last beat
+                    { beat: 0, step: 0, source: 'root' },
+                    { beat: 0, step: 2, source: 'third', chance: 0.5 },
+                    { beat: 1, step: 0, source: 'root' },
+                    { beat: 1, step: 2, source: 'fifth', chance: 0.7 },
+                    { beat: 2, step: 0, source: 'root' },
+                    { beat: 2, step: 2, source: 'seventh', chance: 0.4 },
+                    { beat: 3, step: 0, source: 'octave' },
+                ],
             ],
             velocity: {
                 base: 0.72,
@@ -33,6 +60,13 @@ export default class BassGenerate extends BaseGenerator {
             scaleName: 'major',
             rootNote: -12,
             beat: 0,
+            // two rows: which steps are candidates changes from generation to
+            // generation, not just how likely each one is
+            probabilitySets: [
+                [0.7, 0.7, 0.6, 0.7],
+                [0.85, 0.45, 0.7, 0.4],
+                [0.55, 0.75, 0.8, 0.6],
+            ],
             probabilities: [0.7, 0.7, 0.6, 0.7],
             loopBeats: 1,
             velocity: {
@@ -46,7 +80,7 @@ export default class BassGenerate extends BaseGenerator {
         groove: {
             mode: 'groove',
             scaleName: 'blues scale',
-            rootNote: -12,
+            rootNote: -17,
             rootPattern: [0, 5, 7],
             density: 0.4,
             variation: 0.15,
@@ -66,7 +100,7 @@ export default class BassGenerate extends BaseGenerator {
         melodic: {
             mode: 'groove',
             scaleName: 'natural minor',
-            rootNote: -12,
+            rootNote: -5,
             rootPattern: [0, 3, 5, 7],
             density: 0.42,
             variation: 0.32,
@@ -87,16 +121,28 @@ export default class BassGenerate extends BaseGenerator {
             mode: 'phrases',
             scaleName: 'dorian',
             rootNote: -12,
+            approachNotes: [-1, -2, 2],
             loopBeats: 4,
-            phrases: [
-                { beat: 0, step: 0, source: 'root', retriggerNum: 2, rate: 86 },
-                { beat: 0, step: 2, source: 'fifth' },
-                { beat: 1, step: 0, source: 'root' },
-                { beat: 1, step: 3, source: 'octave', retriggerNum: 3, rate: 86 },
-                { beat: 2, step: 0, source: 'root', retriggerNum: 2, rate: 86 },
-                { beat: 2, step: 2, source: 'fifth' },
-                { beat: 3, step: 0, source: 'root' },
-                { beat: 3, step: 2, source: 'approach' },
+            phraseSets: [
+                [
+                    { beat: 0, step: 0, source: 'root', retriggerNum: 2, rate: 86 },
+                    { beat: 0, step: 2, source: 'fifth' },
+                    { beat: 1, step: 0, source: 'root' },
+                    { beat: 1, step: 3, source: 'octave', retriggerNum: 3, rate: 86 },
+                    { beat: 2, step: 0, source: 'root', retriggerNum: 2, rate: 86 },
+                    { beat: 2, step: 2, source: 'fifth' },
+                    { beat: 3, step: 0, source: 'root' },
+                    { beat: 3, step: 2, source: 'approach' },
+                ],
+                [
+                    // offbeat pulse, no downbeat anchor
+                    { beat: 0, step: 2, source: 'root', retriggerNum: 2, rate: 86 },
+                    { beat: 1, step: 2, source: 'seventh', chance: 0.5 },
+                    { beat: 1, step: 3, source: 'root' },
+                    { beat: 2, step: 1, source: 'fifth', alternateSource: 'third', alternateChance: 0.4 },
+                    { beat: 2, step: 3, source: 'root', retriggerNum: 4, rate: 86 },
+                    { beat: 3, step: 2, source: 'approach' },
+                ],
             ],
             velocity: {
                 base: 0.66,
@@ -228,7 +274,7 @@ export default class BassGenerate extends BaseGenerator {
                 this.generatePhraseVariant(
                     bassTrack,
                     config,
-                    (phrase) => this.resolvePhrasePitch(phrase, tones, cachedPitches, rootNote),
+                    (phrase) => this.resolvePhrasePitch(phrase, tones, cachedPitches, rootNote, config.approachNotes),
                     (phrase, step) => step % 4 === 0,
                     null,
                     density,
@@ -245,7 +291,9 @@ export default class BassGenerate extends BaseGenerator {
         const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
         const stepsPerBeat = bassTrack.stepsPerBeat ?? 4
         const beat = config.beat ?? 0
-        const probs = config.probabilities ?? [0.7, 0.7, 0.6, 0.7]
+        const probs = config.probabilitySets
+            ? config.probabilitySets[Math.floor(Math.random() * config.probabilitySets.length)]
+            : (config.probabilities ?? [0.7, 0.7, 0.6, 0.7])
 
         const generatedTones = [tones[0] + rootNote]
         for (let i = 1; i < stepsPerBeat; i++) {

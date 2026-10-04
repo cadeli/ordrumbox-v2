@@ -317,12 +317,64 @@ describe('Generators', () => {
     // ── Bass Generator ─────────────────────────────────────────────
 
     describe('Bass Generator', () => {
-        it('basic produces exactly 8 notes at fixed phrase positions', () => {
-            const track = makeTrack('BASS', [], { beatCount: 4, stepsPerBeat: 4 })
-            new BassGenerate().generateNewBass(track, 'basic')
-            expect(track.notes.length).toBe(8)
-            const beats = track.notes.map((n) => n.beat).sort()
-            expect(beats).toEqual([0, 0, 1, 1, 2, 2, 3, 3])
+        // `basic` used to be ONE eight-note skeleton, so every generation of it
+        // played the same line. It now draws one of three skeletons.
+        const basicSkeletons = BassGenerate.BASS_GENERATION_CONFIGS.basic.phraseSets
+        const positionsOf = (notes) => notes.map((n) => `${n.beat}:${n.beatStep}`)
+        const sortedKey = (positions) => [...positions].sort().join(',')
+
+        // The first Math.random() of generateNewBass('basic') is the skeleton pick
+        // (StructurePicker.pick), so a counter-based mock can choose the skeleton and
+        // still drive the per-phrase `chance` draws.
+        const mockRandom = (firstValue, restValue) => {
+            let calls = 0
+            return vi.spyOn(Math, 'random').mockImplementation(() => (calls++ === 0 ? firstValue : restValue))
+        }
+
+        it.each(basicSkeletons.map((_, i) => i))('basic picks skeleton %i as a whole', (index) => {
+            const rnd = mockRandom(index / basicSkeletons.length + 0.01, 0.5)
+            try {
+                const track = makeTrack('BASS', [], { beatCount: 4, stepsPerBeat: 4 })
+                new BassGenerate().generateNewBass(track, 'basic')
+                // every note comes from THAT skeleton (minus the `chance` ones)
+                const allowed = new Set(basicSkeletons[index].map((p) => `${p.beat}:${p.step}`))
+                expect(track.notes.length).toBeGreaterThan(0)
+                for (const note of track.notes) {
+                    expect(allowed.has(`${note.beat}:${note.beatStep}`), `${note.beat}:${note.beatStep}`).toBe(true)
+                }
+                // no two notes on the same (beat, step)
+                const positions = positionsOf(track.notes)
+                expect(new Set(positions).size).toBe(positions.length)
+            } finally {
+                rnd.mockRestore()
+            }
+        })
+
+        it('the three skeletons are genuinely different lines', () => {
+            const signatures = basicSkeletons.map((set) => sortedKey(set.map((p) => `${p.beat}:${p.step}`)))
+            expect(new Set(signatures).size).toBe(basicSkeletons.length)
+            // and the union is wider than the old single skeleton (8 notes)
+            const union = new Set(basicSkeletons.flatMap((set) => set.map((p) => `${p.beat}:${p.step}`)))
+            expect(union.size).toBeGreaterThan(8)
+        })
+
+        it('a per-phrase chance thins the degrees it applies to', () => {
+            // skeleton 1 has one `chance: 0.5` and one `chance: 0.6` phrase; forcing
+            // the draw to 0.9 keeps every chance phrase out
+            const rnd = mockRandom(1 / basicSkeletons.length + 0.01, 0.9)
+            try {
+                const track = makeTrack('BASS', [], { beatCount: 4, stepsPerBeat: 4 })
+                new BassGenerate().generateNewBass(track, 'basic')
+                const forced = new Set(['0:0', '1:2', '2:0', '2:3', '3:1'])
+                expect(sortedKey(positionsOf(track.notes))).toBe(sortedKey(forced))
+            } finally {
+                rnd.mockRestore()
+            }
+        })
+
+        it('every variant declares its own register, not a shared -12', () => {
+            const roots = new Set(Object.values(BassGenerate.BASS_GENERATION_CONFIGS).map((c) => c.rootNote))
+            expect(roots.size).toBeGreaterThan(1)
         })
 
         it('groove produces notes on beat 0 of every beat plus additional steps', () => {
@@ -570,6 +622,131 @@ describe('Generators', () => {
                 expect(track.loopAtStep).toBeGreaterThan(0)
                 expect(track.loopAtStep).toBeLessThanOrEqual(track.beatCount * track.stepsPerBeat)
             }
+        })
+    })
+
+    // Every genre used to have exactly ONE bass variant, so house, hiphop and funk
+    // all played the same `groove` line while `melodic`/`arpege` were unreachable.
+    describe('bass variant per genre', () => {
+        const bassOf = (pattern) => Object.values(pattern.tracks).find((t) => t.name === 'BASS')
+
+        it('every genre lists several bass variants, canonical first', () => {
+            for (const genre of StructureSong.GENRES) {
+                const variants = StructureSong.BASS_VARIANTS_BY_GENRE[genre]
+                expect(Array.isArray(variants), genre).toBe(true)
+                expect(variants.length, genre).toBeGreaterThan(1)
+                // the canonical one of STRUCTURES comes first, so the character of the
+                // genre is preserved as the most likely draw
+                const canonical = StructureSong.STRUCTURES[genre]?.BASS
+                if (canonical) expect(variants[0], genre).toBe(canonical)
+            }
+        })
+
+        it('every listed variant exists in the bass generator', () => {
+            const known = new Set(Object.keys(BassGenerate.BASS_GENERATION_CONFIGS))
+            for (const [genre, variants] of Object.entries(StructureSong.BASS_VARIANTS_BY_GENRE)) {
+                for (const variant of variants) expect(known.has(variant), `${genre}:${variant}`).toBe(true)
+            }
+        })
+
+        it('melodic and arpege are reachable, and no genre is limited to one variant', () => {
+            const all = Object.values(StructureSong.BASS_VARIANTS_BY_GENRE).flat()
+            expect(all).toContain('melodic')
+            expect(all).toContain('arpege')
+        })
+
+        it('generation draws a bass variant from the genre list, not the fixed one', () => {
+            // a deterministic cycle instead of real rolls: this test must not shift
+            // the PRNG stream the following tests draw from
+            let i = 0
+            const rnd = vi.spyOn(Math, 'random').mockImplementation(() => ((i++ % 7) + 0.5) / 7)
+            try {
+                const seen = new Set()
+                for (let n = 0; n < 40; n++) seen.add(StructureSong.randomBassVariant('house'))
+                expect(seen.size).toBeGreaterThan(1)
+                for (const variant of seen) {
+                    expect(StructureSong.BASS_VARIANTS_BY_GENRE.house).toContain(variant)
+                }
+            } finally {
+                rnd.mockRestore()
+            }
+        })
+
+        it('generatePattern writes a bass line that is not always the canonical variant', async () => {
+            if (appState.patterns.length === 0) cmd.addPattern('TestPattern')
+            const pattern = appState.patterns[appState.selectedPatternIdx]
+            const lines = new Set()
+
+            for (let i = 0; i < 25; i++) {
+                pattern.tags = { style: 'house', type: 'default' }
+                await new AutoGenerate().generatePattern()
+                const bass = bassOf(pattern)
+                expect(bass, 'a BASS track was generated').toBeTruthy()
+                expect(bass.useSoftSynth === true || bass.synthSoundKey).toBeTruthy()
+                lines.add(bass.notes.map((n) => `${n.beat}:${n.beatStep}:${n.pitch}`).join('|'))
+            }
+            // 25 generations of one genre must not all play the same line
+            expect(lines.size).toBeGreaterThan(1)
+        })
+
+        it('randomBassVariant only ever returns a variant of that genre', () => {
+            for (const genre of StructureSong.GENRES) {
+                for (let i = 0; i < 20; i++) {
+                    expect(StructureSong.BASS_VARIANTS_BY_GENRE[genre]).toContain(
+                        StructureSong.randomBassVariant(genre),
+                    )
+                }
+            }
+        })
+
+        it('the 200-draw coverage of every genre stays inside its own list', () => {
+            for (const genre of StructureSong.GENRES) {
+                const allowed = StructureSong.BASS_VARIANTS_BY_GENRE[genre]
+                for (let i = 0; i < 200; i++) expect(allowed).toContain(StructureSong.randomBassVariant(genre))
+            }
+        })
+    })
+
+    // variation/variation2 are 0 by default, and both TrackVariation layers return
+    // immediately at 0 — a generated line repeated note for note on every loop.
+    describe('generated tracks turn the variation layers on', () => {
+        beforeEach(() => {
+            if (appState.patterns.length === 0) cmd.addPattern('TestPattern')
+        })
+
+        it('generatePattern gives every track a non-zero variation', async () => {
+            const autoGen = new AutoGenerate()
+            const pattern = appState.patterns[appState.selectedPatternIdx]
+            await autoGen.generatePattern()
+
+            const tracks = Object.values(pattern.tracks)
+            expect(tracks.length).toBeGreaterThan(0)
+            for (const track of tracks) {
+                expect(track.variation, track.name).toBeGreaterThan(0)
+                expect(track.variation, track.name).toBeLessThanOrEqual(100)
+                expect(track.variation2, track.name).toBeGreaterThan(0)
+            }
+        })
+
+        it('melodic parts vary more than percussion', async () => {
+            const autoGen = new AutoGenerate()
+            const pattern = appState.patterns[appState.selectedPatternIdx]
+            await autoGen.generatePattern({ genre: 'techno' })
+
+            const bass = Object.values(pattern.tracks).find((t) => Utils.detectTrackType(t.name) === 'BASS')
+            const kick = Object.values(pattern.tracks).find((t) => Utils.detectTrackType(t.name) === 'KICK')
+            if (bass && kick) expect(bass.variation).toBeGreaterThan(kick.variation)
+        })
+
+        it('a variation the user set is never overwritten', async () => {
+            const autoGen = new AutoGenerate()
+            const pattern = appState.patterns[appState.selectedPatternIdx]
+            await autoGen.generatePattern()
+
+            const track = Object.values(pattern.tracks)[0]
+            track.variation = 77
+            await autoGen.generateTrack(track, 'basic', 1, pattern, { root: 0, scale: null })
+            expect(track.variation).toBe(77)
         })
     })
 
@@ -949,13 +1126,17 @@ describe('Generators', () => {
         })
 
         it('respects harmony root offset', () => {
+            // Both generations must draw the SAME random tones, otherwise comparing
+            // their lowest note compares two random rolls (it used to pass by luck).
+            const rnd = vi.spyOn(Math, 'random').mockReturnValue(0.5)
             const flat = makeTrack('PIANO', [], { beatCount: 4, stepsPerBeat: 4 })
             new MelodyGenerate().generateNewMelody(flat, 'sparse', 1, null, { root: 0, scale: null })
             const raised = makeTrack('PIANO', [], { beatCount: 4, stepsPerBeat: 4 })
             new MelodyGenerate().generateNewMelody(raised, 'sparse', 1, null, { root: 12, scale: null })
             const minFlat = Math.min(...flat.notes.map((n) => n.pitch))
             const minRaised = Math.min(...raised.notes.map((n) => n.pitch))
-            expect(minRaised).toBeGreaterThanOrEqual(minFlat + 12)
+            expect(minRaised - minFlat).toBe(12)
+            rnd.mockRestore()
         })
 
         it('sets loop point from config', () => {

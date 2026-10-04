@@ -4,6 +4,34 @@ export default class StructureSong {
 
     static GENRES = ['techno', 'house', 'drumandbass', 'hiphop', 'rock', 'funk', 'disco', 'reggae']
 
+    /**
+     * Bass variants each genre draws from, canonical one first.
+     *
+     * STRUCTURES[genre].BASS used to be the ONLY bass a genre could get, so house,
+     * hiphop and funk all played the same `groove` line, while `melodic` and
+     * `arpege` were never picked by the pipeline at all. Generation now draws one
+     * at random from the genre's list (see AutoGenerate.generateTrack).
+     */
+    static BASS_VARIANTS_BY_GENRE = Object.freeze({
+        house: ['groove', 'stepping', 'basic', 'melodic'],
+        hiphop: ['groove', 'basic', 'melodic'],
+        funk: ['groove', 'melodic', 'basic'],
+        drumandbass: ['stepping', 'arpege', 'melodic'],
+        disco: ['stepping', 'groove', 'basic'],
+        rock: ['basic', 'groove', 'melodic'],
+        reggae: ['hypnotic', 'groove', 'basic'],
+        // STRUCTURES.techno.BASS is 'acid': keep it first so the genre keeps its character
+        techno: ['acid', 'hypnotic', 'stepping'],
+        intro: ['acid', 'arpege', 'melodic'],
+    })
+
+    /** Random bass variant for a genre, canonical first. @param {string} genre */
+    static randomBassVariant = (genre) => {
+        const variants = StructureSong.BASS_VARIANTS_BY_GENRE[genre]
+        if (!variants || variants.length === 0) return StructureSong.pick(['basic'])
+        return StructureSong.pick(variants)
+    }
+
     static STYLE_TO_GENRE = Object.freeze({
         rock: 'rock',
         metal: 'rock',
