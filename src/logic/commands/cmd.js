@@ -300,7 +300,7 @@ export default class Commander {
             0,
             Math.max(0, appState.patterns.length - 1),
         )
-        const tracks = Utils.getTracksArray(appState.patterns[appState.selectedPatternIdx] ?? {})
+        const tracks = Utils.getTracksArray(appState.selectedPattern ?? {})
         appState.selectedTrackIdx = Utils.clamp(snap.selectedTrackIdx ?? 0, 0, Math.max(0, tracks.length - 1))
         this.persist()
     }

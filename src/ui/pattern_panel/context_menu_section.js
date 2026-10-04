@@ -45,7 +45,7 @@ export default class ContextMenuSection {
 
     #showCellContextMenu(trackIdx, beat, beatStep, x, y) {
         this.#contextMenu.hide()
-        const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
+        const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return
         const tracks = Utils.getTracksArray(pattern)
         const track = tracks[trackIdx]
@@ -73,7 +73,7 @@ export default class ContextMenuSection {
 
     #showContextMenu(trackIdx, x, y) {
         this.#contextMenu.hide()
-        const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
+        const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return
         const tracks = Utils.getTracksArray(pattern)
         const track = tracks[trackIdx]

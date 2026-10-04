@@ -74,7 +74,7 @@ export default class ExportSection {
 
     async exportMidi() {
         try {
-            const pattern = appState.patterns[appState.selectedPatternIdx]
+            const pattern = appState.selectedPattern
             if (!pattern) {
                 showToast('No pattern selected', 'warning')
                 return
@@ -138,7 +138,7 @@ export default class ExportSection {
     }
 
     async exportWav() {
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         if (!pattern) return
 
         const originalText = this.#wavBtn.textContent

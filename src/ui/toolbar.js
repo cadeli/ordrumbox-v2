@@ -101,7 +101,7 @@ export default class Toolbar {
         this.startBtn.textContent = running ? '■' : '▶'
         this.startBtn.classList.toggle('running', running)
 
-        const pat = appState.patterns[appState.selectedPatternIdx]
+        const pat = appState.selectedPattern
         const bpm = this.#bpmOverride ?? pat?.bpm ?? 120
         this.#bpmOverride = null
         this.bpmSlider.value = bpm

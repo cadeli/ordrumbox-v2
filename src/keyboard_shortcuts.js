@@ -27,12 +27,8 @@ const PHYSICAL_TRACK_PREVIEW_KEYS = ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'Ke
 
 const PHYSICAL_KEYS_PREVENTING_BROWSER_DEFAULT = new Set(['Space'])
 
-function getSelectedPattern() {
-    return appState.patterns[appState.selectedPatternIdx]
-}
-
 function toggleTrackMute(trackIdx) {
-    const track = getSelectedPattern()?.tracks?.[trackIdx]
+    const track = appState.selectedPattern?.tracks?.[trackIdx]
     if (track) {
         track.mute = !track.mute
         playbackEvents.batch(() => {
@@ -91,7 +87,7 @@ function emitPatternStructureChange() {
 }
 
 function saveCurrentPattern() {
-    const pattern = getSelectedPattern()
+    const pattern = appState.selectedPattern
     if (!pattern) {
         showToast('No pattern selected', 'info')
         return
@@ -115,7 +111,7 @@ function addNewPattern() {
 
 async function duplicateCurrentPattern() {
     const cmd = serviceRegistry.cmd
-    const pattern = getSelectedPattern()
+    const pattern = appState.selectedPattern
     if (!pattern || !cmd?.addPattern) return
     const clone = cmd.addPattern((pattern.name ?? 'Pattern') + ' copy')
     Object.assign(clone, structuredClone(pattern))
@@ -159,7 +155,7 @@ const SYNTH_SOUND_MAP = {
 }
 
 async function convertToGeneratedSounds() {
-    const selectedPattern = getSelectedPattern()
+    const selectedPattern = appState.selectedPattern
     if (!selectedPattern) {
         showToast('No pattern selected', 'info')
         return
@@ -206,7 +202,7 @@ async function convertToGeneratedSounds() {
 }
 
 function assignRandomSampleAllTracks() {
-    const selectedPattern = getSelectedPattern()
+    const selectedPattern = appState.selectedPattern
     if (!selectedPattern) {
         showToast('No pattern selected', 'info')
         return
@@ -231,7 +227,7 @@ function assignRandomSampleAllTracks() {
 }
 
 async function autoAssignAllTracks() {
-    const selectedPattern = getSelectedPattern()
+    const selectedPattern = appState.selectedPattern
     if (!selectedPattern) {
         showToast('No pattern selected', 'info')
         return

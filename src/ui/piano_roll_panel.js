@@ -125,7 +125,7 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     #resolveTrack() {
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         const idx = appState.selectedTrackIdx
         const track = Utils.getTracksArray(pattern)?.[idx]
         if (track) {
@@ -182,7 +182,7 @@ export default class PianoRollPanel extends BasePanel {
 
     pageInfo() {
         const track = this.#track
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         const stepsPerBeat = track?.stepsPerBeat ?? 4
         const beatCount = pattern?.beatCount ?? 4
         const totalSteps = beatCount * stepsPerBeat
@@ -278,7 +278,7 @@ export default class PianoRollPanel extends BasePanel {
     #onKeyDown(e) {
         if (!this.isVisible) return
         const track = this.#track
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         if (!track || !pattern) return
         const cmd = serviceRegistry.cmd
         const { stepsPerBeat, totalSteps, pageStartStep } = this.pageInfo()

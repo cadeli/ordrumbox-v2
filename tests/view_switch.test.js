@@ -1,3 +1,4 @@
+import { makeAppStateMock } from './helpers/app_state_mock.js'
 /** @vitest-environment jsdom */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -19,10 +20,7 @@ vi.mock('../src/state/service_registry.js', () => ({
 }))
 
 vi.mock('../src/state/app_state.js', () => ({
-    appState: {
-        patterns: [{ tracks: [] }],
-        selectedPatternIdx: 0,
-    },
+    appState: makeAppStateMock({ patterns: [{ tracks: [] }] }),
 }))
 
 vi.mock('../src/core/utils.js', () => ({

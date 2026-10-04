@@ -129,7 +129,7 @@ export default class SelectionSection {
         )
         selected.forEach((el) => el.classList.remove('selected', 'cursor', 'pp-selected', 'pp-range'))
 
-        const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
+        const pattern = this.#editor.appState.selectedPattern
         const tracks = pattern ? Utils.getTracksArray(pattern) : []
         if (this.#editor.rangeAnchor && tracks.length > 0) this.#applyRangeClasses(tracks)
 
@@ -146,10 +146,8 @@ export default class SelectionSection {
                     const slices = sel.querySelectorAll('.pp-note-slice')
                     if (slices.length > 0) {
                         const notes = (
-                            this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
-                                ? (Utils.getTracksArray(
-                                      this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx],
-                                  )?.[trackIdx]?.notes ?? [])
+                            this.#editor.appState.selectedPattern
+                                ? (Utils.getTracksArray(this.#editor.appState.selectedPattern)?.[trackIdx]?.notes ?? [])
                                 : []
                         ).filter((n) => n.beat === beat && n.beatStep === step)
                         const idx = notes.indexOf(this.#editor.selectedNote)

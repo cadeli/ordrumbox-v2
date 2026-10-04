@@ -192,7 +192,7 @@ export default class MenuSection {
     #menuAddSequence(tonic) {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         if (!track || !cmd || !pattern) return
 
         const sequence = getSequence(this.#sequenceIdx)

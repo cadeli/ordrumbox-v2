@@ -46,7 +46,7 @@ export function prevPage() {
  * Navigate to the next page of steps.
  */
 export function nextPage() {
-    const pattern = appState.patterns[appState.selectedPatternIdx]
+    const pattern = appState.selectedPattern
     if (!pattern) return
     const maxPage = maxPageFor(pattern)
     if (appState.currentPage < maxPage) {

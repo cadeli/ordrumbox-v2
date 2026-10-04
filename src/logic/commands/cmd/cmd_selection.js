@@ -31,7 +31,7 @@ export default class SelectionCommands {
 
     async autoAssignSoundsForNewDrumkit() {
         try {
-            const selectedPattern = appState.patterns[appState.selectedPatternIdx]
+            const selectedPattern = appState.selectedPattern
             serviceRegistry.seq.setBpm(selectedPattern.bpm)
             const autoAssign = await getAutoAssignService()
             autoAssign.autoAssignSounds(selectedPattern)

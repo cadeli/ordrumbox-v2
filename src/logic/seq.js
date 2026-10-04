@@ -75,7 +75,7 @@ export default class Sequencer {
         this.playbackEvents.on(EVENTS.PATTERN_CHANGE, (changedTracks) => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
-                const selectedPattern = this.appState.patterns[this.appState.selectedPatternIdx]
+                const selectedPattern = this.appState.selectedPattern
                 if (changedTracks?.length) {
                     for (const track of changedTracks) {
                         this.serviceRegistry.audioEngine.syncTrack(track)
@@ -88,7 +88,7 @@ export default class Sequencer {
         this.playbackEvents.on(EVENTS.SELECTED_PATTERN_CHANGE, () => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
-                const selectedPattern = this.appState.patterns[this.appState.selectedPatternIdx]
+                const selectedPattern = this.appState.selectedPattern
                 if (selectedPattern) {
                     this.serviceRegistry.audioEngine.syncAllTracks(selectedPattern)
                     this.serviceRegistry.seq?.setBpm(selectedPattern.bpm)
@@ -151,7 +151,7 @@ export default class Sequencer {
             return
         }
 
-        const selectedPattern = this.appState.patterns[this.appState.selectedPatternIdx]
+        const selectedPattern = this.appState.selectedPattern
         if (!selectedPattern) {
             logger.warn('Sequencer', 'Sequencer::start: No selected pattern')
             showToast('No pattern selected', 'warning')
@@ -303,7 +303,7 @@ export default class Sequencer {
 
     setBpm = (bpm) => {
         this.serviceRegistry.transport?.setBpm(bpm)
-        const selectedPattern = this.appState.patterns[this.appState.selectedPatternIdx]
+        const selectedPattern = this.appState.selectedPattern
         if (selectedPattern) selectedPattern.bpm = bpm
         if (this.serviceRegistry.audioEngine) {
             this.serviceRegistry.audioEngine.setBpm(bpm)
@@ -334,7 +334,7 @@ export default class Sequencer {
         }
         this.ensureTransport()
         this.ensureAudioEngine()
-        const pat = this.appState.patterns[this.appState.selectedPatternIdx]
+        const pat = this.appState.selectedPattern
         if (!pat) return
         const tracks = Utils.getTracksArray(pat)
         const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat.tracks?.[indexTrack]

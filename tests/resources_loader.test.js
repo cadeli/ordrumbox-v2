@@ -1,3 +1,4 @@
+import { makeAppStateMock } from './helpers/app_state_mock.js'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { logger } from '../src/core/logger.js'
 import { idbClearStore } from '../src/core/idb.js'
@@ -7,16 +8,10 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 
 const CACHE_STORES = ['patterns', 'drumkits', 'samples', 'generated_sounds']
 
-vi.mock('../src/state/app_state.js', () => {
-    const state = {
-        patterns: [],
-        selectedDrumkitIdx: 0,
-        selectedPatternIdx: 0,
-        selectedTrackIdx: 0,
-        currentView: 'edit',
-    }
-    return { appState: state, __esModule: true }
-})
+vi.mock('../src/state/app_state.js', () => ({
+    appState: makeAppStateMock({ currentView: 'edit' }),
+    __esModule: true,
+}))
 
 vi.mock('../src/state/sound_registry.js', () => {
     const state = {

@@ -145,7 +145,7 @@ export default class ViewManager {
 
     #ensureTrackEditorVisible() {
         if (!this.#trackEditor.isVisible) {
-            const pattern = appState.patterns[appState.selectedPatternIdx]
+            const pattern = appState.selectedPattern
             const idx = appState.selectedTrackIdx
             const track = pattern?.tracks?.[idx]
             if (track) {
@@ -159,7 +159,7 @@ export default class ViewManager {
     }
 
     #ensureNoteEditorVisible() {
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         const idx = appState.selectedTrackIdx
         const track = pattern?.tracks?.[idx]
         if (track && this.#trackEditor.isVisible) {

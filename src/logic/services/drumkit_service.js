@@ -249,7 +249,7 @@ class DrumkitService {
     }
 
     async autoDetectAll() {
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         if (!pattern) return false
         const autoAssign = await getAutoAssignService()
         autoAssign.autoAssignSounds(pattern)

@@ -55,7 +55,7 @@ export default class ViewportSection {
 
     #totalPages() {
         if (!this.#editor.track) return 1
-        const beatCount = appState.patterns[appState.selectedPatternIdx]?.beatCount ?? 4
+        const beatCount = appState.selectedPattern?.beatCount ?? 4
         return Math.max(1, Math.ceil(beatCount / BEATS_PER_PAGE))
     }
 

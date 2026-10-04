@@ -71,7 +71,7 @@ export default class AudioImportService {
     }
 
     async autoAssignSounds() {
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         if (!pattern) {
             return { warning: 'No pattern selected' }
         }

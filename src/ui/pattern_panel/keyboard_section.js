@@ -16,7 +16,7 @@ export default class KeyboardSection {
 
     onFocus() {
         if (this.#editor.focusRowIdx === -1) {
-            const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
+            const pattern = this.#editor.appState.selectedPattern
             if (!pattern) return
             const tracks = Utils.getTracksArray(pattern)
             if (tracks.length === 0) return
@@ -28,7 +28,7 @@ export default class KeyboardSection {
     }
 
     onKeyDown(e) {
-        const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
+        const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return
         const tracks = Utils.getTracksArray(pattern)
         if (tracks.length === 0) return
@@ -172,7 +172,7 @@ export default class KeyboardSection {
 
     handleNoteEnter(track) {
         if (!track) return
-        const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
+        const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return
 
         const cell = this.#editor.cellMap.get(
@@ -231,7 +231,7 @@ export default class KeyboardSection {
     handleNoteDelete(tracks) {
         const track = tracks[this.#editor.focusRowIdx]
         if (!track) return
-        const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
+        const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return
 
         const notesAtStep = (track.notes ?? []).filter(

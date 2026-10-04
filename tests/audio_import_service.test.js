@@ -1,3 +1,4 @@
+import { makeAppStateMock } from './helpers/app_state_mock.js'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const mockDecodeAudioData = vi.fn().mockResolvedValue({
@@ -40,11 +41,7 @@ vi.mock('../src/state/service_registry.js', () => ({
     __esModule: true,
 }))
 
-const sharedAppState = {
-    patterns: [],
-    selectedPatternIdx: 0,
-    selectedDrumkitIdx: 0,
-}
+const sharedAppState = makeAppStateMock()
 
 vi.mock('../src/state/app_state.js', () => ({
     appState: sharedAppState,

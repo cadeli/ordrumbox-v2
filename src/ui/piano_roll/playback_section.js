@@ -62,7 +62,7 @@ export default class PlaybackSection {
     #updatePlayhead() {
         const transport = serviceRegistry.transport
         if (!transport?.isRunning) return
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         const track = this.#editor.track
         if (!pattern || !track || !this.#editor.container) return
         this.ensurePlayhead()

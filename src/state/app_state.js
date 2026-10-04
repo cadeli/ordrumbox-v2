@@ -87,6 +87,20 @@ class AppState {
         Object.assign(this, structuredClone(AppState.DEFAULTS), buildDefaultVisibility())
     }
 
+    /**
+     * The pattern the user is on — DERIVED, never stored: it was 33 copies of
+     * `patterns[selectedPatternIdx]` spread across the UI.
+     *
+     * Do NOT use this from the audio layer. Player/Engine receive
+     * `getSelectedPatternIdx()` by injection so an offline export can render a
+     * pattern other than the selected one (see wav_exporter.js).
+     *
+     * @returns {any|undefined} undefined when the index points outside `patterns`
+     */
+    get selectedPattern() {
+        return this.patterns[this.selectedPatternIdx]
+    }
+
     reset() {
         Object.assign(this, structuredClone(AppState.DEFAULTS), buildDefaultVisibility())
     }

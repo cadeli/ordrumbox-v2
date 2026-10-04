@@ -182,7 +182,7 @@ export default class PatternSettingsPanel {
     #onBeatsChange() {
         const val = parseInt(this.#beatsSelect.value, 10)
         if (isNaN(val)) return
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         if (!pattern) return
         serviceRegistry.cmd.setPatternBeatCount(pattern, val)
         serviceRegistry.cmd.resetPage()
@@ -236,7 +236,7 @@ export default class PatternSettingsPanel {
     }
 
     async #onDrumClick() {
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         if (!pattern) return
         const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
         const hasDrumAuto = (pattern.tracks ?? []).some((t) => t.auto && drumTypes.has(Utils.detectTrackType(t.name)))
@@ -272,7 +272,7 @@ export default class PatternSettingsPanel {
     // turns auto off if already active, otherwise creates the track (if
     // missing) from the current genre's structure and turns auto on.
     async #toggleMelodicAutoGen(trackType, { synthSoundKey, defaultVariant }) {
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         if (!pattern) return
         const hasAuto = (pattern.tracks ?? []).some((t) => t.auto && Utils.detectTrackType(t.name) === trackType)
         if (hasAuto) {
@@ -328,7 +328,7 @@ export default class PatternSettingsPanel {
     }
 
     sync() {
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         if (!pattern) return
 
         this.#beatsSelect.value = pattern.beatCount ?? 4

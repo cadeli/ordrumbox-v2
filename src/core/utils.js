@@ -1,8 +1,9 @@
 import { TRACK_DEFAULTS } from '../model/track_schema.js'
-import { NOTE_DEFAULTS, NOTE_RECALCULATED, NOTE_POSITION_KEYS } from './note_schema.js'
+import { NOTE_DEFAULTS, NOTE_POSITION_KEYS } from './note_schema.js'
 import { logger } from './logger.js'
 
 export default class Utils {
+    /** Logger tag for every warning this module emits. */
     static TAG = 'UTILS'
 
     static filterTypeList = ['lowpass', 'highpass', 'bandpass']
@@ -64,8 +65,6 @@ export default class Utils {
     }
 
     static NOTE_DEFAULTS = NOTE_DEFAULTS
-
-    static NOTE_RECALCULATED = NOTE_RECALCULATED
 
     static NOTE_POSITION_KEYS = NOTE_POSITION_KEYS
 
@@ -233,18 +232,6 @@ export default class Utils {
      */
     static notesAtStep = (track, beat, beatStep) =>
         Object.values(track?.notes ?? {}).filter((n) => n.beat === beat && n.beatStep === beatStep)
-
-    /**
-     * Track at an index or key. `pattern.tracks[i]` silently returns
-     * undefined when tracks is the indexed-object form.
-     * @param {{tracks?: object|object[]}} pattern
-     * @param {number|string} trackIdx
-     * @returns {object|undefined}
-     */
-    static getTrackAt = (pattern, trackIdx) =>
-        typeof trackIdx === 'number'
-            ? Utils.getTracksArray(pattern)[trackIdx]
-            : (Object.values(pattern?.tracks ?? {})[trackIdx] ?? pattern?.tracks?.[trackIdx])
 
     /** Track types treated as melodic (auto-generate + empty-track pruning). */
     static MELODIC_TYPES = new Set(['BASS', 'PIANO', 'ORGAN'])

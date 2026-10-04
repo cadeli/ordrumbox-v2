@@ -60,7 +60,7 @@ export default class PointerSection {
     }
 
     #resolveNotesAtStep(trackIdx, beat, beatStep) {
-        const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
+        const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return null
         const tracks = Utils.getTracksArray(pattern)
         const track = tracks[trackIdx]
@@ -155,7 +155,7 @@ export default class PointerSection {
         }
 
         if (e.target.closest('#pp-add-track')) {
-            const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
+            const pattern = this.#editor.appState.selectedPattern
             if (!pattern) return
             const trackNum = Utils.getTracksArray(pattern).length + 1
             this.#editor.serviceRegistry.cmd?.addTrack(pattern, `T${trackNum}`)
@@ -164,7 +164,7 @@ export default class PointerSection {
         }
 
         if (e.target.closest('#pp-delete-track')) {
-            const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
+            const pattern = this.#editor.appState.selectedPattern
             if (!pattern) return
             const tracks = Utils.getTracksArray(pattern)
             if (tracks.length <= 1) return
@@ -241,7 +241,7 @@ export default class PointerSection {
         if (volSlider) {
             const trackIdx = parseInt(volSlider.dataset.track, 10)
             if (isNaN(trackIdx)) return
-            const pattern = this.#editor.appState.patterns[this.#editor.appState.selectedPatternIdx]
+            const pattern = this.#editor.appState.selectedPattern
             const tracks = Utils.getTracksArray(pattern)
             const track = tracks[trackIdx]
             if (!track) return

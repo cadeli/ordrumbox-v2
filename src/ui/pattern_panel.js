@@ -158,7 +158,7 @@ export default class PatternPanel extends BasePanel {
         })
         this.sub(this.#playbackEvents, EVENTS.SELECTED_PATTERN_CHANGE, () => {
             this.#rangeAnchor = null
-            const pattern = this.#appState.patterns[this.#appState.selectedPatternIdx]
+            const pattern = this.#appState.selectedPattern
             const maxPage = maxPageFor(pattern)
             if (this.#appState.currentPage > maxPage) {
                 this.#serviceRegistry.cmd.resetPage()
@@ -264,7 +264,7 @@ export default class PatternPanel extends BasePanel {
     }
 
     resolveTrack(idx) {
-        const pattern = this.#appState.patterns[this.#appState.selectedPatternIdx]
+        const pattern = this.#appState.selectedPattern
         const tracks = Utils.getTracksArray(pattern)
         return tracks[idx] ?? null
     }
@@ -363,7 +363,7 @@ export default class PatternPanel extends BasePanel {
     sync() {
         if (!this.container) return
 
-        const pattern = this.#appState.patterns[this.#appState.selectedPatternIdx]
+        const pattern = this.#appState.selectedPattern
         if (!pattern) {
             this.#headerEl.innerHTML = '<div class="pp-header pp-waiting">Waiting for patterns...</div>'
             this.#tracksEl.innerHTML = ''
@@ -483,7 +483,7 @@ export default class PatternPanel extends BasePanel {
      * @param {number} trackIdx
      */
     refreshLoopRow(trackIdx) {
-        const pattern = this.#appState.patterns[this.#appState.selectedPatternIdx]
+        const pattern = this.#appState.selectedPattern
         const tracks = Utils.getTracksArray(pattern)
         const track = tracks[trackIdx]
         if (track && this.#cellMap.size > 0) {

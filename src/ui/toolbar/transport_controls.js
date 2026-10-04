@@ -93,7 +93,7 @@ export default class TransportControls {
         tb.beatsSelect.addEventListener('change', () => {
             const val = parseInt(tb.beatsSelect.value, 10)
             if (isNaN(val)) return
-            const pattern = appState.patterns[appState.selectedPatternIdx]
+            const pattern = appState.selectedPattern
             if (!pattern) return
             serviceRegistry.cmd.setPatternBeatCount(pattern, val)
             serviceRegistry.cmd.resetPage()

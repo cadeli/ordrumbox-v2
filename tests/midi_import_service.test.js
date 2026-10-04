@@ -1,11 +1,8 @@
+import { makeAppStateMock } from './helpers/app_state_mock.js'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { buildMidi, buildDrumMidi, buildEmptyMidi } from './helpers/midi_builder.js'
 
-const sharedState = {
-    patterns: [],
-    selectedPatternIdx: 0,
-    selectedDrumkitIdx: 0,
-}
+const sharedState = makeAppStateMock()
 
 const mockAddPattern = vi.fn((name) => {
     const pattern = { name, beatCount: 32, bpm: 120, tracks: [] }

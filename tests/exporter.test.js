@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { PatternExporter } from '../src/patterns/exporter.js'
 import Utils from '../src/core/utils.js'
+import { NOTE_RECALCULATED } from '../src/core/note_schema.js'
 
 describe('PatternExporter', () => {
     // ── isDefaultValue ───────────────────────────────────────────────
@@ -32,7 +33,7 @@ describe('PatternExporter', () => {
             const cleaned = PatternExporter.cleanNote(note)
             // All default-valued keys should be stripped
             for (const key of Object.keys(Utils.NOTE_DEFAULTS)) {
-                if (!Utils.NOTE_RECALCULATED.includes(key)) {
+                if (!NOTE_RECALCULATED.includes(key)) {
                     expect(cleaned).not.toHaveProperty(key)
                 }
             }

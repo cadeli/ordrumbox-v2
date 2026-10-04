@@ -233,7 +233,7 @@ export default class ViewSwitch {
     }
 
     async toggleAutoGen(typeOrTypes, generateFn) {
-        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const pattern = appState.selectedPattern
         if (!pattern) return
 
         const types =
