@@ -30,7 +30,7 @@ export function createMidiMappingResolver() {
  * @param {number} deps.TICK
  * @param {{getCurrentFlatNotesMap: () => Map<number, object[]>, loop: number}} deps.player
  * @param {(loop: number) => Map} deps.getFlatNotes
- * @param {(trackId: string) => {ch?: string|number, key?: string|number}|null} deps.resolveMapping
+ * @param {(trackId: string) => {channel?: string|number, key?: string|number}|null} deps.resolveMapping
  * @param {number} tick
  * @param {number} atTime - AudioContext time
  */
@@ -60,9 +60,14 @@ export function sendMidiNotes(deps, tick, atTime) {
         if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
             const mapping = resolveMapping(flatNote.track.id)
             if (mapping) {
-                const channel = Number.isFinite(parseInt(String(mapping.ch), 10))
-                    ? parseInt(String(mapping.ch), 10)
-                    : (logger.warn('Fallback', 'invalid MIDI mapping.ch, using channel 9', String(mapping.ch)), 9)
+                const channel = Number.isFinite(parseInt(String(mapping.channel), 10))
+                    ? parseInt(String(mapping.channel), 10)
+                    : (logger.warn(
+                          'Fallback',
+                          'invalid MIDI mapping.channel, using channel 9',
+                          String(mapping.channel),
+                      ),
+                      9)
                 const note = Number.isFinite(parseInt(String(mapping.key), 10))
                     ? parseInt(String(mapping.key), 10)
                     : (logger.warn('Fallback', 'invalid MIDI mapping.key, using note 60', String(mapping.key)), 60)
@@ -84,7 +89,7 @@ export function sendMidiNotes(deps, tick, atTime) {
  * @param {object} args
  * @param {{id?: string, velocity?: number}} args.track
  * @param {{velocity?: number}|null} [args.note] - flat note override (velocity source)
- * @param {(trackId: string) => {ch?: string|number, key?: string|number}|null} args.resolveMapping
+ * @param {(trackId: string) => {channel?: string|number, key?: string|number}|null} args.resolveMapping
  */
 export function sendTriggerMidi({ track, note, resolveMapping }) {
     const midi = serviceRegistry.midiManager
@@ -94,12 +99,12 @@ export function sendTriggerMidi({ track, note, resolveMapping }) {
     const mapping = resolveMapping(track.id)
     if (!mapping) return
 
-    const rawCh = parseInt(String(mapping.ch), 10)
+    const rawCh = parseInt(String(mapping.channel), 10)
     const rawNote = parseInt(String(mapping.key), 10)
     const channel = Number.isFinite(rawCh) ? rawCh : 9
     const noteNum = Number.isFinite(rawNote) ? rawNote : 60
     if (!Number.isFinite(rawCh) || !Number.isFinite(rawNote)) {
-        logger.warn('Engine', 'MIDI mapping NaN fallback', { ch: mapping.ch, key: mapping.key })
+        logger.warn('Engine', 'MIDI mapping NaN fallback', { ch: mapping.channel, key: mapping.key })
     }
     const vel = Math.floor((note?.velocity ?? track.velocity ?? 0.8) * 127)
     midi.sendNoteOn(channel, noteNum, vel)

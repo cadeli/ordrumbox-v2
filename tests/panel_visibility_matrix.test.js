@@ -151,7 +151,7 @@ function setupApp(viewport) {
     const mockSynthEditor = {
         createDOM: () => {},
         getGeneratedSoundKeys: () => [],
-        hidePanel: () => {
+        closePanelAndCommit: () => {
             document.getElementById('soft-synth-panel').style.display = 'none'
         },
         showPanel: () => {

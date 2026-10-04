@@ -20,7 +20,7 @@ export default class ActionsSection {
         const pattern = editor.appState.patterns[idx]
         if (!pattern && action !== 'replace' && action !== 'new') return
         const cmd = editor.serviceRegistry.cmd
-        const patterns = editor.serviceRegistry.patterns
+        const patterns = editor.serviceRegistry.flatNotes
 
         switch (action) {
             case 'new': {

@@ -12,11 +12,11 @@ import Utils from '../../../core/utils.js'
 /**
  * @typedef {object} SongClipOptions
  * @property {number} [bars]    clip duration in bars (defaults to the pattern's own length)
- * @property {number} [songIdx] arrangement to apply to (defaults to the selected one)
+ * @property {number} [songIdx] song to apply to (defaults to the selected one)
  */
 
 /**
- * @typedef {object} ArrangementSpec
+ * @typedef {object} SongSpec
  * @property {string}  [name]
  * @property {string}  [description]
  * @property {number}  [bpm]        clamped to SONG_MIN_BPM..SONG_MAX_BPM
@@ -25,9 +25,9 @@ import Utils from '../../../core/utils.js'
  */
 
 /**
- * Song (arrangement) commands — sub-module of the Commander (see CommanderHost in ../cmd.js).
+ * Song commands — sub-module of the Commander (see CommanderHost in ../cmd.js).
  *
- * A song is an ordered list of clips placing patterns on the bar timeline
+ * A song (an arrangement) is an ordered list of clips placing patterns on the bar timeline
  * (see src/model/song_schema.js for the persisted format).
  *
  * Two layers:
@@ -46,7 +46,7 @@ import Utils from '../../../core/utils.js'
  * measures nothing is placed on — and never miss a clip that was just added past
  * the old loop.
  *
- * Arrangements themselves are created by `addArrangement` (empty by design: its
+ * Songs themselves are created by `addSong` (empty by design: its
  * clips are placed afterwards, so none can reference a pattern that is gone)
  * and are selected through `setSelectedSongIdx`.
  */
@@ -58,14 +58,14 @@ export default class SongCommands {
         this.#host = host
     }
 
-    /** The arrangement a song command applies to, or null when there is none. */
+    /** The song a command applies to, or null when there is none. */
     #song(songIdx) {
         const index = songIdx ?? appState.selectedSongIdx ?? 0
         const song = appState.songs?.[index]
         return song ? { song, index } : null
     }
 
-    /** The arrangement to modify, or a user-visible report when there is none. */
+    /** The song to modify, or a user-visible report when there is none. */
     #requireSong(songIdx) {
         const found = this.#song(songIdx)
         if (!found) {
@@ -340,17 +340,17 @@ export default class SongCommands {
      * normalizeSong() when that id is unknown, so a caller places them with
      * addPatternAtBar() right after. One undo step.
      *
-     * @param {ArrangementSpec} [spec]
+     * @param {SongSpec} [spec]
      * @returns {import('../../../model/song_schema.js').Song|null} the new arrangement
      */
-    addArrangement(spec = {}) {
+    addSong(spec = {}) {
         const name = String(spec.name ?? '').trim() || 'Untitled'
         const taken = new Set((appState.songs ?? []).map((song) => song?.id).filter(Boolean))
         // No clips can be valid yet, so the known-id set is empty on purpose.
         const { ok, song, error } = normalizeSong({ ...spec, name }, new Set())
         if (!ok || !song) {
-            reportUserError('SongCommands.addArrangement.invalid', 'Could not create that arrangement', {
-                cause: new Error(`addArrangement: ${error ?? 'invalid spec'}`),
+            reportUserError('SongCommands.addSong.invalid', 'Could not create that arrangement', {
+                cause: new Error(`addSong: ${error ?? 'invalid spec'}`),
             })
             return null
         }
@@ -390,7 +390,7 @@ export default class SongCommands {
      * @param {number} [songIdx]
      * @returns {boolean} true when an arrangement was removed
      */
-    removeArrangement(songIdx) {
+    removeSong(songIdx) {
         const index = Number.isInteger(songIdx) ? songIdx : (appState.selectedSongIdx ?? 0)
         const song = appState.songs?.[index]
         if (!song) return false

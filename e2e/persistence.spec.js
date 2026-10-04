@@ -105,7 +105,7 @@ test.describe('E2E-B: Persistence between sessions', () => {
 
         await page.evaluate(async () => {
             const { serviceRegistry } = window.__e2e
-            const ps = serviceRegistry.patterns
+            const ps = serviceRegistry.flatNotes
             if (ps?.persistPatterns) ps.persistPatterns()
             await new Promise((r) => setTimeout(r, 800))
 

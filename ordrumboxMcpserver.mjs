@@ -1145,7 +1145,7 @@ export async function handleToolCall(toolName, args, onError) {
             appState.songs = structuredClone(songs)
 
             const cmd = new Commander()
-            const song = cmd.addArrangement({ name, description, bpm, loopBars })
+            const song = cmd.addSong({ name, description, bpm, loopBars })
             if (!song) throw new Error(`Could not create arrangement "${name}"`)
 
             const placed = []

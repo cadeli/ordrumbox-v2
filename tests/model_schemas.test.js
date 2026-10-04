@@ -32,7 +32,7 @@ describe('Instrument', () => {
         expect(inst.id).toBe('NOT_FOUND')
         expect(Instrument.NOT_FOUND).toBe('NOT_FOUND')
         expect(inst.drum).toBe(false)
-        expect(inst.pan).toBe('0')
+        expect(inst.pan).toBe(0) // number, like track.pan
         expect(inst.synonyms).toEqual([])
         expect(inst.subst).toEqual({})
         expect(inst.midi).toEqual([])
@@ -42,19 +42,20 @@ describe('Instrument', () => {
         const inst = new Instrument({
             id: 'kick',
             drum: true,
-            pan: '1',
+            pan: 1,
             synonyms: ['bd', 'sub'],
             subst: { alt: 'x' },
-            midi: [{ ch: '1', name: 'C', key: 3 }, {}],
+            midi: [{ channel: 1, name: 'C', key: 3 }, {}],
         })
         expect(inst.id).toBe('kick')
         expect(inst.drum).toBe(true)
-        expect(inst.pan).toBe('1')
+        expect(inst.pan).toBe(1)
         expect(inst.synonyms).toEqual(['bd', 'sub'])
         expect(inst.subst).toEqual({ alt: 'x' })
         expect(inst.midi).toHaveLength(2)
-        expect(inst.midi[0]).toMatchObject({ ch: '1', name: 'C', key: 3, programm: null, key_based: null })
-        expect(inst.midi[1]).toMatchObject({ ch: '9', name: '', key: null, programm: null, key_based: null })
+        expect(inst.midi[0]).toMatchObject({ channel: 1, name: 'C', key: 3, program: null, keyBased: null })
+        // channel defaults to the number 9 (it was the string '9')
+        expect(inst.midi[1]).toMatchObject({ channel: 9, name: '', key: null, program: null, keyBased: null })
     })
 
     it('treats a non-array midi field as no midi mapping', () => {
@@ -66,7 +67,7 @@ describe('Instrument', () => {
         const drum = new Instrument({
             id: 'kick',
             drum: true,
-            pan: '1',
+            pan: 1,
             synonyms: ['bd', 'sub'],
             midi: [{ name: 'GM', key: 36 }],
         })

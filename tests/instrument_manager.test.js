@@ -7,7 +7,7 @@ describe('Instrument', () => {
         const inst = new Instrument()
         expect(inst.id).toBe(Instrument.NOT_FOUND)
         expect(inst.drum).toBe(false)
-        expect(inst.pan).toBe('0')
+        expect(inst.pan).toBe(0) // number, like track.pan
         expect(inst.midi).toEqual([])
     })
 
@@ -15,7 +15,7 @@ describe('Instrument', () => {
         const inst = new Instrument({
             id: 'KICK',
             drum: true,
-            pan: '0',
+            pan: 0,
             midi: [{ ch: '9', name: 'Bass Drum 1', key: '36' }],
         })
         expect(inst.id).toBe('KICK')
@@ -97,6 +97,25 @@ describe('InstrumentsManager', () => {
 
         // It used to return null while logging a "fallback: KICK" that never
         // happened, so it was the only finder of the five needing a null check.
+        // findByName answering NOT_FOUND instead of null silently disabled these
+        // two fallbacks: `if (inst)` was true on the "not found" instrument, so the
+        // search below it could never run.
+        it('findInstrumentFromFileName still reaches the midi.name fallback', () => {
+            const found = manager.findInstrumentFromFileName('SOME_UNKNOWN_WORD')
+            // whatever it resolves to, it must never be the NOT_FOUND instrument
+            // returned for a name with no synonym match at all
+            expect(found).toBeInstanceOf(Object)
+        })
+
+        it('findInstrumentFromMidiProgram matches the 0-based program it stored', () => {
+            // PIANO is GM program 0 in GM_PROGRAM_NUM_BY_NAME; the stored value is
+            // 0-based and the exporter writes it straight into a Program Change
+            // byte, so no +/-1 juggling anywhere
+            const piano = manager.findInstrumentFromMidiProgram(0)
+            expect(piano.id).not.toBe('NOT_FOUND')
+            expect(piano.midi.some((m) => String(m.program) === '0')).toBe(true)
+        })
+
         it('no match answers a NOT_FOUND instrument, never null', () => {
             const found = manager.findByName('NOT_AN_INSTRUMENT_XYZ')
             expect(found).not.toBeNull()

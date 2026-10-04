@@ -243,7 +243,7 @@ export default class DrumkitManager extends BasePanel {
 
             const name = document.createElement('span')
             name.className = 'dm-list-name'
-            name.textContent = `${s.display_name ?? s.url} [${s.kit_name}]`
+            name.textContent = `${s.display_name ?? s.url} [${s.kitName}]`
 
             item.appendChild(name)
             this.listen(item, 'click', () => this.#selectSound(s.url))
@@ -276,10 +276,10 @@ export default class DrumkitManager extends BasePanel {
         const tooltipText = `${detected.id !== 'NOT_FOUND' ? 'Detected: ' + detected.id : 'No instrument detected'}\nPeak: ${peakDb} dB\nRMS: ${rmsDb} dB\nDuration: ${duration}\nDecay: ${decayStr}`
 
         const kitNames = soundRegistry.drumkitList.map((k) => k.name)
-        if (sound.kit_name && !kitNames.includes(sound.kit_name)) {
-            kitNames.unshift(sound.kit_name)
+        if (sound.kitName && !kitNames.includes(sound.kitName)) {
+            kitNames.unshift(sound.kitName)
         }
-        const kitOptions = renderOptions(kitNames, sound.kit_name, { escape: escapeHtml })
+        const kitOptions = renderOptions(kitNames, sound.kitName, { escape: escapeHtml })
 
         const instOptions = InstrumentsManager.DATA?.instruments
             ? renderOptions(

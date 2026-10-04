@@ -70,8 +70,8 @@ export default class Commander {
         'repeatPatternAtBar',
         'removePatternAtBar',
         'removePatternClips',
-        'addArrangement',
-        'removeArrangement',
+        'addSong',
+        'removeSong',
         'setSelectedSongIdx',
         'setSelectedDrumkitIdx',
         'autoAssignSoundsForNewDrumkit',
@@ -140,8 +140,8 @@ export default class Commander {
         this.repeatPatternAtBar = (...args) => this.#songs.repeatPatternAtBar(...args)
         this.removePatternAtBar = (...args) => this.#songs.removePatternAtBar(...args)
         this.removePatternClips = (...args) => this.#songs.removePatternClips(...args)
-        this.addArrangement = (...args) => this.#songs.addArrangement(...args)
-        this.removeArrangement = (...args) => this.#songs.removeArrangement(...args)
+        this.addSong = (...args) => this.#songs.addSong(...args)
+        this.removeSong = (...args) => this.#songs.removeSong(...args)
         this.setSelectedSongIdx = (...args) => this.#songs.setSelectedSongIdx(...args)
         this.setSelectedDrumkitIdx = (...args) => this.#selection.setSelectedDrumkitIdx(...args)
         this.autoAssignSoundsForNewDrumkit = (...args) => this.#selection.autoAssignSoundsForNewDrumkit(...args)

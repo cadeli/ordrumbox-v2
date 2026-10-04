@@ -10,8 +10,8 @@ describe('drumkit service — sound lookups', () => {
         soundRegistry.drumkitList = [{ name: 'real' }, { name: '808' }]
         appState.selectedDrumkitIdx = 0
         soundRegistry.sounds = {
-            'real/kick.wav': { kit_name: 'real', buffer: null },
-            '808/kick.wav': { kit_name: '808', buffer: null },
+            'real/kick.wav': { kitName: 'real', buffer: null },
+            '808/kick.wav': { kitName: '808', buffer: null },
         }
     })
 

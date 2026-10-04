@@ -27,7 +27,7 @@ function hostileKit(extra = {}) {
 
 function hostileSound() {
     return {
-        kit_name: `Kit ${MALICIOUS}`,
+        kitName: `Kit ${MALICIOUS}`,
         url: SOUND_URL,
         key: 'KICK',
         display_name: `Pwn ${MALICIOUS}`,
@@ -71,7 +71,7 @@ describe('HTML escaping in innerHTML fragments', () => {
 
         const html = new SoundSection(makeEditor()).render()
 
-        // title="…" attribute built from kit_name / url / key
+        // title="…" attribute built from kitName / url / key
         expect(html).toContain('&quot;')
         expect(html).not.toContain('onmouseover="window.__pwned=1"')
         expect(html).toContain('title="Kit: Kit &quot;')

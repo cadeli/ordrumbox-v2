@@ -1,7 +1,7 @@
 export class ServiceRegistry {
     static DEFAULTS = {
         cmd: null,
-        patterns: null,
+        flatNotes: null,
         midiManager: null,
         resourcesLoader: null,
         seq: null,
@@ -19,7 +19,7 @@ export class ServiceRegistry {
     /** @type {any} */
     cmd
     /** @type {any} */
-    patterns
+    flatNotes
     /** @type {any} */
     midiManager
     /** @type {any} */

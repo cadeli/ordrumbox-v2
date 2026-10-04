@@ -24,7 +24,7 @@ import MidiExporter, { C3_MIDI_NOTE } from '../src/logic/midi/midi_exporter.js'
 import InstrumentsManager from '../src/logic/services/instrument_manager/index.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import * as patternsManager from '../src/patterns/manager.js'
+import * as flatNotesService from '../src/patterns/flat_notes.js'
 import {
     parseMidi,
     findAllNotes,
@@ -514,7 +514,7 @@ function assertNotesMatch(importedPattern, expectedPattern) {
                   if (drumKey == null) return true
                   const midiNote = drumMidiNote(drumKey, n.pitch)
                   return (
-                      im.findInstrumentFromMidi(instrument.midi[0] ? parseInt(instrument.midi[0].ch, 10) : 9, midiNote)
+                      im.findInstrumentFromMidi(instrument.midi[0] ? Number(instrument.midi[0].channel) : 9, midiNote)
                           ?.id === expectedTrack.name
                   )
               })
@@ -541,7 +541,7 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
     beforeEach(() => {
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
         cmd = new Commander()
         serviceRegistry.cmd = cmd
 
@@ -657,7 +657,7 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
         const im = new InstrumentsManager()
         const chhInst = im.findByName('CHH')
         const drumKey = chhInst?.midi?.[0]?.key != null ? parseInt(chhInst.midi[0].key, 10) : null
-        const drumChannel = chhInst?.midi?.[0]?.ch != null ? parseInt(chhInst.midi[0].ch, 10) : 9
+        const drumChannel = chhInst?.midi?.[0]?.channel != null ? Number(chhInst.midi[0].channel) : 9
 
         const chhExpected = []
         for (const [, flatNotes] of expectedNotes) {

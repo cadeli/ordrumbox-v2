@@ -64,6 +64,38 @@ describe('Player cache invalidation', () => {
         errorSpy.mockRestore()
     })
 
+    // "Current" has to mean current: midi_out trusts this getter, and it used to
+    // hand back the previous pattern's notes after a switch that skipped
+    // invalidateCache() (which happens between two ticks of the same loop).
+    it('getCurrentFlatNotesMap returns null once the selected pattern changed', async () => {
+        const track = makeTrack('KICK')
+        const patternA = makePattern([track])
+        const patternB = makePattern([track])
+        const flatNote = { track, note: { beat: 0, beatStep: 1 }, swingTime: 0 }
+        let selectedIdx = 0
+        const player = new Player({
+            audioCtx: { currentTime: 0 },
+            mixer: {},
+            sounds: {},
+            generatedSounds: {},
+            patterns: [patternA, patternB],
+            getSelectedPatternIdx: () => selectedIdx,
+            computeFlatNotes: vi.fn(),
+            getAutoGenerate: vi.fn(() => Promise.resolve({ changeTrack: vi.fn() })),
+            getFlatNotes: () => new Map([[1, [flatNote]]]),
+            TICK: 32,
+            secondsPerTick: 0.25,
+            isOffline: false,
+        })
+
+        await player.playNotes(1, 0)
+        expect(player.getCurrentFlatNotesMap()).not.toBe(null)
+
+        // switched without invalidateCache(): the cached map is pattern A's
+        selectedIdx = 1
+        expect(player.getCurrentFlatNotesMap()).toBe(null)
+    })
+
     it('recomputes flatNotes once per loop and again after invalidateCache', async () => {
         const track = makeTrack('KICK')
         const pattern = makePattern([track])

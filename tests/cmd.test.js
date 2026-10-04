@@ -534,15 +534,15 @@ describe('Functional: Commander operations', () => {
     describe('getAllSoundsForType', () => {
         it('finds sounds by key', () => {
             soundRegistry.sounds = {
-                s1: { key: 'kd', kit_name: 'real' },
-                s2: { key: 'sd', kit_name: 'real' },
-                s3: { key: 'kd', kit_name: 'electro' },
+                s1: { key: 'kd', kitName: 'real' },
+                s2: { key: 'sd', kitName: 'real' },
+                s3: { key: 'kd', kitName: 'electro' },
             }
 
             const sounds = getAllSoundsForType('kd')
             expect(sounds.length).toBe(2)
-            expect(sounds[0].kit_name).toBe('real')
-            expect(sounds[1].kit_name).toBe('electro')
+            expect(sounds[0].kitName).toBe('real')
+            expect(sounds[1].kitName).toBe('electro')
         })
 
         it('returns empty array when no match', () => {
@@ -570,7 +570,7 @@ describe('Functional: Commander operations', () => {
 
     describe('kitIsLoaded', () => {
         it('returns true when kit sounds are loaded', () => {
-            soundRegistry.sounds = { s1: { kit_name: 'real' } }
+            soundRegistry.sounds = { s1: { kitName: 'real' } }
             expect(kitIsLoaded({ name: 'real' })).toBe(true)
             expect(kitIsLoaded({ name: 'electro' })).toBe(false)
         })
@@ -941,8 +941,8 @@ describe('Functional: Commander operations', () => {
             vi.restoreAllMocks()
         })
 
-        it('addArrangement creates a normalized song and selects it', () => {
-            const song = cmd.addArrangement({ name: '  My song  ', description: 'demo', bpm: 128 })
+        it('addSong creates a normalized song and selects it', () => {
+            const song = cmd.addSong({ name: '  My song  ', description: 'demo', bpm: 128 })
 
             expect(song.name).toBe('My song')
             expect(song.description).toBe('demo')
@@ -953,23 +953,23 @@ describe('Functional: Commander operations', () => {
             expect(appState.selectedSongIdx).toBe(0)
         })
 
-        it('addArrangement falls back to a default name and a valid tempo', () => {
-            const song = cmd.addArrangement({ bpm: 9999 })
+        it('addSong falls back to a default name and a valid tempo', () => {
+            const song = cmd.addSong({ bpm: 9999 })
             expect(song.name).toBe('Untitled')
             expect(song.bpm).toBe(120)
         })
 
-        it('addArrangement never reuses an id across arrangements', () => {
-            const first = cmd.addArrangement({ name: 'Intro' })
-            const second = cmd.addArrangement({ name: 'Intro' })
+        it('addSong never reuses an id across arrangements', () => {
+            const first = cmd.addSong({ name: 'Intro' })
+            const second = cmd.addSong({ name: 'Intro' })
 
             expect(first.id).toBe('intro')
             expect(second.id).toBe('intro-2')
             expect(appState.selectedSongIdx).toBe(1)
         })
 
-        it('addArrangement is undoable and redoable', () => {
-            cmd.addArrangement({ name: 'Temp' })
+        it('addSong is undoable and redoable', () => {
+            cmd.addSong({ name: 'Temp' })
 
             history.undo()
             expect(appState.songs).toHaveLength(0)
@@ -981,7 +981,7 @@ describe('Functional: Commander operations', () => {
         })
 
         it('a clip placed after creation can be undone on its own', () => {
-            cmd.addArrangement({ name: 'With clips' })
+            cmd.addSong({ name: 'With clips' })
             cmd.addPatternAtBar('Verse', 0)
             expect(appState.songs[0].clips).toHaveLength(1)
 
@@ -989,12 +989,12 @@ describe('Functional: Commander operations', () => {
             expect(appState.songs[0].clips).toHaveLength(0)
         })
 
-        it('removeArrangement deletes the selected one and keeps a valid selection', () => {
-            cmd.addArrangement({ name: 'First' })
-            cmd.addArrangement({ name: 'Second' })
+        it('removeSong deletes the selected one and keeps a valid selection', () => {
+            cmd.addSong({ name: 'First' })
+            cmd.addSong({ name: 'Second' })
             appState.selectedSongIdx = 0
 
-            expect(cmd.removeArrangement()).toBe(true)
+            expect(cmd.removeSong()).toBe(true)
             expect(appState.songs.map((s) => s.name)).toEqual(['Second'])
             expect(appState.selectedSongIdx).toBe(0)
 
@@ -1002,15 +1002,15 @@ describe('Functional: Commander operations', () => {
             expect(appState.songs.map((s) => s.name)).toEqual(['First', 'Second'])
         })
 
-        it('removeArrangement restores the original slot on undo', () => {
+        it('removeSong restores the original slot on undo', () => {
             appState.songs = [
                 { id: 'a', name: 'A', bpm: 120, clips: [] },
                 { id: 'b', name: 'B', bpm: 120, clips: [] },
                 { id: 'c', name: 'C', bpm: 120, clips: [] },
             ]
             appState.selectedSongIdx = 0
-            cmd.removeArrangement(1)
-            cmd.addArrangement({ name: 'D' })
+            cmd.removeSong(1)
+            cmd.addSong({ name: 'D' })
             expect(appState.songs.map((s) => s.name)).toEqual(['A', 'C', 'D'])
 
             history.undo() // the creation
@@ -1022,8 +1022,8 @@ describe('Functional: Commander operations', () => {
             expect(appState.songs.map((s) => s.name)).toEqual(['A', 'C', 'D'])
         })
 
-        it('removeArrangement reports when there is nothing at that index', () => {
-            expect(cmd.removeArrangement(3)).toBe(false)
+        it('removeSong reports when there is nothing at that index', () => {
+            expect(cmd.removeSong(3)).toBe(false)
         })
 
         it('setSelectedSongIdx clamps to the available arrangements', () => {

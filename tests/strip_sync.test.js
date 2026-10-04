@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { applyTrackToStrip, applyParamsToStrip } from '../src/audio/strip_sync.js'
+import { applyTrackToStrip, applyTrackParamsToStrip } from '../src/audio/strip_sync.js'
 import { makeParam, makeNode } from './helpers/worklet_mocks.js'
 
 // ─── Mock helpers ─────────────────────────────────────────────────────────────
@@ -150,74 +150,74 @@ describe('applyTrackToStrip', () => {
     })
 })
 
-// ─── applyParamsToStrip ───────────────────────────────────────────────────────
+// ─── applyTrackParamsToStrip ───────────────────────────────────────────────────────
 
-describe('applyParamsToStrip', () => {
+describe('applyTrackParamsToStrip', () => {
     it('returns early when strip is null', () => {
-        expect(() => applyParamsToStrip(null, { filterType: 'lowpass' }, 1.0)).not.toThrow()
+        expect(() => applyTrackParamsToStrip(null, { filterType: 'lowpass' }, 1.0)).not.toThrow()
     })
 
     it('returns early when params is null', () => {
-        expect(() => applyParamsToStrip(makeStrip(), null, 1.0)).not.toThrow()
+        expect(() => applyTrackParamsToStrip(makeStrip(), null, 1.0)).not.toThrow()
     })
 
     it('calls updateFilter when filterType is set', () => {
         const strip = makeStrip()
-        applyParamsToStrip(strip, { filterType: 'highpass', filterFreq: 0.3, filterQ: 0.5 }, 1.0)
+        applyTrackParamsToStrip(strip, { filterType: 'highpass', filterFreq: 0.3, filterQ: 0.5 }, 1.0)
         expect(strip.updateFilter).toHaveBeenCalledWith('highpass', 0.3, 0.5)
     })
 
     it('passes freq=undefined to updateFilter when filterFreqLfo is set', () => {
         const strip = makeStrip()
-        applyParamsToStrip(strip, { filterType: 'lowpass', filterFreq: 0.5, filterFreqLfo: { freq: 1 } }, 1.0)
+        applyTrackParamsToStrip(strip, { filterType: 'lowpass', filterFreq: 0.5, filterFreqLfo: { freq: 1 } }, 1.0)
         expect(strip.updateFilter).toHaveBeenCalledWith('lowpass', undefined, undefined)
     })
 
     it('calls updateReverb with 0 when reverbOn=false', () => {
         const strip = makeStrip()
-        applyParamsToStrip(strip, { reverbType: 'room', reverbOn: false, reverbAmount: 0.5 }, 1.0)
+        applyTrackParamsToStrip(strip, { reverbType: 'room', reverbOn: false, reverbAmount: 0.5 }, 1.0)
         expect(strip.updateReverb).toHaveBeenCalledWith('room', 0)
     })
 
     it('calls updateDelay with 0 when delayOn=false', () => {
         const strip = makeStrip()
-        applyParamsToStrip(strip, { delayType: 'tape', delayTime: 1, delayOn: false, delayDepth: 0.3 }, 1.0)
+        applyTrackParamsToStrip(strip, { delayType: 'tape', delayTime: 1, delayOn: false, delayDepth: 0.3 }, 1.0)
         expect(strip.updateDelay).toHaveBeenCalledWith('tape', 1, 0)
     })
 
     it('calls updateSaturation with 0 when sat=false', () => {
         const strip = makeStrip()
-        applyParamsToStrip(strip, { saturationType: 'soft', sat: false, saturationAmount: 0.5 }, 1.0)
+        applyTrackParamsToStrip(strip, { saturationType: 'soft', sat: false, saturationAmount: 0.5 }, 1.0)
         expect(strip.updateSaturation).toHaveBeenCalledWith('soft', 0)
     })
 
     it('sets velocity on strip.output.gain', () => {
         const strip = makeStrip()
-        applyParamsToStrip(strip, { velocity: 0.7 }, 2.0)
+        applyTrackParamsToStrip(strip, { velocity: 0.7 }, 2.0)
         expect(strip.output.gain.setTargetAtTime).toHaveBeenCalledWith(0.7, 2.0, expect.any(Number))
     })
 
     it('sets pan on strip.pan.pan', () => {
         const strip = makeStrip()
-        applyParamsToStrip(strip, { pan: -0.3 }, 2.0)
+        applyTrackParamsToStrip(strip, { pan: -0.3 }, 2.0)
         expect(strip.pan.pan.setTargetAtTime).toHaveBeenCalledWith(-0.3, 2.0, expect.any(Number))
     })
 
     it('mute=true forces gain to 0', () => {
         const strip = makeStrip()
-        applyParamsToStrip(strip, { velocity: 0.8, mute: true }, 1.0)
+        applyTrackParamsToStrip(strip, { velocity: 0.8, mute: true }, 1.0)
         expect(strip.output.gain.setTargetAtTime).toHaveBeenLastCalledWith(0, 1.0, expect.any(Number))
     })
 
     it('mute=false restores gain to velocity value', () => {
         const strip = makeStrip()
-        applyParamsToStrip(strip, { velocity: 0.6, mute: false }, 1.0)
+        applyTrackParamsToStrip(strip, { velocity: 0.6, mute: false }, 1.0)
         expect(strip.output.gain.setTargetAtTime).toHaveBeenLastCalledWith(0.6, 1.0, expect.any(Number))
     })
 
     it('mute=false without velocity restores gain to 1.0', () => {
         const strip = makeStrip()
-        applyParamsToStrip(strip, { mute: false }, 1.0)
+        applyTrackParamsToStrip(strip, { mute: false }, 1.0)
         expect(strip.output.gain.setTargetAtTime).toHaveBeenLastCalledWith(1.0, 1.0, expect.any(Number))
     })
 })

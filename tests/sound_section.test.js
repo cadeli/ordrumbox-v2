@@ -31,12 +31,15 @@ function makeMockEditor(overrides = {}) {
         },
         soundRegistry: {
             sounds: {
-                'kick_1.wav': { url: 'kick_1.wav', key: 'KICK', kit_name: '808', display_name: 'Kick' },
-                'snare_1.wav': { url: 'snare_1.wav', key: 'SNARE', kit_name: '808', display_name: 'Snare' },
+                'kick_1.wav': { url: 'kick_1.wav', key: 'KICK', kitName: '808', display_name: 'Kick' },
+                'snare_1.wav': { url: 'snare_1.wav', key: 'SNARE', kitName: '808', display_name: 'Snare' },
             },
             drumkitList: [
                 {
                     name: '808',
+                    // no kitName here on purpose: getAllKitSamples() falls back to
+                    // the kit it iterates, which is the path real entries take now
+                    // that they carry kitName themselves
                     instruments: [
                         { key: 'KICK', url: 'kick_1.wav', display_name: 'Kick' },
                         { key: 'SNARE', url: 'snare_1.wav', display_name: 'Snare' },
@@ -179,7 +182,7 @@ describe('SoundSection', () => {
             editor.soundRegistry.sounds['trap_kick.wav'] = {
                 url: 'trap_kick.wav',
                 key: 'KICK',
-                kit_name: 'TRAP',
+                kitName: 'TRAP',
                 display_name: 'Trap Kick',
             }
             section = new SoundSection(editor)
@@ -479,7 +482,7 @@ describe('SoundSection', () => {
             editor.soundRegistry.sounds['trap_kick.wav'] = {
                 url: 'trap_kick.wav',
                 key: 'KICK',
-                kit_name: 'TRAP',
+                kitName: 'TRAP',
                 display_name: 'Trap Kick',
             }
             editor.appState.selectedDrumkitIdx = 1
@@ -499,13 +502,13 @@ describe('SoundSection', () => {
             editor.soundRegistry.sounds['z_kick.wav'] = {
                 url: 'z_kick.wav',
                 key: 'KICK',
-                kit_name: 'ZOOM',
+                kitName: 'ZOOM',
                 display_name: 'Z Kick',
             }
             editor.soundRegistry.sounds['a_kick.wav'] = {
                 url: 'a_kick.wav',
                 key: 'KICK',
-                kit_name: 'ALPHA',
+                kitName: 'ALPHA',
                 display_name: 'A Kick',
             }
             editor.appState.selectedDrumkitIdx = 0
@@ -530,13 +533,13 @@ describe('SoundSection', () => {
             editor.soundRegistry.sounds['b_kick.wav'] = {
                 url: 'b_kick.wav',
                 key: 'KICK',
-                kit_name: '808',
+                kitName: '808',
                 display_name: 'B Kick',
             }
             editor.soundRegistry.sounds['a_kick.wav'] = {
                 url: 'a_kick.wav',
                 key: 'KICK',
-                kit_name: '808',
+                kitName: '808',
                 display_name: 'A Kick',
             }
             section = new SoundSection(editor)
@@ -572,7 +575,7 @@ describe('SoundSection', () => {
             editor.soundRegistry.sounds['trap_snare.wav'] = {
                 url: 'trap_snare.wav',
                 key: 'SNARE',
-                kit_name: 'TRAP',
+                kitName: 'TRAP',
                 display_name: 'Trap Snare',
             }
             section = new SoundSection(editor)
@@ -633,6 +636,7 @@ describe('SoundSection', () => {
         it('returns kit/name for sample path', () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
+            // used to be just 'Kick': the kit came from `kit_name` while the UI read kitName
             expect(section.getSoundInfo()).toBe('808/Kick')
         })
 
@@ -642,9 +646,9 @@ describe('SoundSection', () => {
             expect(section.getSoundInfo()).toBeNull()
         })
 
-        it('returns just name when kit_name is empty', () => {
+        it('returns just name when kitName is empty', () => {
             const editor = makeMockEditor()
-            editor.soundRegistry.sounds['kick_1.wav'].kit_name = ''
+            editor.soundRegistry.sounds['kick_1.wav'].kitName = ''
             section = new SoundSection(editor)
             expect(section.getSoundInfo()).toBe('Kick')
         })

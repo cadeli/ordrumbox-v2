@@ -35,7 +35,7 @@ export default class AudioImportService {
             const buffer = await audioCtx.decodeAudioData(rawBuffer)
 
             soundRegistry.sounds[fileName] = {
-                kit_name: kitName,
+                kitName: kitName,
                 url: fileName,
                 key,
                 index: Object.keys(soundRegistry.sounds).length + 1,

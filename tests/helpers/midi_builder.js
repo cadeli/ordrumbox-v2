@@ -1,7 +1,7 @@
 /**
  * Synthetic MIDI binary builder for tests.
  *
- * Constructs valid Standard MIDI File (SMF) byte arrays programmatically,
+ * Constructs valid Standard MIDI File (SMF) byte arrays programatically,
  * for testing the MIDI import pipeline (MidiImportService, parseMidi, etc.).
  *
  * Usage:

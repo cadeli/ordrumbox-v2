@@ -296,20 +296,35 @@ export default class Utils {
         return keys[randomIdx]
     }
 
-    static TRACK_NAME_TO_INDEX = {
-        KICK: 0,
-        SNARE: 1,
-        TOM: 2,
-        CLAP: 3,
-        COWBELL: 4,
-        CHH: 5,
-        OHH: 6,
-        CRASH: 7,
+    /**
+     * The drum taxonomy, one row per instrument: where it sits in the stereo
+     * field, and which coarse type it belongs to.
+     *
+     * These used to be three independent vocabularies — TRACK_NAME_TO_INDEX
+     * (names), DRUM_TYPES (types) and detectTrackType() (substring rules) — so
+     * "CHH" was index 5 for panning but type HAT everywhere else, and nothing in
+     * the code said so. Both readers now come from this table.
+     */
+    static TRACK_KINDS = {
+        KICK: { panIndex: 0, type: 'KICK' },
+        SNARE: { panIndex: 1, type: 'SNARE' },
+        TOM: { panIndex: 2, type: 'PERC' },
+        CLAP: { panIndex: 3, type: 'CLAP' },
+        COWBELL: { panIndex: 4, type: 'COWBELL' },
+        CHH: { panIndex: 5, type: 'HAT' },
+        OHH: { panIndex: 6, type: 'HAT' },
+        CRASH: { panIndex: 7, type: 'PERC' },
     }
 
+    static PAN_MAP = [0, 0.3, 0.5, -0.4, 0.4, -0.3, -0.2, 1]
+
+    /** Coarse types a track can belong to (everything but the melodic ones). */
     static DRUM_TYPES = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
 
-    static PAN_MAP = [0, 0.3, 0.5, -0.4, 0.4, -0.3, -0.2, 1]
+    /** name → pan slot, derived from TRACK_KINDS. */
+    static TRACK_NAME_TO_INDEX = Object.fromEntries(
+        Object.entries(Utils.TRACK_KINDS).map(([name, kind]) => [name, kind.panIndex]),
+    )
 
     static computeTrackPan(trackTypeIndex) {
         return Utils.PAN_MAP[trackTypeIndex] ?? 0
@@ -324,8 +339,17 @@ export default class Utils {
         return idx !== undefined ? Utils.computeTrackPan(idx) : 0
     }
 
+    /**
+     * Coarse type of a track. The TRACK_KINDS table answers for the canonical
+     * names; anything else ("808 KICK", "SYNTH BASS") goes through the substring
+     * rules below, which is why this cannot be a plain lookup.
+     * @param {string} name
+     * @returns {string}
+     */
     static detectTrackType = (name) => {
         const n = name.toUpperCase()
+        const exact = Utils.TRACK_KINDS[n]
+        if (exact) return exact.type
         if (n.includes('KICK') || n.includes('BD')) return 'KICK'
         if (n.includes('SNARE') || n.includes('SD')) return 'SNARE'
         if (n.includes('OHH') || n.includes('HAT') || n.includes('CHH')) return 'HAT'

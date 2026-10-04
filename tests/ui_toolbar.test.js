@@ -32,7 +32,7 @@ describe('Toolbar UI Layout', () => {
                 appState.currentPage = 0
             }),
         }
-        serviceRegistry.patterns = {
+        serviceRegistry.flatNotes = {
             applyFlatNotes: vi.fn(),
         }
 

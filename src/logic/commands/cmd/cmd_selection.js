@@ -35,7 +35,7 @@ export default class SelectionCommands {
             serviceRegistry.seq.setBpm(selectedPattern.bpm)
             const autoAssign = await getAutoAssignService()
             autoAssign.autoAssignSounds(selectedPattern)
-            serviceRegistry.patterns.applyFlatNotes(selectedPattern)
+            serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
             serviceRegistry.audioEngine?.invalidateCache()
         } catch (err) {
             logger.error('Commander', 'cmd::autoAssignSoundsForNewDrumkit failed', err)
@@ -63,7 +63,7 @@ export default class SelectionCommands {
                 // finishing this one would re-assign sounds on the pattern they
                 // just left and then announce "pattern changed" for it.
                 if (appState.selectedPatternIdx !== target) return
-                serviceRegistry.patterns.applyFlatNotes(selectedPattern)
+                serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
                 // Explicit sound assignments can point to samples of another
                 // drumkit than the selected one — load them on demand so the
                 // pattern is audible right after a switch or a reload.

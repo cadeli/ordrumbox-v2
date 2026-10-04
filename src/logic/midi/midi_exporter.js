@@ -112,7 +112,7 @@ function assignChannels(instrumentsManager, trackNames, soundRegistry = null) {
             const isDrum = instrument.drum === true
             const channel = isDrum ? DRUM_CHANNEL : nextMelodicChannel++
             const rawKey = mapping.key != null ? parseInt(mapping.key, 10) : NaN
-            const rawProg = mapping.programm != null ? parseInt(mapping.programm, 10) : NaN
+            const rawProg = mapping.program != null ? parseInt(mapping.program, 10) : NaN
             const program = Number.isFinite(rawProg) ? rawProg : null
 
             let midiNote = Number.isFinite(rawKey) ? rawKey : C3_MIDI_NOTE

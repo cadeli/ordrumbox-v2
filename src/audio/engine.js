@@ -6,7 +6,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { instrumentsManager } from '../logic/services/instrument_manager/index.js'
 import Utils from '../core/utils.js'
-import { applyParamsToStrip } from './strip_sync.js'
+import { applyTrackParamsToStrip } from './strip_sync.js'
 import { logger, valueOrFallback } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
 import { pushStepLfo } from './step_lfo.js'
@@ -293,10 +293,15 @@ export default class AudioEngine {
         }
     }
 
-    updateStrip = async (trackName, params) => {
+    /**
+     * @param {string} trackName
+     * @param {object} track the TRACK (not a params bag): absent fields are left
+     *   untouched, which is what distinguishes this from syncTrack
+     */
+    updateStrip = async (trackName, track) => {
         const strip = await this.mixer?.getOrCreateStrip(trackName)
         if (!strip) return
-        applyParamsToStrip(strip, params, this.audioCtx.currentTime)
+        applyTrackParamsToStrip(strip, track, this.audioCtx.currentTime)
     }
 
     syncTrack = async (track) => {
@@ -316,10 +321,16 @@ export default class AudioEngine {
         this.mixer.setBpm(bpm)
     }
 
-    updateGeneratedSounds = (generatedSounds) => {
+    /**
+     * Points the engine at a new generatedSounds map (REPLACES the reference, it
+     * does not merge). Sound.mergeGeneratedSounds merges instead and
+     * re-pushes the playing voices — hence the distinct names.
+     * @param {Record<string, object>} generatedSounds
+     */
+    setGeneratedSounds = (generatedSounds) => {
         this.generatedSounds = generatedSounds
         if (!this.player) return
-        this.player.updateGeneratedSounds(generatedSounds)
+        this.player.setGeneratedSounds(generatedSounds)
     }
 
     // ─── Offline export ─────────────────────────────────────────────────────────

@@ -71,7 +71,7 @@ export default class FxSection {
         const activeTab = String(tabIdx)
         editor.fxTab.setActive(activeTab)
         editor.fxTab.togglePanels(editor.container)
-        editor.container.querySelectorAll('.te-mod-btn').forEach((tab) => {
+        editor.container.querySelectorAll('.te-subtab').forEach((tab) => {
             const tabButton = tab.querySelector('[data-fx-tab]')
             tab.classList.toggle('active', tabButton?.dataset.fxTab === activeTab)
         })
@@ -83,12 +83,12 @@ export default class FxSection {
         const track = editor.track
         if (!track) return ''
 
-        let tabsHtml = '<div class="te-mod-targets">'
+        let tabsHtml = '<div class="te-subtabs">'
         FX_DEFS.forEach((fx, i) => {
             const on = this.isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
             const activeClass = editor.fxTab.isHidden(String(i)) ? '' : ' active'
-            tabsHtml += `<div class="te-mod-btn${activeClass}">
+            tabsHtml += `<div class="te-subtab${activeClass}">
                 <span class="${ledClass}" data-fx-toggle-btn="${fx.key}"></span>
                 <span data-fx-tab="${i}">${fx.label}</span></div>`
         })

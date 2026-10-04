@@ -13,7 +13,7 @@ describe('ServiceRegistry', () => {
     it('constructor sets all defaults to null', () => {
         const reg = new ServiceRegistry()
         expect(reg.cmd).toBeNull()
-        expect(reg.patterns).toBeNull()
+        expect(reg.flatNotes).toBeNull()
         expect(reg.midiManager).toBeNull()
         expect(reg.resourcesLoader).toBeNull()
         expect(reg.seq).toBeNull()
@@ -36,7 +36,7 @@ describe('ServiceRegistry', () => {
     it('all default keys are present', () => {
         const keys = Object.keys(ServiceRegistry.DEFAULTS)
         expect(keys).toContain('cmd')
-        expect(keys).toContain('patterns')
+        expect(keys).toContain('flatNotes')
         expect(keys).toContain('midiManager')
         expect(keys).toContain('resourcesLoader')
         expect(keys).toContain('seq')

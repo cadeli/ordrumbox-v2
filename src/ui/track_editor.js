@@ -120,8 +120,8 @@ export default class TrackEditor extends BasePanel {
             tabs: FX_DEFS.map((fx, i) => ({ id: String(i), label: fx.label })),
             defaultTab: '0',
             css: {
-                bar: 'te-mod-targets',
-                btn: 'te-mod-btn',
+                bar: 'te-subtabs',
+                btn: 'te-subtab',
                 panel: 'fx-tab-panel',
                 hidden: 'fx-tab-panel-hidden',
                 dataAttr: 'fxTab',

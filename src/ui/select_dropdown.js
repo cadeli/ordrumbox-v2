@@ -1,7 +1,7 @@
 // src/ui/select_dropdown.js
 //
 // Themed replacement for the OS-drawn <select> popup. The native control stays
-// in the DOM (and stays programmable: .value, selectOption(), input/change
+// in the DOM (and stays programable: .value, selectOption(), input/change
 // events) — only the popup list is ours, so every dropdown matches the shell.
 //
 // Pointer handling: canceling pointerdown/mousedown on a <select> stops the

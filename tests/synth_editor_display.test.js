@@ -43,7 +43,7 @@ describe('Soft Synth Editor display', () => {
         }
 
         serviceRegistry.audioEngine = {
-            updateGeneratedSounds: vi.fn(),
+            setGeneratedSounds: vi.fn(),
             invalidateCache: vi.fn(),
         }
         serviceRegistry.cmd = { changeTrackSound: vi.fn() }
@@ -142,7 +142,7 @@ describe('Soft Synth Editor display', () => {
     })
 
     it('opens the editor, shows the panel, and hides the track editor', async () => {
-        await trackEditor.synthEditor.openEditor()
+        await trackEditor.synthEditor.showPanel()
 
         const panel = document.getElementById('soft-synth-panel')
         expect(panel.style.display).toBe('flex')
@@ -150,7 +150,7 @@ describe('Soft Synth Editor display', () => {
     })
 
     it('renders the waveform canvas', async () => {
-        await trackEditor.synthEditor.openEditor()
+        await trackEditor.synthEditor.showPanel()
         const canvas = document.querySelector('#soft-synth-panel .ss-waveform')
         expect(canvas).not.toBeNull()
         expect(canvas.tagName).toBe('CANVAS')
@@ -159,13 +159,13 @@ describe('Soft Synth Editor display', () => {
     })
 
     it('renders one group block per draft key', async () => {
-        await trackEditor.synthEditor.openEditor()
+        await trackEditor.synthEditor.showPanel()
         const groups = document.querySelectorAll('#soft-synth-panel .ss-group')
         expect(groups.length).toBeGreaterThanOrEqual(Object.keys(SAMPLE_DRAFT).length)
     })
 
     it('renders an input control for every parameter path', async () => {
-        await trackEditor.synthEditor.openEditor()
+        await trackEditor.synthEditor.showPanel()
         const knobs = document.querySelectorAll('#soft-synth-panel .or-knob')
         const selects = document.querySelectorAll('#soft-synth-panel select')
         const count = knobs.length + selects.length
@@ -182,7 +182,7 @@ describe('Soft Synth Editor display', () => {
     })
 
     it('closes the panel and re-shows the track editor when reverting', async () => {
-        await trackEditor.synthEditor.openEditor()
+        await trackEditor.synthEditor.showPanel()
         const panel = document.getElementById('soft-synth-panel')
         expect(panel.style.display).toBe('flex')
 

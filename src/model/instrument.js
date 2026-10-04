@@ -6,7 +6,10 @@ export default class Instrument {
     constructor(data = {}) {
         this.id = data.id ?? Instrument.NOT_FOUND
         this.drum = data.drum === true
-        this.pan = data.pan ?? '0'
+        // number, like every other pan in the app (track.pan is -1..1); it was the
+        // string '0', so `inst.pan < 0` worked by accident and `inst.pan + 1`
+        // concatenated. Only toString() reads it.
+        this.pan = data.pan ?? 0
         /** Sound-name synonyms (some are regex patterns) that resolve to this
          *  instrument. NOT a display name — the id is the name. */
         this.synonyms = data.synonyms ?? []
@@ -30,10 +33,10 @@ export default class Instrument {
 
 class Midi {
     constructor(data = {}) {
-        this.ch = data.ch ?? '9'
+        this.channel = data.channel ?? 9
         this.name = data.name ?? ''
         this.key = data.key ?? null
-        this.programm = data.programm ?? null
-        this.key_based = data.key_based ?? null
+        this.program = data.program ?? null
+        this.keyBased = data.keyBased ?? null
     }
 }

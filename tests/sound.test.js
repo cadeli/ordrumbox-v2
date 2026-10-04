@@ -338,23 +338,23 @@ describe('Sound', () => {
         expect(strip.updateSaturation).toHaveBeenCalledWith('soft', 0)
     })
 
-    // ── updateGeneratedSounds ─────────────────────────────────────────
+    // ── mergeGeneratedSounds (merge, unlike Player/Engine.setGeneratedSounds) ──
 
-    it('updateGeneratedSounds merges new sounds into generatedSounds', () => {
-        sound.updateGeneratedSounds({ BASS2: { vco1: { wave: 'square' } } })
+    it('mergeGeneratedSounds merges new sounds into generatedSounds', () => {
+        sound.mergeGeneratedSounds({ BASS2: { vco1: { wave: 'square' } } })
         expect(sound.generatedSounds).toHaveProperty('BASS1')
         expect(sound.generatedSounds).toHaveProperty('BASS2')
     })
-    it('updateGeneratedSounds calls updateGeneratedSound on active synth voices', () => {
+    it('mergeGeneratedSounds calls updateGeneratedSound on active synth voices', () => {
         const voice = makeVoice()
         sound.activeSynthVoices.add(voice)
-        sound.updateGeneratedSounds({ BASS1: { masterVolume: 0.5 } })
+        sound.mergeGeneratedSounds({ BASS1: { masterVolume: 0.5 } })
         expect(voice.updateGeneratedSound).toHaveBeenCalledWith({ masterVolume: 0.5 }, expect.any(Number))
     })
-    it('updateGeneratedSounds skips voice whose soundKey is not in the update', () => {
+    it('mergeGeneratedSounds skips voice whose soundKey is not in the update', () => {
         const voice = { ...makeVoice(), soundKey: 'DRUM1' }
         sound.activeSynthVoices.add(voice)
-        sound.updateGeneratedSounds({ BASS1: { masterVolume: 0.3 } })
+        sound.mergeGeneratedSounds({ BASS1: { masterVolume: 0.3 } })
         expect(voice.updateGeneratedSound).not.toHaveBeenCalled()
     })
 

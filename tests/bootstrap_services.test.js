@@ -20,8 +20,8 @@ describe('bootstrap/services', () => {
         expect(typeof serviceRegistry.resourcesLoader.loadSong).toBe('function')
         expect(serviceRegistry.seq).toBeTruthy()
         expect(typeof serviceRegistry.seq.toggleStartStop).toBe('function')
-        expect(serviceRegistry.patterns).toBeTruthy()
-        expect(typeof serviceRegistry.patterns.applyFlatNotes).toBe('function')
+        expect(serviceRegistry.flatNotes).toBeTruthy()
+        expect(typeof serviceRegistry.flatNotes.applyFlatNotes).toBe('function')
         expect(serviceRegistry.history).toBeTruthy()
     })
 

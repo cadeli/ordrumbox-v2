@@ -133,10 +133,10 @@ describe('P2 — concurrency regressions', () => {
             const cmd2 = new Commander()
             serviceRegistry.cmd = cmd2
             cmd2.addPattern('only')
-            // serviceRegistry.patterns is a core service: without it the switch
+            // serviceRegistry.flatNotes is a core service: without it the switch
             // aborts and rolls the index back, so the clamp went untested.
             const applied = []
-            serviceRegistry.patterns = {
+            serviceRegistry.flatNotes = {
                 applyFlatNotes(p) {
                     applied.push(p)
                 },
@@ -157,7 +157,7 @@ describe('P2 — concurrency regressions', () => {
             cmd2.addPattern('A')
             cmd2.addPattern('B')
             appState.selectedPatternIdx = 1
-            serviceRegistry.patterns = {
+            serviceRegistry.flatNotes = {
                 applyFlatNotes() {
                     throw new Error('apply failed')
                 },
@@ -175,7 +175,7 @@ describe('P2 — concurrency regressions', () => {
             cmd2.addPattern('only')
             serviceRegistry.seq = null
             let applied = 0
-            serviceRegistry.patterns = {
+            serviceRegistry.flatNotes = {
                 applyFlatNotes() {
                     applied += 1
                 },

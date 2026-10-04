@@ -3,7 +3,7 @@ export const INSTRUMENTS_DATA = {
     instruments: [
         {
             id: 'BASS',
-            midi: [{ name: 'Acoustic Bass', key_based: false }],
+            midi: [{ name: 'Acoustic Bass', keyBased: false }],
             subst: { id1: 'HI_TOM' },
             synonyms: ['.*BASS.*'],
             drum: false,
@@ -11,7 +11,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'BONGOS',
-            midi: [{ name: 'Hi Bongo', key_based: true }],
+            midi: [{ name: 'Hi Bongo', keyBased: true }],
             subst: { id1: 'HI_CONGAS', id2: 'CONGAS', id3: 'RIMSHOT' },
             synonyms: ['.*BNG.*', '.*BONG.*'],
             drum: true,
@@ -19,7 +19,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'BRASS',
-            midi: [{ name: 'Synth Brass 1', key_based: false }],
+            midi: [{ name: 'Synth Brass 1', keyBased: false }],
             subst: { id1: 'SYNTH', id2: 'MELO', id3: 'ORGAN' },
             synonyms: ['.*BRASS.*', '.*TRUMPET.*', '.*TROMBONE.*', '.*TUBA.*', '.*FRENCH.*HORN.*', '.*HORN.*'],
             drum: false,
@@ -27,7 +27,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'CABA',
-            midi: [{ name: 'Cabasa', key_based: true }],
+            midi: [{ name: 'Cabasa', keyBased: true }],
             subst: { id1: 'HI_CONGAS' },
             synonyms: ['CABASA'],
             drum: true,
@@ -35,7 +35,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'CASTENET',
-            midi: [{ name: 'Synth Drum', key_based: false }],
+            midi: [{ name: 'Synth Drum', keyBased: false }],
             subst: { id1: 'CLAP' },
             synonyms: ['CAST'],
             drum: true,
@@ -43,7 +43,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'CLAVES',
-            midi: [{ name: 'Claves', key_based: true }],
+            midi: [{ name: 'Claves', keyBased: true }],
             subst: { id1: 'RIMSHOT', id2: 'CLAP' },
             synonyms: ['.*CLAVE.*', '.*CLAV.*'],
             drum: true,
@@ -51,7 +51,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'OHH',
-            midi: [{ name: 'Open Hi-Hat', key_based: true }],
+            midi: [{ name: 'Open Hi-Hat', keyBased: true }],
             subst: { id1: 'CHH' },
             synonyms: ['.*OHAT.*', '.*OHH.*', '.*OHT.*', '.*HHO.*', '.*OPHAT.*', 'OH'],
             drum: true,
@@ -59,7 +59,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'CHH',
-            midi: [{ name: 'Closed Hi-Hat', key_based: true }],
+            midi: [{ name: 'Closed Hi-Hat', keyBased: true }],
             subst: { id1: 'SNARE' },
             synonyms: ['.*HAT.*', '.*CHT.*', '.*HHC.*', 'CHAT', '.*HH.*', '.*CHH.*', 'CH'],
             drum: true,
@@ -67,7 +67,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'CHHK',
-            midi: [{ name: 'Closed Hi-Hat', key_based: true }],
+            midi: [{ name: 'Closed Hi-Hat', keyBased: true }],
             subst: { id1: 'CHH' },
             synonyms: ['PEDAL', 'CPEDAL'],
             drum: true,
@@ -75,7 +75,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'CHI_CONGAS',
-            midi: [{ name: 'Mute Hi Conga', key_based: true }],
+            midi: [{ name: 'Mute Hi Conga', keyBased: true }],
             subst: { id1: 'HI_CONGAS' },
             synonyms: ['.*CLOSEDCONGA.*'],
             drum: true,
@@ -83,7 +83,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'CLAP',
-            midi: [{ name: 'Hand Clap', key_based: true }],
+            midi: [{ name: 'Hand Clap', keyBased: true }],
             subst: { id1: 'SNARE' },
             synonyms: ['.*CLAP.*', '.*CLP.*', 'CP', '.*HAND.*', '.*SNAP.*'],
             drum: true,
@@ -91,7 +91,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'CONGAS',
-            midi: [{ name: 'Open Hi Conga', key_based: true }],
+            midi: [{ name: 'Open Hi Conga', keyBased: true }],
             subst: { id1: 'HI_CONGAS', id2: 'HI_TOM', id3: 'TOM' },
             synonyms: ['.*CON.*', '.*CNG.*', '.*PER.*', 'MC'],
             drum: true,
@@ -99,7 +99,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'COWBELL',
-            midi: [{ name: 'Cowbell', key_based: true }],
+            midi: [{ name: 'Cowbell', keyBased: true }],
             subst: { id1: 'RIDE' },
             synonyms: ['CB', '.*COW.*', '.*AGOGO.*', '.*BELL.*'],
             drum: true,
@@ -107,7 +107,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'CRASH',
-            midi: [{ name: 'Crash Cymbal 1', key_based: true }],
+            midi: [{ name: 'Crash Cymbal 1', keyBased: true }],
             subst: { id1: 'CYM' },
             synonyms: ['.*CYMBAL.*', '.*CYM.*', 'CY', '.*CRASH.*', '.*PLASH.*', '.*CHINA.*', '.*CHOKE.*'],
             drum: true,
@@ -115,7 +115,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'CROMAPERC',
-            midi: [{ name: 'Marimba', key_based: false }],
+            midi: [{ name: 'Marimba', keyBased: false }],
             subst: { id1: 'PIANO', id2: 'MELO', id3: 'HI_TOM' },
             synonyms: [
                 '.*CROMA.*',
@@ -136,7 +136,7 @@ export const INSTRUMENTS_DATA = {
         { id: 'CYM', drum: true, pan: '0', subst: { id1: 'CRASH' } },
         {
             id: 'ENSEMBLE',
-            midi: [{ name: 'String Ensemble 1', key_based: false }],
+            midi: [{ name: 'String Ensemble 1', keyBased: false }],
             subst: { id1: 'BRASS', id2: 'PIANO', id3: 'MELO' },
             synonyms: ['.*ENSEM.*', '.*CHOIR.*', '.*VOIC.*', '.*ORCHESTRA.*HIT.*', '.*ORCH.*HIT.*'],
             drum: false,
@@ -144,7 +144,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'ETHNIC',
-            midi: [{ name: 'Sitar', key_based: false }],
+            midi: [{ name: 'Sitar', keyBased: false }],
             subst: { id1: 'BASS', id2: 'RIMSHOT', id3: 'HI_TOM' },
             synonyms: [
                 '.*ETHN.*',
@@ -162,7 +162,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'GUITAR',
-            midi: [{ name: 'Distortion Guitar', key_based: false }],
+            midi: [{ name: 'Distortion Guitar', keyBased: false }],
             subst: { id1: 'BASS' },
             synonyms: ['.*GUITAR.*', '.*GTR.*', 'E.GUIT'],
             drum: false,
@@ -171,8 +171,8 @@ export const INSTRUMENTS_DATA = {
         {
             id: 'GUIRO',
             midi: [
-                { name: 'Short Guiro', key_based: true },
-                { name: 'Long Guiro', key_based: true },
+                { name: 'Short Guiro', keyBased: true },
+                { name: 'Long Guiro', keyBased: true },
             ],
             subst: { id1: 'MARACAS', id2: 'SHAKER' },
             synonyms: ['.*GUIRO.*', '.*GURO.*'],
@@ -182,8 +182,8 @@ export const INSTRUMENTS_DATA = {
         {
             id: 'CUICA',
             midi: [
-                { name: 'Mute Cuica', key_based: true },
-                { name: 'Open Cuica', key_based: true },
+                { name: 'Mute Cuica', keyBased: true },
+                { name: 'Open Cuica', keyBased: true },
             ],
             subst: { id1: 'CONGAS', id2: 'HI_TOM' },
             synonyms: ['.*CUICA.*', '.*CUCA.*'],
@@ -192,7 +192,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'HI_BONGOS',
-            midi: [{ name: 'Hi Bongo', key_based: true }],
+            midi: [{ name: 'Hi Bongo', keyBased: true }],
             subst: { id1: 'HI_CONGAS', id2: 'CONGAS', id3: 'RIMSHOT' },
             synonyms: ['.*HBONGO.*', '.*HIGH.*BONGO.*'],
             drum: true,
@@ -200,7 +200,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'HI_CONGAS',
-            midi: [{ name: 'Open Hi Conga', key_based: true }],
+            midi: [{ name: 'Open Hi Conga', keyBased: true }],
             subst: { id1: 'CONGAS', id2: 'HI_TOM', id3: 'TOM' },
             synonyms: ['.*HCONGA.*', '.*CONGA.*HIGH.*', 'HC'],
             drum: true,
@@ -208,7 +208,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'HI_TIMBAL',
-            midi: [{ name: 'High Timbale', key_based: true }],
+            midi: [{ name: 'High Timbale', keyBased: true }],
             subst: { id1: 'SNARE' },
             synonyms: ['.*HI_TIMBAL.*', '.*HIGH.*TIMBAL.*'],
             drum: true,
@@ -216,7 +216,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'HI_TOM',
-            midi: [{ name: 'High Tom', key_based: true }],
+            midi: [{ name: 'High Tom', keyBased: true }],
             subst: { id1: 'TOM' },
             synonyms: ['HT', '.*HITOM.*', '.*HTOM.*', '.*TOMH.*', '.*TOM.*HI.*', '.*HI_TOM.*'],
             drum: true,
@@ -224,7 +224,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'HI_WOODBLOCK',
-            midi: [{ name: 'Hi Wood Block', key_based: true }],
+            midi: [{ name: 'Hi Wood Block', keyBased: true }],
             subst: { id1: 'LO_WOODBLOCK', id2: 'RIMSHOT' },
             synonyms: ['HWOOD'],
             drum: true,
@@ -232,7 +232,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'HIT',
-            midi: [{ name: 'Synth Drum', key_based: false }],
+            midi: [{ name: 'Synth Drum', keyBased: false }],
             subst: { id1: 'SNARE' },
             synonyms: ['.*BEEP.*', '.*BIP.*', '.*ZAP.*', '.*POP.*', '.*SHOT.*', '.*LASER.*', '.*GUN.*'],
             drum: true,
@@ -240,7 +240,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'KICK',
-            midi: [{ name: 'Bass Drum 1', key_based: true }],
+            midi: [{ name: 'Bass Drum 1', keyBased: true }],
             subst: { id1: 'KICK' },
             synonyms: ['.*KICK.*', '.*KCK.*', '.*KIK.*', 'KD', '.*BD.*', 'ACC.*BD', 'D.*BASS', 'BASS.*DRUM', 'SINUS'],
             drum: true,
@@ -248,7 +248,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'LO_BONGOS',
-            midi: [{ name: 'Low Bongo', key_based: true }],
+            midi: [{ name: 'Low Bongo', keyBased: true }],
             subst: { id1: 'SNARE' },
             synonyms: ['.*LBONGO.*'],
             drum: true,
@@ -256,7 +256,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'LO_CONGAS',
-            midi: [{ name: 'Low Conga', key_based: true }],
+            midi: [{ name: 'Low Conga', keyBased: true }],
             subst: { id1: 'CONGAS', id2: 'LO_TOM', id3: 'TOM' },
             synonyms: ['LCONGA.*', '.*CONGA.*LOW.*', 'LC'],
             drum: true,
@@ -264,7 +264,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'LO_TIMBAL',
-            midi: [{ name: 'Low Timbale', key_based: true }],
+            midi: [{ name: 'Low Timbale', keyBased: true }],
             subst: { id1: 'SNARE' },
             synonyms: ['.*LO_TIMBAL.*', '.*LOW.*TIMBAL.*'],
             drum: true,
@@ -273,8 +273,8 @@ export const INSTRUMENTS_DATA = {
         {
             id: 'LO_TOM',
             midi: [
-                { name: 'Low Tom', key_based: true },
-                { name: 'Low Floor Tom', key_based: true },
+                { name: 'Low Tom', keyBased: true },
+                { name: 'Low Floor Tom', keyBased: true },
             ],
             subst: { id1: 'TOM' },
             synonyms: ['.*LTOM.*', 'LT.*', '.*LOWTOM.*', '.*TOMLOW.*', '.*TOM.*LO.*', '.*LO_TOM.*'],
@@ -283,7 +283,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'LO_WOODBLOCK',
-            midi: [{ name: 'Low Wood Block', key_based: true }],
+            midi: [{ name: 'Low Wood Block', keyBased: true }],
             subst: { id1: 'RIMSHOT' },
             synonyms: ['WOOD', 'WOOD BLOCK', 'BLOCK'],
             drum: true,
@@ -291,7 +291,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'LONGBRASS',
-            midi: [{ name: 'Brass Section', key_based: false }],
+            midi: [{ name: 'Brass Section', keyBased: false }],
             subst: { id1: 'SHORTBRASS', id2: 'BRASS', id3: 'MELO' },
             synonyms: ['.*LONG.*BRASS.*'],
             drum: false,
@@ -299,14 +299,14 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'LOOP',
-            midi: [{ name: 'Applause', key_based: true }],
+            midi: [{ name: 'Applause', keyBased: true }],
             synonyms: ['.*LOOP.*'],
             drum: false,
             pan: '0',
         },
         {
             id: 'MARACAS',
-            midi: [{ name: 'Maracas', key_based: true }],
+            midi: [{ name: 'Maracas', keyBased: true }],
             subst: { id1: 'CHH' },
             synonyms: ['MARA', 'MA', '.*MARACAS?.*', '.*MARACA.*'],
             drum: true,
@@ -314,7 +314,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'MELO',
-            midi: [{ name: 'Percussive Organ', key_based: false }],
+            midi: [{ name: 'Percussive Organ', keyBased: false }],
             subst: { id1: 'PIANO', id2: 'SYNTH', id3: 'TOM' },
             synonyms: ['.*MELO.*', '.*MELODIC.*'],
             drum: false,
@@ -322,7 +322,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'MTOM',
-            midi: [{ name: 'Hi-Mid Tom', key_based: true }],
+            midi: [{ name: 'Hi-Mid Tom', keyBased: true }],
             subst: { id1: 'TOM' },
             synonyms: ['MTOM.*', 'MT', 'DRUM'],
             drum: true,
@@ -330,7 +330,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'OHI_CONGAS',
-            midi: [{ name: 'Open Hi Conga', key_based: true }],
+            midi: [{ name: 'Open Hi Conga', keyBased: true }],
             subst: { id1: 'HI_CONGAS' },
             synonyms: ['.*OHCONGA.*', '.*OPEN.*CONGA.*'],
             drum: true,
@@ -338,7 +338,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'ORGAN',
-            midi: [{ name: 'Drawbar Organ', key_based: false }],
+            midi: [{ name: 'Drawbar Organ', keyBased: false }],
             subst: { id1: 'PIANO', id2: 'MELO', id3: 'HI_TOM' },
             synonyms: ['.*ORGAN.*', '.*ACCORDION.*', '.*HARMONICA.*', '.*TANGO.*'],
             drum: false,
@@ -347,21 +347,21 @@ export const INSTRUMENTS_DATA = {
         {
             id: 'PERC',
             midi: [
-                { name: 'High Floor Tom', key_based: true },
-                { name: 'High Agogo', key_based: true },
-                { name: 'Low Agogo', key_based: true },
-                { name: 'Low-Mid Tom', key_based: true },
-                { name: 'Long Whistle', key_based: true },
-                { name: 'Short Guiro', key_based: true },
-                { name: 'Long Guiro', key_based: true },
-                { name: 'Claves', key_based: true },
-                { name: 'Chinese Cymbal', key_based: true },
-                { name: 'Hi Wood Block', key_based: true },
-                { name: 'Ride Bell', key_based: true },
-                { name: 'Mute Cuica', key_based: true },
-                { name: 'Splash Cymbal', key_based: true },
-                { name: 'Open Cuica', key_based: true },
-                { name: 'Vibraslap', key_based: true },
+                { name: 'High Floor Tom', keyBased: true },
+                { name: 'High Agogo', keyBased: true },
+                { name: 'Low Agogo', keyBased: true },
+                { name: 'Low-Mid Tom', keyBased: true },
+                { name: 'Long Whistle', keyBased: true },
+                { name: 'Short Guiro', keyBased: true },
+                { name: 'Long Guiro', keyBased: true },
+                { name: 'Claves', keyBased: true },
+                { name: 'Chinese Cymbal', keyBased: true },
+                { name: 'Hi Wood Block', keyBased: true },
+                { name: 'Ride Bell', keyBased: true },
+                { name: 'Mute Cuica', keyBased: true },
+                { name: 'Splash Cymbal', keyBased: true },
+                { name: 'Open Cuica', keyBased: true },
+                { name: 'Vibraslap', keyBased: true },
             ],
             subst: { id1: 'CONGAS' },
             synonyms: ['.*UNKNOWN.*'],
@@ -370,7 +370,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'PERCUSSIVE',
-            midi: [{ name: 'Steel Drums', key_based: false }],
+            midi: [{ name: 'Steel Drums', keyBased: false }],
             subst: { id1: 'HI_CONGAS', id2: 'HI_TOM', id3: 'RIMSHOT' },
             synonyms: ['.*PERCUSS.*', '.*STEEL.*DRUM.*', '.*TAIKO.*', '.*MELODIC.*TOM.*', '.*SYNTH.*DRUM.*'],
             drum: true,
@@ -378,7 +378,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'PIANO',
-            midi: [{ name: 'Acoustic Grand Piano', key_based: false }],
+            midi: [{ name: 'Acoustic Grand Piano', keyBased: false }],
             subst: { id1: 'MELO', id2: 'MTOM', id3: 'HI_TOM' },
             synonyms: ['RHODE', '.*PIANO.*', '.*GRAND.*', '.*HONKY.*', '.*HARPSICHORD.*', '.*CLAVINET.*'],
             drum: false,
@@ -386,7 +386,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'PIPE',
-            midi: [{ name: 'Flute', key_based: false }],
+            midi: [{ name: 'Flute', keyBased: false }],
             subst: { id1: 'PIANO', id2: 'MELO', id3: 'HI_TOM' },
             synonyms: [
                 '.*PIPE.*',
@@ -404,7 +404,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'RAZOR',
-            midi: [{ name: 'Gunshot', key_based: true }],
+            midi: [{ name: 'Gunshot', keyBased: true }],
             subst: { id1: 'HIT' },
             synonyms: ['RAZ', '.*RAZOR.*'],
             drum: true,
@@ -412,7 +412,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'REED',
-            midi: [{ name: 'Oboe', key_based: false }],
+            midi: [{ name: 'Oboe', keyBased: false }],
             subst: { id1: 'PIANO', id2: 'MELO', id3: 'HI_TOM' },
             synonyms: ['.*REED.*', '.*OBOE.*', '.*CLARINET.*', '.*BASSOON.*', '.*ENGLISH.*HORN.*'],
             drum: false,
@@ -420,7 +420,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'RIDE',
-            midi: [{ name: 'Ride Cymbal 1', key_based: true }],
+            midi: [{ name: 'Ride Cymbal 1', keyBased: true }],
             subst: { id1: 'CYM', id2: 'CHH' },
             synonyms: ['.*RID.*'],
             drum: true,
@@ -428,7 +428,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'RIMSHOT',
-            midi: [{ name: 'Side Stick', key_based: true }],
+            midi: [{ name: 'Side Stick', keyBased: true }],
             subst: { id1: 'SNARE' },
             synonyms: [
                 '.*RIM.*',
@@ -449,7 +449,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'SAX',
-            midi: [{ name: 'Soprano Sax', key_based: false }],
+            midi: [{ name: 'Soprano Sax', keyBased: false }],
             subst: { id1: 'PIANO' },
             synonyms: ['saxophone', 'saxo', '.*SAX.*'],
             drum: false,
@@ -457,7 +457,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'SCRATCH',
-            midi: [{ name: 'Reverse Cymbal', key_based: false }],
+            midi: [{ name: 'Reverse Cymbal', keyBased: false }],
             subst: { id1: 'SOUNDEFFECT', id2: 'HIT', id3: 'CRASH' },
             synonyms: ['.*SCRATCH.*'],
             drum: true,
@@ -465,7 +465,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'SHAKER',
-            midi: [{ name: 'Maracas', key_based: true }],
+            midi: [{ name: 'Maracas', keyBased: true }],
             subst: { id1: 'MARACAS', id2: 'RIMSHOT', id3: 'COWBELL' },
             synonyms: ['.*SHAKE.*', '.*SHACK.*'],
             drum: true,
@@ -473,7 +473,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'SHORTBRASS',
-            midi: [{ name: 'Synth Brass 2', key_based: false }],
+            midi: [{ name: 'Synth Brass 2', keyBased: false }],
             subst: { id1: 'LONGBRASS', id2: 'BRASS', id3: 'MELO' },
             synonyms: ['.*SHORT.*BRASS.*'],
             drum: false,
@@ -482,8 +482,8 @@ export const INSTRUMENTS_DATA = {
         {
             id: 'SNARE',
             midi: [
-                { name: 'Acoustic Snare', key_based: true },
-                { name: 'Electric Snare', key_based: true },
+                { name: 'Acoustic Snare', keyBased: true },
+                { name: 'Electric Snare', keyBased: true },
             ],
             subst: { id1: 'SNARE' },
             synonyms: ['SN', '.*SNAR.*', '.*SD.*', 'SN', 'SNR', 'ACC AC', 'AC', '.*BRUSH.*'],
@@ -492,7 +492,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'SOUNDEFFECT',
-            midi: [{ name: 'Seashore', key_based: true }],
+            midi: [{ name: 'Seashore', keyBased: true }],
             subst: { id1: 'CRASH', id2: 'HIT', id3: 'SCRATCH' },
             synonyms: [
                 '.*FX.*',
@@ -527,7 +527,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'STRINGS',
-            midi: [{ name: 'String Ensemble 1', key_based: false }],
+            midi: [{ name: 'String Ensemble 1', keyBased: false }],
             subst: { id1: 'BRASS', id2: 'PIANO', id3: 'MELO' },
             synonyms: [
                 '.*STRING.*',
@@ -546,7 +546,7 @@ export const INSTRUMENTS_DATA = {
         { id: 'SYNTH', drum: false, pan: '0', subst: { id1: 'MELO' } },
         {
             id: 'SYNTHEFFECT',
-            midi: [{ name: 'Reverse Cymbal', key_based: false }],
+            midi: [{ name: 'Reverse Cymbal', keyBased: false }],
             subst: { id1: 'HIT', id2: 'CRASH', id3: 'RIMSHOT' },
             synonyms: ['.*SYNTH.*EFFECT.*', '.*FX.*'],
             drum: true,
@@ -554,7 +554,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'SYNTHLEAD',
-            midi: [{ name: 'Lead 1 (square)', key_based: false }],
+            midi: [{ name: 'Lead 1 (square)', keyBased: false }],
             subst: { id1: 'PIANO', id2: 'MELO', id3: 'HI_TOM' },
             synonyms: [
                 '.*SYNTH.*',
@@ -571,7 +571,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'SYNTHPAD',
-            midi: [{ name: 'Pad 1 (new age)', key_based: false }],
+            midi: [{ name: 'Pad 1 (new age)', keyBased: false }],
             subst: { id1: 'HIT', id2: 'CRASH', id3: 'RIMSHOT' },
             synonyms: [
                 '.*SYNTH.*PAD.*',
@@ -588,7 +588,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'TAMB',
-            midi: [{ name: 'Tambourine', key_based: true }],
+            midi: [{ name: 'Tambourine', keyBased: true }],
             subst: { id1: 'SNARE', id2: 'HI_TOM', id3: 'CHH' },
             synonyms: ['.*TAMB.*'],
             drum: true,
@@ -596,7 +596,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'TAMBOURINE',
-            midi: [{ name: 'Tambourine', key_based: true }],
+            midi: [{ name: 'Tambourine', keyBased: true }],
             subst: { id1: 'OHH' },
             synonyms: ['.*TAMB.*'],
             drum: true,
@@ -604,7 +604,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'TIMBAL',
-            midi: [{ name: 'High Timbale', key_based: true }],
+            midi: [{ name: 'High Timbale', keyBased: true }],
             subst: { id1: 'LO_TOM', id2: 'CRASH', id3: 'SNARE' },
             synonyms: ['.*TIMBAL.*', 'TIMBALE'],
             drum: true,
@@ -612,7 +612,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'TOM',
-            midi: [{ name: 'Hi-Mid Tom', key_based: true }],
+            midi: [{ name: 'Hi-Mid Tom', keyBased: true }],
             subst: { id1: 'HI_TOM', id2: 'MTOM', id3: 'CHH' },
             synonyms: ['.*TOM.*'],
             drum: true,
@@ -621,8 +621,8 @@ export const INSTRUMENTS_DATA = {
         {
             id: 'TRIANGLE',
             midi: [
-                { name: 'Open Triangle', key_based: true },
-                { name: 'Mute Triangle', key_based: true },
+                { name: 'Open Triangle', keyBased: true },
+                { name: 'Mute Triangle', keyBased: true },
             ],
             subst: { id1: 'TAMBOURINE', id2: 'RIMSHOT', id3: 'SNARE' },
             synonyms: ['.*TRI.*'],
@@ -631,7 +631,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'VIBRA',
-            midi: [{ name: 'Vibraslap', key_based: true }],
+            midi: [{ name: 'Vibraslap', keyBased: true }],
             subst: { id1: 'HIT', id2: 'CRASH', id3: 'RIMSHOT' },
             synonyms: ['.*VIBRA.*'],
             drum: true,
@@ -639,7 +639,7 @@ export const INSTRUMENTS_DATA = {
         },
         {
             id: 'WHISTLE',
-            midi: [{ name: 'Short Whistle', key_based: true }],
+            midi: [{ name: 'Short Whistle', keyBased: true }],
             subst: { id1: 'MARACAS', id2: 'RIMSHOT', id3: 'HIT' },
             synonyms: ['.*WHISTL.*'],
             drum: true,

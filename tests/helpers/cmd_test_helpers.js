@@ -13,7 +13,7 @@ export function isNoteAt(track, beat, beatStep) {
 }
 
 export function kitIsLoaded(drumkit) {
-    return Object.values(soundRegistry.sounds).some((sound) => sound.kit_name === drumkit.name)
+    return Object.values(soundRegistry.sounds).some((sound) => sound.kitName === drumkit.name)
 }
 
 export function getTrackFromType(pattern, type) {

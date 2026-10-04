@@ -22,7 +22,7 @@ function makeCtx({ midiMap = new Map(), pattern, resolveMapping } = {}) {
         TICK: 32,
         player: { getCurrentFlatNotesMap: () => flatNotes, loop: 0 },
         getFlatNotes: () => flatNotes,
-        resolveMapping: resolveMapping ?? (() => ({ ch: '1', key: '36' })),
+        resolveMapping: resolveMapping ?? (() => ({ channel: 1, key: '36' })),
     }
 }
 
@@ -156,7 +156,7 @@ describe('sendMidiNotes', () => {
         const ctx = makeCtx({
             midiMap: flatNotes,
             pattern: { beatCount: 1, tracks: [track] },
-            resolveMapping: () => ({ ch: 'xx', key: 'yy' }),
+            resolveMapping: () => ({ channel: 'xx', key: 'yy' }),
         })
 
         sendMidiNotes(ctx, 0, 0)
@@ -207,7 +207,7 @@ describe('sendTriggerMidi', () => {
         vi.useRealTimers()
     })
 
-    const resolveMapping = () => ({ ch: '10', key: '40' })
+    const resolveMapping = () => ({ channel: 10, key: '40' })
 
     it('no-op when midiManager is missing', () => {
         expect(() => sendTriggerMidi({ track: { id: 'X' }, resolveMapping })).not.toThrow()
@@ -253,7 +253,7 @@ describe('sendTriggerMidi', () => {
         const midi = makeReadyMidi()
         serviceRegistry.midiManager = midi
 
-        sendTriggerMidi({ track: { id: 'X', velocity: 1 }, resolveMapping: () => ({ ch: 'a', key: 'b' }) })
+        sendTriggerMidi({ track: { id: 'X', velocity: 1 }, resolveMapping: () => ({ channel: 'a', key: 'b' }) })
         expect(midi.sendNoteOn).toHaveBeenCalledWith(9, 60, 127)
     })
 })

@@ -54,13 +54,13 @@ export default class ModulationSection {
         const phase = lfo ? lfo.phase : 0
         const type = lfo ? (lfo.type ?? 'sine') : 'sine'
 
-        let content = `<div class="te-mod-targets">`
+        let content = `<div class="te-subtabs">`
         this.#lfoProps().forEach((p) => {
             const isActive = p.key === editor.selectedLfoTarget
             const lfoOn = !!track[p.lfoKey]
             const ledCls = lfoOn ? 'lfo-led on' : 'lfo-led'
             const activeClass = isActive ? ' active' : ''
-            content += `<div class="te-mod-btn${activeClass}">
+            content += `<div class="te-subtab${activeClass}">
                 <span class="${ledCls}" data-lfo-toggle-btn="${p.key}"></span>
                 <span data-lfo-select-btn="${p.key}">${p.label}</span></div>`
         })

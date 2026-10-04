@@ -12,11 +12,19 @@ export function getSelectedDrumkitName(editor) {
 }
 
 /**
+ * Every sample of every kit, copied and tagged with its kit name.
+ *
+ * The tag is a no-op now that entries carry `kitName` themselves — it used to be
+ * the ONLY place kitName existed, which is why reading it off a raw entry gave
+ * undefined and the sound section showed no kit at all.
+ *
  * @param {import('../track_editor.js').default} editor
- * @returns {Array<import('../../state/sound_registry.js').SoundEntry>} every sample of every kit, tagged with kitName
+ * @returns {Array<import('../../state/sound_registry.js').SoundEntry>}
  */
 export function getAllKitSamples(editor) {
-    return editor.soundRegistry.drumkitList.flatMap((kit) => kit.instruments.map((s) => ({ ...s, kitName: kit.name })))
+    return editor.soundRegistry.drumkitList.flatMap((kit) =>
+        kit.instruments.map((s) => ({ ...s, kitName: s.kitName ?? kit.name })),
+    )
 }
 
 /**

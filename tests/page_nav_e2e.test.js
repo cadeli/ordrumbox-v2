@@ -121,7 +121,7 @@ function setupServices() {
         isRunning: false,
         tick: 0,
     }
-    serviceRegistry.patterns = {
+    serviceRegistry.flatNotes = {
         applyFlatNotes: vi.fn(),
     }
     serviceRegistry.resourcesLoader = {

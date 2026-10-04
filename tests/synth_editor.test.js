@@ -25,7 +25,7 @@ describe('SynthEditor sub-panel toolbar', () => {
         soundRegistry.reset()
         soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
         audioEngine = {
-            updateGeneratedSounds: vi.fn(),
+            setGeneratedSounds: vi.fn(),
             invalidateCache: vi.fn(),
         }
         serviceRegistry.audioEngine = audioEngine
@@ -57,7 +57,7 @@ describe('SynthEditor sub-panel toolbar', () => {
     })
 
     it('renders one block per synth group with bypass button', async () => {
-        await editor.openEditor()
+        await editor.showPanel()
 
         const blocks = Array.from(document.querySelectorAll('#soft-synth-panel [data-ss-card]'))
         expect(blocks.map((b) => b.dataset.ssCard)).toEqual([
@@ -89,7 +89,7 @@ describe('SynthEditor sub-panel toolbar', () => {
     })
 
     it('keeps Revert in the toolbar and preserves revert behavior', async () => {
-        await editor.openEditor()
+        await editor.showPanel()
 
         const panel = document.querySelector('#soft-synth-panel')
         const revertButton = panel.querySelector('[data-action="synth-revert"]')
@@ -106,7 +106,7 @@ describe('SynthEditor sub-panel toolbar', () => {
     })
 
     it('sets bypassFilter flag on draft when toggling filter bypass', async () => {
-        await editor.openEditor()
+        await editor.showPanel()
 
         const filterCard = document.querySelector('#soft-synth-panel [data-ss-card="filter"]')
         const filterBtn = filterCard.querySelector('.ss-bypass-btn')
@@ -122,7 +122,7 @@ describe('SynthEditor sub-panel toolbar', () => {
     })
 
     it('sets bypassEnv flag on draft when toggling envelope bypass', async () => {
-        await editor.openEditor()
+        await editor.showPanel()
 
         const envCard = document.querySelector('#soft-synth-panel [data-ss-card="envelope"]')
         const envBtn = envCard.querySelector('.ss-bypass-btn')
@@ -136,7 +136,7 @@ describe('SynthEditor sub-panel toolbar', () => {
     })
 
     it('sets bypassNoise flag on draft when toggling noise bypass', async () => {
-        await editor.openEditor()
+        await editor.showPanel()
 
         const noiseCard = document.querySelector('#soft-synth-panel [data-ss-card="noise"]')
         const noiseBtn = noiseCard.querySelector('.ss-bypass-btn')
@@ -150,7 +150,7 @@ describe('SynthEditor sub-panel toolbar', () => {
     })
 
     it('sets bypassLfo1 flag on draft when toggling lfo bypass', async () => {
-        await editor.openEditor()
+        await editor.showPanel()
 
         const lfoCard = document.querySelector('#soft-synth-panel [data-ss-card="lfo"]')
         const lfoBtn = lfoCard.querySelector('.ss-bypass-btn')
@@ -164,7 +164,7 @@ describe('SynthEditor sub-panel toolbar', () => {
     })
 
     it('sets bypassFm flag on draft when toggling fm bypass', async () => {
-        await editor.openEditor()
+        await editor.showPanel()
 
         const fmCard = document.querySelector('#soft-synth-panel [data-ss-card="fm"]')
         const fmBtn = fmCard.querySelector('.ss-bypass-btn')
@@ -178,7 +178,7 @@ describe('SynthEditor sub-panel toolbar', () => {
     })
 
     it('VCO bypass saves/restores gain (not a bypass flag)', async () => {
-        await editor.openEditor()
+        await editor.showPanel()
 
         expect(editor.draft.vco1.gain).toBe(1)
         const vco1Card = document.querySelector('#soft-synth-panel [data-ss-card="vco1"]')
@@ -192,16 +192,16 @@ describe('SynthEditor sub-panel toolbar', () => {
         expect(editor.draft.vco1.gain).toBe(1)
     })
 
-    it('propagates bypass flags to audioEngine via updateGeneratedSounds', async () => {
-        await editor.openEditor()
+    it('propagates bypass flags to audioEngine via setGeneratedSounds', async () => {
+        await editor.showPanel()
 
         const filterCard = document.querySelector('#soft-synth-panel [data-ss-card="filter"]')
         const filterBtn = filterCard.querySelector('.ss-bypass-btn')
 
-        audioEngine.updateGeneratedSounds.mockClear()
+        audioEngine.setGeneratedSounds.mockClear()
         filterBtn.click()
-        expect(audioEngine.updateGeneratedSounds).toHaveBeenCalled()
-        const committed = audioEngine.updateGeneratedSounds.mock.calls[0][0]
+        expect(audioEngine.setGeneratedSounds).toHaveBeenCalled()
+        const committed = audioEngine.setGeneratedSounds.mock.calls[0][0]
         expect(committed.BASS1.bypassFilter).toBe(true)
     })
 })

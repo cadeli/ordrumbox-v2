@@ -72,7 +72,7 @@ export class OrTab {
     }
 
     /**
-     * Set the active tab programmatically.
+     * Set the active tab programatically.
      * Calls onChange if the tab actually changes.
      * @param {string} tabId
      */

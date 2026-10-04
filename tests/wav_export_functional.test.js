@@ -15,7 +15,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import WavExporter from '../src/audio/export/wav_exporter.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import * as patternsManager from '../src/patterns/manager.js'
+import * as flatNotesService from '../src/patterns/flat_notes.js'
 import { TICK } from '../src/core/constants.js'
 import { recomputeFlatNotes } from '../src/patterns/engine.js'
 import { makeNote, makeTrack as sharedMakeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
@@ -257,7 +257,7 @@ describe('WAV Export — functional end-to-end', () => {
         _trackedSources = []
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
         soundRegistry.sounds = {
             'kick.wav': {
                 url: 'kick.wav',

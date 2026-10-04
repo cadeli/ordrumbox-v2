@@ -140,26 +140,12 @@ export default class SynthEditor {
         return this.#presets.ensureGeneratedSoundsLoaded()
     }
 
-    /** Opens the editor for the current track's synth sound. */
-    async openEditor() {
-        try {
-            const track = this.host.track
-            if (!track) return
-            await this.ensureGeneratedSoundsLoaded()
-
-            const key = track.synthSoundKey
-            const generatedSound = this.#soundRegistry.generatedSounds?.[key]
-            if (!key || !generatedSound) return
-
-            if (!this.#presets.loadPreset(key)) return
-            this.#showSynthPanel()
-            this.#renderEditor()
-        } catch (e) {
-            logger.error('SynthEditor', 'openEditor failed', e)
-        }
-    }
-
-    /** Shows the panel (standalone or for current track). */
+    /**
+     * Shows the panel and loads the current track's synth preset into the editor
+     * (the first available preset when the track has none). This is the only
+     * entry point: an openEditor() twin used to exist here, identical minus
+     * that fallback, and no src file called it.
+     */
     async showPanel() {
         try {
             await this.ensureGeneratedSoundsLoaded()
@@ -190,8 +176,13 @@ export default class SynthEditor {
         }
     }
 
-    /** Hides the panel, committing live-previewed changes. */
-    hidePanel() {
+    /**
+     * Closes the synth panel. When an edit session is open it COMMITS the draft
+     * and drops the session (invalidate, events, #editKey/#draft = null), so the
+     * next showPanel() starts from the stored preset again — hence the name: this
+     * is not a visibility toggle.
+     */
+    closePanelAndCommit() {
         if (this.panel.style.display !== 'flex') return
         if (this.#editKey && this.#draft) {
             this.#closeEditor(true)
@@ -733,7 +724,7 @@ export default class SynthEditor {
                         count++
                     }
                 }
-                this.#serviceRegistry.audioEngine?.updateGeneratedSounds(sr.generatedSounds)
+                this.#serviceRegistry.audioEngine?.setGeneratedSounds(sr.generatedSounds)
                 this.#presets.persist()
                 this.#presets.ensureGeneratedSoundsLoaded()
                 this.#renderEditor()

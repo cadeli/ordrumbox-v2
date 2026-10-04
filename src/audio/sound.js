@@ -276,7 +276,13 @@ export default class Sound {
         this.monoVoiceByTrack = new WeakMap()
     }
 
-    updateGeneratedSounds = (generatedSounds) => {
+    /**
+     * Merges new presets into the registry AND re-pushes them into the synth
+     * voices currently playing (a merge, unlike Player/Engine.setGeneratedSounds
+     * which replace the reference).
+     * @param {Record<string, object>} generatedSounds
+     */
+    mergeGeneratedSounds = (generatedSounds) => {
         Object.assign(this.generatedSounds, generatedSounds)
         const time = this.audioCtx?.currentTime ?? 0
         this.activeSynthVoices.forEach((voice) => {
@@ -284,7 +290,7 @@ export default class Sound {
                 const generatedSound = this.generatedSounds?.[voice.soundKey]
                 if (generatedSound) voice.updateGeneratedSound(generatedSound, time)
             } catch (e) {
-                logger.warn('Sound', 'updateGeneratedSounds: voice update failed', e)
+                logger.warn('Sound', 'mergeGeneratedSounds: voice update failed', e)
             }
         })
     }

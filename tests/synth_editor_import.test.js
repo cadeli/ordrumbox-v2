@@ -28,7 +28,7 @@ describe('SynthEditor — import JSON calls the public persist API', () => {
         serviceRegistry.reset()
         soundRegistry.reset()
         soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
-        audioEngine = { updateGeneratedSounds: vi.fn(), invalidateCache: vi.fn() }
+        audioEngine = { setGeneratedSounds: vi.fn(), invalidateCache: vi.fn() }
         serviceRegistry.audioEngine = audioEngine
 
         HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
@@ -53,7 +53,7 @@ describe('SynthEditor — import JSON calls the public persist API', () => {
         editor = new SynthEditor(host, { playbackEvents, serviceRegistry, soundRegistry })
         editor.createDOM()
         document.getElementById('app-content').appendChild(editor.panel)
-        await editor.openEditor()
+        await editor.showPanel()
     }
 
     it('persists generated sounds after a JSON import', async () => {
@@ -83,7 +83,7 @@ describe('SynthEditor — import JSON calls the public persist API', () => {
         fileInput.dispatchEvent(new Event('change'))
 
         await vi.waitFor(() => expect(persistSpy).toHaveBeenCalled())
-        expect(audioEngine.updateGeneratedSounds).toHaveBeenCalled()
+        expect(audioEngine.setGeneratedSounds).toHaveBeenCalled()
         expect(soundRegistry.generatedSounds.NEW_SOUND).toBeTruthy()
     })
 })

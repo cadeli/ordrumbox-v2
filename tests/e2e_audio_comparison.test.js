@@ -31,7 +31,7 @@ import WavExporter from '../src/audio/export/wav_exporter.js'
 import AudioAnalyzer from '../src/audio/analyze.js'
 import { bufferToWav } from '../src/audio/export/wav_encoder.js'
 import { recomputeFlatNotes } from '../src/patterns/engine.js'
-import * as patternsManager from '../src/patterns/manager.js'
+import * as flatNotesService from '../src/patterns/flat_notes.js'
 
 const { OfflineAudioContext, AudioWorkletNode } = nodeWaa
 globalThis.OfflineAudioContext = OfflineAudioContext
@@ -167,7 +167,7 @@ describe('E2E Audio 1 — WAV export produces valid headers', () => {
         resetAll()
         cmd = new Commander()
         serviceRegistry.cmd = cmd
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
     })
 
     it('exports a 4-beat pattern to valid RIFF/WAVE', async () => {
@@ -221,7 +221,7 @@ describe('E2E Audio 2 — Two renders of same pattern are bit-identical', () => 
         resetAll()
         cmd = new Commander()
         serviceRegistry.cmd = cmd
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
     })
 
     it('same pattern → same WAV bytes', async () => {
@@ -279,7 +279,7 @@ describe('E2E Audio 3 — WAV duration scales with BPM and loops', () => {
         resetAll()
         cmd = new Commander()
         serviceRegistry.cmd = cmd
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
     })
 
     it('2 loops produce a longer WAV than 1 loop', async () => {
@@ -340,7 +340,7 @@ describe('E2E Audio 4 — Flat notes computation matches export structure', () =
         resetAll()
         cmd = new Commander()
         serviceRegistry.cmd = cmd
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
     })
 
     it('flat note count matches note count for simple pattern', () => {

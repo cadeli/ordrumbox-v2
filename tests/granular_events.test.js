@@ -14,7 +14,7 @@ import PianoRollPanel from '../src/ui/piano_roll_panel.js'
 import SongPanel from '../src/ui/song_panel.js'
 import Toolbar from '../src/ui/toolbar.js'
 import PatternSettingsPanel from '../src/ui/pattern_settings_panel.js'
-import { applyFlatNotes } from '../src/patterns/manager.js'
+import { applyFlatNotes } from '../src/patterns/flat_notes.js'
 import { EVENTS } from '../src/core/events.js'
 
 describe('Granular patternChange events', () => {
@@ -45,7 +45,7 @@ describe('Granular patternChange events', () => {
         cmd = new Commander()
         serviceRegistry.cmd = cmd
         serviceRegistry.seq = { setBpm: vi.fn() }
-        serviceRegistry.patterns = { applyFlatNotes: (pat) => applyFlatNotes(pat) }
+        serviceRegistry.flatNotes = { applyFlatNotes: (pat) => applyFlatNotes(pat) }
         serviceRegistry.audioEngine = { invalidateCache: vi.fn(), syncAllTracks: vi.fn(), syncTrack: vi.fn() }
 
         document.body.innerHTML = ''

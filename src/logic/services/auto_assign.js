@@ -71,7 +71,7 @@ export default class AutoAssign {
         if (soundId !== NOT_FOUND) {
             const matchedKey = this.#soundRegistry.sounds[soundId]?.key
             const url = this.#soundRegistry.sounds[soundId]?.url
-            const matchedKit = this.#soundRegistry.sounds[soundId]?.kit_name
+            const matchedKit = this.#soundRegistry.sounds[soundId]?.kitName
             const method = matchedKey === track.name ? `exact match` : `contains (key="${matchedKey}")`
             logger.warn(
                 TAG,
@@ -85,7 +85,7 @@ export default class AutoAssign {
         if (eqResult !== NOT_FOUND) {
             const matchedKey = this.#soundRegistry.sounds[eqResult]?.key
             const url = this.#soundRegistry.sounds[eqResult]?.url
-            const matchedKit = this.#soundRegistry.sounds[eqResult]?.kit_name
+            const matchedKit = this.#soundRegistry.sounds[eqResult]?.kitName
             const inSameKit = matchedKit === selectedDrumkitName
             logger.warn(
                 TAG,
@@ -152,7 +152,7 @@ export default class AutoAssign {
         const upperSearch = searchStr.toUpperCase().trim()
         if (!upperSearch) return NOT_FOUND
         for (const [key, value] of Object.entries(this.#soundRegistry.sounds)) {
-            if (drumkitName && value.kit_name !== drumkitName) continue
+            if (drumkitName && value.kitName !== drumkitName) continue
             if (value.key?.toUpperCase().includes(upperSearch)) {
                 return key
             }
@@ -163,7 +163,7 @@ export default class AutoAssign {
     getSoundIdFromKitAndTrackname = (drumkitName, trackName) => {
         let ret = NOT_FOUND
         for (const [key, value] of Object.entries(this.#soundRegistry.sounds)) {
-            if (value.kit_name === drumkitName) {
+            if (value.kitName === drumkitName) {
                 if (trackName.toUpperCase().trim().includes(value.key.toUpperCase().trim())) {
                     ret = key
                     return ret

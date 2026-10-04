@@ -289,7 +289,7 @@ describe('Song & Project Persistence Roundtrip', () => {
         const cmd = new Commander()
         serviceRegistry.cmd = cmd
         serviceRegistry.seq = { setBpm: vi.fn(), toggleStartStop: vi.fn() }
-        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
 
         // Install in-memory mock of IndexedDB
         mockIDB = createMockIDB()

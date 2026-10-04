@@ -81,15 +81,16 @@ export function applyTrackToStrip(strip, track, time, opts) {
 }
 
 /**
- * Apply a params object (with mute support) to a strip.
- * Used by AudioEngine.updateStrip for UI-driven parameter changes.
+ * Same as {@link applyTrackToStrip} without the defaults fallback, for UI-driven
+ * changes where absent fields must stay untouched (AudioEngine.updateStrip).
  *
- * Delegates to applyTrackToStrip with readDefaults=false.
+ * It used to be a second name for "a track", which read as if there were two
+ * kinds of object; it takes the very same one.
  *
- * @param {import('./strip.js').default} strip   - target strip node
- * @param {object}  params  - partial track/params object
- * @param {number}  time    - audio context currentTime
+ * @param {import('./strip.js').default} strip  - target strip node
+ * @param {object} track  - the track whose params are applied
+ * @param {number} time   - audio context currentTime
  */
-export function applyParamsToStrip(strip, params, time) {
-    applyTrackToStrip(strip, params, time, { readDefaults: false })
+export function applyTrackParamsToStrip(strip, track, time) {
+    applyTrackToStrip(strip, track, time, { readDefaults: false })
 }

@@ -481,6 +481,42 @@ describe('Utils', () => {
 // and resolve to the track length (getTrackStepLength). Resolving them to a
 // zero-length loop is what made computeNbTickForLoop answer "0 ticks" = no
 // repetition at all.
+// The three vocabularies (names, types, substring rules) used to be independent:
+// CHH was pan index 5 but type HAT, and only this composition told you so.
+describe('drum taxonomy', () => {
+    it('every TRACK_KINDS row has a type DRUM_TYPES knows', () => {
+        for (const [name, kind] of Object.entries(Utils.TRACK_KINDS)) {
+            expect(Utils.DRUM_TYPES.has(kind.type), `${name} → ${kind.type}`).toBe(true)
+        }
+    })
+
+    it('the pan index of a name is the one getPanFromTrackName uses', () => {
+        for (const [name, kind] of Object.entries(Utils.TRACK_KINDS)) {
+            expect(Utils.getPanFromTrackName(name), name).toBe(Utils.computeTrackPan(kind.panIndex))
+        }
+    })
+
+    it('detectTrackType agrees with the table for the canonical names', () => {
+        for (const [name, kind] of Object.entries(Utils.TRACK_KINDS)) {
+            expect(Utils.detectTrackType(name), name).toBe(kind.type)
+        }
+    })
+
+    it('hats are CHH/OHH but of type HAT', () => {
+        expect(Utils.detectTrackType('CHH')).toBe('HAT')
+        expect(Utils.detectTrackType('OHH')).toBe('HAT')
+        expect(Utils.TRACK_KINDS.CHH.type).toBe(Utils.TRACK_KINDS.OHH.type)
+        expect(Utils.TRACK_KINDS.CHH.panIndex).not.toBe(Utils.TRACK_KINDS.OHH.panIndex)
+    })
+
+    it('unknown names still fall through to the substring rules', () => {
+        expect(Utils.detectTrackType('808 KICK')).toBe('KICK')
+        expect(Utils.detectTrackType('SYNTH BASS')).toBe('BASS')
+        expect(Utils.detectTrackType('ZZZ')).toBe('PERC') // no substring rule matches
+        expect(Utils.getPanFromTrackName('ZZZ')).toBe(0)
+    })
+})
+
 describe('loop length resolution', () => {
     it.each([0, null, undefined])('loopAtStep=%s resolves to the track length', (loopAtStep) => {
         expect(Utils.getTrackLoopAtStep({ loopAtStep, stepsPerBeat: 4, beatCount: 4, notes: [] })).toBe(16)

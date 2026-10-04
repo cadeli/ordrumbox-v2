@@ -1725,7 +1725,7 @@ body {
     min-height: 0;
     overflow-y: auto;
 }
-.te-mod-targets {
+.te-subtabs {
     display: flex;
     flex-direction: row;
     gap: 2px;
@@ -1733,7 +1733,7 @@ body {
     margin-bottom: 4px;
     grid-column: 1 / -1;
 }
-.te-mod-btn {
+.te-subtab {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1750,11 +1750,11 @@ body {
     cursor: pointer;
     transition: all 0.15s;
 }
-.te-mod-btn:hover {
+.te-subtab:hover {
     color: var(--text);
     background: rgba(255, 255, 255, 0.05);
 }
-.te-mod-btn.active {
+.te-subtab.active {
     color: var(--color-success);
     border-color: var(--color-success);
     background: rgba(255, 255, 255, 0.06);
@@ -1788,7 +1788,7 @@ body {
     border-color: var(--color-success);
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
 }
-.te-mod-btn .lfo-led {
+.te-subtab .lfo-led {
     cursor: pointer;
 }
 .ne-row.no-cursor {
@@ -3512,11 +3512,11 @@ select option {
     background: var(--toy-violet);
     color: var(--black);
 }
-.te-mod-btn {
+.te-subtab {
     border-color: rgba(0, 0, 0, 0.55);
     background: color-mix(in srgb, var(--toy-lime) 12%, transparent);
 }
-.te-mod-btn.active {
+.te-subtab.active {
     color: var(--black);
     border-color: var(--black);
     background: var(--toy-lime);

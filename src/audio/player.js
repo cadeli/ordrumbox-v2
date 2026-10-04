@@ -14,6 +14,8 @@ export default class Player {
 
     #lastFlatNotesMap = null
     #lastFlatNotesLoop = -1
+    /** Pattern the cached map was computed from — see getCurrentFlatNotesMap. */
+    #lastFlatNotesPattern = null
     #trackIdxMap = null
     #trackIdxMapRef = null
     #trackIdxMapCount = -1
@@ -28,6 +30,7 @@ export default class Player {
     invalidateCache() {
         this.#lastFlatNotesMap = null
         this.#lastFlatNotesLoop = -1
+        this.#lastFlatNotesPattern = null
         this.#trackIdxMap = null
         this.#trackIdxMapRef = null
         this.#trackIdxMapCount = -1
@@ -163,6 +166,7 @@ export default class Player {
                 flatNotesMap = this.getFlatNotes(this.loop)
                 this.#lastFlatNotesLoop = this.loop
                 this.#lastFlatNotesMap = flatNotesMap
+                this.#lastFlatNotesPattern = selectedPattern
             }
 
             if (loopStep === nbTickForPattern - 1) {
@@ -286,9 +290,20 @@ export default class Player {
     }
 
     /**
-     * Return the current flat notes map (used by engine to avoid double lookup)
+     * The flat-notes map of the pattern that is selected NOW, or null.
+     *
+     * It used to return whatever the last playNotes() call had computed, so after
+     * a pattern switch that skipped invalidateCache() (or landed between two
+     * ticks) midi_out read the PREVIOUS pattern's notes while claiming they were
+     * current. Same for a loop that has moved on.
+     *
+     * @returns {Map<number, object[]>|null}
      */
-    getCurrentFlatNotesMap = () => this.#lastFlatNotesMap
+    getCurrentFlatNotesMap = () => {
+        if (this.#lastFlatNotesPattern !== this.patterns[this.getSelectedPatternIdx()]) return null
+        if (this.#lastFlatNotesLoop !== this.loop) return null
+        return this.#lastFlatNotesMap
+    }
 
     simpleBeep = async (indexTrack, note = null) => {
         if (this.audioCtx == null) return
@@ -326,7 +341,8 @@ export default class Player {
         )
     }
 
-    updateGeneratedSounds = (generatedSounds) => {
+    /** Replaces the reference (no merge) — see AudioEngine.setGeneratedSounds. */
+    setGeneratedSounds = (generatedSounds) => {
         this.generatedSounds = generatedSounds
         this.sound.generatedSounds = generatedSounds
     }

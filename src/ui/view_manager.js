@@ -59,7 +59,7 @@ export default class ViewManager {
         // `exit` runs cleanup for the view being left (only views that need
         // teardown define one); `enter` renders the view being switched to.
         this.#viewHandlers = new Map([
-            ['synth', { enter: () => this.#showSynth(), exit: () => this.#synthEditor?.hidePanel() }],
+            ['synth', { enter: () => this.#showSynth(), exit: () => this.#synthEditor?.closePanelAndCommit() }],
             ['edit', { enter: () => this.#showEdit() }],
             ['proll', { enter: () => this.#showProll(), exit: () => this.#pianoRollPanel?.hide() }],
             ['song', { enter: () => this.#showSong(), exit: () => this.#songPanel?.hide() }],
@@ -95,7 +95,7 @@ export default class ViewManager {
             this.#hideOtherSlotPanels(name)
             if (isMobileViewport()) {
                 this.#currentView = name
-                this.#synthEditor.hidePanel()
+                this.#synthEditor.closePanelAndCommit()
                 this.#trackEditor.hide()
                 setPatternPanelHidden(true)
             } else {
@@ -198,21 +198,21 @@ export default class ViewManager {
     }
 
     #showEdit() {
-        this.#synthEditor.hidePanel()
+        this.#synthEditor.closePanelAndCommit()
         this.#pianoRollPanel.hide()
         setPatternPanelHidden(false)
         this.#ensureEditorsVisible()
     }
 
     #showProll() {
-        this.#synthEditor.hidePanel()
+        this.#synthEditor.closePanelAndCommit()
         this.#ensureEditorsVisible()
         this.#pianoRollPanel.show()
         setPatternPanelHidden(true)
     }
 
     #showSong() {
-        this.#synthEditor.hidePanel()
+        this.#synthEditor.closePanelAndCommit()
         this.#pianoRollPanel.hide()
         this.#ensureEditorsVisible()
         this.#songPanel?.show()
@@ -220,7 +220,7 @@ export default class ViewManager {
     }
 
     #showMobileSeq() {
-        this.#synthEditor.hidePanel()
+        this.#synthEditor.closePanelAndCommit()
         if (isMobileViewport()) {
             this.#trackEditor.hide()
         } else {
@@ -230,7 +230,7 @@ export default class ViewManager {
     }
 
     #showMobileTrack() {
-        this.#synthEditor.hidePanel()
+        this.#synthEditor.closePanelAndCommit()
         this.#pianoRollPanel.hide()
         this.#ensureEditorsVisible()
         setPatternPanelHidden(true)

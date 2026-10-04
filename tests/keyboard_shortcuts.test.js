@@ -236,7 +236,7 @@ describe('Keyboard shortcuts', () => {
     })
 
     it('KeyH converts tracks and shows success toast', async () => {
-        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
         soundRegistry.generatedSounds = { BASS0: {}, SN: {} }
 
         fireKeydown('KeyH')
@@ -246,25 +246,25 @@ describe('Keyboard shortcuts', () => {
         expect(track.useSoftSynth).toBe(true)
         expect(track.useAutoAssignSound).toBe(false)
         expect(track.synthSoundKey).toBe('BASS0')
-        expect(serviceRegistry.patterns.applyFlatNotes).toHaveBeenCalledWith(appState.patterns[0])
+        expect(serviceRegistry.flatNotes.applyFlatNotes).toHaveBeenCalledWith(appState.patterns[0])
         expect(showToast).toHaveBeenCalledWith('All tracks converted to generated sounds', 'success')
     })
 
     it('KeyH shows info toast when no pattern is selected', async () => {
         appState.patterns = []
-        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
 
         fireKeydown('KeyH')
         await flushAsyncShortcut()
 
         expect(showToast).toHaveBeenCalledWith('No pattern selected', 'info')
-        expect(serviceRegistry.patterns.applyFlatNotes).not.toHaveBeenCalled()
+        expect(serviceRegistry.flatNotes.applyFlatNotes).not.toHaveBeenCalled()
     })
 
     it('KeyH shows error toast when generated sounds fail to load', async () => {
         // Expected failure path: silence the deliberate logger.error output.
         const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
-        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
         serviceRegistry.resourcesLoader = {
             loadGeneratedSounds: vi.fn(() => Promise.reject(new Error('boom'))),
         }
@@ -274,7 +274,7 @@ describe('Keyboard shortcuts', () => {
         await flushAsyncShortcut()
 
         expect(showToast).toHaveBeenCalledWith('Failed to load generated sounds', 'error')
-        expect(serviceRegistry.patterns.applyFlatNotes).not.toHaveBeenCalled()
+        expect(serviceRegistry.flatNotes.applyFlatNotes).not.toHaveBeenCalled()
         expect(errorSpy).toHaveBeenCalled()
     })
 
@@ -340,7 +340,7 @@ describe('Keyboard shortcuts', () => {
     })
 
     it('KeyJ auto-assigns all tracks', async () => {
-        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
         const autoAssign = { autoAssignSounds: vi.fn() }
         getAutoAssignService.mockResolvedValueOnce(autoAssign)
 
@@ -351,24 +351,24 @@ describe('Keyboard shortcuts', () => {
         expect(track.useAutoAssignSound).toBe(true)
         expect(track.useSoftSynth).toBe(false)
         expect(autoAssign.autoAssignSounds).toHaveBeenCalledWith(appState.patterns[0])
-        expect(serviceRegistry.patterns.applyFlatNotes).toHaveBeenCalledWith(appState.patterns[0])
+        expect(serviceRegistry.flatNotes.applyFlatNotes).toHaveBeenCalledWith(appState.patterns[0])
         expect(showToast).toHaveBeenCalledWith('All tracks auto-assigned', 'success')
     })
 
     it('KeyJ no-ops when no pattern is selected', async () => {
         appState.patterns = []
-        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
 
         fireKeydown('KeyJ')
         await flushAsyncShortcut()
 
-        expect(serviceRegistry.patterns.applyFlatNotes).not.toHaveBeenCalled()
+        expect(serviceRegistry.flatNotes.applyFlatNotes).not.toHaveBeenCalled()
         expect(showToast).not.toHaveBeenCalledWith('All tracks auto-assigned', 'success')
         expect(showToast).toHaveBeenCalledWith('No pattern selected', 'info')
     })
 
     it('KeyK assigns a random sample to all tracks', async () => {
-        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
         soundRegistry.sounds = { 'kick.wav': {}, 'snare.wav': {} }
 
         fireKeydown('KeyK')
@@ -379,23 +379,23 @@ describe('Keyboard shortcuts', () => {
             expect(track.useSoftSynth).toBe(false)
             expect(['kick.wav', 'snare.wav']).toContain(track.soundId)
         }
-        expect(serviceRegistry.patterns.applyFlatNotes).toHaveBeenCalledWith(appState.patterns[0])
+        expect(serviceRegistry.flatNotes.applyFlatNotes).toHaveBeenCalledWith(appState.patterns[0])
         expect(showToast).toHaveBeenCalledWith('Random samples assigned', 'success')
     })
 
     it('KeyK shows error toast when no samples are loaded', async () => {
-        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
         soundRegistry.sounds = {}
 
         fireKeydown('KeyK')
 
         expect(showToast).toHaveBeenCalledWith('No samples loaded', 'error')
-        expect(serviceRegistry.patterns.applyFlatNotes).not.toHaveBeenCalled()
+        expect(serviceRegistry.flatNotes.applyFlatNotes).not.toHaveBeenCalled()
     })
 
     it('KeyK no-ops when no pattern is selected', async () => {
         appState.patterns = []
-        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
 
         fireKeydown('KeyK')
 

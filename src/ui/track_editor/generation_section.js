@@ -18,8 +18,8 @@ export default class GenerationSection {
             tabs: GEN_SUBTAB_DEFS,
             defaultTab: 'groove',
             css: {
-                bar: 'te-mod-targets',
-                btn: 'te-mod-btn',
+                bar: 'te-subtabs',
+                btn: 'te-subtab',
                 panel: 'gen-tab-panel',
                 hidden: 'gen-tab-panel-hidden',
                 dataAttr: 'gen-tab',

@@ -33,7 +33,7 @@ export default class PresetSection {
                 await editor.serviceRegistry.resourcesLoader?.loadGeneratedSounds(
                     (await import('../../loader/resources_loader.js')).default.GENERATED_SOUNDS_URL,
                 )
-                editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
+                editor.serviceRegistry.audioEngine?.setGeneratedSounds(editor.soundRegistry.generatedSounds)
             } catch (err) {
                 editor.loadFailed = true
                 reportUserError('SynthEditor.presets', 'Synth presets could not be loaded', { cause: err })
@@ -65,7 +65,7 @@ export default class PresetSection {
     commitSound(key, sound) {
         const editor = this.#editor
         editor.soundRegistry.generatedSounds[key] = structuredClone(sound)
-        editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
+        editor.serviceRegistry.audioEngine?.setGeneratedSounds(editor.soundRegistry.generatedSounds)
         this.persist()
     }
 
@@ -162,7 +162,7 @@ export default class PresetSection {
         const deletedName = editor.editKey
         const idx = keys.indexOf(editor.editKey)
         delete editor.soundRegistry.generatedSounds[editor.editKey]
-        editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
+        editor.serviceRegistry.audioEngine?.setGeneratedSounds(editor.soundRegistry.generatedSounds)
         this.persist()
         const nextIdx = idx < keys.length - 1 ? idx : idx - 1
         const nextKey = keys[nextIdx] === deletedName ? keys[(idx + 1) % keys.length] : keys[nextIdx]
@@ -181,7 +181,7 @@ export default class PresetSection {
         if (!newName || newName === editor.editKey) return
         this.commitSound(newName, editor.draft)
         delete editor.soundRegistry.generatedSounds[editor.editKey]
-        editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
+        editor.serviceRegistry.audioEngine?.setGeneratedSounds(editor.soundRegistry.generatedSounds)
         this.persist()
         editor.editKey = newName
         editor.original = structuredClone(editor.draft)

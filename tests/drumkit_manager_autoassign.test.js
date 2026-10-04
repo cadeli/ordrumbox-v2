@@ -18,7 +18,7 @@ function setupRegistry() {
         [SOUND_ID]: {
             url: SOUND_ID,
             display_name: 'one-shot.wav',
-            kit_name: 'custom',
+            kitName: 'custom',
             key: 'CLAP',
         },
     }

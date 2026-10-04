@@ -100,7 +100,7 @@ describe('AudioImportService', () => {
         await service.importDirectory(files)
 
         expect(sharedSoundRegistry.sounds['kick.wav']).toBeDefined()
-        expect(sharedSoundRegistry.sounds['kick.wav'].kit_name).toBe('my_drums')
+        expect(sharedSoundRegistry.sounds['kick.wav'].kitName).toBe('my_drums')
         expect(sharedSoundRegistry.sounds['kick.wav'].isLoad).toBe(true)
     })
 

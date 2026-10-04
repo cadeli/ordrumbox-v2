@@ -459,7 +459,7 @@ export default class ResourcesLoader {
         return this.loadMissingSamplesFromDrumkits([drumkit])
     }
 
-    loadSample = async (sample, kit_name) => {
+    loadSample = async (sample, kitName) => {
         let arrayBuffer = await getCachedSample(sample.url)
         if (!arrayBuffer) {
             const response = await fetch(ResourcesLoader.KITS_PATH + sample.url)
@@ -473,7 +473,7 @@ export default class ResourcesLoader {
         }
         const buffer = await this.audioCtx.decodeAudioData(arrayBuffer)
         const sound = {
-            kit_name: kit_name,
+            kitName: kitName,
             url: sample.url,
             key: sample.key,
             index: Object.keys(soundRegistry.sounds).length + 1,

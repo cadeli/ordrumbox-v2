@@ -16,7 +16,7 @@ import MelodyGenerate from '../src/logic/generators/melody_generate.js'
 import Utils from '../src/core/utils.js'
 import { appState } from '../src/state/app_state.js'
 import { makeTrack, makeNote, PARAM_SETS } from './helpers/make_pattern.js'
-import * as patternsManager from '../src/patterns/manager.js'
+import * as flatNotesService from '../src/patterns/flat_notes.js'
 
 describe('Generators', () => {
     let cmd
@@ -27,9 +27,9 @@ describe('Generators', () => {
         serviceRegistry.reset()
         cmd = new Commander()
         serviceRegistry.cmd = cmd
-        // generatePattern() calls serviceRegistry.patterns.applyFlatNotes();
+        // generatePattern() calls serviceRegistry.flatNotes.applyFlatNotes();
         // it used to be missing here and the failure was swallowed.
-        serviceRegistry.patterns = await import('../src/patterns/manager.js')
+        serviceRegistry.flatNotes = await import('../src/patterns/flat_notes.js')
         seed = 42
         originalRandom = Math.random
         Math.random = () => {
@@ -490,7 +490,7 @@ describe('Generators', () => {
 
     describe('AutoGenerate dispatch', () => {
         beforeEach(() => {
-            serviceRegistry.patterns = patternsManager
+            serviceRegistry.flatNotes = flatNotesService
             soundRegistry.scales = { 'pentatonic minor': [0, 3, 5, 7, 10] }
         })
 
@@ -534,7 +534,7 @@ describe('Generators', () => {
             track.beatCount = 4
             cmd.addNote(track, 0, 0, 0)
             const applySpy = vi.fn()
-            serviceRegistry.patterns = { ...patternsManager, applyFlatNotes: applySpy }
+            serviceRegistry.flatNotes = { ...flatNotesService, applyFlatNotes: applySpy }
             const autoGen = new AutoGenerate()
 
             await autoGen.changeTrack(0, pattern, track)
@@ -1024,7 +1024,7 @@ describe('Generators', () => {
             serviceRegistry.reset()
             cmd = new Commander()
             serviceRegistry.cmd = cmd
-            serviceRegistry.patterns = patternsManager
+            serviceRegistry.flatNotes = flatNotesService
         })
 
         it('generatePattern produces a pattern with notes on tracks', async () => {

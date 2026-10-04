@@ -154,7 +154,7 @@ describe('TrackEditor — OrSlider integration', () => {
             true,
         )
         expect(
-            editor.container.querySelector('[data-fx-tab="1"]').closest('.te-mod-btn').classList.contains('active'),
+            editor.container.querySelector('[data-fx-tab="1"]').closest('.te-subtab').classList.contains('active'),
         ).toBe(true)
     })
 
@@ -342,10 +342,10 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
         showModTab(makeTrack())
         editor.container.querySelector('[data-lfo-select-btn="pan"]').click()
 
-        const panBtn = editor.container.querySelector('[data-lfo-select-btn="pan"]').closest('.te-mod-btn')
+        const panBtn = editor.container.querySelector('[data-lfo-select-btn="pan"]').closest('.te-subtab')
         expect(panBtn.classList.contains('active')).toBe(true)
 
-        const velBtn = editor.container.querySelector('[data-lfo-select-btn="velocity"]').closest('.te-mod-btn')
+        const velBtn = editor.container.querySelector('[data-lfo-select-btn="velocity"]').closest('.te-subtab')
         expect(velBtn.classList.contains('active')).toBe(false)
     })
 

@@ -76,7 +76,7 @@ function makeSound(overrides = {}) {
         url: 'http://example.com/kick.wav',
         display_name: 'Kick 1',
         key: 'KICK',
-        kit_name: 'Default',
+        kitName: 'Default',
         gainDb: 0,
         tune: 0,
         decay: 0,
@@ -108,9 +108,9 @@ function setupSounds() {
     soundRegistry.sounds = sounds
 
     mockDrumkitService.getCurrentKitSounds.mockReturnValue([
-        { url: 'http://example.com/kick.wav', display_name: 'Kick 1', key: 'KICK', kit_name: 'Default' },
-        { url: 'http://example.com/snare.wav', display_name: 'Snare 1', key: 'SNARE', kit_name: 'Default' },
-        { url: 'http://example.com/hihat.wav', display_name: 'HiHat 1', key: 'HIHAT', kit_name: 'Default' },
+        { url: 'http://example.com/kick.wav', display_name: 'Kick 1', key: 'KICK', kitName: 'Default' },
+        { url: 'http://example.com/snare.wav', display_name: 'Snare 1', key: 'SNARE', kitName: 'Default' },
+        { url: 'http://example.com/hihat.wav', display_name: 'HiHat 1', key: 'HIHAT', kitName: 'Default' },
     ])
     mockDrumkitService.exportCurrentKit.mockReturnValue({ name: 'Default', sounds: [] })
     mockDrumkitService.getAnalysisInfo.mockReturnValue({
@@ -128,7 +128,7 @@ function setupSounds() {
 
     serviceRegistry.audioEngine = {
         invalidateCache: vi.fn(),
-        updateGeneratedSounds: vi.fn(),
+        setGeneratedSounds: vi.fn(),
     }
     serviceRegistry.audioCtx = {
         createBufferSource: vi.fn().mockReturnValue({

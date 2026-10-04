@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import * as patternsManager from '../src/patterns/manager.js'
+import * as flatNotesService from '../src/patterns/flat_notes.js'
 import { hasArp, getArpNoteCount, generateSubNotes, createArpFlatNote } from '../src/patterns/engine.js'
 import { makeNote, makeTrack, PARAM_SETS } from './helpers/make_pattern.js'
 import * as stepResolver from '../src/patterns/step_resolver.js'
@@ -60,7 +60,7 @@ describe('PatternManager', () => {
     let mgr
 
     beforeEach(() => {
-        mgr = patternsManager
+        mgr = flatNotesService
     })
 
     describe('applyFlatNotes', () => {

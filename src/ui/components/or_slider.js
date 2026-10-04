@@ -7,7 +7,7 @@
  *   - normalization/denormalization (e.g. filterFreq in Hz)
  *   - LFO indicator (CSS class has-lfo)
  *   - keyboard control: Arrow ±step, Shift+Arrow ±step×10, Alt+Arrow ±step÷10
- *   - programmatic update via setValue()
+ *   - programatic update via setValue()
  *   - onChange callback with denormalized value
  *
  * Usage — HTML generation (template literal sections):

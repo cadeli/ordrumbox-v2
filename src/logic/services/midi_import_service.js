@@ -254,7 +254,7 @@ export default class MidiImportService {
         const resolveSampleUrl = (trackName) => {
             for (const sound of Object.values(soundRegistry.sounds)) {
                 if (
-                    sound.kit_name === selectedDrumkitName &&
+                    sound.kitName === selectedDrumkitName &&
                     trackName.toUpperCase().includes(sound.key.toUpperCase())
                 ) {
                     return sound.url

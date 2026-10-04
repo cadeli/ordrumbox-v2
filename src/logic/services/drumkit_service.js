@@ -24,7 +24,7 @@ class DrumkitService {
      */
     getCurrentKitSounds() {
         const kit = this.currentKitName()
-        return this.getAllSounds().filter((sound) => sound.kit_name === kit)
+        return this.getAllSounds().filter((sound) => sound.kitName === kit)
     }
 
     currentKitName() {
@@ -36,7 +36,7 @@ class DrumkitService {
         if (!name) return null
 
         const instruments = Object.values(soundRegistry.sounds)
-            .filter((sound) => sound.kit_name === name)
+            .filter((sound) => sound.kitName === name)
             .map((sound) => ({
                 url: sound.url,
                 display_name: sound.display_name,
@@ -81,7 +81,7 @@ class DrumkitService {
         for (const sample of instruments) {
             const sound = soundRegistry.sounds[sample.url]
             if (!sound) continue
-            Object.assign(sound, sample, { kit_name: kit.name })
+            Object.assign(sound, sample, { kitName: kit.name })
         }
 
         const kitIdx = soundRegistry.drumkitList.findIndex((entry) => entry.name === kit.name)
@@ -102,11 +102,11 @@ class DrumkitService {
     moveToKit(soundKey, newKitName) {
         const sound = soundRegistry.sounds[soundKey]
         if (!sound) return null
-        const oldKitName = sound.kit_name
+        const oldKitName = sound.kitName
 
         if (oldKitName === newKitName) return null
 
-        sound.kit_name = newKitName
+        sound.kitName = newKitName
 
         const oldKit = soundRegistry.drumkits[oldKitName]
         if (oldKit?.instruments) {
@@ -141,7 +141,7 @@ class DrumkitService {
         if (!sound || !instrumentKey || sound.key === instrumentKey) return false
 
         sound.key = instrumentKey
-        const kitName = sound.kit_name
+        const kitName = sound.kitName
         const updateInstrumentEntry = (kit) => {
             kit?.instruments?.forEach((entry) => {
                 if (entry.url === soundKey) entry.key = instrumentKey
@@ -159,7 +159,7 @@ class DrumkitService {
         const sound = soundRegistry.sounds[soundKey]
         if (!sound) return null
 
-        const kitName = sound.kit_name
+        const kitName = sound.kitName
         delete soundRegistry.sounds[soundKey]
 
         const kit = soundRegistry.drumkits[kitName]
@@ -194,7 +194,7 @@ class DrumkitService {
         const kitName = soundRegistry.drumkitList[appState.selectedDrumkitIdx]?.name ?? 'imported'
 
         soundRegistry.sounds[file.name] = {
-            kit_name: kitName,
+            kitName: kitName,
             url: file.name,
             key,
             index: Object.keys(soundRegistry.sounds).length + 1,

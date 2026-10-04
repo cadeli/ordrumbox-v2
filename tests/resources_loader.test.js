@@ -532,7 +532,7 @@ describe('ResourcesLoader', () => {
 
             expect(result.url).toBe('kick.wav')
             expect(result.key).toBe('K')
-            expect(result.kit_name).toBe('real')
+            expect(result.kitName).toBe('real')
             expect(result.buffer).toBe(mockBuffer)
             expect(result.isLoad).toBe(true)
             const { soundRegistry } = await import('../src/state/sound_registry.js')

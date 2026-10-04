@@ -6,7 +6,9 @@ import { MASTER_BUS_DEFAULTS, SESSION_DEFAULTS } from '../core/constants.js'
  * @typedef {object} SoundEntry
  * @property {string} [url]
  * @property {string} [key]
- * @property {string} [kitName]
+ * @property {string} [kitName]  drumkit this sample belongs to (one spelling only:
+ *   it used to be written as `kit_name` while the UI read `kitName`, so the
+ *   kit column of the sound section was empty for every real entry)
  * @property {string} [display_name]
  * @property {AudioBuffer} [buffer]
  * @property {number} [index] import order, set when added
@@ -15,7 +17,6 @@ import { MASTER_BUS_DEFAULTS, SESSION_DEFAULTS } from '../core/constants.js'
  * @property {any} [decay]
  * @property {any} [duration]
  * @property {any} [gainDb]
- * @property {any} [kit_name]
  * @property {any} [peakDb]
  * @property {any} [rootMidi]
  * @property {any} [tune]

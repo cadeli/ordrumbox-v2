@@ -30,7 +30,7 @@ async function setup(sound) {
     serviceRegistry.reset()
     soundRegistry.reset()
     soundRegistry.generatedSounds = { BASS1: makeSound(sound) }
-    audioEngine = { updateGeneratedSounds: vi.fn(), invalidateCache: vi.fn() }
+    audioEngine = { setGeneratedSounds: vi.fn(), invalidateCache: vi.fn() }
     serviceRegistry.audioEngine = audioEngine
 
     HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
@@ -57,7 +57,7 @@ async function setup(sound) {
     )
     editor.createDOM()
     document.getElementById('app-content').appendChild(editor.panel)
-    await editor.openEditor()
+    await editor.showPanel()
     return editor
 }
 
@@ -178,15 +178,15 @@ describe('frame-coalesced preview commit', () => {
 
     it('coalesces a burst of knob changes into a single commit per flush', async () => {
         await setup()
-        audioEngine.updateGeneratedSounds.mockClear()
+        audioEngine.setGeneratedSounds.mockClear()
 
         knob('masterVolume').setValue(0.3, true)
         knob('masterVolume').setValue(0.5, true)
         knob('filter.freq').setValue(1200, true)
-        expect(audioEngine.updateGeneratedSounds).not.toHaveBeenCalled()
+        expect(audioEngine.setGeneratedSounds).not.toHaveBeenCalled()
 
         editor.flushPreview()
-        expect(audioEngine.updateGeneratedSounds).toHaveBeenCalledTimes(1)
+        expect(audioEngine.setGeneratedSounds).toHaveBeenCalledTimes(1)
         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.5)
         expect(soundRegistry.generatedSounds.BASS1.filter.freq).toBe(1200)
     })

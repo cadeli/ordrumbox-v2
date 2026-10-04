@@ -758,7 +758,7 @@ test.describe.serial('Full session lifecycle', () => {
 
         await test.step('phase 8 — back to the grid, persist and snapshot', async () => {
             // leaving the synth view commits the edited sound
-            // (view_manager exit → synthEditor.hidePanel → commitSound → persist)
+            // (view_manager exit → synthEditor.closePanelAndCommit → commitSound → persist)
             await page.locator('button.tb-view-btn[data-view="edit"]').click()
             await expect(page.locator('#pattern-panel')).toBeVisible()
             await waitForSynthSoundPersisted(page, 'BASS1')

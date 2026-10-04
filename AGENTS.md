@@ -37,7 +37,7 @@ index.html → src/main.js (bootstrap after "Start" click)
                 ↓
         logic/seq.js             ← sequencer (tick scheduling via Web Worker)
         patterns/engine.js       ← pattern computation (flatNotes, variation)
-        patterns/manager.js      ← pattern CRUD
+        patterns/flat_notes.js    ← applyFlatNotes() (flat-note recompute + events)
                 ↓
         ui/                      ← vanilla JS panel components
         ui/synth_editor/         ← soft synth UI
@@ -180,7 +180,7 @@ src/
   loader/          — asset/resource loading
   logic/           — seq, LFO, history, commands, generators, MIDI, services
   model/           — data models (flatnote, instrument, track schema)
-  patterns/        — pattern engine, manager, defaults, variation
+  patterns/        — pattern engine, flat notes, defaults, variation
   state/           — app state, service registry/loader, sound registry
   ui/              — all UI panels and components
 

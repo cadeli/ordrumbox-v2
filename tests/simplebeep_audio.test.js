@@ -60,11 +60,11 @@ describe('simpleBeep — real audio rendering', () => {
         const { default: WavExporter } = await import('../src/audio/export/wav_exporter.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        const patternsManager = await import('../src/patterns/manager.js')
+        const flatNotesService = await import('../src/patterns/flat_notes.js')
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
 
         soundRegistry.sounds = {
             'kick.wav': { url: 'kick.wav', buffer: kickBuffer, key: 'KICK' },
@@ -115,11 +115,11 @@ describe('simpleBeep — real audio rendering', () => {
         const { default: WavExporter } = await import('../src/audio/export/wav_exporter.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        const patternsManager = await import('../src/patterns/manager.js')
+        const flatNotesService = await import('../src/patterns/flat_notes.js')
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
 
         soundRegistry.sounds = {
             'kick.wav': { url: 'kick.wav', buffer: kickBuffer, key: 'KICK' },
@@ -168,11 +168,11 @@ describe('simpleBeep — mixer graph reconnection', () => {
         const { default: Mixer } = await import('../src/audio/mixer.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        const patternsManager = await import('../src/patterns/manager.js')
+        const flatNotesService = await import('../src/patterns/flat_notes.js')
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
         const mixer = await Mixer.create(ctx)
@@ -199,11 +199,11 @@ describe('simpleBeep — mixer graph reconnection', () => {
         const { default: Mixer } = await import('../src/audio/mixer.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        const patternsManager = await import('../src/patterns/manager.js')
+        const flatNotesService = await import('../src/patterns/flat_notes.js')
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
         const mixer = await Mixer.create(ctx)
@@ -245,11 +245,11 @@ describe('simpleBeep — mixer graph reconnection', () => {
         const { default: Mixer } = await import('../src/audio/mixer.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        const patternsManager = await import('../src/patterns/manager.js')
+        const flatNotesService = await import('../src/patterns/flat_notes.js')
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
         const mixer = await Mixer.create(ctx)

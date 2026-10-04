@@ -192,7 +192,7 @@ export default class ViewSwitch {
                     bassTrack.synthSoundKey = 'BASS1'
                     bassTrack.velocity = 0.8
                     await autoGen.generateTrack(bassTrack, bassVariant, 1, pattern, harmony)
-                    serviceRegistry.patterns.applyFlatNotes(pattern)
+                    serviceRegistry.flatNotes.applyFlatNotes(pattern)
                 }
                 bassTrack.auto = true
                 bassTrack._toolbarAuto = true
@@ -223,7 +223,7 @@ export default class ViewSwitch {
                     pianoTrack.synthSoundKey = 'PIANO'
                     pianoTrack.velocity = 0.8
                     await autoGen.generateTrack(pianoTrack, pianoVariant, 1, pattern, harmony)
-                    serviceRegistry.patterns.applyFlatNotes(pattern)
+                    serviceRegistry.flatNotes.applyFlatNotes(pattern)
                 }
                 pianoTrack.auto = true
                 pianoTrack._toolbarAuto = true

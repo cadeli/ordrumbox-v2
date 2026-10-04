@@ -52,7 +52,7 @@ describe('cmd_selection', () => {
         Object.values(mocks).forEach((m) => m.mockClear())
 
         serviceRegistry.seq = { setBpm: mocks.setBpm }
-        serviceRegistry.patterns = { applyFlatNotes: mocks.applyFlatNotes }
+        serviceRegistry.flatNotes = { applyFlatNotes: mocks.applyFlatNotes }
         serviceRegistry.audioEngine = { invalidateCache: mocks.invalidateCache }
         serviceRegistry.resourcesLoader = {
             loadMissingSamplesFromDrumkits: mocks.loadMissingSamplesFromDrumkits,

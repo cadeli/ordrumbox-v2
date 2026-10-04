@@ -81,7 +81,7 @@ test.describe('E2E-C: Kit change mid-playback', () => {
         await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 })
         await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 })
 
-        // applyFlatNotes() assigns a brand new Map (patterns/manager.js),
+        // applyFlatNotes() assigns a brand new Map (patterns/flat_notes.js),
         // so an identity change proves the rebuild ran for this kit change.
         await page.evaluate(() => {
             window.__flatNotesBefore = window.__e2e.appState.flatNotes

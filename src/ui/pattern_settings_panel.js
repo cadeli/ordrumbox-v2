@@ -302,7 +302,7 @@ export default class PatternSettingsPanel {
                     track.synthSoundKey = synthSoundKey
                     track.velocity = 0.8
                     await autoGen.generateTrack(track, variant, 1, pattern, harmony)
-                    serviceRegistry.patterns.applyFlatNotes(pattern)
+                    serviceRegistry.flatNotes.applyFlatNotes(pattern)
                 }
                 track.auto = true
                 serviceRegistry.cmd.commitGenerationUndo()

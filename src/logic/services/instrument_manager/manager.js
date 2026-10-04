@@ -22,13 +22,18 @@ export default class InstrumentsManager {
             const inst = new Instrument(obj)
 
             for (const m of inst.midi) {
-                if (m.key_based === true && m.key == null) {
+                if (m.keyBased === true && m.key == null) {
                     const key = GM_DRUM_KEY_BY_NAME[m.name]
                     if (key != null) m.key = String(key)
-                } else if (m.key_based === false && m.programm == null) {
+                } else if (m.keyBased === false && m.program == null) {
+                    // stored 0-BASED, like GM_PROGRAM_NUM_BY_NAME and like the
+                    // Program Change byte it ends up in. It used to be stored +1
+                    // ("programm"), which is why findInstrumentFromMidiProgram had
+                    // to try both values and why the MIDI export came out one
+                    // program too high for every melodic instrument.
                     const program = GM_PROGRAM_NUM_BY_NAME[m.name]
                     if (program != null) {
-                        m.programm = String(program + 1)
+                        m.program = String(program)
                     }
                 }
             }
@@ -85,8 +90,10 @@ export default class InstrumentsManager {
             .split(/[^a-zA-Z0-9]+/)
             .filter((w) => w.length > 0)
         for (const word of words) {
+            // NOT_FOUND, never null: testing the object itself would accept the
+            // "not found" instrument and end the search on the first word
             instrument = this.findByName(word)
-            if (instrument) return instrument
+            if (instrument.id !== Instrument.NOT_FOUND) return instrument
         }
 
         return new Instrument()
@@ -98,7 +105,7 @@ export default class InstrumentsManager {
 
         for (const instrument of this.byId.values()) {
             const midiMatch = instrument.midi.find((midi) => {
-                return String(midi.ch) === normalizedChannel && String(midi.key) === normalizedKey
+                return String(midi.channel) === normalizedChannel && String(midi.key) === normalizedKey
             })
             if (midiMatch) {
                 return instrument
@@ -108,32 +115,22 @@ export default class InstrumentsManager {
         return new Instrument()
     }
 
+    /**
+     * @param {number} program 0-based General MIDI program number
+     * @returns {Instrument} NOT_FOUND when nothing matches
+     */
     findInstrumentFromMidiProgram = (program) => {
         const normalizedProgram = String(program)
-        const normalizedProgramShifted = String(Number(program) + 1)
         logger.debug('Instrument', `findInstrumentFromMidiProgram: program=${program}`)
 
         for (const instrument of this.byId.values()) {
             const midiMatch = instrument.midi.find((midi) => {
-                return midi.programm != null && String(midi.programm) === normalizedProgramShifted
+                return midi.program != null && String(midi.program) === normalizedProgram
             })
             if (midiMatch) {
                 logger.debug(
                     'Instrument',
-                    `findInstrumentFromMidiProgram: program match program=${program} (+1=${normalizedProgramShifted}) → "${instrument.id}"`,
-                )
-                return instrument
-            }
-        }
-
-        for (const instrument of this.byId.values()) {
-            const midiMatch = instrument.midi.find((midi) => {
-                return midi.programm != null && String(midi.programm) === normalizedProgram
-            })
-            if (midiMatch) {
-                logger.debug(
-                    'Instrument',
-                    `findInstrumentFromMidiProgram: program match program=${program} (exact) → "${instrument.id}"`,
+                    `findInstrumentFromMidiProgram: program match program=${program} → "${instrument.id}"`,
                 )
                 return instrument
             }
@@ -150,7 +147,7 @@ export default class InstrumentsManager {
 
         if (gmName) {
             const inst = this.findByName(gmName)
-            if (inst) {
+            if (inst.id !== Instrument.NOT_FOUND) {
                 logger.debug('Instrument', `findByProgramNumber: findByName("${gmName}") → "${inst.id}"`)
                 return inst
             }

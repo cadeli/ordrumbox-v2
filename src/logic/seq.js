@@ -178,7 +178,7 @@ export default class Sequencer {
         for (const pattern of this.patternsToPlay(selectedPattern)) {
             await autoAssign.autoAssignSounds(pattern)
         }
-        this.serviceRegistry.patterns.applyFlatNotes(selectedPattern)
+        this.serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
 
         this.ensureAudioEngine()
         // Flat notes cache each track's soundId, so a pattern auto-assign has

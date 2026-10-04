@@ -112,21 +112,21 @@ describe('PresetSection', () => {
     describe('commitSound', () => {
         it('writes to soundRegistry.generatedSounds', () => {
             soundRegistry.generatedSounds = {}
-            serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
+            serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
 
             const sound = makeGeneratedSound()
             editor.presets.commitSound('NEW_PRESET', sound)
 
             expect(soundRegistry.generatedSounds['NEW_PRESET']).toBeDefined()
-            expect(serviceRegistry.audioEngine.updateGeneratedSounds).toHaveBeenCalled()
+            expect(serviceRegistry.audioEngine.setGeneratedSounds).toHaveBeenCalled()
         })
     })
 
     describe('newPreset', () => {
         it('creates a new preset with default name', () => {
             soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
-            serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
+            serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
 
@@ -142,7 +142,7 @@ describe('PresetSection', () => {
                 BASS1: makeGeneratedSound(),
                 new_preset: makeGeneratedSound(),
             }
-            serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
+            serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
 
@@ -155,7 +155,7 @@ describe('PresetSection', () => {
     describe('duplicatePreset', () => {
         it('creates a copy with _copy suffix', () => {
             soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
-            serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
+            serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
             editor.presets.loadPreset('BASS1')
@@ -181,7 +181,7 @@ describe('PresetSection', () => {
                 BASS1: makeGeneratedSound(),
                 BASS2: makeGeneratedSound(),
             }
-            serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
+            serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
             editor.presets.loadPreset('BASS1')
@@ -193,7 +193,7 @@ describe('PresetSection', () => {
 
         it('refuses to delete the last preset', () => {
             soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
-            serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
+            serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
             editor.presets.loadPreset('BASS1')
@@ -209,7 +209,7 @@ describe('PresetSection', () => {
                 B: makeGeneratedSound(),
                 C: makeGeneratedSound(),
             }
-            serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
+            serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
             editor.presets.loadPreset('B')
@@ -330,7 +330,7 @@ describe('PresetSection', () => {
     describe('randomizePreset', () => {
         it('modifies draft values', () => {
             soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
-            serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
+            serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
             editor.presets.loadPreset('BASS1')
@@ -386,7 +386,7 @@ describe('PresetSection', () => {
             serviceRegistry.resourcesLoader = {
                 loadGeneratedSounds: vi.fn().mockResolvedValue(undefined),
             }
-            serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
+            serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
 
             const { editor } = setupEditor(makeTrack())
             await editor.ensureGeneratedSoundsLoaded()

@@ -49,7 +49,7 @@ export default class SoundSection {
         // quote inside a name cannot break out of the title attribute.
         const sampleTooltip = currentSound
             ? [
-                  `Kit: ${esc(currentSound.kit_name ?? '?')}`,
+                  `Kit: ${esc(currentSound.kitName ?? '?')}`,
                   `URL: ${esc(currentSound.url ?? '?')}`,
                   `Instrument: ${esc(currentSound.key ?? '?')}`,
                   `Synth: ${track.useSoftSynth === true ? 'yes' : 'no'}`,
@@ -174,7 +174,7 @@ export default class SoundSection {
         }
         const sound = this.#editor.soundRegistry.sounds[track.soundId]
         if (!sound) return null
-        const kit = sound.kit_name ?? ''
+        const kit = sound.kitName ?? ''
         const name = sound.display_name ?? sound.key ?? sound.url ?? ''
         return kit ? `${kit}/${name}` : name
     }

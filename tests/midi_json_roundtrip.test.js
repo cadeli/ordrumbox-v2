@@ -25,7 +25,7 @@ import Commander from '../src/logic/commands/cmd.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import * as patternsManager from '../src/patterns/manager.js'
+import * as flatNotesService from '../src/patterns/flat_notes.js'
 import { recomputeFlatNotes } from '../src/patterns/engine.js'
 
 const SIMPLE_JSON = {
@@ -193,7 +193,7 @@ describe('MIDI JSON Roundtrip', () => {
     beforeEach(() => {
         appState.patterns = []
         serviceRegistry.reset()
-        serviceRegistry.patterns = patternsManager
+        serviceRegistry.flatNotes = flatNotesService
         soundRegistry.reset()
 
         cmd = new Commander()

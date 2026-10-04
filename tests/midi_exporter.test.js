@@ -150,7 +150,7 @@ describe('resolveTrackMidi', () => {
         expect(r.isDrum).toBe(false)
     })
 
-    it('returns default channel 9 when mapping.ch is missing', () => {
+    it('returns default channel 9 when mapping.channel is missing', () => {
         const mockIm = {
             findByName: () => ({
                 midi: [{ key: '60', name: 'Pad' }],
