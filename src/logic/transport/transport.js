@@ -12,8 +12,8 @@ export default class Transport {
         this.isRunning = false
         this.tick = 1
         this.bpm = 120.0
-        this.lookahead = 25.0
-        this.scheduleAheadTime = 0.1
+        this.schedulerPollIntervalMs = 25.0
+        this.scheduleAheadSeconds = 0.1
         this.nextStepTime = 0.0
         this.nextClockTime = 0.0
         this.clockInterval = 60 / (this.bpm * 24)
@@ -34,7 +34,7 @@ export default class Transport {
                 logger.info('Transport', 'Transport worker message: ' + e.data)
             }
         }
-        this.timerWorker.postMessage({ interval: this.lookahead })
+        this.timerWorker.postMessage({ interval: this.schedulerPollIntervalMs })
     }
 
     start = () => {
@@ -74,7 +74,7 @@ export default class Transport {
         const perfNow = performance.now()
 
         // Schedule Clock
-        while (this.nextClockTime < audioNow + this.scheduleAheadTime) {
+        while (this.nextClockTime < audioNow + this.scheduleAheadSeconds) {
             if (this.isRunning && serviceRegistry.midiManager) {
                 const midiTime = perfNow + (this.nextClockTime - audioNow) * 1000
                 serviceRegistry.midiManager.sendClock(midiTime)
@@ -87,7 +87,7 @@ export default class Transport {
         // If #tickInFlight is true, the previous async onSchedule has not
         // completed — skipping the call here and NOT advancing ensures the
         // tick is retried next time instead of being permanently lost.
-        while (this.nextStepTime < audioNow + this.scheduleAheadTime) {
+        while (this.nextStepTime < audioNow + this.scheduleAheadSeconds) {
             if (this.isRunning && this.onSchedule && !this.#tickInFlight) {
                 let result
                 try {
@@ -97,7 +97,7 @@ export default class Transport {
                     // escaped into the worker onmessage and froze playback.
                     logger.error('Transport', 'onSchedule threw', err)
                     reportUserError('Transport.onSchedule', 'Playback tick failed — audio may drop out', { cause: err })
-                    this.nextNote()
+                    this.advanceTick()
                     continue
                 }
                 if (result && typeof result.catch === 'function') {
@@ -107,7 +107,7 @@ export default class Transport {
                             this.#tickInFlight = null
                         })
                 }
-                this.nextNote()
+                this.advanceTick()
             } else {
                 break
             }
@@ -115,10 +115,12 @@ export default class Transport {
     }
 
     /**
-     * Advance one tick: schedule the next tick time and move the counter on.
-     * Nothing is "noted" here — the caller (onSchedule) is what sounds a tick.
+     * Advances the sequencer by one tick: pushes nextStepTime one tick further and
+     * increments the counter. Nothing is "noted" here — the caller (onSchedule) is
+     * what sounds a tick. (It used to be called nextNote, which claims an effect
+     * this method does not have.)
      */
-    nextNote = () => {
+    advanceTick = () => {
         this.nextStepTime += appState.secondsPerTick
         this.tick++
     }

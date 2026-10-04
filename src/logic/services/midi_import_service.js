@@ -1,7 +1,7 @@
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
-import { TICK, MIDI_MAX_BEATS, MIDI_MAX_PATTERNS } from '../../core/constants.js'
+import { TICK, MIDI_MAX_BEATS, MIDI_MAX_PATTERNS, NOT_FOUND } from '../../core/constants.js'
 import { parseMidi, findAllNotes, extractProgramChanges, midiVelocityToNormalized } from '../midi/midi_parser.js'
 import { C3_MIDI_NOTE } from '../midi/midi_exporter.js'
 import { instrumentsManager, GM_DRUM_NAMES, GM_PROGRAM_NAMES } from './instrument_manager/index.js'
@@ -152,8 +152,10 @@ export default class MidiImportService {
             }
 
             if (midiTrackName) {
+                // findByName answers with a NOT_FOUND instrument, never null:
+                // testing the object would push a track literally named NOT_FOUND.
                 const nameInst = im.findByName(midiTrackName)
-                if (nameInst) {
+                if (nameInst.id !== NOT_FOUND) {
                     const trackName = nameInst.id
                     if (!trackDefs.some((d) => d.trackName === trackName)) {
                         trackDefs.push(

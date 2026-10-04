@@ -12,7 +12,7 @@ import { syncKnobs } from './components/sync_helpers.js'
 import { sampleWaveformTheme } from './theme.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
-import WavImportService from '../logic/services/wav_import_service.js'
+import AudioImportService from '../logic/services/audio_import_service.js'
 import { EVENTS } from '../core/events.js'
 
 const TAG = 'DrumkitManager'
@@ -48,7 +48,7 @@ export default class DrumkitManager extends BasePanel {
     #knobs
     #listEl
     #detailEl
-    #wavImportService
+    #audioImportService
     #drumkitChangeDebounce
 
     get knobs() {
@@ -75,7 +75,7 @@ export default class DrumkitManager extends BasePanel {
         this.#detailEl = null
         this.#knobs = []
         this.#drumkitChangeDebounce = null
-        this.#wavImportService = new WavImportService()
+        this.#audioImportService = new AudioImportService()
     }
 
     createDOM() {
@@ -205,13 +205,13 @@ export default class DrumkitManager extends BasePanel {
         if (!files || files.length === 0) return
 
         try {
-            const { kitName, fileCount, warning } = await this.#wavImportService.importDirectory(files)
+            const { kitName, fileCount, warning } = await this.#audioImportService.importDirectory(files)
             if (warning) {
                 showToast(warning, 'warning')
                 return
             }
             if (fileCount > 0) {
-                const assignResult = await this.#wavImportService.autoAssignSounds()
+                const assignResult = await this.#audioImportService.autoAssignSounds()
                 if (assignResult?.warning) {
                     showToast(assignResult.warning, 'warning')
                 }

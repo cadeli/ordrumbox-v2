@@ -6,7 +6,7 @@ import InstrumentsManager from '../../logic/services/instrument_manager/index.js
 import AutoAssign from '../../logic/services/auto_assign.js'
 import { emitTrackChanged } from '../../state/playback_events.js'
 import {
-    getCurrentInstrumentName,
+    getCurrentInstrumentId,
     getCurrentSoundUrl,
     getPreferredSampleForInstrument,
     getSamplesForInstrument,
@@ -38,9 +38,9 @@ export default class SoundSection {
             .map((i) => i.id)
             .filter((id) => keysWithSamples.has(id))
             .sort()
-        const currentName = getCurrentInstrumentName(editor, instrumentIds, keysWithSamples)
+        const currentInstrumentId = getCurrentInstrumentId(editor, instrumentIds, keysWithSamples)
         const currentSoundId = getCurrentSoundUrl(editor)
-        const matchingSounds = getSamplesForInstrument(editor, currentName)
+        const matchingSounds = getSamplesForInstrument(editor, currentInstrumentId)
 
         const NL = '&#10;'
         const esc = editor.esc
@@ -59,7 +59,7 @@ export default class SoundSection {
             : ''
 
         let content = ''
-        content += `<div class="ne-row"><label>Instr</label><select data-sound="instrument">${renderOptions(instrumentIds, currentName, { escape: esc })}</select></div>
+        content += `<div class="ne-row"><label>Instr</label><select data-sound="instrument">${renderOptions(instrumentIds, currentInstrumentId, { escape: esc })}</select></div>
         <div class="ne-row"><label title="${sampleTooltip}">Sample</label><select data-sound="sample">`
         if (matchingSounds.length === 0) {
             content += `<option value="">— no samples —</option>`

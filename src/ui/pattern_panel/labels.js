@@ -6,7 +6,11 @@ export function notesLabel(count) {
     return `${count} note${count === 1 ? '' : 's'}`
 }
 
-/** Human readable cursor position ("beat 2.3"). */
-export function stepLabel(beat, beatStep) {
+/**
+ * Human readable cursor position ("beat 2.3") — a BEAT label: beat 2, step 3.
+ * It used to be called stepLabel while returning a beat, which is why three call
+ * sites in context_menu_section.js re-implemented the same string inline.
+ */
+export function beatLabel(beat, beatStep) {
     return `beat ${beat + 1}.${beatStep + 1}`
 }

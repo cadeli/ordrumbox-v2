@@ -7,23 +7,10 @@ import { syncComponentMap, syncKnobs } from './components/sync_helpers.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
 import { EVENTS } from '../core/events.js'
+import { NOTE_DEFAULTS } from '../core/note_schema.js'
 
 const ARP_TYPES = ['up', 'down', 'updown']
 const SCALES_URL = 'assets/data/scales.json'
-
-const DEFAULT_NOTE = {
-    velocity: 1,
-    pitch: 0,
-    pan: 0,
-    every: 1,
-    prob: 1,
-    retriggerNum: 1,
-    rate: 1,
-    euclideanFill: 0,
-    euclideanRotation: 0,
-    arpTriggerProbability: 0,
-    arpRange: 0,
-}
 
 let scalesCache = null
 
@@ -67,8 +54,10 @@ const GROUPS = [
         id: 'triggers',
         label: 'Triggers',
         props: [
-            { key: 'every', label: 'Every', min: 1, max: 16, step: 1 },
-            { key: 'pos', label: 'Pos', min: 0, max: 15, step: 1 },
+            // every = one hit every N passes of the pattern, pos = which pass
+            // (see isTriggered), hence "Passes" and not "Every"
+            { key: 'every', label: 'Passes', min: 1, max: 16, step: 1 },
+            { key: 'pos', label: 'Phase', min: 0, max: 15, step: 1 },
             { key: 'prob', label: 'Prob', min: 0, max: 1, step: 0.01 },
         ],
     },
@@ -252,7 +241,11 @@ export default class NoteEditor extends BasePanel {
         this.#track = data.track
         this.#beat = data.beat ?? 0
         this.#beatStep = data.beatStep ?? 0
-        this.#note = { ...DEFAULT_NOTE }
+        // NOTE_DEFAULTS, not a second table: this one used to disagree on velocity
+        // (1 vs 0.8) and arpTriggerProbability (0 vs 1), so a note created in the
+        // editor was quieter and never arp-triggered compared to one created
+        // anywhere else.
+        this.#note = { ...NOTE_DEFAULTS }
         await loadScales()
     }
 
@@ -400,21 +393,28 @@ export default class NoteEditor extends BasePanel {
      * the note itself is only updated once the command runs.
      * @param {{range?: number, scale?: string, type?: string}} [overrides]
      */
+    /**
+     * The note's `arp` from a scale/type/range triple. `range` is the number of
+     * scale degrees, i.e. `arp.intervals.length` — it is NOT a note field: it used
+     * to be cached in `note.arpRange`, which nothing persisted, so the Range
+     * slider came back wrong on reload and two values could describe one arp.
+     * @param {{range?: number, scale?: string, type?: string}} [overrides]
+     */
     #arpValue(overrides = {}) {
         if (!this.#note) return null
         const scale = overrides.scale ?? this.#note._arpScale ?? 'major'
         const type = overrides.type ?? this.#note._arpType ?? 'up'
-        const range = overrides.range ?? this.#note.arpRange ?? this.#getArpState(this.#note).range
+        const range = overrides.range ?? this.#getArpState(this.#note).range
         return range > 0 ? { intervals: getScaleIntervals(scale, range), mode: type } : null
     }
 
     #onSlider(key, val) {
         if (!this.#note || !this.#track) return
-        const updates = { [key]: val }
-        if (key === 'arpRange') updates.arp = this.#arpValue({ range: val })
+        // arpRange is not a field: the range lives in arp.intervals.length
+        const updates = key === 'arpRange' ? { arp: this.#arpValue({ range: val }) } : { [key]: val }
         // Continuous control: coalesce the whole drag into ONE undo step.
         serviceRegistry.cmd?.updateNote(this.#track, this.#note, updates, {
-            desc: `Edit note ${key} on ${this.#track.name}`,
+            desc: `Edit note ${key === 'arpRange' ? 'arp' : key} on ${this.#track.name}`,
             coalesce: true,
         })
         playbackEvents.batch(() => {
@@ -429,7 +429,7 @@ export default class NoteEditor extends BasePanel {
         const overrides = key === 'arpScale' ? { scale: sel.value } : key === 'arpType' ? { type: sel.value } : {}
         const updates = { ['_' + key]: sel.value, arp: this.#arpValue(overrides) }
         serviceRegistry.cmd?.updateNote(this.#track, this.#note, updates, {
-            desc: `Edit note ${key} on ${this.#track.name}`,
+            desc: `Edit note ${key === 'arpRange' ? 'arp' : key} on ${this.#track.name}`,
         })
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.NOTE_CHANGE, [this.#track])

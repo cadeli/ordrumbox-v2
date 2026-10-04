@@ -414,27 +414,27 @@ describe('Sound', () => {
 
     // ── updateStripFromTrack caching ──────────────────────────────────
 
-    it('updateStripFromTrack skips second call with same _version (cache hit)', () => {
+    it('updateStripFromTrack skips second call with the same paramRevision (cache hit)', () => {
         const strip = makeStrip()
-        const track = { name: 'KICK', _version: 1, filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7 }
+        const track = { name: 'KICK', paramRevision: 1, filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7 }
         sound.updateStripFromTrack(strip, track, 1.0)
         const firstCallCount = strip.updateFilter.mock.calls.length
         sound.updateStripFromTrack(strip, track, 1.0)
         expect(strip.updateFilter.mock.calls.length).toBe(firstCallCount)
     })
 
-    it('updateStripFromTrack re-applies when _version changes', () => {
+    it('updateStripFromTrack re-applies when paramRevision changes', () => {
         const strip = makeStrip()
-        const track = { name: 'KICK', _version: 1, filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7 }
+        const track = { name: 'KICK', paramRevision: 1, filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7 }
         sound.updateStripFromTrack(strip, track, 1.0)
-        track._version = 2
+        track.paramRevision = 2
         sound.updateStripFromTrack(strip, track, 1.0)
         expect(strip.updateFilter).toHaveBeenCalledTimes(2)
     })
 
     it('invalidateStripCache forces re-apply on next call', () => {
         const strip = makeStrip()
-        const track = { name: 'KICK', _version: 1, filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7 }
+        const track = { name: 'KICK', paramRevision: 1, filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7 }
         sound.updateStripFromTrack(strip, track, 1.0)
         const firstCallCount = strip.updateFilter.mock.calls.length
         sound.invalidateStripCache('KICK')

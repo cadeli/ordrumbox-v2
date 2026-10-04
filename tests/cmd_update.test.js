@@ -222,10 +222,10 @@ describe('Commander — updateNote / updateTrack opts / setStepsPerBeat', () => 
             expect(track.notes[0].beatStep).toBe(4)
         })
 
-        it('wraps 8 → 1 through incrNbStepPerBar', () => {
+        it('wraps 8 → 1 through incrStepsPerBeat', () => {
             const track = makeTrack({ stepsPerBeat: 8 })
 
-            cmd.incrNbStepPerBar(track)
+            cmd.incrStepsPerBeat(track)
 
             expect(track.stepsPerBeat).toBe(1)
         })
@@ -277,7 +277,7 @@ describe('Commander — updateNote / updateTrack opts / setStepsPerBeat', () => 
             cmd.setStepsPerBeat(track, 8)
 
             const { meta } = spy.mock.calls[0][0]
-            expect(meta.desc).toBe('Steps per bar on KICK')
+            expect(meta.desc).toBe('Steps per beat on KICK')
             expect(meta.params).toMatchObject({ track: 'KICK', stepsPerBeat: 8 })
             expect(meta.prev).toMatchObject({ stepsPerBeat: 4 })
         })

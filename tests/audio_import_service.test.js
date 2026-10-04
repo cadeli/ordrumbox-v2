@@ -64,8 +64,8 @@ function makeWavFile(name, webkitRelativePath = '') {
     return file
 }
 
-describe('WavImportService', () => {
-    let WavImportService
+describe('AudioImportService', () => {
+    let AudioImportService
 
     beforeEach(async () => {
         vi.restoreAllMocks()
@@ -81,13 +81,13 @@ describe('WavImportService', () => {
         sharedAppState.patterns = []
         sharedAppState.selectedPatternIdx = 0
 
-        const mod = await import('../src/logic/services/wav_import_service.js')
-        WavImportService = mod.default
+        const mod = await import('../src/logic/services/audio_import_service.js')
+        AudioImportService = mod.default
     })
 
     it('imports a directory of WAV files as a drumkit', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav'), makeWavFile('snare.wav', 'my_drums/snare.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         const result = await service.importDirectory(files)
 
         expect(result.kitName).toBe('my_drums')
@@ -96,7 +96,7 @@ describe('WavImportService', () => {
 
     it('registers sounds in soundRegistry', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         await service.importDirectory(files)
 
         expect(sharedSoundRegistry.sounds['kick.wav']).toBeDefined()
@@ -106,7 +106,7 @@ describe('WavImportService', () => {
 
     it('registers drumkit in soundRegistry', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         await service.importDirectory(files)
 
         expect(sharedSoundRegistry.drumkits['my_drums']).toBeDefined()
@@ -115,7 +115,7 @@ describe('WavImportService', () => {
 
     it('adds drumkit to drumkitList', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav'), makeWavFile('hat.wav', 'my_drums/hat.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         await service.importDirectory(files)
 
         const kit = sharedSoundRegistry.drumkitList.find((d) => d.name === 'my_drums')
@@ -125,7 +125,7 @@ describe('WavImportService', () => {
 
     it('updates selectedDrumkitIdx', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         await service.importDirectory(files)
 
         expect(sharedAppState.selectedDrumkitIdx).toBeGreaterThanOrEqual(0)
@@ -133,7 +133,7 @@ describe('WavImportService', () => {
 
     it('decodes audio data for each file', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav'), makeWavFile('snare.wav', 'my_drums/snare.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         await service.importDirectory(files)
 
         expect(mockDecodeAudioData).toHaveBeenCalledTimes(2)
@@ -141,7 +141,7 @@ describe('WavImportService', () => {
 
     it('caches samples to IDB', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         await service.importDirectory(files)
 
         expect(mockCacheSample).toHaveBeenCalledWith('kick.wav', expect.any(ArrayBuffer))
@@ -149,7 +149,7 @@ describe('WavImportService', () => {
 
     it('caches drumkits to IDB', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         await service.importDirectory(files)
 
         expect(mockCacheDrumkits).toHaveBeenCalledWith(expect.objectContaining({ my_drums: expect.any(Object) }))
@@ -157,7 +157,7 @@ describe('WavImportService', () => {
 
     it('emits drumkitChange event', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         await service.importDirectory(files)
 
         expect(mockPlaybackEmit).toHaveBeenCalledWith('drumkitChange')
@@ -165,7 +165,7 @@ describe('WavImportService', () => {
 
     it('returns successful result with kitName and fileCount', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         const result = await service.importDirectory(files)
 
         expect(result.kitName).toBe('my_drums')
@@ -175,7 +175,7 @@ describe('WavImportService', () => {
 
     it('returns 0 files for directory with no audio files', async () => {
         const files = [makeWavFile('readme.txt', 'my_drums/readme.txt')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         const result = await service.importDirectory(files)
 
         expect(result.fileCount).toBe(0)
@@ -184,7 +184,7 @@ describe('WavImportService', () => {
 
     it('returns warning for empty directory', async () => {
         const files = [makeWavFile('readme.txt', 'my_drums/readme.txt')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         const result = await service.importDirectory(files)
 
         expect(result.warning).toContain('No audio files found')
@@ -194,7 +194,7 @@ describe('WavImportService', () => {
         sharedSoundRegistry.drumkitList.push({ name: 'my_drums', instruments: [] })
 
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         await service.importDirectory(files)
 
         const kit = sharedSoundRegistry.drumkitList.find((d) => d.name === 'my_drums')
@@ -204,7 +204,7 @@ describe('WavImportService', () => {
 
     it('assigns instrument keys via InstrumentsManager', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav')]
-        const service = new WavImportService()
+        const service = new AudioImportService()
         await service.importDirectory(files)
 
         const sound = sharedSoundRegistry.sounds['kick.wav']

@@ -51,7 +51,7 @@ export default class Sound {
         this.generatedSoundsLoadFailed = false
 
         // Track-level strip parameter cache to avoid redundant Web Audio API calls.
-        // Key: track.name, Value: { _version, velocity, pan, filterType, ... }
+        // Key: track.name, Value: { paramRevision, fingerprint, velocity, pan, ... }
         this.#stripParamCache = new Map()
     }
 
@@ -232,22 +232,24 @@ export default class Sound {
 
     /**
      * Update the Web Audio strip only when track parameters have actually changed.
-     * Uses a version counter (_version) on the track object if available, otherwise
-     * compares a shallow fingerprint of the relevant parameters.
+     * Uses the track's paramRevision counter if available, otherwise compares a
+     * shallow fingerprint of the relevant parameters. (It is a counter like the
+     * pattern's _revision, but on a DIFFERENT object, so it does not share its
+     * name: nothing about it is a version.)
      */
     updateStripFromTrack = (strip, track, time) => {
         if (!strip || !track) return
 
         const name = track.name
-        const version = track._version ?? null
+        const paramRevision = track.paramRevision ?? null
 
-        // Fast path: if the track has a version counter and it hasn't changed, skip
-        if (version !== null) {
+        // Fast path: if the track has a revision counter and it hasn't moved, skip
+        if (paramRevision !== null) {
             const cached = this.#stripParamCache.get(name)
-            if (cached && cached._version === version) return
-            this.#stripParamCache.set(name, { _version: version })
+            if (cached && cached.paramRevision === paramRevision) return
+            this.#stripParamCache.set(name, { paramRevision })
         } else {
-            // Fallback fingerprint for tracks without _version
+            // Fallback fingerprint for tracks without paramRevision
             const fp = `${track.filterType}|${track.filterFreq}|${track.filterQ}|${track.saturationType}|${track.saturationAmount}|${track.sat}|${track.reverbType}|${track.reverbAmount}|${track.reverbOn}|${track.delayType}|${track.delayTime}|${track.delayDepth}|${track.delayOn}|${track.velocity}|${track.pan}`
             const cached = this.#stripParamCache.get(name)
             if (cached && cached.fp === fp) return

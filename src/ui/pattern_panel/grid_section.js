@@ -133,7 +133,7 @@ export default class GridSection {
     render(tracks, pattern, opts) {
         const editor = this.#editor
         const { startBeat, endBeatPage, effectiveTrackIdx } = opts
-        const totalSteps = (track) => (track.beatCount ?? 4) * (track.stepsPerBeat ?? 4)
+        const totalStepsFor = (track) => (track.beatCount ?? 4) * (track.stepsPerBeat ?? 4)
 
         let html = '<div class="pp-tracks">'
         tracks.forEach((track, tIdx) => {
@@ -150,10 +150,10 @@ export default class GridSection {
             for (let b = startBeat; b < endBeatPage; b++) {
                 let cellsHtml = ''
                 if (b < (pattern.beatCount ?? 4)) {
-                    const trackBarCount = track.beatCount ?? 4
+                    const trackBeatCount = track.beatCount ?? 4
                     for (let s = 0; s < stepsPerBeat; s++) {
                         const absPos = b * stepsPerBeat + s
-                        const isBeyondTrack = b >= trackBarCount
+                        const isBeyondTrack = b >= trackBeatCount
 
                         const notesAtStep = cached.noteMap.get(`${b}:${s}`)
 
@@ -172,7 +172,7 @@ export default class GridSection {
                             }
                         }
 
-                        const loopAt = track.loopAtStep ?? totalSteps(track)
+                        const loopAt = track.loopAtStep ?? totalStepsFor(track)
                         if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
 
                         const ghostsAtStep = cached.ghostMap.get(absPos) ?? []

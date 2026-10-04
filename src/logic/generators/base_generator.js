@@ -1,7 +1,7 @@
 /**
- * Proprietes moteur copiees entre une source et une note par
- * applyNoteProperties. Forme identique en lecture et en ecriture : c'est le
- * contrat de la copie, pas le modele Note complet.
+ * Engine properties copied from a source to a note by applyNoteProperties. Same
+ * shape when read and when written: this is the copy contract, not the full Note
+ * model.
  * @typedef {object} NoteEngineProps
  * @property {number}  [retriggerNum]
  * @property {number}  [rate]

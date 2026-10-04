@@ -6,14 +6,16 @@ import { normalizeSongs } from '../../model/song_schema.js'
 import { showToast } from '../../core/notify.js'
 
 const SONGS_STORE = 'songs'
-const SONG_VERSION = 2
+// NB: there is no song-format version any more. It was written into every saved
+// record and never read, so it looked like a migration gate that could not fire.
+// The IDB schema version that IS read lives in core/idb.js (DB_VERSION +
+// MIGRATIONS); a song-format migration would gate the same way, on read.
 
 /**
- * Enregistrement d'un song tel que persiste par IndexedDB : les donnees du song
- * plus sa metadonnee et l'index du pattern courant.
+ * A song record as persisted by IndexedDB: the song data plus its metadata and
+ * the current pattern index.
  * @typedef {object} SongRecord
- * @property {string} name
- * @property {number} version
+ * @property {string} name  the song name, also its IndexedDB key
  * @property {string} [description]
  * @property {string} [date]
  * @property {number} [savedAt]
@@ -21,7 +23,7 @@ const SONG_VERSION = 2
  * @property {Array<object & {id?: string}>} patterns
  * @property {import('../../model/song_schema.js').Song[]} songs
  * @property {number} [selectedPatternIdx]
- * @property {number} [selectedPatternNum] legacy name of selectedPatternIdx
+ * @property {number} [selectedPatternNum] former name of selectedPatternIdx
  * @property {number} [selectedSongIdx]
  */
 
@@ -33,7 +35,6 @@ class SongService {
      */
     buildSongData(songName) {
         return {
-            version: SONG_VERSION,
             name: songName,
             description: appState.songInfos?.description ?? '',
             date: appState.songInfos?.date ?? '',

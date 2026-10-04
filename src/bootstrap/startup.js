@@ -5,7 +5,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { logger } from '../core/logger.js'
-import { idbReport } from '../core/idb.js'
+import { getStorageReport } from '../core/idb.js'
 import { isMobileViewport } from '../core/constants.js'
 import { EVENTS, VIEW_TOGGLE } from '../core/events.js'
 
@@ -84,12 +84,12 @@ async function logIdbReport() {
     const meta = /** @type {ImportMeta & { env?: { MODE?: string } }} */ (import.meta)
     if (meta.env?.MODE === 'test') return
 
-    const report = await idbReport()
+    const report = await getStorageReport()
     console.group('%c IndexedDB Report', 'color: #e94560; font-weight: bold')
     logger.info(
         'Main',
         'Usage:',
-        report.usagePct ?? 'N/A',
+        report.usageRatio != null ? `${(report.usageRatio * 100).toFixed(2)}%` : 'N/A',
         `(${(report.usageBytes ?? 0).toLocaleString()} / ${(report.quotaBytes ?? 0).toLocaleString()} bytes)`,
     )
     for (const [store, keys] of Object.entries(report.stores ?? {})) {

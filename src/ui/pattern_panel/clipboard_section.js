@@ -4,7 +4,7 @@
 
 import { showToast } from '../../core/notify.js'
 import { EVENTS } from '../../core/events.js'
-import { notesLabel, stepLabel } from './labels.js'
+import { notesLabel, beatLabel } from './labels.js'
 
 export default class ClipboardSection {
     #editor
@@ -25,7 +25,7 @@ export default class ClipboardSection {
             .filter((n) => n.beat === editor.cursorBeat && n.beatStep === editor.cursorBeatStep)
             .map((n) => ({ ...n }))
         this.clipboard = { type: 'step', notes }
-        const at = stepLabel(editor.cursorBeat, editor.cursorBeatStep)
+        const at = beatLabel(editor.cursorBeat, editor.cursorBeatStep)
         showToast(
             notes.length > 0
                 ? `Copied ${notesLabel(notes.length)} — ${track.name} @ ${at}`
@@ -71,7 +71,7 @@ export default class ClipboardSection {
         editor.updateTrackCellsInPlace(editor.focusRowIdx, track, pattern)
         editor.applySelection()
         editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        const at = stepLabel(editor.cursorBeat, editor.cursorBeatStep)
+        const at = beatLabel(editor.cursorBeat, editor.cursorBeatStep)
         showToast(
             notes.length > 0
                 ? `Pasted ${notesLabel(notes.length)} — ${track.name} @ ${at}`

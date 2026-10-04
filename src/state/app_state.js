@@ -27,7 +27,6 @@ class AppState {
         selectedDrumkitIdx: 0,
         selectedDrumkit: 'real',
         selectedLfo: 'pitchLfo',
-        displayBeats: 1,
         currentPage: 0,
         currentView: 'edit',
         autoMode: false,
@@ -57,8 +56,6 @@ class AppState {
     selectedDrumkit
     /** @type {string} */
     selectedLfo
-    /** @type {number} */
-    displayBeats
     /** @type {number} */
     currentPage
     /** @type {string} */

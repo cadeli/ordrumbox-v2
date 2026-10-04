@@ -44,8 +44,8 @@ export const FILTER_TYPE_ICONS = {
 
 const FILTER_PROPS = withRange([
     { key: 'filterType', label: 'Type', type: 'icon', options: ['lowpass', 'highpass', 'bandpass'] },
-    { key: 'filterFreq', label: 'Freq', step: 1, lfo: 'filterFreqLfo' },
-    { key: 'filterQ', label: 'Q', step: 0.01, lfo: 'filterQLfo' },
+    { key: 'filterFreq', label: 'Freq', step: 1, lfoKey: 'filterFreqLfo' },
+    { key: 'filterQ', label: 'Q', step: 0.01, lfoKey: 'filterQLfo' },
 ])
 
 // ── FX definitions ────────────────────────────────────────────────────
@@ -62,9 +62,9 @@ export const FX_DEFS = [
 // ── Knob bar definitions ──────────────────────────────────────────────
 
 export const KNOB_PROPS = withRange([
-    { key: 'velocity', label: 'Vel', step: 0.01, lfo: 'velocityLfo' },
-    { key: 'pan', label: 'Pan', step: 0.01, lfo: 'panLfo' },
-    { key: 'pitch', label: 'Pitch', step: 1, lfo: 'pitchLfo' },
+    { key: 'velocity', label: 'Vel', step: 0.01, lfoKey: 'velocityLfo' },
+    { key: 'pan', label: 'Pan', step: 0.01, lfoKey: 'panLfo' },
+    { key: 'pitch', label: 'Pitch', step: 1, lfoKey: 'pitchLfo' },
     // Log scale: most of the arc covers 20–500 ms where the ear is sensitive,
     // instead of spending 90% of the travel above 1 s. min is 20 (not 0)
     // because SampleVoice floors the decay at 20 ms — and log10(0) is -Inf.

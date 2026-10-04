@@ -17,7 +17,7 @@ export default class ModulationSection {
 
     /** All props that support LFO. */
     #lfoProps() {
-        return [...ALL_TRACK_PROPS, ...KNOB_PROPS].filter((p) => p.lfo)
+        return [...ALL_TRACK_PROPS, ...KNOB_PROPS].filter((p) => p.lfoKey)
     }
 
     /** Ensure _selectedLfoTarget is valid. */
@@ -45,7 +45,7 @@ export default class ModulationSection {
         const prop = this.#ensureTarget()
         if (!prop) return ''
 
-        const lfoKey = prop.lfo
+        const lfoKey = prop.lfoKey
         const lfo = track[lfoKey]
 
         const freq = lfo ? lfo.freq : 1
@@ -57,7 +57,7 @@ export default class ModulationSection {
         let content = `<div class="te-mod-targets">`
         this.#lfoProps().forEach((p) => {
             const isActive = p.key === editor.selectedLfoTarget
-            const lfoOn = !!track[p.lfo]
+            const lfoOn = !!track[p.lfoKey]
             const ledCls = lfoOn ? 'lfo-led on' : 'lfo-led'
             const activeClass = isActive ? ' active' : ''
             content += `<div class="te-mod-btn${activeClass}">
@@ -117,8 +117,8 @@ export default class ModulationSection {
         const track = editor.track
         const prop = this.#lfoProps().find((p) => p.key === targetKey)
         if (!prop) return null
-        if (track[prop.lfo]) return { updates: { [prop.lfo]: undefined } }
-        return { updates: { [prop.lfo]: this.#getDefaultLfo(prop) } }
+        if (track[prop.lfoKey]) return { updates: { [prop.lfoKey]: undefined } }
+        return { updates: { [prop.lfoKey]: this.#getDefaultLfo(prop) } }
     }
 
     /**
@@ -134,7 +134,7 @@ export default class ModulationSection {
         const track = editor.track
         const prop = this.#lfoProps().find((p) => p.key === editor.selectedLfoTarget)
         if (!prop) return null
-        const current = track[prop.lfo]
+        const current = track[prop.lfoKey]
         const key = input.dataset.lfoKey
         const lfo = { ...(current ?? this.#getDefaultLfo(prop)), [key]: parseFloat(input.value) }
 
@@ -147,7 +147,7 @@ export default class ModulationSection {
                 input.nextElementSibling.textContent = fmt(input.value)
             }
         }
-        return { updates: { [prop.lfo]: lfo }, created: !current }
+        return { updates: { [prop.lfoKey]: lfo }, created: !current }
     }
 
     /**
@@ -159,8 +159,8 @@ export default class ModulationSection {
         const track = editor.track
         const prop = this.#lfoProps().find((p) => p.key === editor.selectedLfoTarget)
         if (!prop) return null
-        const current = track[prop.lfo]
+        const current = track[prop.lfoKey]
         const lfo = { ...(current ?? this.#getDefaultLfo(prop, sel.value)), type: sel.value }
-        return { updates: { [prop.lfo]: lfo }, created: !current }
+        return { updates: { [prop.lfoKey]: lfo }, created: !current }
     }
 }

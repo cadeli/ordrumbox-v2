@@ -324,14 +324,20 @@ export function idbGetAllEntries(storeName) {
     )
 }
 
-export async function idbReport() {
+/**
+ * Builds a diagnostic snapshot of the database and the storage estimate.
+ * Named getStorageReport: it computes and returns, it does not report anything
+ * to the user (and `usageRatio` is a number, not a formatted percentage).
+ * @returns {Promise<{usageBytes?: number, quotaBytes?: number, usageRatio?: number|null, stores: Object<string, IDBValidKey[]>}>}
+ */
+export async function getStorageReport() {
     const report = { stores: {} }
     try {
         const est = await navigator.storage?.estimate?.()
         if (est) {
             report.usageBytes = est.usage ?? 0
             report.quotaBytes = est.quota ?? 0
-            report.usagePct = est.quota > 0 ? ((est.usage / est.quota) * 100).toFixed(2) + '%' : 'N/A'
+            report.usageRatio = est.quota > 0 ? est.usage / est.quota : null
         }
     } catch (e) {
         logger.warn('Idb', 'Storage estimate unavailable', e)

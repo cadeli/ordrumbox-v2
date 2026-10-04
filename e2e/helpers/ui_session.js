@@ -235,9 +235,10 @@ export async function waitForPatternSoundsLoaded(page, patternIdx) {
  *  1. track.pan is rewritten from PAN_MAP on every load (patterns/fixer.js)
  *     and track.soundId of an auto track is discarded on load
  *     (loader/resources_loader.js) then re-derived by the boot auto-assign;
- *  2. arpRange/_arpScale/_arpType live on the note root but are absent from
- *     NOTE_KEY_ORDER (core/note_schema.js), so PatternExporter drops them
- *     from the JSON file.
+ *  2. _arpScale/_arpType are per-note editor overrides. They ARE in
+ *     NOTE_KEY_ORDER (core/note_schema.js), so they survive the compact
+ *     encoding. arpRange is gone entirely: the Range slider only recomposes
+ *     note.arp, whose length IS the range.
  *
  * Exported patterns use the compact note format (arrays + track.noteKeys),
  * so notes are decoded to objects before the fields are removed.
@@ -271,11 +272,12 @@ export function stripForComparison(data) {
 }
 
 /**
- * ARP tab state kept on the note root but absent from NOTE_KEY_ORDER
- * (src/core/note_schema.js): PatternExporter drops them from the JSON file
- * while a raw IndexedDB reload keeps them.
+ * Keys dropped before comparing an exported pattern with the live app state.
+ * `_arpScale`/`_arpType` DO survive the compact encoding (NOTE_KEY_ORDER), so they
+ * are stripped from both sides only to keep the comparison focused on playback
+ * data. arpRange used to be here: it is no longer a note field at all.
  */
-export const EXPORT_DROPPED_NOTE_KEYS = ['arpRange', '_arpScale', '_arpType']
+export const EXPORT_DROPPED_NOTE_KEYS = ['_arpScale', '_arpType']
 
 /** Collects JSON-level mismatches for a key list. */
 export function diffByKey(expected, actual, keys, path, problems = []) {

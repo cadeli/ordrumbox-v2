@@ -9,7 +9,22 @@ const SETTINGS_STORE = 'settings'
 const SONGS_STORE = 'songs'
 const GENERATED_SOUNDS_STORE = 'generated_sounds'
 
-const SONG_KEY = 'song_data'
+// Key of the pattern-library bundle inside the PATTERNS store (it holds infos +
+// patterns + songs). The literal predates that: it has nothing to do with the
+// SONGS_STORE, which is keyed by song name (song_service.js).
+// The store a cache `type` maps to. `removeCacheEntry` used to resolve only the
+// first three by hand, so deleting a settings / songs / generated_sounds entry from
+// the Tools panel silently did nothing while the row stayed on screen.
+const STORE_BY_TYPE = {
+    patterns: PATTERNS_STORE,
+    drumkits: DRUMKITS_STORE,
+    samples: SAMPLES_STORE,
+    settings: SETTINGS_STORE,
+    songs: SONGS_STORE,
+    generated_sounds: GENERATED_SOUNDS_STORE,
+}
+
+const PATTERNS_KEY = 'song_data'
 const DRUMKITS_KEY = 'drumkits_data'
 const GEN_SOUNDS_KEY = 'generated_sounds_data'
 
@@ -90,7 +105,7 @@ function accumulateStats(stats, entries, typeKey) {
 
 export async function cachePatterns(json) {
     try {
-        await idbPut(PATTERNS_STORE, SONG_KEY, wrapWithMeta(json, PATTERNS_STORE))
+        await idbPut(PATTERNS_STORE, PATTERNS_KEY, wrapWithMeta(json, PATTERNS_STORE))
         logger.debug('IdbCache', 'Patterns cached')
     } catch (e) {
         logger.warn('IdbCache', 'Failed to cache patterns', e)
@@ -100,7 +115,7 @@ export async function cachePatterns(json) {
 
 export async function getCachedPatterns() {
     try {
-        const entry = (await idbGet(PATTERNS_STORE, SONG_KEY)) ?? null
+        const entry = (await idbGet(PATTERNS_STORE, PATTERNS_KEY)) ?? null
         return unwrap(entry, PATTERNS_STORE)
     } catch (e) {
         logger.warn('IdbCache', 'Failed to read cached patterns', e)
@@ -164,18 +179,22 @@ export async function getCachedGeneratedSounds() {
     }
 }
 
+/**
+ * Deletes one cache entry.
+ * @param {string} type one of the STORE_BY_TYPE keys (getCacheStats reports all of
+ *   them, and the Tools panel offers a delete button for each)
+ * @param {IDBValidKey} key
+ * @returns {Promise<boolean>} false when `type` is not a cache store
+ */
 export async function removeCacheEntry(type, key) {
-    const store =
-        type === 'patterns'
-            ? PATTERNS_STORE
-            : type === 'drumkits'
-              ? DRUMKITS_STORE
-              : type === 'samples'
-                ? SAMPLES_STORE
-                : null
-    if (!store) return
+    const store = STORE_BY_TYPE[type]
+    if (!store) {
+        logger.warn('IdbCache', `removeCacheEntry: unknown cache type "${type}"`)
+        return false
+    }
     await idbDelete(store, key)
     logger.debug('IdbCache', `Removed ${type} entry: "${key}"`)
+    return true
 }
 
 export async function clearPatternsCache() {

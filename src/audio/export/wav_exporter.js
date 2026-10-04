@@ -134,8 +134,9 @@ export default class WavExporter {
     }
 
     exportPatternToWav = async (pattern, loopsCount = 1) => {
-        const TICK_TIME = ((60 * 4) / (pattern.bpm * TICK)) * 0.25 // Match Transport.js timing
-        const duration = pattern.beatCount * TICK * loopsCount * TICK_TIME
+        // same formula as Transport.setBpm: TICK ticks per beat
+        const secondsPerTick = 60 / (pattern.bpm * TICK)
+        const duration = pattern.beatCount * TICK * loopsCount * secondsPerTick
         const sampleRate = 44100
         const totalTicks = pattern.beatCount * TICK * loopsCount
 
@@ -152,7 +153,7 @@ export default class WavExporter {
                 getAutoGenerate: getAutoGenerateService,
                 uiState: {},
                 TICK,
-                secondsPerTick: TICK_TIME, // one sequencer tick, for swing
+                secondsPerTick: secondsPerTick, // one sequencer tick, for swing
                 isOffline: true,
             })
 
@@ -168,7 +169,7 @@ export default class WavExporter {
             // Simple offline scheduling
             await this.#withTransportBpm(pattern.bpm, async () => {
                 for (let t = 0; t < totalTicks; t++) {
-                    await exporterAudioEngine.playNotes(t, t * TICK_TIME)
+                    await exporterAudioEngine.playNotes(t, t * secondsPerTick)
                 }
             })
 
@@ -201,9 +202,10 @@ export default class WavExporter {
         const bpm = songTempo(song, library) ?? 120
         const totalBars = Math.max(1, loopBars ?? song.loopBars ?? songLengthBars(song))
 
-        const TICK_TIME = ((60 * 4) / (bpm * TICK)) * 0.25 // Match Transport.js timing
+        // same formula as Transport.setBpm: TICK ticks per beat
+        const secondsPerTick = 60 / (bpm * TICK)
         const totalTicks = Math.ceil(totalBars * BEATS_PER_BAR * TICK)
-        const duration = totalTicks * TICK_TIME
+        const duration = totalTicks * secondsPerTick
         const sampleRate = 44100
 
         const schedule = async () => {
@@ -226,7 +228,7 @@ export default class WavExporter {
                 getSelectedSongIdx: () => 0,
                 uiState: {},
                 TICK,
-                secondsPerTick: TICK_TIME,
+                secondsPerTick: secondsPerTick,
                 isOffline: true,
             })
 
@@ -241,7 +243,7 @@ export default class WavExporter {
 
             await this.#withTransportBpm(bpm, async () => {
                 for (let t = 0; t < totalTicks; t++) {
-                    await exporterAudioEngine.playNotes(t, t * TICK_TIME)
+                    await exporterAudioEngine.playNotes(t, t * secondsPerTick)
                 }
             })
 

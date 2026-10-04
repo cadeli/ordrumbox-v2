@@ -18,7 +18,6 @@ async function showNote(ne, overrides = {}) {
         euclideanFill: 0,
         retriggerNum: 1,
         rate: 1,
-        arpRange: 0,
         arpTriggerProbability: 1,
         ...overrides,
     }

@@ -73,7 +73,8 @@ export default class WaveformSection {
         const fmAmount = draft.fm?.amount ?? 0
         const fmAlgo = draft.fm?.algo ?? 0
         const cycles = 4
-        const sampleRate = WAVE_BUFFER.length
+        // the length of the scratch buffer, NOT a sample rate (no time axis here)
+        const sampleCount = WAVE_BUFFER.length
 
         const now = this.#editor.serviceRegistry?.audioCtx?.currentTime ?? 0
         const lfo1 = draft.bypassLfo1 ? null : draft.lfo
@@ -100,12 +101,12 @@ export default class WaveformSection {
             return Utils.clamp(g, 0, 1)
         })
 
-        const baseInc = cycles / sampleRate
+        const baseInc = cycles / sampleCount
         const inc = freqMult.map((fm) => baseInc * fm)
         const fmDepth = fmAmount * FM_DEPTH_SCALE
         const phase = [0, 0, 0]
         const cycle = [0, 0, 0]
-        for (let i = 0; i < sampleRate; i++) {
+        for (let i = 0; i < sampleCount; i++) {
             const rawO2 = this.#waveAtPhase(vcos[1].wave, phase[1], cycle[1])
             const rawO3 = this.#waveAtPhase(vcos[2].wave, phase[2], cycle[2])
 
@@ -164,11 +165,11 @@ export default class WaveformSection {
         }
 
         let maxVal = 0
-        for (let i = 0; i < sampleRate; i++) {
+        for (let i = 0; i < sampleCount; i++) {
             if (Math.abs(WAVE_BUFFER[i]) > maxVal) maxVal = Math.abs(WAVE_BUFFER[i])
         }
         if (maxVal > 0) {
-            for (let i = 0; i < sampleRate; i++) {
+            for (let i = 0; i < sampleCount; i++) {
                 WAVE_BUFFER[i] = (WAVE_BUFFER[i] / maxVal) * masterVol
             }
         }
@@ -176,8 +177,8 @@ export default class WaveformSection {
         ctx.beginPath()
         ctx.strokeStyle = color('accent')
         ctx.lineWidth = 1.5
-        for (let i = 0; i < sampleRate; i++) {
-            const x = (i / sampleRate) * w
+        for (let i = 0; i < sampleCount; i++) {
+            const x = (i / sampleCount) * w
             const y = mid - WAVE_BUFFER[i] * (mid - 4)
             if (i === 0) ctx.moveTo(x, y)
             else ctx.lineTo(x, y)

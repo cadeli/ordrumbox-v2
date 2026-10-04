@@ -45,8 +45,8 @@ export default class Commander {
         'pasteTrack',
         'createTrack',
         'setStepsPerBeat',
-        'incrNbStepPerBar',
-        'incrLoopPoint',
+        'incrStepsPerBeat',
+        'decrLoopPoint',
         'cleanPattern',
         'cleanTrack',
         'compactTrack',
@@ -115,8 +115,8 @@ export default class Commander {
         this.pasteTrack = (...args) => this.#tracks.pasteTrack(...args)
         this.createTrack = (...args) => this.#tracks.createTrack(...args)
         this.setStepsPerBeat = (...args) => this.#tracks.setStepsPerBeat(...args)
-        this.incrNbStepPerBar = (...args) => this.#tracks.incrNbStepPerBar(...args)
-        this.incrLoopPoint = (...args) => this.#tracks.incrLoopPoint(...args)
+        this.incrStepsPerBeat = (...args) => this.#tracks.incrStepsPerBeat(...args)
+        this.decrLoopPoint = (...args) => this.#tracks.decrLoopPoint(...args)
         this.cleanPattern = (...args) => this.#tracks.cleanPattern(...args)
         this.cleanTrack = (...args) => this.#tracks.cleanTrack(...args)
         this.compactTrack = (...args) => this.#tracks.compactTrack(...args)
@@ -312,7 +312,7 @@ export default class Commander {
     incrementPatternVersionByTrack(track) {
         for (const pattern of appState.patterns) {
             if (Utils.getTracksArray(pattern).includes(track)) {
-                pattern._version = (pattern._version ?? 0) + 1
+                pattern._revision = (pattern._revision ?? 0) + 1
                 break
             }
         }
@@ -415,11 +415,11 @@ export default class Commander {
         }
     }
 
-    /** Snapshot of every own pattern key except the tracks array and _version. */
+    /** Snapshot of every own pattern key except the tracks array and _revision. */
     #patternStateOf(pattern) {
         const state = {}
         for (const key of Object.keys(pattern)) {
-            if (key === 'tracks' || key === '_version') continue
+            if (key === 'tracks' || key === '_revision') continue
             state[key] = this.#cloneStateValue(pattern[key])
         }
         return state
@@ -428,7 +428,7 @@ export default class Commander {
     /** Restores a pattern-level snapshot (_autoGenGenre, tags, bpm…); new keys are deleted. */
     #restorePatternState(pattern, state) {
         for (const key of Object.keys(pattern)) {
-            if (key === 'tracks' || key === '_version') continue
+            if (key === 'tracks' || key === '_revision') continue
             if (!(key in state)) delete pattern[key]
         }
         for (const [key, value] of Object.entries(state)) {
@@ -481,7 +481,7 @@ export default class Commander {
                 this.#restoreTrackState(st.ref, st.state)
             }
             this.#restorePatternState(snap.pattern, patternState)
-            snap.pattern._version = (snap.pattern._version ?? 0) + 1
+            snap.pattern._revision = (snap.pattern._revision ?? 0) + 1
             this.persist()
         }
         const before = { patternState: snap.patternState, trackStates: snap.trackSnapshots }

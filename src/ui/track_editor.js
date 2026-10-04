@@ -338,14 +338,14 @@ export default class TrackEditor extends BasePanel {
     #applyLfoValues(lfoValues) {
         if (!lfoValues || !this.#track) return
         ALL_TRACK_PROPS.forEach((p) => {
-            if (!p.lfo || !this.#track[p.lfo]) return
+            if (!p.lfoKey || !this.#track[p.lfoKey]) return
             const ctrl = this.#sliders.get(p.key) ?? this.#fxKnobs.find((kn) => kn.key === p.key)
             if (!ctrl) return
             const raw = lfoValues[p.key] ?? 0
             ctrl.setValue(p.denormalize ? p.denormalize(raw) : raw)
         })
         KNOB_PROPS.forEach((p) => {
-            if (p.lfo && this.#track[p.lfo]) {
+            if (p.lfoKey && this.#track[p.lfoKey]) {
                 const knob = this.#knobs.find((k) => k.key === p.key)
                 if (knob) knob.setValue(lfoValues[p.key] ?? 0)
             }

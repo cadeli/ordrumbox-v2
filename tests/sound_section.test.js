@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import SoundSection from '../src/ui/track_editor/sound_section.js'
 import {
     getAllKitSamples,
-    getCurrentInstrumentName,
+    getCurrentInstrumentId,
     getCurrentSoundUrl,
     getPreferredSampleForInstrument,
     getSamplesForInstrument,
@@ -650,13 +650,13 @@ describe('SoundSection', () => {
         })
     })
 
-    describe('getCurrentInstrumentName()', () => {
+    describe('getCurrentInstrumentId()', () => {
         it('returns sound key when it matches an instrument with samples', () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
             const ids = ['KICK', 'SNARE']
             const keys = new Set(['KICK', 'SNARE'])
-            expect(getCurrentInstrumentName(editor, ids, keys)).toBe('KICK')
+            expect(getCurrentInstrumentId(editor, ids, keys)).toBe('KICK')
         })
 
         it('falls back to track.name when sound key not in keysWithSamples', () => {
@@ -665,7 +665,7 @@ describe('SoundSection', () => {
             section = new SoundSection(editor)
             const ids = ['KICK', 'SNARE']
             const keys = new Set(['KICK', 'SNARE'])
-            expect(getCurrentInstrumentName(editor, ids, keys)).toBe('SNARE')
+            expect(getCurrentInstrumentId(editor, ids, keys)).toBe('SNARE')
         })
 
         it('falls back to first instrument id when neither matches', () => {
@@ -674,7 +674,7 @@ describe('SoundSection', () => {
             section = new SoundSection(editor)
             const ids = ['KICK', 'SNARE']
             const keys = new Set(['KICK', 'SNARE'])
-            expect(getCurrentInstrumentName(editor, ids, keys)).toBe('KICK')
+            expect(getCurrentInstrumentId(editor, ids, keys)).toBe('KICK')
         })
 
         it('returns KICK as final fallback when instrumentIds is empty', () => {
@@ -683,7 +683,7 @@ describe('SoundSection', () => {
             section = new SoundSection(editor)
             const ids = []
             const keys = new Set(['KICK', 'SNARE'])
-            expect(getCurrentInstrumentName(editor, ids, keys)).toBe('KICK')
+            expect(getCurrentInstrumentId(editor, ids, keys)).toBe('KICK')
         })
     })
 })

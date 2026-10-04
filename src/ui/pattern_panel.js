@@ -431,7 +431,7 @@ export default class PatternPanel extends BasePanel {
         this.#forceFullRender = false
         this.#cellMap.clear()
 
-        const patternVersion = pattern._version ?? 0
+        const patternVersion = pattern._revision ?? 0
         this.#trackDataCache.clear()
         this.#cachedVersion = patternVersion
         this.#cachedPage = startBeat

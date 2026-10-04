@@ -75,9 +75,9 @@ export function getCurrentSoundUrl(editor) {
  * @param {import('../track_editor.js').default} editor
  * @param {Array<string>} instrumentIds
  * @param {Set<string>} keysWithSamples
- * @returns {string}
+ * @returns {string} the instrument ID (e.g. 'KICK'), NOT a display name
  */
-export function getCurrentInstrumentName(editor, instrumentIds, keysWithSamples) {
+export function getCurrentInstrumentId(editor, instrumentIds, keysWithSamples) {
     const track = editor.track
     const sr = editor.soundRegistry
     const soundKey = sr.sounds[getCurrentSoundUrl(editor)]?.key

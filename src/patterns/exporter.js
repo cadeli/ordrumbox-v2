@@ -16,7 +16,7 @@ const ROUND_2D = new Set([
 const round2 = (v) => (typeof v === 'number' ? Math.round(v * 100) / 100 : v)
 
 /** Runtime-only pattern fields (undo/audio cache counter), never part of a saved file. */
-const PATTERN_RUNTIME_KEYS = new Set(['_version'])
+const PATTERN_RUNTIME_KEYS = new Set(['_revision'])
 
 /**
  * Pattern fields that are written even when they hold their default value.

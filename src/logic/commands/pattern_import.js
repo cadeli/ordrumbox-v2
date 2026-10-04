@@ -102,7 +102,6 @@ function copyNoteProps(note, sourceNote, track) {
         'pan',
         'pitch',
         'arp',
-        'arpRange',
         '_arpScale',
         '_arpType',
         'every',

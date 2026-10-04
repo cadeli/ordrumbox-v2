@@ -40,7 +40,7 @@ describe('SongService', () => {
             appState.songInfos.date = '2025-01-01'
 
             const data = songService.buildSongData('TestSong')
-            expect(data.version).toBe(2)
+            expect(data.version).toBeUndefined()
             expect(data.name).toBe('TestSong')
             expect(data.description).toBe('My song')
             expect(data.date).toBe('2025-01-01')
@@ -182,7 +182,7 @@ describe('SongService', () => {
             const result = songService.exportToFile('My Song!')
             expect(result.filename).toBe('My_Song_.odbox')
             expect(result.data.exportedAt).toBeTypeOf('number')
-            expect(result.data.version).toBe(2)
+            expect(result.data.version).toBeUndefined()
         })
 
         it('sanitizes special characters in filename', () => {

@@ -5,6 +5,7 @@ import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import NoteEditor from '../src/ui/note_editor.js'
+import { NOTE_DEFAULTS } from '../src/core/note_schema.js'
 import { EVENTS } from '../src/core/events.js'
 
 function fireInput(el, value) {
@@ -25,7 +26,6 @@ async function showNote(ne, overrides = {}) {
         euclideanFill: 0,
         retriggerNum: 1,
         rate: 1,
-        arpRange: 0,
         arpTriggerProbability: 1,
         ...overrides,
     }
@@ -113,6 +113,24 @@ describe('NoteEditor — OrSlider integration', () => {
         }
     })
 
+    // The editor used to keep its own default table, which said velocity 1 and
+    // arpTriggerProbability 0 where NOTE_DEFAULTS says 0.8 and 1.
+    it('a note opened on an empty cell starts from NOTE_DEFAULTS', async () => {
+        const track = { name: 'SNARE', notes: [], beatCount: 1, stepsPerBeat: 4 }
+        const written = []
+        serviceRegistry.cmd.updateNote = vi.fn((t, note, updates) => {
+            written.push(updates)
+            Object.assign(note, updates)
+        })
+
+        await noteEditor.showDefaultNoteInline({ track, beat: 0, beatStep: 0 })
+        const velRow = noteEditor.container.querySelector('.or-knob[data-or-knob="velocity"]').closest('.ne-row-knob')
+        // 80% = NOTE_DEFAULTS.velocity: the editor's own table said 1 (100%)
+        expect(velRow.querySelector('.ne-val').textContent).toBe('80 %')
+        expect(NOTE_DEFAULTS.velocity).toBe(0.8)
+        expect(NOTE_DEFAULTS.arpTriggerProbability).toBe(1)
+    })
+
     it('renders a range slider for each trigger/retrig/arpRange prop', async () => {
         await showNote(noteEditor)
 
@@ -169,7 +187,7 @@ describe('NoteEditor — OrSlider integration', () => {
     })
 
     it('changing arpRange recomposes note.arp (intervals + mode)', async () => {
-        const { note } = await showNote(noteEditor, { arpRange: 0, arp: null })
+        const { note } = await showNote(noteEditor, { arp: null })
 
         expect(note.arp).toBeNull()
 
@@ -184,14 +202,14 @@ describe('NoteEditor — OrSlider integration', () => {
     })
 
     it('selecting an arp scale updates _arpScale and recomposes arp', async () => {
-        const { note } = await showNote(noteEditor, { arpRange: 2 })
+        const { note } = await showNote(noteEditor, { arp: { intervals: [0, 2], mode: 'up' } })
 
         const arpScale = noteEditor.container.querySelector('select[data-key="arpScale"]')
         arpScale.value = 'minor'
         arpScale.dispatchEvent(new Event('change', { bubbles: true }))
 
         expect(note._arpScale).toBe('minor')
-        // Range 2 on minor scale → [0, 2]
+        // the range is arp.intervals.length, so 2 degrees on the minor scale → [0, 2]
         expect(note.arp).toEqual({ intervals: [0, 2], mode: 'up' })
     })
 

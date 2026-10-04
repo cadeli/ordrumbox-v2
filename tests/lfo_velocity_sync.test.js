@@ -299,7 +299,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             return { beat, beatStep, ...props }
         }
 
-        it('pitchLfo replaces note pitch (note.pitch is ignored when LFO is active)', () => {
+        it('pitchLfo ADDS to note pitch (the app plays them together)', () => {
             const pattern = {
                 name: 'PitchReplace',
                 bpm: 120,
@@ -314,12 +314,15 @@ describe('LFO Pitch Replacement Semantics', () => {
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
-            const kicks = allNoteOns(midiBytes).filter((n) => n.channel === 9 && n.note === 36)
-            const shifted = allNoteOns(midiBytes).filter((n) => n.channel === 9 && n.note === 42)
-            // LFO at phase 0.25 → value = 6 semitones → note = 36 + 6 = 42
-            // note.pitch=5 is IGNORED (replacement semantics)
-            expect(kicks).toHaveLength(0)
-            expect(shifted).toHaveLength(1)
+            // LFO at phase 0.25 → 6 semitones, plus the note's own 5:
+            // sample_voice.js multiplies the playback rate by the LFO on top of
+            // fpitch, so the export must land on 36 + 5 + 6 = 47, not 42.
+            const unshifted = allNoteOns(midiBytes).filter((n) => n.channel === 9 && n.note === 36)
+            const lfoOnly = allNoteOns(midiBytes).filter((n) => n.channel === 9 && n.note === 42)
+            const combined = allNoteOns(midiBytes).filter((n) => n.channel === 9 && n.note === 47)
+            expect(unshifted).toHaveLength(0)
+            expect(lfoOnly).toHaveLength(0)
+            expect(combined).toHaveLength(1)
         })
 
         it('without pitchLfo, note.pitch is still applied', () => {

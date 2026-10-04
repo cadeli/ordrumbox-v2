@@ -220,8 +220,10 @@ export default class ResourcesLoader {
             }
             return this.#settingsLoadingPromise
         }
+        // no version field: settings are merged key by key over these defaults,
+        // so a stored version could never gate anything (see core/idb.js for the
+        // schema versioning that is actually read)
         const defaults = {
-            version: 1,
             sampleDirs: [],
             maxSampleDirs: 10,
             master: { ...MASTER_BUS_DEFAULTS },

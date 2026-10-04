@@ -40,7 +40,7 @@ export default class GenerationSection {
         props.forEach((p) => {
             const val = track[p.key]
             const isSelected = editor.selectedPropKey === p.key ? 'selected' : ''
-            const hasLfo = p.lfo && track[p.lfo] ? 'has-lfo' : ''
+            const hasLfo = p.lfoKey && track[p.lfoKey] ? 'has-lfo' : ''
 
             if (p.type === 'boolean') {
                 const active = val ? 'active' : ''
@@ -56,7 +56,7 @@ export default class GenerationSection {
                 let s = editor.sliders.get(p.key)
                 if (s) {
                     s.setValue(val ?? p.min)
-                    s.setHasLfo(!!(p.lfo && track[p.lfo]))
+                    s.setHasLfo(!!(p.lfoKey && track[p.lfoKey]))
                 } else {
                     s = new OrSlider({
                         key: p.key,
@@ -65,7 +65,7 @@ export default class GenerationSection {
                         max: p.max,
                         step: p.step,
                         value: val ?? p.min,
-                        hasLfo: !!(p.lfo && track[p.lfo]),
+                        hasLfo: !!(p.lfoKey && track[p.lfoKey]),
                         extraClass: isSelected,
                         format: (v) => (p.format ? p.format(v) : fmtVal(p.key, v)),
                         normalize: p.normalize ?? ((v) => v),

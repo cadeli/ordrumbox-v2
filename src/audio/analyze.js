@@ -28,8 +28,8 @@ export default class AudioAnalyzer {
     })
 
     /**
-     * Metriques d'un echantillon. Le chemin « buffer vide » renvoie la meme
-     * forme avec des valeurs neutres, donc un seul type pour les deux.
+     * Sample metrics. The empty-buffer path returns the same shape with neutral
+     * values, so both cases share one type.
      * @returns {AudioAnalysis}
      */
     analyzeAudioBuffer(audioBuffer, options = {}) {

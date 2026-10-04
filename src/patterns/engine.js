@@ -6,6 +6,13 @@ import { TICK } from '../core/constants.js'
 import { computeEuclideanFillPositions } from '../core/euclidean.js'
 import { createStepResolver } from './step_resolver.js'
 
+/**
+ * Does the note fire on this pass of the pattern?
+ * @param {number} pos    note phase offset inside the cycle (note.pos)
+ * @param {number} every  cycle length in pattern passes (note.every)
+ * @param {number} loop   the pass being played (pattern loop index)
+ * @returns {boolean}
+ */
 export function isTriggered(pos, every, loop) {
     pos %= every
     return (loop + pos) % every === 0
@@ -221,7 +228,7 @@ export function recomputeFlatNotes(pattern, loop = 0, tick = TICK) {
         const nbTickForLoop = computeNbTickForLoop(track, tick)
 
         // variation2 layer: lookup of per-source-note clones, source data untouched
-        const variedNotes = TrackVariation.applyNoteVariation(track)
+        const variedNotes = TrackVariation.computeNoteVariation(track)
 
         const resolver = createStepResolver(track)
 

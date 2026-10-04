@@ -752,6 +752,19 @@ describe.each(PARAM_SETS)('computeNbTickForLoop — spb=%i bpm=%i beats=%i (%s)'
         expect(computeNbTickForLoop(track)).toBe(half * TICK)
     })
 
+    // every = passes of the pattern, not steps of the grid: a note with every 2
+    // fires on passes 0, 2, 4… and never appears twice within one pass.
+    it('every counts pattern passes, pos shifts which pass fires first', () => {
+        expect(isTriggered(0, 1, 0)).toBe(true)
+        expect(isTriggered(0, 1, 1)).toBe(true)
+        // every 2 → only even passes
+        expect([0, 1, 2, 3].map((pass) => isTriggered(0, 2, pass))).toEqual([true, false, true, false])
+        // pos 1 → the odd passes instead
+        expect([0, 1, 2, 3].map((pass) => isTriggered(1, 2, pass))).toEqual([false, true, false, true])
+        // pos wraps inside the cycle
+        expect(isTriggered(3, 2, 1)).toBe(true)
+    })
+
     it('loopAtStep 0 and null mean "loop the whole track", not "no loop"', () => {
         for (const loopAtStep of [0, null, undefined]) {
             const track = { beatCount, stepsPerBeat, loopAtStep }

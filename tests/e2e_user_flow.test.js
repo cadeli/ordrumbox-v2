@@ -562,11 +562,24 @@ describe('E2E Flow 6 — Export to JSON and roundtrip', () => {
         expect(importedBass.notes[0].pitch).toBe(7)
     })
 
+    // arpRange used to be a note field nothing persisted, so the Range slider came
+    // back at its default after a reload while the arp it had recomposed survived.
+    it('the arp range survives a save/reload because it lives in arp.intervals', () => {
+        const pat = cmd.addPattern('Arp Range Persisted')
+        const bass = cmd.addTrack(pat, 'BASS', 4)
+        const note = cmd.addNote(bass, 0, 0, 0)
+        note.arp = { intervals: [0, 2, 4, 5, 7, 9, 11], mode: 'up' }
+
+        const imported = cmd.importPatternFromJson(structuredClone(pat))
+        const importedNote = getTrackFromType(imported, 'BASS').notes[0]
+        expect(importedNote.arp.intervals).toHaveLength(7)
+        expect(importedNote).not.toHaveProperty('arpRange')
+    })
+
     it('raw pattern import keeps the note ARP editor fields', () => {
         const pat = cmd.addPattern('Arp Fields')
         const bass = cmd.addTrack(pat, 'BASS', 4)
         const note = cmd.addNote(bass, 0, 0, 0)
-        note.arpRange = 7
         note._arpScale = 'minor'
         note._arpType = 'updown'
         note.arp = { intervals: [0, 3, 7], mode: 'updown' }
@@ -574,7 +587,6 @@ describe('E2E Flow 6 — Export to JSON and roundtrip', () => {
         const imported = cmd.importPatternFromJson(structuredClone(pat))
         const importedBass = getTrackFromType(imported, 'BASS')
 
-        expect(importedBass.notes[0].arpRange).toBe(7)
         expect(importedBass.notes[0]._arpScale).toBe('minor')
         expect(importedBass.notes[0]._arpType).toBe('updown')
         expect(importedBass.notes[0].arp).toEqual({ intervals: [0, 3, 7], mode: 'updown' })
@@ -648,7 +660,7 @@ describe('E2E Flow 7 — Transport lifecycle', () => {
 
         transport.start()
         transport.nextStepTime = 0
-        transport.scheduleAheadTime = 1.0
+        transport.scheduleAheadSeconds = 1.0
 
         transport.scheduler()
         expect(onScheduleSpy).toHaveBeenCalled()

@@ -85,7 +85,10 @@ export default class CacheSection {
             if (!delBtn) return
             const { cacheType, cacheKey } = delBtn.dataset
             if (!window.confirm(`Remove "${cacheKey}" from ${cacheType} cache?`)) return
-            await removeCacheEntry(cacheType, cacheKey)
+            if (!(await removeCacheEntry(cacheType, cacheKey))) {
+                showToast(`Cannot delete from "${cacheType}"`, 'error')
+                return
+            }
             this.refresh()
         })
     }

@@ -95,6 +95,15 @@ describe('InstrumentsManager', () => {
             expect(manager.findByName('xyz123unknown').id).toBe('PERC')
         })
 
+        // It used to return null while logging a "fallback: KICK" that never
+        // happened, so it was the only finder of the five needing a null check.
+        it('no match answers a NOT_FOUND instrument, never null', () => {
+            const found = manager.findByName('NOT_AN_INSTRUMENT_XYZ')
+            expect(found).not.toBeNull()
+            expect(found.id).toBe('NOT_FOUND')
+            expect(found.midi).toEqual([])
+        })
+
         it('"HT" → HTOM', () => {
             expect(manager.findByName('HT').id).toBe('HI_TOM')
         })

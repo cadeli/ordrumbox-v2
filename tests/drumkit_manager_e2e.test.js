@@ -47,8 +47,8 @@ vi.mock('../src/audio/sample_analyzer.js', () => ({
     drawDecayMarker: vi.fn(),
 }))
 
-vi.mock('../src/logic/services/wav_import_service.js', () => {
-    class MockWavImportService {
+vi.mock('../src/logic/services/audio_import_service.js', () => {
+    class MockAudioImportService {
         async importDirectory() {
             return { kitName: 'Imported', fileCount: 3 }
         }
@@ -56,7 +56,7 @@ vi.mock('../src/logic/services/wav_import_service.js', () => {
             return undefined
         }
     }
-    return { default: MockWavImportService }
+    return { default: MockAudioImportService }
 })
 
 let DrumkitManager

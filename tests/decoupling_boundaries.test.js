@@ -48,8 +48,8 @@ describe('Decoupling boundaries', () => {
         expect(src).not.toMatch(/import.*\.\.\/ui\//)
     })
 
-    it('wav_import_service.js does not import any ui/ modules', () => {
-        const src = readSrc('logic/services/wav_import_service.js')
+    it('audio_import_service.js does not import any ui/ modules', () => {
+        const src = readSrc('logic/services/audio_import_service.js')
         expect(src).not.toMatch(/import.*\.\.\/ui\//)
     })
 

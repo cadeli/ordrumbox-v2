@@ -12,10 +12,19 @@ export const EVENTS = Object.freeze({
     WORKLET_STATUS_CHANGE: 'workletStatusChange',
 
     // Pattern / data
+    /**
+     * Payload contract: an ARRAY of the tracks that changed → the audio engine
+     * re-syncs exactly those; NOTHING → the whole selected pattern is re-synced.
+     * Both are legitimate, so an emit with no payload is not a missing argument:
+     * it means "everything". Prefer passing the tracks when you know them —
+     * PATTERN_CHANGE / NOTE_CHANGE are the only events whose payload changes
+     * behaviour (see the PATTERN_CHANGE subscriber in logic/seq.js).
+     */
     PATTERN_CHANGE: 'patternChange',
     PATTERN_STRUCTURE_CHANGE: 'patternStructureChange',
     PATTERN_META_CHANGE: 'patternMetaChange',
     SELECTED_PATTERN_CHANGE: 'selectedPatternChange',
+    /** Same payload contract as PATTERN_CHANGE. */
     NOTE_CHANGE: 'noteChange',
     NOTE_SELECT: 'noteSelect',
     NOTE_TRIGGER: 'noteTrigger',

@@ -96,7 +96,8 @@ const TRACK_KEYS = [
 ]
 
 // Note keys that must survive a reload (steppc is recalculated,
-// arpRange/_arpScale/_arpType survive a raw reload but not a JSON round-trip).
+// _arpScale/_arpType survive a raw reload but not a JSON round-trip; the arp
+// range is arp.intervals.length, there is no separate field).
 // prob/rate/retriggerNum/euclideanFill are excluded: track.variation2 > 0
 // re-randomizes them in place on every flat-notes computation.
 const NOTE_KEYS = ['beat', 'beatStep', 'velocity', 'pitch', 'pan', 'every', 'pos', 'arpTriggerProbability', 'arp']
@@ -464,7 +465,8 @@ test.describe.serial('Full session lifecycle', () => {
 
             await expectVal(async () => (await noteAt(0, 0))?._arpScale, scale)
             await expectVal(async () => (await noteAt(0, 0))?._arpType, 'updown')
-            await expectNum(async () => (await noteAt(0, 0))?.arpRange, 7)
+            // the range lives in arp.intervals.length: there is no arpRange field
+            await expectNum(async () => (await noteAt(0, 0))?.arp?.intervals?.length, 7)
             const note0 = await noteAt(0, 0)
             expect(note0.arp?.mode).toBe('updown')
             expect(Array.isArray(note0.arp?.intervals)).toBe(true)
@@ -833,10 +835,9 @@ test.describe.serial('Full session lifecycle', () => {
         expect(afterTracks[1].soundId).toBe(beforeTracks[1].soundId)
         expect(afterTracks[2].soundId).toBe(beforeTracks[2].soundId)
 
-        // arp transient fields survive a raw reload (only lost on JSON round-trip)
+        // the arp editor fields survive a raw reload (only lost on JSON round-trip)
         const beforeNote0 = beforeTracks[0].notes[0]
         const afterNote0 = afterTracks[0].notes[0]
-        expect(afterNote0.arpRange).toBe(beforeNote0.arpRange)
         expect(afterNote0._arpScale).toBe(beforeNote0._arpScale)
         expect(afterNote0._arpType).toBe(beforeNote0._arpType)
         expect(afterNote0.arp).toEqual(beforeNote0.arp)

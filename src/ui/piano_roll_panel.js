@@ -19,7 +19,7 @@ export default class PianoRollPanel extends BasePanel {
     #track
     #selectedTrackIdx
     #cellWidth
-    #firstShow
+    #pendingCenterScroll
     #resizeObserver
     #selectedNote
     #cursorStep
@@ -38,7 +38,7 @@ export default class PianoRollPanel extends BasePanel {
         this.#track = null
         this.#selectedTrackIdx = -1
         this.#cellWidth = 24
-        this.#firstShow = true
+        this.#pendingCenterScroll = true
         this.#resizeObserver = null
         this.#selectedNote = null
         this.#cursorStep = -1
@@ -88,7 +88,7 @@ export default class PianoRollPanel extends BasePanel {
             this.#track = data.track
             this.#selectedTrackIdx = data.trackIdx
             if (this.isVisible && trackChanged) {
-                this.#firstShow = true
+                this.#pendingCenterScroll = true
                 this.#keysDirty = true
                 this.#gridDirty = true
                 this.sync()
@@ -135,7 +135,7 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     show() {
-        this.#firstShow = true
+        this.#pendingCenterScroll = true
         this.#keysDirty = true
         this.#gridDirty = true
         this.#clearSelection()
@@ -435,12 +435,13 @@ export default class PianoRollPanel extends BasePanel {
         return this.#selectedTrackIdx
     }
 
-    get firstShow() {
-        return this.#firstShow
+    /** True when the next sync must scroll the grid to the track's centre row. */
+    get pendingCenterScroll() {
+        return this.#pendingCenterScroll
     }
     /** @param {boolean} v */
-    set firstShow(v) {
-        this.#firstShow = v
+    set pendingCenterScroll(v) {
+        this.#pendingCenterScroll = v
     }
 
     get keysDirty() {

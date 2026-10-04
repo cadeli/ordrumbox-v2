@@ -32,9 +32,9 @@ export default class RenderSection {
         this.#updateTrackName()
         this.#editor.viewport.updatePageInfo()
         this.#editor.playback.reattach()
-        if (this.#editor.firstShow) {
+        if (this.#editor.pendingCenterScroll) {
             this.#editor.viewport.scrollToTrackCenter()
-            this.#editor.firstShow = false
+            this.#editor.pendingCenterScroll = false
         }
     }
 

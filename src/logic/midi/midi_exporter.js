@@ -12,10 +12,12 @@
  * LFO modulation
  * ──────────────
  *   For each note, the track's velocityLfo and pitchLfo are evaluated at the
- *   note's engine tick. Replace semantics are used: when an LFO is set, the
- *   LFO value replaces the note's base velocity / pitch (matching the worklet
- *   and the visual). filterFreq/filterQ LFOs have no MIDI equivalent and are
- *   ignored. panLfo is also ignored (MIDI Note On has no per-note pan).
+ *   note's engine tick. Both now follow what the app plays: pitchLfo is ADDED in
+ *   semitones to the note + track pitch, and velocityLfo SCALES the note velocity
+ *   (live it scales the strip gain — MIDI has no track gain, so scaling the note
+ *   is the closest faithful export). filterFreq/filterQ LFOs have no MIDI
+ *   equivalent and are ignored. panLfo is also ignored (MIDI Note On has no
+ *   per-note pan).
  *
  * Timing bridge
  * ─────────────
@@ -264,16 +266,25 @@ export default class MidiExporter {
 
                     let velocity = fn.note.velocity ?? 0.8
                     if (fn.track.velocityLfo) {
+                        // Live, velocityLfo scales the STRIP GAIN (step_lfo.js), i.e.
+                        // it is a track-level level LFO. MIDI has no track gain, so
+                        // the faithful approximation is to scale each note velocity
+                        // by it. It used to REPLACE the velocity, which threw the
+                        // note's own value away and made the export louder or
+                        // quieter than what the app plays.
                         const lfoVal = computeLfoValue(fn.track.velocityLfo, engineTick, nbTickForPattern)
-                        velocity = Utils.clamp(lfoVal, 0, 1)
+                        velocity = Utils.clamp(velocity * lfoVal, 0, 1)
                     }
 
-                    let pitchOffset = fn.track.pitchLfo
-                        ? computeLfoValue(fn.track.pitchLfo, engineTick, nbTickForPattern)
-                        : (fn.note.pitch ?? 0)
-
-                    // Include track pitch (base pitch for the track)
-                    pitchOffset += fn.track.pitch ?? 0
+                    // Live, pitchLfo is ADDITIVE in semitones on top of the note
+                    // pitch (sample_voice.js multiplies the playback rate by it), so
+                    // it used to be wrong here: the exporter REPLACED the note's own
+                    // pitch with the LFO value, and an exported pattern came out at
+                    // a different pitch than the app played.
+                    let pitchOffset = (fn.note.pitch ?? 0) + (fn.track.pitch ?? 0)
+                    if (fn.track.pitchLfo) {
+                        pitchOffset += computeLfoValue(fn.track.pitchLfo, engineTick, nbTickForPattern)
+                    }
 
                     const noteNum = Utils.clamp(td.midiNote + pitchOffset, 0, 127)
                     const midiVel = Math.round(velocity * 127)

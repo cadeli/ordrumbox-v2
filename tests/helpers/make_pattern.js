@@ -103,7 +103,7 @@ export function makePattern(opts = {}) {
         ...(opts.id !== undefined ? { id: opts.id } : {}),
         bpm: opts.bpm ?? 120,
         beatCount: opts.beatCount ?? 4,
-        _version: 0,
+        _revision: 0,
         tracks: opts.tracks ?? [],
     }
 }

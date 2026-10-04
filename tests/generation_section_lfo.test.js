@@ -9,7 +9,10 @@ vi.mock('../src/ui/track_editor/constants.js', async () => {
     return {
         ...mod,
         GROUPS: [
-            { label: 'Basic / Transport', props: [{ key: 'velocity', label: 'Vel', step: 0.01, lfo: 'velocityLfo' }] },
+            {
+                label: 'Basic / Transport',
+                props: [{ key: 'velocity', label: 'Vel', step: 0.01, lfoKey: 'velocityLfo' }],
+            },
         ],
     }
 })

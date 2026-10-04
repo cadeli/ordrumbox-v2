@@ -19,9 +19,11 @@
 //                 shift when a pattern is removed, duplicated or undone, and a
 //                 rename would silently detach every clip.
 //   - `startBar`  0-based measure where the pattern starts (1 bar = 4 beats).
-//   - `bars`      duration in measures. Defaults to the pattern's own length
-//                 (beatCount / 4) when omitted, so a clip of a 8-beat pattern
-//                 needs only `{pattern, startBar}`.
+//   - `bars`      duration in measures. A clip added through
+//                 `cmd.addSongClip()` defaults it to the pattern's own length
+//                 (beatCount / 4), so an 8-beat pattern needs only
+//                 `{pattern, startBar}`; `normalizeSong()`, which can be called
+//                 without the pattern library, falls back to 1 bar instead.
 //
 // ## Bar maths
 //

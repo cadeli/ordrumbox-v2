@@ -7,15 +7,15 @@ import { instrumentsManager } from './instrument_manager/index.js'
 import { cacheSample, cacheDrumkits } from '../../cache/idb_cache.js'
 import { EVENTS } from '../../core/events.js'
 
-export default class WavImportService {
+export default class AudioImportService {
     /**
      * Import a directory of audio files as a new drumkit.
      * @param {FileList} files - files from webkitdirectory input
      * @returns {Promise<{kitName: string, fileCount: number, warning?: string}>}
      */
     async importDirectory(files) {
-        const wavFiles = Array.from(files).filter((f) => /\.(wav|flac|mp3|aac)$/i.test(f.name))
-        if (wavFiles.length === 0) {
+        const audioFiles = Array.from(files).filter((f) => /\.(wav|flac|mp3|aac)$/i.test(f.name))
+        if (audioFiles.length === 0) {
             return { kitName: '', fileCount: 0, warning: 'No audio files found in selected directory' }
         }
 
@@ -25,7 +25,7 @@ export default class WavImportService {
         const audioCtx = serviceRegistry.audioCtx
         const instruments = []
 
-        for (const file of wavFiles) {
+        for (const file of audioFiles) {
             const fileName = file.name
             const instrument = instrumentsManager.findInstrumentFromFileName(fileName)
             const key = instrument.id
@@ -48,7 +48,7 @@ export default class WavImportService {
 
             instruments.push({ display_name: fileName, key, url: fileName })
             cacheSample(fileName, arrayBuffer).catch((e) => {
-                logger.warn('WavImport', `Failed to cache sample "${fileName}"`, e)
+                logger.warn('AudioImport', `Failed to cache sample "${fileName}"`, e)
             })
         }
 
@@ -67,7 +67,7 @@ export default class WavImportService {
 
         playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
 
-        return { kitName, fileCount: wavFiles.length }
+        return { kitName, fileCount: audioFiles.length }
     }
 
     async autoAssignSounds() {

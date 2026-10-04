@@ -155,10 +155,10 @@ describe('Undo Roundtrip & State Inversion', () => {
             expect(restoredSnare.notes[0].beatStep).toBe(0)
 
             // Deep JSON equality between current pattern and original P0 snapshot
-            // (ignoring internal runtime _version tracker if present)
+            // (ignoring internal runtime _revision tracker if present)
             const currentSnapshot = JSON.parse(JSON.stringify(pattern))
-            delete currentSnapshot._version
-            delete p0Snapshot._version
+            delete currentSnapshot._revision
+            delete p0Snapshot._revision
             expect(currentSnapshot).toEqual(p0Snapshot)
         })
     })
@@ -206,8 +206,8 @@ describe('Undo Roundtrip & State Inversion', () => {
             expect(snare.notes).toHaveLength(0)
 
             const current = JSON.parse(JSON.stringify(pattern))
-            delete current._version
-            delete preGenSnapshot._version
+            delete current._revision
+            delete preGenSnapshot._revision
             expect(current).toEqual(preGenSnapshot)
         })
 
@@ -224,7 +224,7 @@ describe('Undo Roundtrip & State Inversion', () => {
             pattern._autoGenGenre = 'rock'
             pattern.tags = ['groovy']
             const preGen = clone(pattern)
-            delete preGen._version
+            delete preGen._revision
 
             cmd.beginGenerationUndo(pattern)
 
@@ -244,7 +244,7 @@ describe('Undo Roundtrip & State Inversion', () => {
             // Undo → exact pre-generation state (new keys deleted, values restored).
             expect(history.undo()).toBe(true)
             const afterUndo = clone(pattern)
-            delete afterUndo._version
+            delete afterUndo._revision
             expect(afterUndo).toEqual(preGen)
             expect(kick.swingAmount).toBe(0.1)
             expect(kick.swingResolution).toBe(2)
@@ -543,23 +543,23 @@ describe('Undo Roundtrip & State Inversion', () => {
             // undo → pre-generation (2 tracks, 1 note)
             expect(history.undo()).toBe(true)
             const afterUndo = clone(pattern)
-            delete afterUndo._version
+            delete afterUndo._revision
             const pre = clone(preGen)
-            delete pre._version
+            delete pre._revision
             expect(afterUndo).toEqual(pre)
 
             // redo → post-generation again (including the generated track)
             expect(history.redo()).toBe(true)
             const afterRedo = clone(pattern)
-            delete afterRedo._version
+            delete afterRedo._revision
             const post = clone(postGen)
-            delete post._version
+            delete post._revision
             expect(afterRedo).toEqual(post)
 
             // and undo once more stays coherent
             expect(history.undo()).toBe(true)
             const finalUndo = clone(pattern)
-            delete finalUndo._version
+            delete finalUndo._revision
             expect(finalUndo).toEqual(pre)
         })
     })

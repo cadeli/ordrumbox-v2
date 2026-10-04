@@ -89,6 +89,74 @@ describe('Sequencer', () => {
         expect(serviceRegistry.transport.isRunning).toBe(false)
     })
 
+    // PATTERN_CHANGE's payload is behaviour, not decoration: an array re-syncs
+    // those tracks, no payload re-syncs the whole pattern. Eight emitters pass
+    // nothing on purpose, so the contract had to be written down (core/events.js)
+    // and pinned here.
+    describe('PATTERN_CHANGE payload contract', () => {
+        async function bus() {
+            return {
+                playbackEvents: (await import('../src/state/playback_events.js')).playbackEvents,
+                EVENTS: (await import('../src/core/events.js')).EVENTS,
+            }
+        }
+
+        // the Sequencer constructor builds its own AudioEngine and puts it in the
+        // registry, so the mock has to BE the spy
+        async function engineSpies() {
+            const engine = {
+                invalidateCache: vi.fn(),
+                syncTrack: vi.fn(),
+                syncAllTracks: vi.fn(),
+            }
+            const { default: AudioEngine } = await import('../src/audio/engine.js')
+            AudioEngine.mockImplementation(function () {
+                return engine
+            })
+            return engine
+        }
+
+        it('an array of tracks re-syncs exactly those', async () => {
+            const engine = await engineSpies()
+            const seq = new Sequencer()
+            seq.ensureAudioEngine()
+            const { playbackEvents, EVENTS } = await bus()
+            const kick = { name: 'KICK' }
+            const snare = { name: 'SNARE' }
+
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [kick, snare])
+
+            expect(engine.invalidateCache).toHaveBeenCalled()
+            expect(engine.syncTrack.mock.calls.map((c) => c[0])).toEqual([kick, snare])
+            expect(engine.syncAllTracks).not.toHaveBeenCalled()
+        })
+
+        it('no payload re-syncs the whole selected pattern', async () => {
+            const engine = await engineSpies()
+            const seq = new Sequencer()
+            seq.ensureAudioEngine()
+            const { playbackEvents, EVENTS } = await bus()
+
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
+
+            expect(engine.syncAllTracks).toHaveBeenCalledWith(appState.patterns[0])
+            expect(engine.syncTrack).not.toHaveBeenCalled()
+        })
+
+        it('an empty array also means "re-sync everything"', async () => {
+            // [] has no length, so it takes the same branch as no payload: an
+            // empty list cannot tell the engine which tracks changed.
+            const engine = await engineSpies()
+            const seq = new Sequencer()
+            seq.ensureAudioEngine()
+            const { playbackEvents, EVENTS } = await bus()
+
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [])
+
+            expect(engine.syncAllTracks).toHaveBeenCalledWith(appState.patterns[0])
+        })
+    })
+
     it('constructor reuses existing transport', () => {
         const existing = { audioCtx: serviceRegistry.audioCtx, onSchedule: null }
         serviceRegistry.transport = existing

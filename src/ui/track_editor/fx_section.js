@@ -114,7 +114,7 @@ export default class FxSection {
                         <label class="ne-row-label">${prop.label}</label>
                         <select data-key="${ck}">${renderOptions(prop.options, val, { labels: prop.labels })}</select></div>`
                 } else {
-                    const hasLfo = prop.lfo && track[prop.lfo] ? 'has-lfo' : ''
+                    const hasLfo = prop.lfoKey && track[prop.lfoKey] ? 'has-lfo' : ''
                     const isSelected = editor.selectedPropKey === ck ? 'selected' : ''
                     let knob = editor.fxKnobs.find((k) => k.key === ck)
                     if (knob) {

@@ -230,6 +230,7 @@ describe('IDB Cache', () => {
         const stats = await cache.getCacheStats()
         const entry = stats.entries.find((e) => e.type === 'patterns')
         expect(entry).toBeDefined()
+        // the key is a historical misnomer (nothing to do with the songs store)
         expect(entry.key).toBe('song_data')
         expect(typeof entry.size).toBe('number')
         expect(typeof entry.savedAt).toBe('number')
@@ -403,6 +404,23 @@ describe('IDB Cache', () => {
         expect(raw).toHaveProperty('store', 'patterns')
         expect(typeof raw.size).toBe('number')
         expect(typeof raw.savedAt).toBe('number')
+    })
+
+    // getCacheStats reports six stores and the Tools panel draws a delete button
+    // for every row; removeCacheEntry used to resolve only patterns/drumkits/samples,
+    // so the other three silently did nothing.
+    it.each(['patterns', 'drumkits', 'samples', 'settings', 'songs', 'generated_sounds'])(
+        'removeCacheEntry deletes from the %s store',
+        async (type) => {
+            const { idbPut, idbGet } = await import('../src/core/idb.js')
+            await idbPut(type, 'the-key', { data: 1 })
+            expect(await cache.removeCacheEntry(type, 'the-key')).toBe(true)
+            expect(await idbGet(type, 'the-key')).toBeUndefined()
+        },
+    )
+
+    it('removeCacheEntry reports an unknown type instead of silently doing nothing', async () => {
+        await expect(cache.removeCacheEntry('not_a_store', 'k')).resolves.toBe(false)
     })
 
     it('cachePatterns rethrows when idbPut fails', async () => {

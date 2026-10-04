@@ -199,7 +199,7 @@ export default class TrackCommands {
         this.#withUndo(
             track,
             ['stepsPerBeat', 'loopAtStep', 'notes'],
-            `Steps per bar on ${track.name}`,
+            `Steps per beat on ${track.name}`,
             () => {
                 const oldStepsPerBeat = track.stepsPerBeat
                 track.stepsPerBeat = target
@@ -222,17 +222,19 @@ export default class TrackCommands {
         return true
     }
 
-    incrNbStepPerBar(track) {
+    /** One step up on the subdivision cycle, wrapping 8 → 1. */
+    incrStepsPerBeat(track) {
         // Cyclic wrap: 8 → 1 (intentional, not a bug)
         const next = track.stepsPerBeat >= 8 ? 1 : track.stepsPerBeat + 1
         this.setStepsPerBeat(track, next)
     }
 
-    incrLoopPoint(track) {
+    /** Moves the loop point BACK by one step, wrapping to the track end. */
+    decrLoopPoint(track) {
         this.#withUndo(
             track,
             ['loopAtStep'],
-            `Loop point on ${track.name}`,
+            `Loop point back on ${track.name}`,
             () => {
                 track.loopAtStep--
                 if (track.loopAtStep < 1) {

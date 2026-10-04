@@ -24,19 +24,19 @@ function formatParamValue(value) {
 }
 
 /**
- * Une entree de la pile d'historique : la commande et son bookkeeping de
- * fusion. `meta` porte le rapport affiche au toast d'annulation.
+ * One entry of the undo stack: the command and its coalescing bookkeeping.
+ * `meta` carries the report shown in the undo toast.
  * @typedef {object} HistoryEntry
  * @property {() => void} execute
  * @property {() => void} undo
  * @property {() => void} [redo]
  * @property {string} [desc]
  * @property {object} [meta]
- * @property {object} [meta.params] parametres modifies, pour le rapport
- * @property {object} [meta.prev] valeurs avant modification
+ * @property {object} [meta.params] changed parameters, for the report
+ * @property {object} [meta.prev] values before the change
  * @property {string} [meta.desc]
- * @property {string} [coalesceKey] regroupe les gestes repetes de meme cle
- * @property {number} [coalesceAt] horodatage du dernier regroupement
+ * @property {string} [coalesceKey] groups repeated gestures of the same kind
+ * @property {number} [coalesceAt] timestamp of the last coalesce
  */
 
 export default class HistoryManager {
@@ -113,13 +113,15 @@ export default class HistoryManager {
     }
 
     /**
-     * Execute and record a command in one step.
+     * Runs the action AND pushes an undo entry for it. The name said "execute"
+     * for a method with two effects, so a caller could not tell that reading it
+     * changed the undo stack.
      * @param {() => void} executeFn - The action to perform
      * @param {() => void} undoFn - The inverse action
      * @param {object} [meta] - Optional metadata
      * @returns {any} Result of executeFn
      */
-    execute(executeFn, undoFn, meta = {}) {
+    executeAndRecord(executeFn, undoFn, meta = {}) {
         const result = executeFn()
         this.record({ execute: executeFn, undo: undoFn, meta })
         return result

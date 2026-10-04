@@ -63,7 +63,11 @@ const NOTE_KEY_ORDER = [
  * @property {number} beatStep              - Step index within the measure (0-based). Default: 0
  * @property {number} pitch                 - Pitch offset in semitones. Default: 0 (no transposition)
  * @property {number} pan                   - Stereo pan (-1=left, 0=center, 1=right). Default: 0
- * @property {number} every                 - Play every N steps (1=every step, 2=every other, etc). Default: 1
+ * @property {number} every                 - Fire once every N passes of the pattern
+ *                                          (1 = every pass, 2 = every other pass…). NOT
+ *                                          "every N steps": notes live on whole grid
+ *                                          steps, this counts pattern cycles — see
+ *                                          isTriggered(pos, every, loop). Default: 1
  * @property {number} prob                  - Trigger probability (0-1). Default: 1 (certain)
  * @property {number} rate                  - Ghost/retrigger spacing CODE, decoded by
  *                                          Utils.getStepSpacing (`<8` -> value/8,
@@ -75,7 +79,11 @@ const NOTE_KEY_ORDER = [
  * @property {number} arpTriggerProbability - Probability of arpeggio trigger (0-1). Default: 1
  * @property {number} euclideanFill         - Euclidean pulses k over the span to the next note, base note included (0-16, 0=disabled). Default: 0 (disabled)
  * @property {number} euclideanRotation     - Phase offset of the euclidean pattern in steps (0-15). Default: 0
- * @property {number} pos                   - Position within the step for micro-timing. Default: 0
+ * @property {number} pos                   - Phase offset inside the `every` cycle: the
+ *                                          note fires on the pass where
+ *                                          (pass + pos) % every === 0, so pos shifts
+ *                                          which pass fires first. Not sub-step
+ *                                          micro-timing. Default: 0
  */
 export const NOTE_DEFAULTS = {
     velocity: 0.8,

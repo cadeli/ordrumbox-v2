@@ -205,11 +205,12 @@ export default class PlaybackOverlaySection {
             return
         }
 
-        const tickInBar = loopTick % TICK
-        const normInBar = tickInBar / TICK
+        // TICK is ticks per BEAT, so this is the position inside the beat
+        const tickInBeat = loopTick % TICK
+        const beatPhase = tickInBeat / TICK
 
         if (this.#playhead.style.display !== 'block') this.#playhead.style.display = 'block'
-        const x = beatCache.left + normInBar * beatCache.width
+        const x = beatCache.left + beatPhase * beatCache.width
 
         this.#playhead.style.transform = `translate3d(${x}px, 0, 0)`
     }

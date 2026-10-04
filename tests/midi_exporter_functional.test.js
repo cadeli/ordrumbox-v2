@@ -786,12 +786,15 @@ describe('MidiExporter — functional end-to-end', () => {
 
     // ── 9. LFO modulation at export time ───────────────────────────────────────
     //
-    // velocityLfo and pitchLfo are evaluated at the note's engine tick and
-    // REPLACE the note's base value (replace semantics, matching the worklet).
+    // velocityLfo and pitchLfo are evaluated at the note's engine tick, the way
+    // the app plays them: pitchLfo is ADDED in semitones (sample_voice.js), and
+    // velocityLfo SCALES the note velocity (live it scales the strip gain, MIDI
+    // has no track gain). They used to REPLACE the note's own value, so an export
+    // came out at a different velocity/pitch than what was heard.
     // filterFreqLfo / filterQLfo / panLfo have no MIDI equivalent and are ignored.
 
     describe('Case 9: LFO modulation at export time', () => {
-        it('velocityLfo replaces note velocity (LFO at midpoint → velocity ≈ 0.5)', () => {
+        it('velocityLfo scales the note velocity (LFO at midpoint → 1.0 × 0.5 ≈ 64)', () => {
             // LFO {freq:1, min:0, max:1, phase:0.25} at tick 0:
             //   phase 0.25 maps to p=0 in getLfoWaveformValue, sin(0)=0
             //   → (0+1)/2=0.5 → 0.5 * 127 ≈ 64
@@ -813,7 +816,7 @@ describe('MidiExporter — functional end-to-end', () => {
             expect(kicks[0].velocity).toBe(64) // round(0.5 * 127) = 64
         })
 
-        it('velocityLfo at peak (phase=0.5) → velocity 127', () => {
+        it('velocityLfo at peak (phase=0.5) scales the note velocity to 127', () => {
             // LFO {freq:1, min:0, max:1, phase:0.5} at tick 0:
             //   phase 0.5 maps to p=0.25 in getLfoWaveformValue, sin(2π*0.25)=1
             //   → (1+1)/2=1 → 1.0 * 127 = 127
@@ -822,16 +825,9 @@ describe('MidiExporter — functional end-to-end', () => {
                 bpm: 120,
                 beatCount: 1,
                 tracks: [
-                    track(
-                        'KICK',
-                        4,
-                        1,
-                        1,
-                        [
-                            makeNote(0, 0, { velocity: 0.0 }), // would be 0 without LFO
-                        ],
-                        { velocityLfo: { freq: 1, min: 0, max: 1, phase: 0.5 } },
-                    ),
+                    track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 1.0 })], {
+                        velocityLfo: { freq: 1, min: 0, max: 1, phase: 0.5 },
+                    }),
                 ],
             }
             const im = new InstrumentsManager()
@@ -839,6 +835,24 @@ describe('MidiExporter — functional end-to-end', () => {
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
             const kicks = allNoteOns(midiBytes).filter((n) => n.note === 36)
             expect(kicks[0].velocity).toBe(127)
+        })
+
+        it('velocityLfo scales: a 0-velocity note stays silent instead of being lifted', () => {
+            // Scaling semantics, not replacing: the LFO can only lower a note.
+            const pattern = {
+                name: 'LfoVeloZeroNote',
+                bpm: 120,
+                beatCount: 1,
+                tracks: [
+                    track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 0.0 })], {
+                        velocityLfo: { freq: 1, min: 0, max: 1, phase: 0.5 },
+                    }),
+                ],
+            }
+            const im = new InstrumentsManager()
+            const exporter = new MidiExporter(im)
+            const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
+            expect(allNoteOns(midiBytes).filter((n) => n.note === 36)).toHaveLength(0)
         })
 
         it('velocityLfo at trough (phase=0) → velocity 0 → note omitted (MIDI velocity 0 = Note Off)', () => {
@@ -884,7 +898,7 @@ describe('MidiExporter — functional end-to-end', () => {
             expect(kicks).toHaveLength(1)
         })
 
-        it('pitchLfo replaces note pitch (KICK 36 + lfo 6, note.pitch=5 ignored)', () => {
+        it('pitchLfo ADDS to the note pitch (36 + 5 + lfo 6 = 47)', () => {
             const pattern = {
                 name: 'LfoPitchAdd',
                 bpm: 120,
@@ -898,7 +912,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
-            const kicks = allNoteOns(midiBytes).filter((n) => n.note === 42)
+            const kicks = allNoteOns(midiBytes).filter((n) => n.note === 47)
             expect(kicks).toHaveLength(1)
         })
 
@@ -1019,7 +1033,7 @@ describe('MidiExporter — functional end-to-end', () => {
             expect(bytesFilt).toEqual(bytesBase)
         })
 
-        it('velocityLfo replaces base velocity (note velocity 1.0 ignored when LFO active)', () => {
+        it('velocityLfo scales: note velocity 0.5 at LFO peak → 0.5 (not lifted to 1)', () => {
             const pattern = {
                 name: 'VeloLfoReplace',
                 bpm: 120,
@@ -1037,7 +1051,7 @@ describe('MidiExporter — functional end-to-end', () => {
             expect(kicks[0].velocity).toBe(64)
         })
 
-        it('pitchLfo replaces note pitch (KICK 36 + lfo 6, negative note.pitch=-3 ignored)', () => {
+        it('pitchLfo ADDS to a negative note pitch (36 - 3 + lfo 6 = 39)', () => {
             const pattern = {
                 name: 'LfoPitchNeg',
                 bpm: 120,
@@ -1051,7 +1065,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
-            const kicks = allNoteOns(midiBytes).filter((n) => n.note === 42)
+            const kicks = allNoteOns(midiBytes).filter((n) => n.note === 39)
             expect(kicks).toHaveLength(1)
         })
 
@@ -1247,7 +1261,7 @@ describe('MidiExporter — functional end-to-end', () => {
     // ── 16. Retrigger + pitchLfo combined ──────────────────────────────────────
 
     describe('Case 16: retrigger + pitchLfo applied per retrigger note', () => {
-        it('each retrigger note gets pitch from LFO at its tick (note.pitch replaced)', () => {
+        it('each retrigger note gets the LFO pitch ADDED to the note pitch at its tick', () => {
             const pattern = {
                 name: 'RetrigPitchLfo',
                 bpm: 120,
@@ -1262,10 +1276,13 @@ describe('MidiExporter — functional end-to-end', () => {
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
             const kicks = allNoteOns(midiBytes)
-                .filter((n) => n.note === 36)
+                .filter((n) => n.channel === 9) // 0-based channel 10 = drums
                 .sort((a, b) => a.absTick - b.absTick)
             expect(kicks).toHaveLength(2)
-            kicks.forEach((k) => expect(k.note).toBe(36))
+            // KICK 36 + the note's own +2 + the LFO at each tick (≈ 0 over two ticks
+            // at freq 1/32). The note pitch used to be REPLACED by the LFO, so both
+            // landed on 36 instead.
+            kicks.forEach((k) => expect(k.note).toBe(38))
         })
     })
 

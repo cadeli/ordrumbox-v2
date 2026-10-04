@@ -48,7 +48,9 @@ class DrumkitService {
                 tune: sound.tune ?? 0,
             }))
 
-        return { version: 1, name, instruments }
+        // no version field: restoreDrumkit validates the shape it needs, so a
+        // stored number could never gate anything
+        return { name, instruments }
     }
 
     async restoreDrumkit(data) {

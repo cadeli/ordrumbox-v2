@@ -48,7 +48,7 @@ describe('Track variation2', () => {
             variation2: 0,
             notes: [{ beat: 0, beatStep: 0, retriggerNum: 1, rate: 1, euclideanFill: 0 }],
         }
-        expect(TrackVariation.applyNoteVariation(track)).toBeNull()
+        expect(TrackVariation.computeNoteVariation(track)).toBeNull()
         expect(track.notes[0].retriggerNum).toBe(1)
         expect(track.notes[0].rate).toBe(1)
         expect(track.notes[0].euclideanFill).toBe(0)
@@ -72,7 +72,7 @@ describe('Track variation2', () => {
         ]
         const pristine = structuredClone(notes)
         const t = { stepsPerBeat: 4, variation2: 100, notes }
-        const varied = TrackVariation.applyNoteVariation(t)
+        const varied = TrackVariation.computeNoteVariation(t)
 
         expect(varied).toBeInstanceOf(Map)
         expect(varied.size).toBeGreaterThanOrEqual(1)
@@ -101,7 +101,7 @@ describe('Track variation2', () => {
                 },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
-            const varied = TrackVariation.applyNoteVariation(t)
+            const varied = TrackVariation.computeNoteVariation(t)
             const r = varied.get(notes[0])
             if (r.retriggerNum !== 1 || r.rate !== 1 || r.euclideanFill !== 0 || r.prob !== 1) {
                 changed = true
@@ -126,7 +126,7 @@ describe('Track variation2', () => {
             variation2: 100,
             notes: [{ beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclideanFill: 0, arp: null }],
         }
-        const variedNoArp = TrackVariation.applyNoteVariation(trackNoArp)
+        const variedNoArp = TrackVariation.computeNoteVariation(trackNoArp)
         expect(variedNoArp.get(trackNoArp.notes[0]).arp).toBeNull()
 
         let arpChanged = false
@@ -135,7 +135,7 @@ describe('Track variation2', () => {
                 { beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclideanFill: 0, arp: [0, 4, 7] },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
-            const varied = TrackVariation.applyNoteVariation(t)
+            const varied = TrackVariation.computeNoteVariation(t)
             const clone = varied.get(notes[0])
             if (clone.arp[0] !== 0) {
                 arpChanged = true
@@ -157,7 +157,7 @@ describe('Track variation2', () => {
                 { beat: 0, beatStep: 0, every: 1, pos: 0, prob: 1, retriggerNum: 1, rate: 1, euclideanFill: 0 },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
-            const clone = TrackVariation.applyNoteVariation(t).get(notes[0])
+            const clone = TrackVariation.computeNoteVariation(t).get(notes[0])
             expect(clone.every).toBe(1)
             expect(clone.pos).toBe(0)
             expect(clone.prob).toBeGreaterThanOrEqual(0.2)
@@ -184,7 +184,7 @@ describe('Track variation2', () => {
                 },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
-            const clone = TrackVariation.applyNoteVariation(t).get(notes[0])
+            const clone = TrackVariation.computeNoteVariation(t).get(notes[0])
             expect(clone.beat).toBe(2)
             expect(clone.beatStep).toBe(3)
             expect(clone.velocity).toBe(0.9)
@@ -215,7 +215,7 @@ describe('Track variation2', () => {
             { beat: 2, beatStep: 0, retriggerNum: 1, rate: 1, euclideanFill: 0 },
         ]
         const t = { stepsPerBeat: 4, variation2: 100, notes }
-        const varied = TrackVariation.applyNoteVariation(t)
+        const varied = TrackVariation.computeNoteVariation(t)
 
         let changed = 0
         for (const source of notes) {

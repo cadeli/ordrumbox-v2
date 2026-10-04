@@ -133,7 +133,7 @@ export default class Mixer {
     }
 
     stop = () => {
-        this.deleteStrips()
+        this.deleteAllStrips()
 
         const nodes = [this.busWorklet, this.busInput, this.analyser, this.transportClock]
         for (const node of nodes) {
@@ -199,7 +199,7 @@ export default class Mixer {
         return this.strips[name]
     }
 
-    deleteStrips = () => {
+    deleteAllStrips = () => {
         for (const name of Object.keys(this.strips)) {
             if (this.strips[name]?.delete) {
                 this.strips[name].delete()

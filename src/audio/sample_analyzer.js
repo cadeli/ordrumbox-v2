@@ -6,7 +6,7 @@ const analyzer = new AudioAnalyzer()
 const cache = new Map()
 
 /**
- * Analyse d'un echantillon : ce que renvoie AudioAnalyzer, plus noteInfo.
+ * Sample analysis: what AudioAnalyzer returns, plus noteInfo.
  * @typedef {import('./analyze.js').AudioAnalysis & {
  *     noteInfo: {note: string, octave: number, cents: number}|null,
  * }} SampleAnalysis

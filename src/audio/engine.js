@@ -129,7 +129,7 @@ export default class AudioEngine {
         // variation2 layer) twice.
         this.#cachedPatternRef = pattern
         this.#cachedLoop = loop
-        this.#cachedVersion = pattern._version ?? 0
+        this.#cachedVersion = pattern._revision ?? 0
         return this.flatNotes
     }
 
@@ -139,13 +139,13 @@ export default class AudioEngine {
      * Song playback layers several patterns at once, so the single-slot cache
      * above cannot serve it: each pattern needs its own map, keyed by identity
      * plus its cycle counter (which drives `every` and variation).
-     * @param {{_version?: number}} pattern
+     * @param {{_revision?: number}} pattern
      * @param {number} [loop]
      * @returns {Map<number, any[]>}
      */
     getFlatNotesForPattern = (pattern, loop = 0) => {
         if (!pattern) return this.flatNotes
-        const version = pattern._version ?? 0
+        const version = pattern._revision ?? 0
         const cached = this.#perPatternFlatNotes.get(pattern)
         if (cached && cached.loop === loop && cached.version === version) return cached.map
         const map = recomputeFlatNotes(pattern, loop, this.TICK)
@@ -157,7 +157,7 @@ export default class AudioEngine {
         const pattern = this.patterns[this.getSelectedPatternIdx()]
         if (!pattern) return this.flatNotes
 
-        const patternVersion = pattern._version ?? 0
+        const patternVersion = pattern._revision ?? 0
         if (this.#cachedPatternRef === pattern && this.#cachedLoop === loop && this.#cachedVersion === patternVersion) {
             return this.flatNotes
         }

@@ -297,24 +297,24 @@ describe('Functional: Commander operations', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             track.loopAtStep = 16
 
-            cmd.incrLoopPoint(track)
+            cmd.decrLoopPoint(track)
             expect(track.loopAtStep).toBe(15)
 
             for (let i = 0; i < 15; i++) {
-                cmd.incrLoopPoint(track)
+                cmd.decrLoopPoint(track)
             }
             expect(track.loopAtStep).toBe(16)
         })
     })
 
     describe('Bar quantize cycle', () => {
-        it('incrNbStepPerBar changes stepsPerBeat', () => {
+        it('incrStepsPerBeat changes stepsPerBeat', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             const note = cmd.addNote(track, 0, 2)
             note.steppc = 50
 
             const original = track.stepsPerBeat
-            cmd.incrNbStepPerBar(track)
+            cmd.incrStepsPerBeat(track)
             expect(track.stepsPerBeat).not.toBe(original)
         })
 

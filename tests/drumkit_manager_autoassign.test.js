@@ -85,7 +85,6 @@ describe('DrumkitManager instrument mapping', () => {
 
         const exported = drumkitService.exportCurrentKit()
         expect(exported).toMatchObject({
-            version: 1,
             name: 'custom',
             instruments: [{ url: SOUND_ID, key: 'CLAP', gainDb: -3.5, tune: 2, decay: 750 }],
         })

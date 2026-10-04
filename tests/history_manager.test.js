@@ -112,7 +112,7 @@ describe('HistoryManager', () => {
         it('calls executeFn and records', () => {
             const ex = vi.fn().mockReturnValue(42)
             const un = vi.fn()
-            const result = history.execute(ex, un, { desc: 'test' })
+            const result = history.executeAndRecord(ex, un, { desc: 'test' })
             expect(result).toBe(42)
             expect(ex).toHaveBeenCalled()
             expect(history.canUndo).toBe(true)

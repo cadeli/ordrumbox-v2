@@ -27,7 +27,14 @@ const REVERB_PRESETS = Object.freeze({
 })
 const SATURATION_TYPES_IDX = { soft: 0, hard: 1, tape: 2 }
 const FILTER_MODES = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 }
-const DELAY_MODES = { none: 0, slap: 0, tape: 1, pingpong: 2 }
+// DSP modes (strip_source.js): 0 = Slap, 1 = Tape, 2 = PingPong. 'none' is NOT a
+// mode — it is a type that silences the send (see updateDelay), so it must never
+// appear in this table: mapping it to 0 would sound a slap where the name says
+// "no delay".
+const DELAY_MODES = { slap: 0, tape: 1, pingpong: 2 }
+
+/** Silences the send. Handled before the mode table, never a DSP mode. */
+const NO_DELAY_TYPE = 'none'
 
 /** Unknown enum values already reported, so a bad pattern cannot spam toasts. */
 const enumWarned = new Set()
@@ -200,13 +207,17 @@ export default class Strip {
         const time = this.audioCtx.currentTime
         const params = this.stripNode.parameters
 
-        const normalizedType = mapStripEnum(DELAY_MODES, type, 'delayType', 'tape')
         const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
 
-        if (normalizedType === 'none' || normalizedAmount <= 0) {
+        // BEFORE the mode lookup: 'none' is not in DELAY_MODES, and running it
+        // through mapStripEnum would report it as an unknown enum and fall back
+        // to 'tape' — i.e. a delay where the track says there is none.
+        if (type === NO_DELAY_TYPE || normalizedAmount <= 0) {
             params.get('dlyMix')?.setTargetAtTime(0, time, RAMP_TIME)
             return
         }
+
+        const normalizedType = mapStripEnum(DELAY_MODES, type, 'delayType', 'tape')
 
         const delaySeconds = Utils.getDelayTimeInSeconds(timeBeats, this.bpm)
         const mode = DELAY_MODES[normalizedType] ?? 1

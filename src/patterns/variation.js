@@ -321,11 +321,13 @@ export default class TrackVariation {
     }
 
     /**
-     * variation2 layer for a track's source notes.
+     * variation2 layer for a track's source notes — COMPUTES, mutates nothing.
+     * Not to be confused with {@link TrackVariation.apply}, which rewrites the
+     * flat-note map in place.
      * @returns {Map<object, object>|null} Map<sourceNote, variedClone>, or
      * null when variation2 is disabled. Source notes are never modified.
      */
-    static applyNoteVariation(track) {
+    static computeNoteVariation(track) {
         const variation2 = track.variation2 ?? 0
         if (variation2 <= 0) return null
 

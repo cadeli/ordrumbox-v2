@@ -13,7 +13,7 @@ vi.mock('../src/core/notify.js', () => ({
 }))
 
 vi.mock('../src/core/idb.js', () => ({
-    idbReport: vi.fn(async () => ({ usagePct: 1, usageBytes: 1, quotaBytes: 100, stores: {} })),
+    getStorageReport: vi.fn(async () => ({ usageRatio: 0.5, usageBytes: 1, quotaBytes: 2, stores: {} })),
 }))
 
 function makeResourcesLoader(overrides = {}) {

@@ -5,7 +5,7 @@ import ContextMenu from '../components/context_menu.js'
 import Utils from '../../core/utils.js'
 import { showToast } from '../../core/notify.js'
 import { EVENTS } from '../../core/events.js'
-import { notesLabel } from './labels.js'
+import { beatLabel, notesLabel } from './labels.js'
 import { emitNotesChanged } from '../../state/playback_events.js'
 
 export default class ContextMenuSection {
@@ -159,11 +159,11 @@ export default class ContextMenuSection {
         this.#editor.focusRowIdx = trackIdx
         this.#editor.cursorBeat = beat
         this.#editor.cursorBeatStep = beatStep
-        const stepLabel = `beat ${beat + 1}.${beatStep + 1}`
+        const at = beatLabel(beat, beatStep)
         showToast(
             notes.length > 0
-                ? `Copied ${notesLabel(notes.length)} — ${track.name} @ ${stepLabel}`
-                : `Copied empty step — ${track.name} @ ${stepLabel}`,
+                ? `Copied ${notesLabel(notes.length)} — ${track.name} @ ${at}`
+                : `Copied empty step — ${track.name} @ ${at}`,
             'success',
         )
     }
@@ -187,8 +187,8 @@ export default class ContextMenuSection {
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
         this.#editor.applySelection()
         this.#editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        const stepLabel = `beat ${beat + 1}.${beatStep + 1}`
-        showToast(`Pasted ${notesLabel(notes.length)} — ${track.name} @ ${stepLabel}`, 'success')
+        const at = beatLabel(beat, beatStep)
+        showToast(`Pasted ${notesLabel(notes.length)} — ${track.name} @ ${at}`, 'success')
     }
 
     #menuDeleteNote(pattern, tracks, trackIdx, beat, beatStep) {
@@ -212,8 +212,8 @@ export default class ContextMenuSection {
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
         this.#editor.applySelection()
         emitNotesChanged(track, this.#editor.playbackEvents)
-        const stepLabel = `beat ${beat + 1}.${beatStep + 1}`
-        showToast(`Deleted ${notesLabel(notes.length)} — ${track.name} @ ${stepLabel}`, 'success')
+        const at = beatLabel(beat, beatStep)
+        showToast(`Deleted ${notesLabel(notes.length)} — ${track.name} @ ${at}`, 'success')
     }
 
     #menuAddRndNote(pattern, tracks, trackIdx, beat, beatStep) {

@@ -314,7 +314,7 @@ describe('Roundtrip 4 — Transport → Player tick chain', () => {
 
         transport.start()
         transport.nextStepTime = ctx.currentTime
-        transport.scheduleAheadTime = 1.0
+        transport.scheduleAheadSeconds = 1.0
 
         transport.scheduler()
 
@@ -335,7 +335,7 @@ describe('Roundtrip 4 — Transport → Player tick chain', () => {
 
         transport.start()
         transport.nextStepTime = ctx.currentTime
-        transport.scheduleAheadTime = 0.5
+        transport.scheduleAheadSeconds = 0.5
 
         const tickBefore = transport.tick
         transport.scheduler()
@@ -360,7 +360,7 @@ describe('Roundtrip 4 — Transport → Player tick chain', () => {
 
         transport.start()
         transport.nextStepTime = ctx.currentTime
-        transport.scheduleAheadTime = 1.0
+        transport.scheduleAheadSeconds = 1.0
 
         transport.scheduler()
 
@@ -379,7 +379,7 @@ describe('Roundtrip 4 — Transport → Player tick chain', () => {
         transport.start()
         transport.stop()
         transport.nextStepTime = ctx.currentTime
-        transport.scheduleAheadTime = 1.0
+        transport.scheduleAheadSeconds = 1.0
 
         onScheduleSpy.mockClear()
         transport.scheduler()
@@ -464,7 +464,7 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
         const pat = appState.patterns[0]
         const kick = Object.values(pat.tracks)[0]
         kick.notes = [...kick.notes, { beat: 1, beatStep: 2, pitch: 0, velocity: 0.5 }]
-        kick._version = (kick._version ?? 0) + 1
+        kick._revision = (kick._revision ?? 0) + 1
 
         panel.sync()
 

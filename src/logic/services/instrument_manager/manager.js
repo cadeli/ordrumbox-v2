@@ -52,12 +52,18 @@ export default class InstrumentsManager {
         return this.byId.get(id.toUpperCase()) ?? new Instrument()
     }
 
+    /**
+     * Instrument whose synonyms match `name`.
+     * @returns {Instrument} a NOT_FOUND instrument when nothing matches — same
+     *   contract as every other finder here, so callers never have to null-check
+     *   this one alone.
+     */
     findByName(name) {
         for (const m of this.matchers) {
             if (m.pattern.test(name)) return m.instrument
         }
-        logger.warn('Instrument', `findByName: no match for "${name}" — fallback: KICK`)
-        return null
+        logger.warn('Instrument', `findByName: no match for "${name}"`)
+        return new Instrument()
     }
 
     findInstrumentFromFileName(fileName) {

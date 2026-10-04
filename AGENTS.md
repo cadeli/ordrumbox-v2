@@ -58,7 +58,7 @@ Standalone worker (not part of the module graph), registered by `src/service_wor
 
 ### Key constants
 
-- `TICK = 32` — ticks per step (`src/core/constants.js`)
+- `TICK = 32` — ticks per **beat** (`src/core/constants.js`). One beat = 4 grid steps (a track's `stepsPerBeat`), so a bar is `4 × TICK` ticks and a step is `TICK / stepsPerBeat`.
 - `DB_VERSION = 5` / `MIGRATIONS` — IndexedDB schema (`src/core/idb.js`). When persisted data changes shape: bump `DB_VERSION` **and** add `MIGRATIONS[N]` (`N` = the new `DB_VERSION`, signature `(db, tx)`); `runUpgrades` creates any missing store first, then runs entries whose key lies in `(oldVersion, newVersion]`. A migration **must stay request-chained** (`cursor.continue()`), never `async`/`await`: the versionchange transaction auto-commits once the microtask queue drains, so awaiting would close the store mid-walk. `MIGRATIONS[5]` (the `nbBeats` → `beatCount` rename) is the reference implementation. The connection is shared for the whole session (`openDb()`) and reopened once when a transaction fails with `InvalidStateError`.
 - `LFO_TARGET_TO_INT` — maps LFO target strings to integers for worklet processor (`src/audio/voices/worklet_synth_voice.js:14`)
 - `WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3, random: 4 }` — `random` (shape=4) is a deterministic sample & hold (new value per oscillator cycle for VCOs, per LFO cycle for LFOs; same formula as `getLfoWaveformValue()` in `src/audio/math.js`); the `osc*Wave`/`lfo*Wave` AudioParams declare `maxValue: 4` — the host currently sends waves via port messages (no AudioParam clamping), but an AudioParam-driven path with `maxValue: 3` would clamp 4→3 and degrade to square

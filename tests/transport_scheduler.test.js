@@ -74,7 +74,7 @@ describe('Transport scheduler', () => {
         t.scheduler()
         expect(t.onSchedule).toHaveBeenCalledTimes(1)
         expect(t.onSchedule).toHaveBeenCalledWith(0, expect.any(Number))
-        // nextNote was called once after onSchedule → tick = 1
+        // advanceTick was called once after onSchedule → tick = 1
         expect(t.tick).toBe(1)
 
         // Second scheduler call — #tickInFlight is set, should not call onSchedule or advance

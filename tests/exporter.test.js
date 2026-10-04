@@ -120,10 +120,10 @@ describe('PatternExporter', () => {
             expect(cleaned.beatCount).toBe(8)
         })
 
-        it('strips the runtime _version counter', () => {
-            const pattern = { ...Utils.PATTERN_DEFAULTS, _version: 7, tracks: [] }
+        it('strips the runtime _revision counter', () => {
+            const pattern = { ...Utils.PATTERN_DEFAULTS, _revision: 7, tracks: [] }
             const cleaned = PatternExporter.cleanPattern(pattern)
-            expect(cleaned).not.toHaveProperty('_version')
+            expect(cleaned).not.toHaveProperty('_revision')
         })
 
         it('cleans tracks inside the pattern', () => {

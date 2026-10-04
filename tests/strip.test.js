@@ -137,6 +137,31 @@ describe('Strip (Unified Worklet)', () => {
         expect(params.get('dlyTimeL').setTargetAtTime).toHaveBeenCalled()
     })
 
+    // The DSP modes are 0 = Slap, 1 = Tape, 2 = PingPong (strip_source.js). 'none'
+    // is a type that silences the send, not a mode: DELAY_MODES used to map it to
+    // 0, i.e. a slap, and only the 'none' guard above kept it from sounding.
+    it.each([
+        ['slap', 0],
+        ['tape', 1],
+        ['pingpong', 2],
+    ])('updateDelay maps %s to DSP mode %i', async (type, mode) => {
+        const strip = await Strip.create('KICK', ctx)
+        strip.updateDelay(type, 1, 0.5)
+        expect(strip.stripNode.parameters.get('dlyMode').setTargetAtTime).toHaveBeenCalledWith(
+            mode,
+            expect.any(Number),
+            expect.any(Number),
+        )
+    })
+
+    it("updateDelay 'none' silences the send and never picks a DSP mode", async () => {
+        const strip = await Strip.create('KICK', ctx)
+        strip.updateDelay('none', 1, 0.5)
+        const params = strip.stripNode.parameters
+        expect(params.get('dlyMix').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(params.get('dlyMode').setTargetAtTime).not.toHaveBeenCalled()
+    })
+
     it('delete disconnects the stripNode and cleans up', async () => {
         const strip = await Strip.create('KICK', ctx)
         const node = strip.stripNode

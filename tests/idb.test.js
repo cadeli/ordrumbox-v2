@@ -162,9 +162,9 @@ describe('IndexedDB helpers', () => {
         expect(Array.isArray(keys)).toBe(true)
     })
 
-    it('idbReport returns report object with stores', async () => {
+    it('getStorageReport returns a snapshot with store keys', async () => {
         await idbModule.idbPut('settings', 'test', 1)
-        const report = await idbModule.idbReport()
+        const report = await idbModule.getStorageReport()
         expect(report).toHaveProperty('stores')
         expect(report.stores).toHaveProperty('settings')
         expect(report.stores.settings).toContain('test')
@@ -179,13 +179,13 @@ describe('IndexedDB helpers', () => {
         expect(s2).toBe('songsVal')
     })
 
-    it('idbReport handles missing navigator.storage gracefully', async () => {
+    it('getStorageReport handles missing navigator.storage gracefully', async () => {
         Object.defineProperty(globalThis, 'navigator', {
             value: {},
             writable: true,
             configurable: true,
         })
-        const report = await idbModule.idbReport()
+        const report = await idbModule.getStorageReport()
         expect(report).toHaveProperty('stores')
     })
 

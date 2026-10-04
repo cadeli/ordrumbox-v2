@@ -1,8 +1,9 @@
 import Defaults from '../patterns/defaults.js'
 
 /**
- * Les seules proprietes lues par applyTrackToStrip. Modelise le contrat reel du
- * module plutot que le type Track complet, dont le reste n'est pas utilise ici.
+ * The only properties applyTrackToStrip reads. This models what the module
+ * actually uses rather than the full Track type, whose other fields are ignored
+ * here.
  * @typedef {object} StripParams
  * @property {string}  [filterType]
  * @property {number}  [filterFreq]

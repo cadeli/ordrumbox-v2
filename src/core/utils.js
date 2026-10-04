@@ -315,8 +315,12 @@ export default class Utils {
         return Utils.PAN_MAP[trackTypeIndex] ?? 0
     }
 
-    static getPanFromTrackName = (type) => {
-        const idx = Utils.TRACK_NAME_TO_INDEX[type]
+    /**
+     * Default pan of a track, from its NAME ("KICK", "OHH", …).
+     * @param {string} trackName  a track name, NOT a detectTrackType() result
+     */
+    static getPanFromTrackName = (trackName) => {
+        const idx = Utils.TRACK_NAME_TO_INDEX[trackName]
         return idx !== undefined ? Utils.computeTrackPan(idx) : 0
     }
 
