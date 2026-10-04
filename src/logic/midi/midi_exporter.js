@@ -31,6 +31,7 @@ import { soundRegistry } from '../../state/sound_registry.js'
 import { recomputeFlatNotes, computeNbTickForPattern } from '../../patterns/engine.js'
 import { TICK } from '../../core/constants.js'
 import { computeLfoValue } from '../../audio/math.js'
+import { clamp } from '../../core/numbers.js'
 import Utils from '../../core/utils.js'
 import { downloadBlob } from '../../core/download.js'
 
@@ -273,7 +274,7 @@ export default class MidiExporter {
                         // note's own value away and made the export louder or
                         // quieter than what the app plays.
                         const lfoVal = computeLfoValue(fn.track.velocityLfo, engineTick, nbTickForPattern)
-                        velocity = Utils.clamp(velocity * lfoVal, 0, 1)
+                        velocity = clamp(velocity * lfoVal, 0, 1)
                     }
 
                     // Live, pitchLfo is ADDITIVE in semitones on top of the note
@@ -286,7 +287,7 @@ export default class MidiExporter {
                         pitchOffset += computeLfoValue(fn.track.pitchLfo, engineTick, nbTickForPattern)
                     }
 
-                    const noteNum = Utils.clamp(td.midiNote + pitchOffset, 0, 127)
+                    const noteNum = clamp(td.midiNote + pitchOffset, 0, 127)
                     const midiVel = Math.round(velocity * 127)
                     td.events.push({ absMidiTick, noteNum, velocity: midiVel })
                 }

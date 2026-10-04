@@ -9,7 +9,7 @@ import {
     updateClockPulseTracking,
     isMidiSupported,
 } from './midi_parser.js'
-import Utils from '../../core/utils.js'
+import { clamp } from '../../core/numbers.js'
 
 export default class MidiManager extends EventTarget {
     static TAG = 'MidiManager'
@@ -170,12 +170,12 @@ export default class MidiManager extends EventTarget {
     }
 
     sendNoteOn = (channel, note, velocity, timestamp) => {
-        const status = 0x90 | Utils.clamp(channel, 0, 15)
+        const status = 0x90 | clamp(channel, 0, 15)
         this.sendMidiMessage([status, note, velocity], timestamp)
     }
 
     sendNoteOff = (channel, note, timestamp) => {
-        const status = 0x80 | Utils.clamp(channel, 0, 15)
+        const status = 0x80 | clamp(channel, 0, 15)
         this.sendMidiMessage([status, note, 0], timestamp)
     }
 

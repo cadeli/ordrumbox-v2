@@ -4,7 +4,7 @@
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
-import Utils from '../../core/utils.js'
+import { clamp } from '../../core/numbers.js'
 import { EVENTS } from '../../core/events.js'
 import { BEATS_PER_PAGE } from '../../core/constants.js'
 import { KEYS_COLUMN_WIDTH, MIDI_MIN, MIN_CELL_WIDTH, MIDDLE_C, NOTE_HEIGHT, TOTAL_KEYS } from './constants.js'
@@ -60,7 +60,7 @@ export default class ViewportSection {
     }
 
     clampPage() {
-        serviceRegistry.cmd.setCurrentPage(Utils.clamp(appState.currentPage, 0, this.#totalPages() - 1))
+        serviceRegistry.cmd.setCurrentPage(clamp(appState.currentPage, 0, this.#totalPages() - 1))
     }
 
     prevPage() {

@@ -2,46 +2,6 @@ import { describe, it, expect } from 'vitest'
 import Utils from '../src/core/utils.js'
 import { getLoopCandidateSteps } from './helpers/loop_candidate_steps.js'
 
-describe('Utils.clamp', () => {
-    it('returns value within range', () => {
-        expect(Utils.clamp(5, 0, 10)).toBe(5)
-    })
-
-    it('clamps to min', () => {
-        expect(Utils.clamp(-1, 0, 10)).toBe(0)
-    })
-
-    it('clamps to max', () => {
-        expect(Utils.clamp(15, 0, 10)).toBe(10)
-    })
-})
-
-describe('Utils.toFiniteNumber', () => {
-    it('returns number if finite', () => {
-        expect(Utils.toFiniteNumber(42)).toBe(42)
-    })
-
-    it('returns fallback for NaN', () => {
-        expect(Utils.toFiniteNumber(NaN)).toBe(0)
-    })
-
-    it('returns fallback for Infinity', () => {
-        expect(Utils.toFiniteNumber(Infinity)).toBe(0)
-    })
-
-    it('returns custom fallback', () => {
-        expect(Utils.toFiniteNumber(NaN, 99)).toBe(99)
-    })
-
-    it('parses string numbers', () => {
-        expect(Utils.toFiniteNumber('3.14')).toBe(3.14)
-    })
-
-    it('does not throw on an invalid value without a label', () => {
-        expect(Utils.toFiniteNumber(undefined, 7)).toBe(7)
-    })
-})
-
 describe('Utils', () => {
     describe('getDelayTimeInSeconds', () => {
         it('1 @ 120bpm = 0.5s', () => {

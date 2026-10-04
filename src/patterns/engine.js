@@ -1,3 +1,4 @@
+import { clamp } from '../core/numbers.js'
 import Utils from '../core/utils.js'
 import FlatNote from '../model/flatnote.js'
 import Defaults from './defaults.js'
@@ -19,7 +20,7 @@ export function isTriggered(pos, every, loop) {
 }
 
 export function isProbabilityTriggered(prob = 1, random = Math.random) {
-    const probability = Utils.clamp(Number(prob), 0, 1)
+    const probability = clamp(Number(prob), 0, 1)
     return probability >= 1 || random() < probability
 }
 
@@ -77,7 +78,7 @@ export function normalizeArp(arp) {
 
 export function getArpNoteCount(note) {
     const totalNotes = parseInt(note.retriggerNum ?? 1)
-    return Number.isFinite(totalNotes) ? Utils.clamp(totalNotes, 1, 16) : 1
+    return Number.isFinite(totalNotes) ? clamp(totalNotes, 1, 16) : 1
 }
 
 export function computeTickForNote(note, track, tick = TICK) {

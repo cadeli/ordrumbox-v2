@@ -13,6 +13,7 @@ import { syncKnobs } from './components/sync_helpers.js'
 import { reportUserError, showToast } from '../core/notify.js'
 import { bindTabToggles, downloadJson } from './components/ui_utils.js'
 import { getLfoWaveformValue, syncToHz } from '../audio/math.js'
+import { clamp } from '../core/numbers.js'
 import Utils from '../core/utils.js'
 
 import GroupsSection from './synth_editor/groups_section.js'
@@ -324,7 +325,7 @@ export default class SynthEditor {
                 const meta = SYNTH_PARAM_META[path]
                 const min = meta?.min ?? -Infinity
                 const max = meta?.max ?? Infinity
-                knob.setValue(Utils.clamp(base + totalMod, min, max))
+                knob.setValue(clamp(base + totalMod, min, max))
             }
         }
     }

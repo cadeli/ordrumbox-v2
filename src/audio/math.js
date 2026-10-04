@@ -1,5 +1,6 @@
 import { logger } from '../core/logger.js'
 import { TICK, C3_FREQ, MIN_NOTE_RATIO } from '../core/constants.js'
+import { clamp, toFiniteNumber } from '../core/numbers.js'
 import Utils from '../core/utils.js'
 
 /** Beats in one LFO cycle: `freq` counts cycles per 4 beats. */
@@ -21,13 +22,13 @@ export function safeDisconnect(node) {
  */
 export function computeOscFrequency(noteRatio, octave = 0, detuneSemitones = 0) {
     const nRatio = computeNoteRatio(noteRatio)
-    const oct = Utils.clamp(Utils.toFiniteNumber(octave, 0), -4, 4)
-    const det = Utils.clamp(Utils.toFiniteNumber(detuneSemitones, 0), -1, 1)
+    const oct = clamp(toFiniteNumber(octave, 0), -4, 4)
+    const det = clamp(toFiniteNumber(detuneSemitones, 0), -1, 1)
     return C3_FREQ * nRatio * Math.pow(2, oct + det)
 }
 
 export function computeNoteRatio(fpitch) {
-    return Math.max(MIN_NOTE_RATIO, Utils.toFiniteNumber(fpitch, 1))
+    return Math.max(MIN_NOTE_RATIO, toFiniteNumber(fpitch, 1))
 }
 
 /**
@@ -53,13 +54,13 @@ export function computeNoteRatio(fpitch) {
  */
 export function computeLfoValue(lfo, tick, nbTicks, controlKey, audioTime = null, bpm = null) {
     if (!lfo) return 0
-    const freqVal = Utils.toFiniteNumber(parseFloat(lfo.freq), 1, 'lfo.freq')
-    const min = Utils.toFiniteNumber(parseFloat(lfo.min), 0, 'lfo.min')
-    const max = Utils.toFiniteNumber(parseFloat(lfo.max), 1, 'lfo.max')
-    const phase = Utils.toFiniteNumber(parseFloat(lfo.phase), 0, 'lfo.phase')
+    const freqVal = toFiniteNumber(parseFloat(lfo.freq), 1, 'lfo.freq')
+    const min = toFiniteNumber(parseFloat(lfo.min), 0, 'lfo.min')
+    const max = toFiniteNumber(parseFloat(lfo.max), 1, 'lfo.max')
+    const phase = toFiniteNumber(parseFloat(lfo.phase), 0, 'lfo.phase')
     const waveName = lfo.type ?? lfo.waveform ?? 'sine'
     let wave = Utils.waveList.indexOf(waveName)
-    if (wave === -1) wave = Utils.toFiniteNumber(parseFloat(waveName), 0, 'waveName')
+    if (wave === -1) wave = toFiniteNumber(parseFloat(waveName), 0, 'waveName')
 
     // Frequency in cycles per 4 beats. 1.0 = 1 cycle per 4 beats.
     // Clamp to [0, 2] as per requirements.

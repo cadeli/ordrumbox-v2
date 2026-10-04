@@ -1,13 +1,14 @@
 // src/ui/track_editor/constants.js
 // Shared constants for TrackEditor sections — extracted from the monolith.
 
+import { toFiniteNumber } from '../../core/numbers.js'
 import Utils from '../../core/utils.js'
 import { TRACK_VALUE_RANGES } from '../../model/track_schema.js'
 
 // ── Format helpers ────────────────────────────────────────────────────
 
 const fmtFreq = (v) => {
-    const hz = Math.round(Utils.toFiniteNumber(v, 20, 'filterFreq'))
+    const hz = Math.round(toFiniteNumber(v, 20, 'filterFreq'))
     return hz >= 1000 ? (hz / 1000).toFixed(1) + 'k' : hz + 'Hz'
 }
 

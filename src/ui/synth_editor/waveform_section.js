@@ -3,7 +3,7 @@
 
 import { WAVE_BUFFER } from './constants.js'
 import { color, rgba } from '../theme.js'
-import Utils from '../../core/utils.js'
+import { clamp } from '../../core/numbers.js'
 import { getLfoWaveformValue } from '../../audio/math.js'
 
 const FM_DEPTH_SCALE = 0.08
@@ -98,7 +98,7 @@ export default class WaveformSection {
             const vcoKey = `vco${i + 1}`
             if (draft.lfo?.target === `${vcoKey}.gain`) g += lfo1Mod
             if (draft.lfo2?.target === `${vcoKey}.gain`) g += lfo2Mod
-            return Utils.clamp(g, 0, 1)
+            return clamp(g, 0, 1)
         })
 
         const baseInc = cycles / sampleCount
@@ -299,8 +299,8 @@ export default class WaveformSection {
         const draft = editor.draft
         const flt = draft.filter ?? {}
         const type = flt.type ?? 'lowpass'
-        let fc = Utils.clamp(flt.freq ?? 400, 20, 20000)
-        let Q = Utils.clamp(flt.Q ?? 1, 0.1, 24)
+        let fc = clamp(flt.freq ?? 400, 20, 20000)
+        let Q = clamp(flt.Q ?? 1, 0.1, 24)
 
         const now = editor.serviceRegistry?.audioCtx?.currentTime ?? 0
         const lfo1 = draft.bypassLfo1 ? null : draft.lfo
@@ -309,8 +309,8 @@ export default class WaveformSection {
         if (lfo2?.target === 'filter.freq') fc += editor.computeSynthLfoMod(lfo2, now)
         if (lfo1?.target === 'filter.Q') Q += editor.computeSynthLfoMod(lfo1, now)
         if (lfo2?.target === 'filter.Q') Q += editor.computeSynthLfoMod(lfo2, now)
-        fc = Utils.clamp(fc, 20, 20000)
-        Q = Utils.clamp(Q, 0.1, 24)
+        fc = clamp(fc, 20, 20000)
+        Q = clamp(Q, 0.1, 24)
 
         ctx.fillStyle = color('surface-2')
         ctx.fillRect(0, 0, w, h)
@@ -362,7 +362,7 @@ export default class WaveformSection {
                 }
                 const db = 20 * Math.log10(Math.max(mag, 1e-10))
                 const x = (i / N) * w
-                const y = toY(Utils.clamp(db, dbMin, dbMax))
+                const y = toY(clamp(db, dbMin, dbMax))
                 if (first) {
                     ctx.moveTo(x, y)
                     first = false

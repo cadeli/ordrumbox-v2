@@ -7,7 +7,7 @@ import {
     songContentBars,
     uniqueId,
 } from '../../../model/song_schema.js'
-import Utils from '../../../core/utils.js'
+import { clamp } from '../../../core/numbers.js'
 
 /**
  * @typedef {object} SongClipOptions
@@ -377,7 +377,7 @@ export default class SongCommands {
             undo: () => {
                 const i = appState.songs.indexOf(song)
                 if (i >= 0) appState.songs.splice(i, 1)
-                appState.selectedSongIdx = Utils.clamp(previousIdx, 0, Math.max(0, appState.songs.length - 1))
+                appState.selectedSongIdx = clamp(previousIdx, 0, Math.max(0, appState.songs.length - 1))
                 this.#host.persist()
             },
         })
@@ -422,7 +422,7 @@ export default class SongCommands {
 
     /** Point the selection at an existing arrangement, clamped to the list. */
     #selectClamped(songIdx) {
-        appState.selectedSongIdx = Utils.clamp(
+        appState.selectedSongIdx = clamp(
             Math.trunc(Number(songIdx)) || 0,
             0,
             Math.max(0, (appState.songs?.length ?? 1) - 1),

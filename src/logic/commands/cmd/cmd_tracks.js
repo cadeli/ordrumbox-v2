@@ -1,3 +1,4 @@
+import { clamp } from '../../../core/numbers.js'
 import Utils from '../../../core/utils.js'
 import { NOT_FOUND } from '../../../core/constants.js'
 import { clampStepsPerBeat, normalizeTrack, TRACK_VALUE_RANGES } from '../../../model/track_schema.js'
@@ -148,7 +149,7 @@ export default class TrackCommands {
         clone.name = name
         clone.notes = (sourceTrack.notes ?? []).map((note) => ({ ...note }))
 
-        const idx = Utils.clamp(insertIdx, 0, tracks.length)
+        const idx = clamp(insertIdx, 0, tracks.length)
         tracks.splice(idx, 0, clone)
         this.#host.persist()
         this.#host.record({
@@ -193,7 +194,7 @@ export default class TrackCommands {
      */
     setStepsPerBeat(track, value, { coalesce = false } = {}) {
         const range = TRACK_VALUE_RANGES.stepsPerBeat
-        const target = Math.round(Utils.clamp(value, range.min, range.max))
+        const target = Math.round(clamp(value, range.min, range.max))
         if (!track || !Number.isFinite(target) || target === track.stepsPerBeat) return false
 
         this.#withUndo(

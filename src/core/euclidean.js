@@ -5,7 +5,7 @@
  * (steps) so every view and the audio engine place euclidean onsets on the
  * exact same steps.
  */
-import Utils from './utils.js'
+import { clamp } from './numbers.js'
 
 /**
  * Bjorklund's algorithm — distributes `pulses` onsets as evenly as possible
@@ -23,7 +23,7 @@ export function bjorklund(pulses, steps) {
     const n = Math.max(0, Math.round(steps))
     if (n <= 0) return []
 
-    const k = Utils.clamp(Math.round(pulses), 0, n)
+    const k = clamp(Math.round(pulses), 0, n)
     if (k === 0) return new Array(n).fill(false)
     if (k === n) return new Array(n).fill(true)
 

@@ -1,5 +1,6 @@
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
+import { clamp } from '../../core/numbers.js'
 import Utils from '../../core/utils.js'
 import CowbellGenerate from './cowbell_generate.js'
 import BassGenerate from './bass_generate.js'
@@ -219,7 +220,7 @@ export default class AutoGenerate {
         // ±0.08 jitter around the genre default so regenerated tracks do not
         // all feel identically quantized.
         const jittered = (swing.swingAmount ?? 0) + (Math.random() * 2 - 1) * 0.08
-        track.swingAmount = Number(Utils.clamp(jittered, 0, 0.45).toFixed(2))
+        track.swingAmount = Number(clamp(jittered, 0, 0.45).toFixed(2))
         track.swingResolution = swing.swingResolution
     }
 

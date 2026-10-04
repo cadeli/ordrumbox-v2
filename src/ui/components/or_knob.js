@@ -1,5 +1,5 @@
 import { fmt as _defaultFmt, escapeHtml as _escHtml, promptNumericInput } from './ui_utils.js'
-import Utils from '../../core/utils.js'
+import { clamp } from '../../core/numbers.js'
 
 /**
  * OrKnob — rotary knob component for ordrumbox-v2.
@@ -87,9 +87,9 @@ export class OrKnob {
     #pct() {
         if (this.#useLog) {
             const logPos = (Math.log10(Math.max(this.#min, this.#value)) - this.#logMin) / this.#logRange
-            return Utils.clamp(logPos * 100, 0, 100)
+            return clamp(logPos * 100, 0, 100)
         }
-        return Utils.clamp(((this.#value - this.#min) / (this.#max - this.#min)) * 100, 0, 100)
+        return clamp(((this.#value - this.#min) / (this.#max - this.#min)) * 100, 0, 100)
     }
 
     /** Returns the CSS arc angle in degrees (0–270). */
@@ -100,7 +100,7 @@ export class OrKnob {
     /** Clamps and rounds a raw value to the valid step. */
     #clampStep(raw, stepSize = this.#step) {
         const stepped = Math.round(raw / stepSize) * stepSize
-        return Utils.clamp(stepped, this.#min, this.#max)
+        return clamp(stepped, this.#min, this.#max)
     }
 
     /** Row CSS classes. */
@@ -213,7 +213,7 @@ export class OrKnob {
 
             let clamped
             if (isLog) {
-                const newLogPos = Utils.clamp(startLogPos + deltaY * sensitivity, 0, 1)
+                const newLogPos = clamp(startLogPos + deltaY * sensitivity, 0, 1)
                 const raw = Math.pow(10, this.#logMin + newLogPos * this.#logRange)
                 clamped = this.#clampStep(raw, stepSize)
             } else {

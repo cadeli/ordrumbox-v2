@@ -1,6 +1,6 @@
 import { showToast } from '../core/notify.js'
 import { initClickBursts } from '../core/click_bursts.js'
-import Utils from '../core/utils.js'
+import { clamp, toFiniteNumber } from '../core/numbers.js'
 import { isMobileViewport } from '../core/constants.js'
 import { isLandscape, watchOrientation } from '../core/device.js'
 import { serviceRegistry } from '../state/service_registry.js'
@@ -102,14 +102,14 @@ export function initGlobalListeners() {
         if (!(el instanceof HTMLInputElement) || el.type !== 'range') return
         if (el.disabled || el.readOnly) return
 
-        const min = Utils.toFiniteNumber(parseFloat(el.min), 0, 'min')
-        const max = Utils.toFiniteNumber(parseFloat(el.max), 100, 'max')
-        const step = Utils.toFiniteNumber(parseFloat(el.step), 1, 'step')
+        const min = toFiniteNumber(parseFloat(el.min), 0, 'min')
+        const max = toFiniteNumber(parseFloat(el.max), 100, 'max')
+        const step = toFiniteNumber(parseFloat(el.step), 1, 'step')
         const cur = parseFloat(el.value)
         const dir = e.key === 'ArrowRight' ? 1 : -1
         let next = cur + dir * step
         next = Math.round((next - min) / step) * step + min
-        next = Utils.clamp(next, min, max)
+        next = clamp(next, min, max)
 
         if (next === cur) {
             e.preventDefault()

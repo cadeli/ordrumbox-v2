@@ -2,7 +2,7 @@ import { fixPattern } from '../../patterns/fixer.js'
 import { TRACK_DEFAULTS } from '../../model/track_schema.js'
 import { areValidNoteKeys, compactArrayToNote, isCompactFormat } from '../../core/note_schema.js'
 import { reportUserError } from '../../core/notify.js'
-import Utils from '../../core/utils.js'
+import { toFiniteNumber } from '../../core/numbers.js'
 import { logger } from '../../core/logger.js'
 import { MAX_IMPORT_TRACKS, MAX_IMPORT_NOTES } from '../../core/constants.js'
 
@@ -160,8 +160,8 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
     // discarding it here would re-derive it from the name on every reload and
     // detach every song clip referencing this pattern after a rename.
     if (sourcePattern?.id) importedPattern.id = String(sourcePattern.id)
-    importedPattern.bpm = Utils.toFiniteNumber(sourcePattern?.bpm, 120, 'PatternImport bpm')
-    importedPattern.beatCount = Utils.toFiniteNumber(sourcePattern?.beatCount, 4, 'PatternImport beatCount')
+    importedPattern.bpm = toFiniteNumber(sourcePattern?.bpm, 120, 'PatternImport bpm')
+    importedPattern.beatCount = toFiniteNumber(sourcePattern?.beatCount, 4, 'PatternImport beatCount')
 
     if (sourcePattern?.application) importedPattern.application = sourcePattern.application
     if (sourcePattern?.url) importedPattern.url = sourcePattern.url

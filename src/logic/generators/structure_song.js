@@ -1,3 +1,4 @@
+import { toFiniteNumber } from '../../core/numbers.js'
 import Utils from '../../core/utils.js'
 export default class StructureSong {
     static TAG = 'StructureSong'
@@ -354,7 +355,7 @@ export default class StructureSong {
     }
 
     getElement = (loop) => {
-        const safeLoop = Math.max(0, Math.floor(Utils.toFiniteNumber(loop, 0, 'loop')))
+        const safeLoop = Math.max(0, Math.floor(toFiniteNumber(loop, 0, 'loop')))
         const loopInSong = this.totalLoops > 0 ? safeLoop % this.totalLoops : 0
         let cursor = 0
         const counters = {}

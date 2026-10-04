@@ -1,3 +1,4 @@
+import { clamp } from '../../core/numbers.js'
 import Utils from '../../core/utils.js'
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
@@ -295,13 +296,9 @@ export default class Commander {
         if (snap.songInfos) {
             appState.songInfos = { ...snap.songInfos }
         }
-        appState.selectedPatternIdx = Utils.clamp(
-            snap.selectedPatternIdx ?? 0,
-            0,
-            Math.max(0, appState.patterns.length - 1),
-        )
+        appState.selectedPatternIdx = clamp(snap.selectedPatternIdx ?? 0, 0, Math.max(0, appState.patterns.length - 1))
         const tracks = Utils.getTracksArray(appState.selectedPattern ?? {})
-        appState.selectedTrackIdx = Utils.clamp(snap.selectedTrackIdx ?? 0, 0, Math.max(0, tracks.length - 1))
+        appState.selectedTrackIdx = clamp(snap.selectedTrackIdx ?? 0, 0, Math.max(0, tracks.length - 1))
         this.persist()
     }
 
@@ -351,7 +348,7 @@ export default class Commander {
             let clamped = v
             const range = TRACK_VALUE_RANGES[k]
             if (range && typeof v === 'number') {
-                clamped = Utils.clamp(v, range.min, range.max)
+                clamped = clamp(v, range.min, range.max)
             }
             if (track[k] !== clamped) {
                 oldValues[k] = track[k]

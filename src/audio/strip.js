@@ -1,3 +1,4 @@
+import { clamp, toFiniteNumber } from '../core/numbers.js'
 import Utils from '../core/utils.js'
 import Defaults from '../patterns/defaults.js'
 import { RAMP_TIME } from '../core/constants.js'
@@ -156,12 +157,12 @@ export default class Strip {
         params.get('filterMode')?.setTargetAtTime(FILTER_MODES[resolvedType] ?? 0, time, RAMP_TIME)
 
         if (freq !== undefined) {
-            const fFreq = Utils.toFiniteNumber(freq, 20, 'freq')
+            const fFreq = toFiniteNumber(freq, 20, 'freq')
             params.get('cutoff')?.setTargetAtTime(fFreq, time, RAMP_TIME)
         }
 
         if (q !== undefined) {
-            const fQ = Utils.toFiniteNumber(q, 0.707, 'q')
+            const fQ = toFiniteNumber(q, 0.707, 'q')
             params.get('q')?.setTargetAtTime(fQ, time, RAMP_TIME)
         }
     }
@@ -171,7 +172,7 @@ export default class Strip {
         const time = this.audioCtx.currentTime
         const params = this.stripNode.parameters
 
-        const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
+        const normalizedAmount = clamp(toFiniteNumber(amount, 0, 'amount'), 0, 1)
 
         const typeIdx = SATURATION_TYPES_IDX[type] ?? 0
         const drive = 1 + normalizedAmount * 6
@@ -190,7 +191,7 @@ export default class Strip {
         const params = this.stripNode.parameters
 
         const normalizedType = mapStripEnum(REVERB_PRESETS, type, 'reverbType', 'none')
-        const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
+        const normalizedAmount = clamp(toFiniteNumber(amount, 0, 'amount'), 0, 1)
 
         const p = REVERB_PRESETS[normalizedType] ?? REVERB_PRESETS.none
         const wet = normalizedType === 'none' ? 0 : normalizedAmount
@@ -207,7 +208,7 @@ export default class Strip {
         const time = this.audioCtx.currentTime
         const params = this.stripNode.parameters
 
-        const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
+        const normalizedAmount = clamp(toFiniteNumber(amount, 0, 'amount'), 0, 1)
 
         // BEFORE the mode lookup: 'none' is not in DELAY_MODES, and running it
         // through mapStripEnum would report it as an unknown enum and fall back

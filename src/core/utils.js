@@ -1,4 +1,5 @@
 import { TRACK_DEFAULTS } from '../model/track_schema.js'
+import { toFiniteNumber } from './numbers.js'
 import { NOTE_DEFAULTS, NOTE_POSITION_KEYS } from './note_schema.js'
 import { logger } from './logger.js'
 
@@ -36,32 +37,6 @@ export default class Utils {
         description: '',
         tags: [],
         tracks: [],
-    }
-
-    static toFiniteNumber = (value, fallback = 0, label = null) => {
-        const num = Number(value)
-        if (!Number.isFinite(num)) {
-            if (label) logger.warn(Utils.TAG, 'num', label, fallback)
-            return fallback
-        }
-        return num
-    }
-
-    /** Rate-limit state for out-of-range warnings (hot-path sliders clamp every frame). */
-    static #lastClampWarnAt = 0
-
-    /** Clamp `value` into `[min, max]` — the canonical bound check for the whole app. */
-    static clamp(value, min, max) {
-        const clamped = Math.min(max, Math.max(min, value))
-        if (clamped !== value) {
-            const now = Date.now()
-            // Rate-limit: hot-path sliders can hit the bound every frame — warn at most once per second.
-            if (now - Utils.#lastClampWarnAt >= 1000) {
-                Utils.#lastClampWarnAt = now
-                logger.warn(Utils.TAG, `clamp: ${value} outside [${min}, ${max}] -> ${clamped}`)
-            }
-        }
-        return clamped
     }
 
     static NOTE_DEFAULTS = NOTE_DEFAULTS
@@ -196,8 +171,8 @@ export default class Utils {
     }
 
     static getNoteAbsoluteStep = (note, stepsPerBeat) => {
-        const beat = Utils.toFiniteNumber(note?.beat, 0, 'getNoteAbsoluteStep.beat')
-        const beatStep = Utils.toFiniteNumber(note?.beatStep, 0, 'getNoteAbsoluteStep.beatStep')
+        const beat = toFiniteNumber(note?.beat, 0, 'getNoteAbsoluteStep.beat')
+        const beatStep = toFiniteNumber(note?.beatStep, 0, 'getNoteAbsoluteStep.beatStep')
         return Math.floor(beat * stepsPerBeat + beatStep)
     }
 

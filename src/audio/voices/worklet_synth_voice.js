@@ -2,7 +2,7 @@ import BaseVoice from './base_voice.js'
 import WorkletLoader from '../worklets/loader.js'
 import SYNTH_VOICE_SOURCE from '../worklets/processors/synth_voice_source.js'
 import { computeOscFrequency, computeNoteRatio, computeAccent, syncToHz } from '../math.js'
-import Utils from '../../core/utils.js'
+import { clamp, toFiniteNumber } from '../../core/numbers.js'
 import { RELEASE_TIME, NOTE_VELO_BALANCE } from '../../core/constants.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
@@ -123,9 +123,7 @@ export default class WorkletSynthVoice extends BaseVoice {
 
             // Normalize velocity by total VCO gain so output level matches SampleVoice
             const totalVcoGain =
-                Utils.toFiniteNumber(gs.vco1?.gain, 0) +
-                Utils.toFiniteNumber(gs.vco2?.gain, 0) +
-                Utils.toFiniteNumber(gs.vco3?.gain, 0)
+                toFiniteNumber(gs.vco1?.gain, 0) + toFiniteNumber(gs.vco2?.gain, 0) + toFiniteNumber(gs.vco3?.gain, 0)
             const vcoNorm = totalVcoGain > 0.001 ? 1 / totalVcoGain : 1
             this.noteVelo = (flatNote.note?.velocity ?? 0.8) * vcoNorm
 
@@ -180,7 +178,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             // reaches idle, so no JS-side cleanup is needed for offline.
             if (this.#synthNodePool) {
                 const env = gs.envelope ?? DEFAULT_ENVELOPE
-                const release = Math.max(0.008, Utils.toFiniteNumber(env.release, 0.1))
+                const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
                 const cleanupDelay = Math.max(0, autoReleaseTime - this.audioCtx.currentTime) + release + RELEASE_TIME
                 this.#autoReleaseTimer = setTimeout(() => {
                     if (!this.stopped) {
@@ -221,7 +219,7 @@ export default class WorkletSynthVoice extends BaseVoice {
 
             const gs = this.generatedSound
             const env = gs.envelope ?? DEFAULT_ENVELOPE
-            const release = Math.max(0.008, Utils.toFiniteNumber(env.release, 0.1))
+            const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
             if (this.#synthNodePool) {
                 const cleanupDelay = Math.max(0, time - this.audioCtx.currentTime) + release + RELEASE_TIME
                 if (typeof setTimeout === 'function') {
@@ -282,7 +280,7 @@ export default class WorkletSynthVoice extends BaseVoice {
 
             // Match native peakGain = noteVelo * masterVolume * accentMultiplier
             const { accentMultiplier } = computeAccent(this.noteVelo)
-            const masterVolume = Utils.toFiniteNumber(gs.masterVolume, 0.8)
+            const masterVolume = toFiniteNumber(gs.masterVolume, 0.8)
             this.masterVolume = masterVolume
             const peak = this.noteVelo * masterVolume * accentMultiplier * NOTE_VELO_BALANCE //ATT compensation volume synth vs sample
 
@@ -290,53 +288,47 @@ export default class WorkletSynthVoice extends BaseVoice {
                 osc1Freq: gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, 0) : 0,
                 osc2Freq: gs.vco2 ? computeOscFrequency(this.noteRatio, gs.vco2.octave, 0) : 0,
                 osc3Freq: gs.vco3 ? computeOscFrequency(this.noteRatio, gs.vco3.octave, 0) : 0,
-                osc1Gain: Utils.toFiniteNumber(gs.vco1?.gain, 0),
-                osc2Gain: Utils.toFiniteNumber(gs.vco2?.gain, 0),
-                osc3Gain: Utils.toFiniteNumber(gs.vco3?.gain, 0),
-                osc1Detune: Utils.toFiniteNumber(gs.vco1?.detune, 0),
-                osc2Detune: Utils.toFiniteNumber(gs.vco2?.detune, 0),
-                osc3Detune: Utils.toFiniteNumber(gs.vco3?.detune, 0),
+                osc1Gain: toFiniteNumber(gs.vco1?.gain, 0),
+                osc2Gain: toFiniteNumber(gs.vco2?.gain, 0),
+                osc3Gain: toFiniteNumber(gs.vco3?.gain, 0),
+                osc1Detune: toFiniteNumber(gs.vco1?.detune, 0),
+                osc2Detune: toFiniteNumber(gs.vco2?.detune, 0),
+                osc3Detune: toFiniteNumber(gs.vco3?.detune, 0),
                 osc1Wave: mapEnum(WAVE_TO_INT, gs.vco1?.wave, 'wave'),
                 osc2Wave: mapEnum(WAVE_TO_INT, gs.vco2?.wave, 'wave'),
                 osc3Wave: mapEnum(WAVE_TO_INT, gs.vco3?.wave, 'wave'),
-                noiseMix: Utils.toFiniteNumber(noiseCfg.mix, 0),
+                noiseMix: toFiniteNumber(noiseCfg.mix, 0),
                 noiseFilterType: mapEnum(FILTER_TO_INT, noiseCfg.filterType, 'noiseFilterType'),
-                noiseFilterFreq: Utils.toFiniteNumber(noiseCfg.filterFreq, 1000),
-                noiseFilterQ: Utils.toFiniteNumber(noiseCfg.filterQ, 0.7),
+                noiseFilterFreq: toFiniteNumber(noiseCfg.filterFreq, 1000),
+                noiseFilterQ: toFiniteNumber(noiseCfg.filterQ, 0.7),
                 filterType: mapEnum(FILTER_TO_INT, filterCfg.type, 'filterType'),
-                filterFreq: Utils.toFiniteNumber(filterCfg.freq, 1000),
-                filterQ: Utils.toFiniteNumber(filterCfg.Q, 0.7),
-                drive: Utils.toFiniteNumber(filterCfg.drive, 0),
-                pitchPunch: Utils.toFiniteNumber(gs.pitchPunch, 0),
-                subGain: Utils.toFiniteNumber(gs.subGain, 0),
-                attack: Utils.clamp(Utils.toFiniteNumber(env.attack, 0.01), 0.003, 0.5),
-                decay: Math.min(1.0, Utils.toFiniteNumber(env.decay, 0.1)),
-                sustain: Utils.toFiniteNumber(env.sustain, 0.7),
-                release: Utils.clamp(Utils.toFiniteNumber(env.release, 0.1), 0.008, 0.5),
+                filterFreq: toFiniteNumber(filterCfg.freq, 1000),
+                filterQ: toFiniteNumber(filterCfg.Q, 0.7),
+                drive: toFiniteNumber(filterCfg.drive, 0),
+                pitchPunch: toFiniteNumber(gs.pitchPunch, 0),
+                subGain: toFiniteNumber(gs.subGain, 0),
+                attack: clamp(toFiniteNumber(env.attack, 0.01), 0.003, 0.5),
+                decay: Math.min(1.0, toFiniteNumber(env.decay, 0.1)),
+                sustain: toFiniteNumber(env.sustain, 0.7),
+                release: clamp(toFiniteNumber(env.release, 0.1), 0.008, 0.5),
                 master: 1.0,
-                pan: Utils.toFiniteNumber(pan, 0),
+                pan: toFiniteNumber(pan, 0),
                 velocity: peak, // param slot 22 is named "velocity" but carries the peak amplitude
                 lfo1Target: mapEnum(LFO_TARGET_TO_INT, gs.lfo?.target, 'lfoTarget'),
                 lfo1Wave: mapEnum(WAVE_TO_INT, gs.lfo?.wave, 'wave'),
-                lfo1Freq:
-                    syncToHz(gs.lfo?.sync, serviceRegistry.transport?.bpm) ?? Utils.toFiniteNumber(gs.lfo?.freq, 0),
-                lfo1Depth: Utils.toFiniteNumber(gs.lfo?.depth, 0),
+                lfo1Freq: syncToHz(gs.lfo?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo?.freq, 0),
+                lfo1Depth: toFiniteNumber(gs.lfo?.depth, 0),
                 lfo2Target: mapEnum(LFO_TARGET_TO_INT, gs.lfo2?.target, 'lfoTarget'),
                 lfo2Wave: mapEnum(WAVE_TO_INT, gs.lfo2?.wave, 'wave'),
-                lfo2Freq:
-                    syncToHz(gs.lfo2?.sync, serviceRegistry.transport?.bpm) ?? Utils.toFiniteNumber(gs.lfo2?.freq, 0),
-                lfo2Depth: Utils.toFiniteNumber(gs.lfo2?.depth, 0),
-                filterEnvAmt: Utils.clamp(
-                    Utils.toFiniteNumber((gs.filterEnv ?? gs.filter)?.filterEnvelopeAmount, 0),
-                    0,
-                    1,
-                ),
-                fmAmount: Utils.clamp(Utils.toFiniteNumber(gs.fm?.amount, 0), 0, 1),
-                fmAlgo: Utils.clamp(Math.round(Utils.toFiniteNumber(gs.fm?.algo, 0)), 0, 4),
-                modEnvAttack: Utils.clamp(Utils.toFiniteNumber(gs.modEnvelope?.attack, 0.01), 0.003, 0.5),
-                modEnvDecay: Math.min(1.0, Utils.toFiniteNumber(gs.modEnvelope?.decay, 0.1)),
-                modEnvSustain: Utils.toFiniteNumber(gs.modEnvelope?.sustain, 0),
-                modEnvRelease: Utils.clamp(Utils.toFiniteNumber(gs.modEnvelope?.release, 0.1), 0.008, 0.5),
+                lfo2Freq: syncToHz(gs.lfo2?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo2?.freq, 0),
+                lfo2Depth: toFiniteNumber(gs.lfo2?.depth, 0),
+                filterEnvAmt: clamp(toFiniteNumber((gs.filterEnv ?? gs.filter)?.filterEnvelopeAmount, 0), 0, 1),
+                fmAmount: clamp(toFiniteNumber(gs.fm?.amount, 0), 0, 1),
+                fmAlgo: clamp(Math.round(toFiniteNumber(gs.fm?.algo, 0)), 0, 4),
+                modEnvAttack: clamp(toFiniteNumber(gs.modEnvelope?.attack, 0.01), 0.003, 0.5),
+                modEnvDecay: Math.min(1.0, toFiniteNumber(gs.modEnvelope?.decay, 0.1)),
+                modEnvSustain: toFiniteNumber(gs.modEnvelope?.sustain, 0),
+                modEnvRelease: clamp(toFiniteNumber(gs.modEnvelope?.release, 0.1), 0.008, 0.5),
                 modEnvTarget: mapEnum(MOD_ENV_TARGET_TO_INT, gs.modEnvelope?.target, 'modEnvTarget'),
                 modEnvDepth: gs.modEnvelope?.target && gs.modEnvelope.target !== 'off' ? 1 : 0,
                 bypassNoise: !!gs.bypassNoise,
