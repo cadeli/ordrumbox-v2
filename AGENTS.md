@@ -42,8 +42,11 @@ index.html → src/main.js (bootstrap after "Start" click)
         ui/                      ← vanilla JS panel components
         ui/synth_editor/         ← soft synth UI
         ui/track_editor/         ← track editor UI
-        ui/pattern_panel/        ← pattern grid (coordinator + 10 section modules)
-        ui/piano_roll/           ← piano roll (coordinator + 6 section modules)
+        ui/pattern_panel/        ← pattern grid (coordinator + 11 section modules;
+                                   note editing lives in drag_section.js)
+        ui/piano_roll/           ← piano roll (coordinator + section modules:
+                                   viewport/render/menu/playback/drag, plus
+                                   the pure hit_test.js helper)
         ui/toolbar/              ← transport + view switch
 ```
 
@@ -120,6 +123,9 @@ import { bootApp } from './fixtures.js'
 Guarded by `tests/undo_policy.test.js`.
 
 - **Track parameters are undoable**: track-editor knobs/sliders go through `cmd.updateTrack(track, updates, { desc, coalesce })` — values are clamped to `TRACK_VALUE_RANGES`, unknown/derived keys are skipped, and one `HistoryManager` entry is recorded per effective change (with `meta.params`/`meta.prev` for the undo report toast). `coalesce: true` merges rapid same-key updates (400 ms window) into a single undo step so a whole drag undoes as one gesture.
+- **Note parameters are undoable**: every note edit goes through `components/note_edit.js applyNoteEdit()` → `cmd.updateNote(track, note, updates, { desc, coalesce })` — no-op values are dropped before the command layer (so they neither preview nor reach the history), and `coalesce: true` merges a whole gesture into one step. Both grids and both gestures go through it, with the service registry injected (the pattern grid has its own).
+- **Note editing gestures** (pattern grid + piano roll, same behaviour): a **drag** on a note (`pattern_panel/drag_section.js` on a filled cell — the slice under the pointer, so one voice per slice — and `piano_roll/drag_section.js`) and **Shift+Arrow** on the selected note (`Shift+↑/↓` velocity, `Shift+←/→` pitch — `components/note_nudge.js`). Both share `components/note_drag.js` (gesture math: vertical = velocity at 0.005/px, horizontal = one semitone per 12 px, axis locked on the first 3 px so a diagonal edits one parameter only) and `components/note_edit.js` (`AXIS_*`, `emitNotePicked()`). In the pattern grid Shift+Arrow only applies to a note the **pointer** picked (`editor.selectedByPointer`) — it also extends the range selection for a range delete, and the cursor sync clears the flag. A gesture never deletes the note: the trailing click is swallowed (`consumeClick()`).
+- **Editing feedback**: `components/note_gauge.js` (a knob-style arc — same 270° sweep as `.or-knob-arc` — over the note name and value, plus a `.pp-gauge-anchor` ring on the edited cell/note; each panel supplies `resolveAnchor` since it repaints its notes) and `components/note_preview.js` (throttled `seq.simpleBeep` at 90 ms), otherwise an edit is silent and made blind. The gauge is the only pitch readout the pattern grid has, and it takes the note's own tooltip down while it is up (`title` attribute, and the grid's hover bubble via `pointer.hideTooltip()`), restoring it when it fades.
 - **Master/mixer is NOT undoable**: the output panel and the pattern panel master shortcut write straight to `serviceRegistry.audioEngine.mixer.setMasterBus()` — never through `cmd`/`HistoryManager`. Reverting = move the slider back.
 - **Synth preset edits are NOT undoable**: live edits commit to `soundRegistry.generatedSounds` + IndexedDB via `commitSound` (frame-coalesced for knob drags, `flushPreview()` flushes a pending frame). Only the preset's own **Revert** button restores the original.
 

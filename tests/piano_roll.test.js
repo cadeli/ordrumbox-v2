@@ -1,14 +1,14 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import PianoRollPanel from '../src/ui/piano_roll_panel.js'
 import { EVENTS } from '../src/core/events.js'
-import { MIDDLE_C, MIDI_MIN, NOTE_HEIGHT, TOTAL_KEYS } from '../src/ui/piano_roll/constants.js'
+import { MIDDLE_C, MIDI_MAX, MIDI_MIN, NOTE_HEIGHT, TOTAL_KEYS } from '../src/ui/piano_roll/constants.js'
 import { showToast } from '../src/core/notify.js'
 
 vi.mock('../src/core/notify.js', () => ({
@@ -71,6 +71,10 @@ function makeCmd() {
         }),
         cleanTrack: vi.fn((track) => {
             track.notes = []
+        }),
+        updateNote: vi.fn((track, note, updates) => {
+            Object.assign(note, updates)
+            return note
         }),
         setCurrentPage: vi.fn((page) => {
             appState.currentPage = Math.max(0, Math.floor(page)) || 0
@@ -156,10 +160,11 @@ describe('PianoRollPanel', () => {
         clickGrid(stepToClickX(step, panel.cellWidth), rowToClickY(row))
     }
 
-    function pressKey(key) {
+    function pressKey(key, { shiftKey = false } = {}) {
         panel.onKeyDown(
             new KeyboardEvent('keydown', {
                 key,
+                shiftKey,
                 bubbles: true,
                 cancelable: true,
             }),
@@ -519,6 +524,309 @@ describe('PianoRollPanel', () => {
             pressKey('Backspace')
             expect(panel.selectedNote).toBeNull()
             expect(track.notes).not.toContain(note)
+        })
+    })
+
+    describe('shift+arrow note editing', () => {
+        function selectNote(index) {
+            const note = getTrack().notes[index]
+            panel.selectedNote = note
+            return note
+        }
+
+        it('Shift+ArrowUp raises the velocity of the selected note', () => {
+            const note = selectNote(0)
+            pressKey('ArrowUp', { shiftKey: true })
+            expect(note.velocity).toBe(0.85)
+            expect(serviceRegistry.cmd.updateNote).toHaveBeenCalledWith(
+                getTrack(),
+                note,
+                { velocity: 0.85 },
+                expect.objectContaining({ coalesce: true }),
+            )
+        })
+
+        it('Shift+ArrowDown lowers the velocity of the selected note', () => {
+            const note = selectNote(0)
+            pressKey('ArrowDown', { shiftKey: true })
+            expect(note.velocity).toBe(0.75)
+        })
+
+        it('repeated Shift+Arrow steps the velocity without float noise', () => {
+            const note = selectNote(0)
+            for (let i = 0; i < 3; i++) pressKey('ArrowDown', { shiftKey: true })
+            expect(note.velocity).toBe(0.65)
+        })
+
+        it('Shift+ArrowRight raises the pitch of the selected note', () => {
+            const note = selectNote(3)
+            pressKey('ArrowRight', { shiftKey: true })
+            expect(note.pitch).toBe(5)
+            expect(panel.cursorRow).toBe(noteRow(note))
+        })
+
+        it('Shift+ArrowLeft lowers the pitch of the selected note', () => {
+            const note = selectNote(3)
+            pressKey('ArrowLeft', { shiftKey: true })
+            expect(note.pitch).toBe(3)
+            expect(panel.cursorRow).toBe(noteRow(note))
+        })
+
+        it('keeps the cursor on the note step while nudging', () => {
+            const note = selectNote(4)
+            pressKey('ArrowRight', { shiftKey: true })
+            expect(panel.cursorStep).toBe(2 * getTrack().stepsPerBeat)
+            expect(panel.selectedNote).toBe(note)
+        })
+
+        it('keeps the selection and repaints the note on a velocity nudge', () => {
+            const note = selectNote(0)
+            pressKey('ArrowDown', { shiftKey: true })
+            expect(panel.selectedNote).toBe(note)
+            expect(getGrid().querySelectorAll('.pp-pr-note.selected')).toHaveLength(1)
+            const el = getGrid().querySelector('.pp-pr-note.selected')
+            expect(el.style.opacity).toBe((0.25 + 0.75 * 0.75).toFixed(2))
+        })
+
+        it('refreshes the note editor on every nudge', () => {
+            const listener = vi.fn()
+            playbackEvents.on(EVENTS.NOTE_SELECT, listener)
+            const note = selectNote(0)
+            pressKey('ArrowUp', { shiftKey: true })
+            const last = listener.mock.calls.at(-1)[0]
+            expect(last.note).toBe(note)
+            expect(last.note.velocity).toBe(0.85)
+        })
+
+        it('does not record an update when the velocity is already at a bound', () => {
+            const track = getTrack()
+            const note = selectNote(2)
+            expect(note.velocity).toBe(1)
+            pressKey('ArrowUp', { shiftKey: true })
+            expect(note.velocity).toBe(1)
+            expect(serviceRegistry.cmd.updateNote).not.toHaveBeenCalled()
+            expect(track.notes).toContain(note)
+        })
+
+        it('stops the pitch at the edge of the rendered keyboard', () => {
+            const track = getTrack()
+            const top = { beat: 4, beatStep: 0, pitch: MIDI_MAX - MIDDLE_C, velocity: 0.8 }
+            const bottom = { beat: 4, beatStep: 1, pitch: MIDI_MIN - MIDDLE_C, velocity: 0.8 }
+            track.notes.push(top, bottom)
+
+            panel.selectedNote = top
+            pressKey('ArrowRight', { shiftKey: true })
+            expect(top.pitch).toBe(MIDI_MAX - MIDDLE_C)
+
+            panel.selectedNote = bottom
+            pressKey('ArrowLeft', { shiftKey: true })
+            expect(bottom.pitch).toBe(MIDI_MIN - MIDDLE_C)
+        })
+
+        it('falls back to cursor navigation when no note is selected', () => {
+            panel.cursorStep = 4
+            panel.cursorRow = 48
+            pressKey('ArrowUp', { shiftKey: true })
+            expect(panel.cursorRow).toBe(49)
+            expect(serviceRegistry.cmd.updateNote).not.toHaveBeenCalled()
+        })
+    })
+
+    describe('shift+arrow gauge', () => {
+        function gauge() {
+            return panel.container.querySelector('.pp-tooltip-gauge')
+        }
+
+        beforeEach(() => {
+            vi.useFakeTimers()
+        })
+
+        afterEach(() => {
+            vi.useRealTimers()
+        })
+
+        it('shows the new velocity over the note', () => {
+            const note = getTrack().notes[0]
+            panel.selectedNote = note
+            pressKey('ArrowUp', { shiftKey: true })
+            expect(gauge().textContent).toBe('C4  MIDI 60\nvel:0.85 ▲')
+            expect(gauge().style.display).toBe('block')
+        })
+
+        it('shows the new pitch with a down arrow', () => {
+            const note = getTrack().notes[3]
+            panel.selectedNote = note
+            pressKey('ArrowLeft', { shiftKey: true })
+            expect(gauge().textContent).toBe('D#4  MIDI 63\npitch:+3 ▼')
+        })
+
+        it('fades out ~700ms after the last press', () => {
+            const note = getTrack().notes[0]
+            panel.selectedNote = note
+            pressKey('ArrowUp', { shiftKey: true })
+
+            vi.advanceTimersByTime(699)
+            expect(gauge().classList.contains('pp-tooltip-fading')).toBe(false)
+            vi.advanceTimersByTime(1)
+            expect(gauge().classList.contains('pp-tooltip-fading')).toBe(true)
+            vi.advanceTimersByTime(150)
+            expect(gauge().style.display).toBe('none')
+        })
+
+        it('stays visible while the key repeats', () => {
+            const note = getTrack().notes[0]
+            panel.selectedNote = note
+            pressKey('ArrowUp', { shiftKey: true })
+            vi.advanceTimersByTime(500)
+            pressKey('ArrowUp', { shiftKey: true })
+
+            vi.advanceTimersByTime(699)
+            expect(gauge().style.display).toBe('block')
+            expect(gauge().textContent).toContain('vel:0.9')
+        })
+
+        it('takes the note tooltip down while the gauge is up, then restores it', () => {
+            // re-queried every time: each edit replaces the note elements
+            const title = () => getGrid().querySelector('.pp-pr-note[data-note="0"]').getAttribute('title')
+            expect(title()).toMatch(/^C4/)
+
+            panel.selectedNote = getTrack().notes[0]
+            pressKey('ArrowUp', { shiftKey: true })
+            expect(title()).toBeNull()
+
+            vi.advanceTimersByTime(700 + 150)
+            expect(title()).toMatch(/^C4/)
+        })
+
+        it('is hidden with the panel', () => {
+            const note = getTrack().notes[0]
+            panel.selectedNote = note
+            pressKey('ArrowUp', { shiftKey: true })
+            panel.hide()
+            expect(gauge().style.display).toBe('none')
+        })
+
+        it('shows nothing when no note is selected', () => {
+            panel.cursorStep = 4
+            panel.cursorRow = 48
+            pressKey('ArrowUp', { shiftKey: true })
+            expect(gauge()).toBeNull()
+        })
+    })
+
+    describe('note drag', () => {
+        /** `data-note` is the index in track.notes, which the render may skip. */
+        function noteEl(noteIdx) {
+            return getGrid().querySelector(`.pp-pr-note[data-note="${noteIdx}"]`)
+        }
+
+        /** Presses a note and drags by (dx, dy) px, with a click at the end. */
+        function dragNote(index, dx, dy, { click = true } = {}) {
+            const el = noteEl(index)
+            el.dispatchEvent(
+                new MouseEvent('mousedown', {
+                    button: 0,
+                    clientX: 100,
+                    clientY: 100,
+                    bubbles: true,
+                    cancelable: true,
+                }),
+            )
+            window.dispatchEvent(
+                new MouseEvent('mousemove', {
+                    clientX: 100 + dx,
+                    clientY: 100 + dy,
+                    bubbles: true,
+                    cancelable: true,
+                }),
+            )
+            window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+            if (click) el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+            return el
+        }
+
+        it('dragging up raises the velocity', () => {
+            const note = getTrack().notes[0]
+            dragNote(0, 0, -40)
+            expect(note.velocity).toBe(1)
+        })
+
+        it('dragging down lowers the velocity', () => {
+            const note = getTrack().notes[0]
+            dragNote(0, 0, 40)
+            expect(note.velocity).toBe(0.6)
+        })
+
+        it('dragging right raises the pitch, dragging left lowers it', () => {
+            const note = getTrack().notes[3]
+            dragNote(3, 24, 0)
+            expect(note.pitch).toBe(6)
+            dragNote(3, -12, 0)
+            expect(note.pitch).toBe(5)
+        })
+
+        it('locks the axis on the first movement, so a diagonal stays on one axis', () => {
+            const note = getTrack().notes[0]
+            dragNote(0, 24, -40) // vertical dominates
+            expect(note.velocity).toBe(1)
+            expect(note.pitch).toBe(0)
+
+            dragNote(0, 40, -20) // horizontal dominates
+            expect(note.pitch).toBe(3)
+            expect(note.velocity).toBe(1)
+        })
+
+        it('ignores a press that does not move', () => {
+            const note = getTrack().notes[0]
+            dragNote(0, 1, -1)
+            expect(note.velocity).toBe(0.8)
+            expect(serviceRegistry.cmd.updateNote).not.toHaveBeenCalled()
+        })
+
+        it('does not delete the note the drag ended on', () => {
+            const track = getTrack()
+            const count = track.notes.length
+            dragNote(0, 0, -40)
+            expect(track.notes).toHaveLength(count)
+            expect(panel.selectedNote).toBe(track.notes[0])
+        })
+
+        it('keeps a plain click adding and deleting notes', () => {
+            const track = getTrack()
+            const count = track.notes.length
+            clickNoteAtStepPitch(9, 0)
+            expect(track.notes).toHaveLength(count + 1)
+            clickNoteAtStepPitch(9, 0)
+            expect(track.notes).toHaveLength(count)
+        })
+
+        it('shows the gauge while dragging and keeps the note selected', () => {
+            const note = getTrack().notes[0]
+            dragNote(0, 0, -40)
+            const gauge = panel.container.querySelector('.pp-tooltip-gauge')
+            expect(gauge.textContent).toBe('C4  MIDI 60\nvel:1 ▲')
+            expect(gauge.style.display).toBe('block')
+            expect(panel.selectedNote).toBe(note)
+        })
+
+        it('keeps the pitch inside the rendered keyboard', () => {
+            const track = getTrack()
+            const top = { beat: 0, beatStep: 0, pitch: MIDI_MAX - MIDDLE_C, velocity: 0.8 }
+            track.notes.push(top)
+            panel.sync()
+            const idx = track.notes.indexOf(top)
+
+            dragNote(idx, 600, 0)
+            expect(top.pitch).toBe(MIDI_MAX - MIDDLE_C)
+        })
+
+        it('cancels a running gesture when the panel hides', () => {
+            const note = getTrack().notes[0]
+            const el = noteEl(0)
+            el.dispatchEvent(new MouseEvent('mousedown', { button: 0, clientX: 100, clientY: 100, bubbles: true }))
+            panel.hide()
+            window.dispatchEvent(new MouseEvent('mousemove', { clientX: 100, clientY: 40, bubbles: true }))
+            expect(note.velocity).toBe(0.8)
         })
     })
 

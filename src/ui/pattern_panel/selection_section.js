@@ -112,6 +112,7 @@ export default class SelectionSection {
     clearSelection() {
         this.#editor.selectedNote = null
         this.#editor.gridTrackIdx = -1
+        this.#editor.selectedByPointer = false
         this.#editor.rangeAnchor = null
         const selected = this.#editor.container.querySelectorAll(
             '.pp-cell.selected, .pp-track-name.selected, .pp-track.pp-selected, .pp-note-slice.selected, .pp-cell.pp-range',

@@ -1,7 +1,7 @@
 import { NOTE_DEFAULTS } from '../core/note_schema.js'
 import { appState } from '../state/app_state.js'
-import { playbackEvents } from '../state/playback_events.js'
-import { stepToBeat } from '../core/notes.js'
+import { playbackEvents, emitNotesChanged } from '../state/playback_events.js'
+import { getNoteAbsoluteStep, stepToBeat } from '../core/notes.js'
 import { getTracksArray } from '../core/tracks.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import FlatNote from '../model/flatnote.js'
@@ -9,10 +9,13 @@ import BasePanel from './base_panel.js'
 import { getNoteSubPositions } from '../patterns/note_positions.js'
 import { MIDDLE_C, MIDI_MIN, TOTAL_KEYS } from './piano_roll/constants.js'
 import { pointToCell, findNoteAt } from './piano_roll/hit_test.js'
+import { applyNoteNudge } from './components/note_nudge.js'
+import NoteGauge from './components/note_gauge.js'
 import ViewportSection from './piano_roll/viewport_section.js'
 import RenderSection from './piano_roll/render_section.js'
 import MenuSection from './piano_roll/menu_section.js'
 import PlaybackSection from './piano_roll/playback_section.js'
+import DragSection from './piano_roll/drag_section.js'
 import NoteParams from '../patterns/note_params.js'
 import { EVENTS } from '../core/events.js'
 import { BEATS_PER_PAGE } from '../core/constants.js'
@@ -34,6 +37,8 @@ export default class PianoRollPanel extends BasePanel {
     #render
     #menu
     #playback
+    #gauge
+    #drag
 
     constructor() {
         super('piano-roll-panel')
@@ -51,6 +56,15 @@ export default class PianoRollPanel extends BasePanel {
         this.#render = new RenderSection(this)
         this.#menu = new MenuSection(this)
         this.#playback = new PlaybackSection(this)
+        this.#gauge = new NoteGauge(() => this.container, {
+            // the piano roll replaces every note element on each repaint, so the
+            // anchor is resolved again for every edit
+            resolveAnchor: (note) => {
+                const idx = this.#track?.notes?.indexOf(note) ?? -1
+                return idx < 0 ? null : this.container?.querySelector(`.pp-pr-note[data-note="${idx}"]`)
+            },
+        })
+        this.#drag = new DragSection(this)
     }
 
     createDOM() {
@@ -109,7 +123,11 @@ export default class PianoRollPanel extends BasePanel {
             this.#playback.hidePlayhead()
             this.#playback.resetPrevLoopTick()
         })
+        this.listen(this.container, 'mousedown', (e) => this.#drag.onMouseDown(e))
         this.listen(this.container, 'click', (e) => {
+            // A note drag ends over the note it started on, and clicking an
+            // already selected note deletes it: that click is not a click.
+            if (this.#drag.consumeClick()) return
             const key = /** @type {Element} */ (e.target).closest('.pp-pr-key')
             if (key) {
                 this.#playKey(parseInt(/** @type {HTMLElement} */ (key).dataset.midi, 10))
@@ -165,6 +183,8 @@ export default class PianoRollPanel extends BasePanel {
         this.#playback.stop()
         this.#playback.hidePlayhead()
         this.#playback.clearIllumination()
+        this.#gauge.hide()
+        this.#drag.cancel()
         this.#clearSelection()
         this.#menu.hide()
         document.removeEventListener('keydown', this.#boundOnKeyDown)
@@ -175,6 +195,8 @@ export default class PianoRollPanel extends BasePanel {
         this.#resizeObserver?.disconnect()
         this.#playback.stop()
         this.#menu.hide()
+        this.#gauge.hide()
+        this.#drag.cancel()
         if (this.#boundOnKeyDown) document.removeEventListener('keydown', this.#boundOnKeyDown)
     }
 
@@ -277,6 +299,46 @@ export default class PianoRollPanel extends BasePanel {
         serviceRegistry.audioEngine?.sound?.play(flatNote, serviceRegistry.audioEngine.audioCtx.currentTime)
     }
 
+    /** Puts the cursor on the selected note, so it follows a transpose. */
+    #followCursor() {
+        const note = this.#selectedNote
+        const track = this.#track
+        if (!note || !track) return
+        this.#cursorStep = getNoteAbsoluteStep(note, this.pageInfo().stepsPerBeat)
+        this.#cursorRow = MIDDLE_C + (track.pitch ?? 0) + (note.pitch ?? 0) - MIDI_MIN
+    }
+
+    /**
+     * Shift+Arrow edits the selected note instead of moving the cursor:
+     * Up/Down step its velocity, Left/Right transpose it down/up a semitone.
+     *
+     * @param {string} dir - 'Left' | 'Right' | 'Up' | 'Down'
+     * @returns {boolean} true when the key was consumed (a note was selected)
+     */
+    #nudgeSelectedNote(dir) {
+        const track = this.#track
+        const note = this.#selectedNote
+        if (!track || !note || !serviceRegistry.cmd?.updateNote) return false
+
+        const { key, changed, trackPitch, dir: nudgeDir } = applyNoteNudge({
+            registry: serviceRegistry,
+            track,
+            trackIdx: this.#selectedTrackIdx,
+            note,
+            dir,
+        })
+
+        // The cursor follows the note: a note picked from the context menu has
+        // none yet, and transposing must leave the selection under the cursor.
+        this.#followCursor()
+        if (changed) emitNotesChanged(track)
+        // Re-renders the notes (velocity drives the opacity), re-selects and
+        // refreshes the note editor knobs through NOTE_SELECT.
+        this.#syncCursor()
+        this.#gauge.show({ note, trackPitch, label: key, dir: nudgeDir })
+        return true
+    }
+
     #onKeyDown(e) {
         if (!this.isVisible) return
         const track = this.#track
@@ -292,6 +354,7 @@ export default class PianoRollPanel extends BasePanel {
 
         if (isArrow) {
             const dir = e.key.slice(5)
+            if (e.shiftKey && this.#nudgeSelectedNote(dir)) return
             const initCursor = (step, row) => {
                 if (this.#cursorStep < 0) {
                     this.#cursorStep = step
@@ -478,6 +541,14 @@ export default class PianoRollPanel extends BasePanel {
         return this.#playback
     }
 
+    get gauge() {
+        return this.#gauge
+    }
+
+    get drag() {
+        return this.#drag
+    }
+
     /** Advance to next page of steps. */
     nextPage() {
         this.#viewport.nextPage()
@@ -496,6 +567,11 @@ export default class PianoRollPanel extends BasePanel {
     /** Handle keyboard event. */
     onKeyDown(e) {
         this.#onKeyDown(e)
+    }
+
+    /** Moves the cursor onto the selected note (a context-menu pick has none). */
+    followCursorToSelectedNote() {
+        this.#followCursor()
     }
 
     /** Start the playhead animation loop. */

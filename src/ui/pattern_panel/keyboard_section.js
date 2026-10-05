@@ -1,10 +1,13 @@
 // src/ui/pattern_panel/keyboard_section.js
 // Keyboard navigation and note editing for the pattern grid:
-// cursor movement (arrows), copy/paste shortcuts, Enter/Delete on a cell.
+// cursor movement (arrows), copy/paste shortcuts, Enter/Delete on a cell,
+// and Shift+Arrow note nudges (velocity up/down, pitch left/right).
 
 import { getTracksArray } from '../../core/tracks.js'
 import { BEATS_PER_PAGE } from '../../core/constants.js'
 import { EVENTS } from '../../core/events.js'
+import { emitNotesChanged } from '../../state/playback_events.js'
+import { applyNoteNudge } from '../components/note_nudge.js'
 
 export default class KeyboardSection {
     #editor
@@ -65,6 +68,7 @@ export default class KeyboardSection {
             this.#editor.focusRowIdx = -1
             this.#editor.selectedNote = null
             this.#editor.gridTrackIdx = -1
+            this.#editor.selectedByPointer = false
             this.#editor.rangeAnchor = null
             this.#editor.applySelection()
             return
@@ -78,6 +82,13 @@ export default class KeyboardSection {
 
         const isArrow = e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown'
         if (isArrow) {
+            // Shift+Arrow has two meanings, told apart by what the cursor is on:
+            // a note the mouse picked is nudged (velocity / pitch), anything
+            // else keeps extending the range selection for a range delete.
+            if (e.shiftKey && this.#nudgeSelectedNote(e.key.slice(5))) {
+                e.preventDefault()
+                return
+            }
             if (e.shiftKey) this.#editor.selection.ensureRangeAnchor()
             else this.#editor.rangeAnchor = null
         }
@@ -147,6 +158,9 @@ export default class KeyboardSection {
             (n) => n.beat === this.#editor.cursorBeat && n.beatStep === this.#editor.cursorBeatStep,
         )
         this.#editor.selectedNote = note ?? null
+        // The cursor walked here: this note was not picked, so Shift+Arrow on it
+        // is still range selection.
+        this.#editor.selectedByPointer = false
         this.#editor.gridTrackIdx = this.#editor.focusRowIdx
         this.#editor.applySelection()
         if (note) {
@@ -168,6 +182,39 @@ export default class KeyboardSection {
                 beatStep: this.#editor.cursorBeatStep,
             })
         }
+    }
+
+    /**
+     * One Shift+Arrow step on the note the pointer picked: Up/Down velocity,
+     * Left/Right pitch. No-op (false) when there is nothing picked to edit, or
+     * when a range selection is being extended.
+     *
+     * @param {string} dir - 'Left' | 'Right' | 'Up' | 'Down'
+     * @returns {boolean} whether the note was edited
+     */
+    #nudgeSelectedNote(dir) {
+        if (this.#editor.rangeAnchor !== null) return false
+        const note = this.#editor.selectedNote
+        const trackIdx = this.#editor.gridTrackIdx
+        if (!note || !this.#editor.selectedByPointer || trackIdx < 0) return false
+        const track = this.#editor.resolveTrack(trackIdx)
+        if (!track || !(track.notes ?? []).includes(note)) return false
+
+        const { key, changed, trackPitch, dir: nudgeDir } = applyNoteNudge({
+            registry: this.#editor.serviceRegistry,
+            track,
+            trackIdx,
+            note,
+            dir,
+        })
+        if (changed) {
+            // Repaint the slice now instead of waiting for the NOTE_CHANGE sync.
+            this.#editor.updateTrackCellsInPlace(trackIdx, track, this.#editor.appState.selectedPattern)
+            this.#editor.applySelection()
+            emitNotesChanged(track)
+        }
+        this.#editor.gauge.show({ note, trackIdx, trackPitch, label: key, dir: nudgeDir })
+        return true
     }
 
     handleNoteEnter(track) {

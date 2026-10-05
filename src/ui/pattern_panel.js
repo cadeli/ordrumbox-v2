@@ -21,6 +21,8 @@ import KeyboardSection from './pattern_panel/keyboard_section.js'
 import ContextMenuSection from './pattern_panel/context_menu_section.js'
 import ActionsSection from './pattern_panel/actions_section.js'
 import PointerSection from './pattern_panel/pointer_section.js'
+import DragSection from './pattern_panel/drag_section.js'
+import NoteGauge from './components/note_gauge.js'
 
 const TRIGGER_FLASH_MS = 120
 import GridSection from './pattern_panel/grid_section.js'
@@ -60,6 +62,9 @@ export default class PatternPanel extends BasePanel {
     #menuSection
     #actions
     #pointer
+    #drag
+    #gauge
+    #selectedByPointer
     #rangeAnchor
 
     /**
@@ -99,6 +104,14 @@ export default class PatternPanel extends BasePanel {
         this.#menuSection = new ContextMenuSection(this)
         this.#actions = new ActionsSection(this)
         this.#pointer = new PointerSection(this)
+        this.#drag = new DragSection(this)
+        this.#gauge = new NoteGauge(() => this.container, {
+            // The grid's hover tooltip describes the same note: it must not
+            // compete with the gauge.
+            onShow: () => this.#pointer.hideTooltip(),
+            resolveAnchor: (note) => this.#resolveCellEl(note),
+        })
+        this.#selectedByPointer = false
         this.#headerDirty = true
         this.#forceFullRender = false
         this.#structureSig = ''
@@ -124,6 +137,7 @@ export default class PatternPanel extends BasePanel {
             },
             { passive: false },
         )
+        this.listen(this.container, 'mousedown', (e) => this.#drag.onMouseDown(e))
         this.listen(this.container, 'input', (e) => this.#pointer.onInput(e))
         this.listen(this.container, 'keydown', (e) => this.#keyboard.onKeyDown(e))
         this.listen(this.container, 'contextmenu', (e) => this.#menuSection.onContextMenu(e))
@@ -194,11 +208,13 @@ export default class PatternPanel extends BasePanel {
             if (data) {
                 if (this.#gridTrackIdx !== data.trackIdx) {
                     this.#selectedNote = null
+                    this.#selectedByPointer = false
                 }
                 this.#gridTrackIdx = data.trackIdx
             } else {
                 this.#gridTrackIdx = -1
                 this.#selectedNote = null
+                this.#selectedByPointer = false
             }
             this.applySelection()
         })
@@ -209,6 +225,7 @@ export default class PatternPanel extends BasePanel {
         if (this.#syncRafId) cancelAnimationFrame(this.#syncRafId)
         this.#syncRafId = null
         this.#syncPending = false
+        this.#drag.cancel()
         this.#menuSection?.destroy()
     }
 
@@ -596,6 +613,52 @@ export default class PatternPanel extends BasePanel {
     /** @returns {import('./pattern_panel/pointer_section.js').default} */
     get pointer() {
         return this.#pointer
+    }
+
+    /** @returns {import('./pattern_panel/drag_section.js').default} */
+    get drag() {
+        return this.#drag
+    }
+
+    /** @returns {import('./components/note_gauge.js').default} */
+    get gauge() {
+        return this.#gauge
+    }
+
+    /**
+     * Cell element holding a note, for the editing gauge anchor.
+     * @param {Object} note
+     * @returns {HTMLElement|null}
+     */
+    #resolveCellEl(note) {
+        const trackIdx = this.#gridTrackIdx
+        if (!note || trackIdx < 0) return null
+        const beat = note.beat ?? 0
+        const beatStep = note.beatStep ?? 0
+        return (
+            this.#cellMap.get(`${trackIdx}:${beat}:${beatStep}`) ??
+            this.container?.querySelector(
+                `.pp-cell[data-track="${trackIdx}"][data-beat="${beat}"][data-step="${beatStep}"]`,
+            ) ??
+            null
+        )
+    }
+
+    /**
+     * True when the selected note was picked with the pointer (click or drag),
+     * not by walking the cursor with the arrows.
+     *
+     * This is what tells Shift+Arrow the two apart: it edits a note the mouse
+     * picked, and keeps extending the range selection when the cursor merely
+     * moved over a filled cell (the cursor sync selects that note too).
+     * @returns {boolean}
+     */
+    get selectedByPointer() {
+        return this.#selectedByPointer
+    }
+    /** @param {boolean} v */
+    set selectedByPointer(v) {
+        this.#selectedByPointer = v
     }
 
     /** Invalidate the per-track render cache (call after bulk note changes). */

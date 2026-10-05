@@ -25,9 +25,19 @@ export default class PointerSection {
         }
     }
 
+    /** Hides the hover bubble (the edit gauge must be the only readout). */
+    hideTooltip() {
+        if (this.#tooltip) this.#tooltip.style.display = 'none'
+    }
+
     onMouseOver(e) {
         const cell = e.target.closest('.pp-cell.filled')
         if (!cell) return
+        // The edit gauge is describing this same note: no second bubble.
+        if (this.#editor.gauge?.isVisible) {
+            this.hideTooltip()
+            return
+        }
         const trackIdx = parseInt(cell.dataset.track, 10)
         const beat = parseInt(cell.dataset.beat, 10)
         const beatStep = parseInt(cell.dataset.step, 10)
@@ -102,6 +112,10 @@ export default class PointerSection {
     }
 
     onClick(e) {
+        // A cell drag ends over the cell it started on, and clicking an already
+        // selected note deletes it: that click is not a click.
+        if (this.#editor.drag?.consumeClick()) return
+
         this.#editor.rangeAnchor = null
 
         const actionBtn = e.target.closest('.pp-action-btn')
@@ -204,6 +218,7 @@ export default class PointerSection {
             } else {
                 this.#editor.selectedNote = note
                 this.#editor.gridTrackIdx = trackIdx
+                this.#editor.selectedByPointer = true
                 this.#editor.applySelection()
                 const pos = getNoteAbsoluteStep({ beat, beatStep }, track.stepsPerBeat ?? 4)
                 this.#editor.playbackEvents.batch(() => {
@@ -218,6 +233,7 @@ export default class PointerSection {
         const newNote = this.#editor.serviceRegistry.cmd.addNote(track, beat, beatStep)
         this.#editor.selectedNote = newNote
         this.#editor.gridTrackIdx = trackIdx
+        this.#editor.selectedByPointer = true
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
         this.#editor.applySelection()
 
