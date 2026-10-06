@@ -9,7 +9,7 @@
  *
  * What IS tested (preserved through MIDI):
  * - Loops / loop points
- * - Retriggers (retriggerNum, retriggerStep, retriggerRate)
+ * - Retriggers (retriggerCount, retriggerStep, retriggerRate)
  * - Arpeggios (arp intervals, mode)
  * - Euclidean fills (euclideanFill)
  * - Variations (frozen at export)
@@ -252,7 +252,7 @@ function createComplexPattern() {
                         beatStep: 2,
                         velocity: 0.7,
                         pitch: 0,
-                        retriggerNum: 4,
+                        retriggerCount: 4,
                         retriggerStep: 8,
                         retriggerRate: 8,
                         prob: 1,
@@ -262,7 +262,7 @@ function createComplexPattern() {
                         beatStep: 2,
                         velocity: 0.5,
                         pitch: 0,
-                        retriggerNum: 3,
+                        retriggerCount: 3,
                         retriggerStep: 8,
                         retriggerRate: 8,
                         prob: 1,
@@ -303,7 +303,7 @@ function createComplexPattern() {
                         velocity: 0.6,
                         pitch: 0,
                         arp: [0, 4, 7],
-                        retriggerNum: 3,
+                        retriggerCount: 3,
                         arpTriggerProbability: 1,
                         prob: 1,
                     },
@@ -313,7 +313,7 @@ function createComplexPattern() {
                         velocity: 0.6,
                         pitch: 2,
                         arp: [0, 3, 7],
-                        retriggerNum: 3,
+                        retriggerCount: 3,
                         arpTriggerProbability: 1,
                         prob: 1,
                     },
@@ -445,8 +445,8 @@ function importMidiToPattern(midiBytes, originalPattern) {
         }
 
         let drumFound = false
-        for (const [noteNum, grpNotes] of noteGroups) {
-            const drumInst = im.findInstrumentFromMidi(channel, noteNum)
+        for (const [noteKey, grpNotes] of noteGroups) {
+            const drumInst = im.findInstrumentFromMidi(channel, noteKey)
             if (drumInst.id === 'NOT_FOUND') continue
             const track = trackNoteMap.get(drumInst.id)
             if (!track) continue
@@ -455,7 +455,7 @@ function importMidiToPattern(midiBytes, originalPattern) {
                 const engineTicks = Math.round(note.absTick / MIDI_RATIO)
                 const beat = Math.floor(engineTicks / TICK)
                 const beatStep = Math.floor((engineTicks % TICK) / (TICK / (track.stepsPerBeat ?? 4)))
-                const pitch = note.note - noteNum
+                const pitch = note.note - noteKey
                 track.notes.push({ beat, beatStep, velocity: midiVelocityToNormalized(note.velocity), pitch })
             }
         }
@@ -746,8 +746,8 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
             pat.beatCount = beatCount
             const track = cmd.addTrack(pat, 'SNARE', stepsPerBeat)
             cmd.addNote(track, 0, 0, 0)
-            // Set retriggerNum on the note
-            track.notes[0].retriggerNum = 3
+            // Set retriggerCount on the note
+            track.notes[0].retriggerCount = 3
             track.notes[0].rate = 1
 
             const exporter = new MidiExporter(new InstrumentsManager())

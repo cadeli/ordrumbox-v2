@@ -1,6 +1,7 @@
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { idbGet, idbPut, idbKeys } from '../../core/idb.js'
+import { migrateLegacyPatternKeys } from '../../core/note_schema.js'
 import { logger } from '../../core/logger.js'
 import { normalizeSongs } from '../../model/song_schema.js'
 import { showToast } from '../../core/notify.js'
@@ -95,7 +96,14 @@ class SongService {
 
         await serviceRegistry.cmd.recordTransaction('Load song', async () => {
             appState.patterns.length = 0
-            for (const pat of data.patterns) appState.patterns.push(pat)
+            // A .odbox exported before a note-key rename is pushed as-is: no
+            // fixPattern here (it would rewrite ids/pan of a saved song), so the
+            // legacy note keys are mapped explicitly. MIGRATIONS[7] already did
+            // it for records read from IndexedDB — this is the file path.
+            for (const pat of data.patterns) {
+                migrateLegacyPatternKeys(pat)
+                appState.patterns.push(pat)
+            }
 
             appState.songInfos.name = name
             appState.songInfos.description = data.description ?? ''

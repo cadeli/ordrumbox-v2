@@ -18,7 +18,7 @@ function lfoWf(phase, wave) {
     return (r | 0) / 2147483648;
 }
 
-function computeLfo(lfo, tick, nbTicks, key) {
+function computeLfo(lfo, tick, tickCount, key) {
     if (!lfo) return 0;
     const f = Math.min(2, toFinite(lfo.freq, 1));
     const min = toFinite(lfo.min, 0);
@@ -39,10 +39,10 @@ class LfoUiProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
         this.port.onmessage = (e) => {
-            const { id, lfos, tick, nbTicks } = e.data;
+            const { id, lfos, tick, tickCount } = e.data;
             const vals = {};
             for (const [key, lfo] of Object.entries(lfos)) {
-                vals[key] = computeLfo(lfo, tick, nbTicks, key);
+                vals[key] = computeLfo(lfo, tick, tickCount, key);
             }
             this.port.postMessage({ id, vals });
         };

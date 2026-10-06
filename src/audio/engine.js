@@ -335,7 +335,7 @@ export default class AudioEngine {
 
     // ─── Offline export ─────────────────────────────────────────────────────────
 
-    exportOffline = async (pattern, numLoops, OfflineAudioContextClass, bufferToWavFn) => {
+    exportOffline = async (pattern, loopCount, OfflineAudioContextClass, bufferToWavFn) => {
         return renderOffline(
             {
                 audioCtx: this.audioCtx,
@@ -345,7 +345,7 @@ export default class AudioEngine {
                 computeFlatNotes: this.computeFlatNotes,
             },
             pattern,
-            numLoops,
+            loopCount,
             OfflineAudioContextClass,
             bufferToWavFn,
         )

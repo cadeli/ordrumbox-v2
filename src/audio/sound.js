@@ -150,8 +150,8 @@ export default class Sound {
                 let lfoContext = null
                 if (flatNote.track.pitchLfo) {
                     const tick = serviceRegistry.transport?.tick ?? 0
-                    const nbTicks = TICK * (flatNote.track.beatCount ?? 4)
-                    lfoContext = { tick, nbTicks }
+                    const tickCount = TICK * (flatNote.track.beatCount ?? 4)
+                    lfoContext = { tick, tickCount }
                 }
                 await voice.setup(flatNote, time, lfoContext)
                 // For mono tracks, stop the previous voice AFTER setup()

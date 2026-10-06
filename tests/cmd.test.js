@@ -110,7 +110,7 @@ describe('Functional: Commander operations', () => {
             expect(note.steppc).toBe(50)
             expect(note.every).toBe(1)
             expect(note.pos).toBe(0)
-            expect(note.retriggerNum).toBe(1)
+            expect(note.retriggerCount).toBe(1)
             expect(note.euclideanFill).toBe(0)
         })
 
@@ -262,7 +262,7 @@ describe('Functional: Commander operations', () => {
             note.pos = 1
             note.prob = 0.8
             note.arpTriggerProbability = 0.9
-            note.retriggerNum = 3
+            note.retriggerCount = 3
             note.rate = 2
             note.euclideanFill = 2
 
@@ -276,7 +276,7 @@ describe('Functional: Commander operations', () => {
             expect(note.pos).toBe(1)
             expect(note.prob).toBe(0.8)
             expect(note.arpTriggerProbability).toBe(0.9)
-            expect(note.retriggerNum).toBe(3)
+            expect(note.retriggerCount).toBe(3)
             expect(note.rate).toBe(2)
             expect(note.euclideanFill).toBe(2)
         })

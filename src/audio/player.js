@@ -147,8 +147,8 @@ export default class Player {
             if (this.isSongMode) return await this.#playSongNotes(tick, atTime)
 
             const selectedPattern = this.patterns[this.getSelectedPatternIdx()]
-            const nbTickForPattern = this.TICK * (selectedPattern.beatCount ?? 4)
-            const loopStep = tick % nbTickForPattern
+            const tickCountForPattern = this.TICK * (selectedPattern.beatCount ?? 4)
+            const loopStep = tick % tickCountForPattern
 
             if (loopStep === 0) {
                 await this.#handleLoopStart(selectedPattern)
@@ -170,7 +170,7 @@ export default class Player {
                 this.#lastFlatNotesPattern = selectedPattern
             }
 
-            if (loopStep === nbTickForPattern - 1) {
+            if (loopStep === tickCountForPattern - 1) {
                 this.loop++
             }
 
@@ -328,7 +328,7 @@ export default class Player {
             pos: 0,
             prob: 1,
             arpTriggerProbability: 1,
-            retriggerNum: note?.retriggerNum ?? 1,
+            retriggerCount: note?.retriggerCount ?? 1,
             rate: note?.rate ?? 1,
             euclideanFill: note?.euclideanFill ?? 0,
             euclideanRotation: note?.euclideanRotation ?? 0,

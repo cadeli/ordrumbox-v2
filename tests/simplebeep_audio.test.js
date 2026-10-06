@@ -95,13 +95,13 @@ describe('simpleBeep — real audio rendering', () => {
 
         const headerSize = 44
         const bytesPerSample = 2
-        const numChannels = wavBytes[22] | (wavBytes[23] << 8)
+        const channelCount = wavBytes[22] | (wavBytes[23] << 8)
         const dataSize = wavBytes[40] | (wavBytes[41] << 8) | (wavBytes[42] << 16) | (wavBytes[43] << 24)
-        const numSamples = dataSize / (bytesPerSample * numChannels)
+        const sampleCount = dataSize / (bytesPerSample * channelCount)
 
         const samples = []
-        for (let i = 0; i < numSamples; i++) {
-            const offset = headerSize + i * bytesPerSample * numChannels
+        for (let i = 0; i < sampleCount; i++) {
+            const offset = headerSize + i * bytesPerSample * channelCount
             const val = wavBytes[offset] | (wavBytes[offset + 1] << 8)
             samples.push(val < 0x8000 ? val / 0x7fff : (val - 0x10000) / 0x7fff)
         }
@@ -147,12 +147,12 @@ describe('simpleBeep — real audio rendering', () => {
         const wavBytes = new Uint8Array(ab)
 
         const dataSize = wavBytes[40] | (wavBytes[41] << 8) | (wavBytes[42] << 16) | (wavBytes[43] << 24)
-        const numChannels = wavBytes[22] | (wavBytes[23] << 8)
-        const numSamples = dataSize / (2 * numChannels)
+        const channelCount = wavBytes[22] | (wavBytes[23] << 8)
+        const sampleCount = dataSize / (2 * channelCount)
 
         const samples = []
-        for (let i = 0; i < numSamples; i++) {
-            const offset = 44 + i * 2 * numChannels
+        for (let i = 0; i < sampleCount; i++) {
+            const offset = 44 + i * 2 * channelCount
             const val = wavBytes[offset] | (wavBytes[offset + 1] << 8)
             samples.push(val < 0x8000 ? val / 0x7fff : (val - 0x10000) / 0x7fff)
         }

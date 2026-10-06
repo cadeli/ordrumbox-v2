@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { tools, handleToolCall } from '../ordrumboxMcpserver.mjs'
+import { tools, handleToolCall, normalizePattern } from '../ordrumboxMcpserver.mjs'
 import { TRACK_DEFAULTS, TRACK_VALUE_RANGES } from '../src/model/track_schema.js'
 import { NOTE_DEFAULTS } from '../src/core/note_schema.js'
 
@@ -98,5 +98,28 @@ describe('MCP server stays aligned with the app model', () => {
 
         const instruments = await handleToolCall('listAllInstrumentsNames', {})
         expect(JSON.parse(instruments.content[0].text).count).toBeGreaterThan(0)
+    })
+
+    // A file written before the retriggerNum → retriggerCount rename must read
+    // back with the current spelling, through both note shapes — exactly what
+    // the app does, or MCP clients and the UI would disagree on the value.
+    it('reads legacy note keys like the app', () => {
+        const compact = normalizePattern({
+            name: 'Legacy',
+            tracks: [
+                { name: 'KICK', stepsPerBeat: 4, noteKeys: ['velocity', 'beat', 'retriggerNum'], notes: [[0.9, 1, 4]] },
+            ],
+        })
+        const fromCompact = compact.tracks[0].notes[0]
+        expect(fromCompact.retriggerCount).toBe(4)
+        expect(fromCompact).not.toHaveProperty('retriggerNum')
+
+        const objectNotes = normalizePattern({
+            name: 'Legacy',
+            tracks: [{ name: 'KICK', notes: [{ beat: 0, retriggerNum: 3 }] }],
+        })
+        const fromObject = objectNotes.tracks[0].notes[0]
+        expect(fromObject.retriggerCount).toBe(3)
+        expect(fromObject).not.toHaveProperty('retriggerNum')
     })
 })

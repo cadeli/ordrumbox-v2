@@ -101,7 +101,7 @@ export function synthField(page, soundKey, ...path) {
  * Polls a numeric value. Default precision 2 (tolerance 0.005) absorbs
  * prompt step-grid snapping such as 4.5 -> 4.497 on a 0.707-based grid.
  */
-export async function expectNum(getter, expected, precision = 2) {
+export async function expectNumber(getter, expected, precision = 2) {
     await expect
         .poll(async () => {
             const value = await getter()

@@ -8,11 +8,11 @@ export const LFO_MAP = [
     { lfoKey: 'filterQLfo', resultKey: 'filterQ' },
 ]
 
-export function computeTrackLfoValues(track, tick, nbTicks, bpm) {
+export function computeTrackLfoValues(track, tick, tickCount, bpm) {
     const values = {}
     for (const { lfoKey, resultKey } of LFO_MAP) {
         const lfo = track[lfoKey]
-        values[resultKey] = lfo ? computeLfoValue(lfo, tick, nbTicks, resultKey, null, bpm) : 0
+        values[resultKey] = lfo ? computeLfoValue(lfo, tick, tickCount, resultKey, null, bpm) : 0
     }
     return values
 }

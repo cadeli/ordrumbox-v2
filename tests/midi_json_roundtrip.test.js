@@ -123,12 +123,12 @@ function importMidiToPattern(midiBytes, cmd) {
         }
 
         let drumFound = false
-        for (const [noteNum, grpNotes] of noteGroups) {
-            const drumInst = im.findInstrumentFromMidi(channel, noteNum)
+        for (const [noteKey, grpNotes] of noteGroups) {
+            const drumInst = im.findInstrumentFromMidi(channel, noteKey)
             if (drumInst.id === 'NOT_FOUND') continue
             const trackName = drumInst.id
             if (!trackDefs.some((d) => d.trackName === trackName)) {
-                trackDefs.push({ trackName, groupNotes: grpNotes, baseNote: noteNum })
+                trackDefs.push({ trackName, groupNotes: grpNotes, baseNote: noteKey })
                 drumFound = true
             }
         }

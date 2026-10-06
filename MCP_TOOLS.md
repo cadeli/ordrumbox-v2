@@ -99,7 +99,7 @@ Every track field is returned with its model default filled in (`TRACK_DEFAULTS`
                     "pos": 0,
                     "prob": 1,
                     "arpTriggerProbability": 1,
-                    "retriggerNum": 1,
+                    "retriggerCount": 1,
                     "rate": 1,
                     "euclideanFill": 0,
                     "euclideanRotation": 0
@@ -152,7 +152,7 @@ Adds multiple notes to a pattern
 | `pos`                   | integer     | 0-15         | 0        | Trigger phase offset                                              |
 | `prob`                  | number      | 0-1          | 1        | Note trigger probability                                          |
 | `arpTriggerProbability` | number      | 0-1          | 1        | Arpeggio note probability                                         |
-| `retriggerNum`          | integer     | 1-16         | 1        | Number of retriggers                                              |
+| `retriggerCount`        | integer     | 1-16         | 1        | Number of retriggers                                              |
 | `rate`                  | integer     | 1-16         | 1        | Retrigger step spacing                                            |
 | `arp`                   | string/null |              | null     | Arpeggio pattern ("up", "down", "upDown", "random", or "0,1,2,3") |
 | `euclideanFill`         | integer     | 0-16         | 0        | Euclidean pulses (0-16, 0=disabled)                               |
@@ -241,7 +241,7 @@ Numeric ranges come from the app model (`TRACK_VALUE_RANGES` in `src/model/track
 | `pos`                   | integer     | 0-15    | 0       | Trigger phase offset                                              |
 | `prob`                  | number      | 0-1     | 1       | Note trigger probability                                          |
 | `arpTriggerProbability` | number      | 0-1     | 1       | Arpeggio note probability                                         |
-| `retriggerNum`          | integer     | 1-16    | 1       | Number of retriggers                                              |
+| `retriggerCount`        | integer     | 1-16    | 1       | Number of retriggers                                              |
 | `rate`                  | integer     | 1-16    | 1       | Retrigger step spacing                                            |
 | `arp`                   | string/null |         | null    | Arpeggio pattern ("up", "down", "upDown", "random", or "0,1,2,3") |
 | `euclideanFill`         | integer     | 0-16    | 0       | Euclidean pulses (0-16, 0=disabled)                               |
@@ -290,7 +290,7 @@ You can also update all notes in a track using `noteUpdates`:
         "pos": 2,
         "prob": 0.75,
         "arpTriggerProbability": 0.5,
-        "retriggerNum": 3,
+        "retriggerCount": 3,
         "velocity": 0.8
     }
 }
@@ -729,8 +729,8 @@ The engine uses an internal resolution of **TICK = 32 ticks per beat**.
     - `every: 4` -> note plays every 4th loop iteration (skips 3 loops between plays)
     - `every: 1` -> note plays every loop (default, continuous)
     - `pos: 0-15` -> phase offset for the trigger pattern
-- **Retrigger (retriggerNum, rate):** Repeats the sound at regular intervals within a step
-    - `retriggerNum: 3` -> Play 3 times per step
+- **Retrigger (retriggerCount, rate):** Repeats the sound at regular intervals within a step
+    - `retriggerCount: 3` -> Play 3 times per step
     - `rate: 1` -> Spacing between retriggers
 - **Arpeggio (arp):** Sequences through multiple pitches within a single step
     - Values: "up", "down", "upDown", "random", or note indices like "0,1,2,3"
@@ -756,7 +756,7 @@ Each note has additional properties controlling how it's played:
 | `pos`                   | integer     | 0-15  | 0       | Trigger phase offset                                           |
 | `prob`                  | number      | 0-1   | 1       | Probability that the note is played after the trigger test     |
 | `arpTriggerProbability` | number      | 0-1   | 1       | Probability that each arpeggio note is played                  |
-| `retriggerNum`          | integer     | 1-16  | 1       | Number of repetitions after initial trigger                    |
+| `retriggerCount`        | integer     | 1-16  | 1       | Number of repetitions after initial trigger                    |
 | `rate`                  | integer     | 1-16  | 1       | Step spacing between repetitions                               |
 | `arp`                   | string/null | -     | null    | Arpeggio pattern (up, down, upDown, random, or custom indices) |
 | `euclideanFill`         | integer     | 0-100 | 0       | Euclidean rhythm fill percentage                               |
@@ -778,8 +778,8 @@ Repeats the note multiple times after the initial trigger.
 
 **Examples:**
 
-- `retriggerNum: 1` -> 1 note (no repetition)
-- `retriggerNum: 4, rate: 4` -> 4 notes, 1 step apart
+- `retriggerCount: 1` -> 1 note (no repetition)
+- `retriggerCount: 4, rate: 4` -> 4 notes, 1 step apart
 
 If `arp` is defined, `rate` defaults for basic retriggering.
 

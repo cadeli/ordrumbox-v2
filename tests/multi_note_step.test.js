@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import { PatternExporter } from '../src/patterns/exporter.js'
-import { recomputeFlatNotes, computeNbTickForPattern } from '../src/patterns/engine.js'
+import { recomputeFlatNotes, computeTickCountForPattern } from '../src/patterns/engine.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
 import InstrumentsManager from '../src/logic/services/instrument_manager/index.js'
 import { TICK } from '../src/core/constants.js'
@@ -55,7 +55,7 @@ describe('Multiple notes at the same step', () => {
             })
 
             const flatMap = recomputeFlatNotes(pattern, 0)
-            const tick = computeNbTickForPattern(4, TICK) / 4 + 2 * (TICK / 4)
+            const tick = computeTickCountForPattern(4, TICK) / 4 + 2 * (TICK / 4)
             const flatNotes = flatMap.get(tick)
             expect(flatNotes).toBeDefined()
             expect(flatNotes.length).toBe(3)
@@ -294,7 +294,7 @@ describe('Multiple notes at the same step', () => {
 
             const flatMap = recomputeFlatNotes(pattern, 0)
             const tick =
-                (computeNbTickForPattern(beatCount, TICK) / (beatCount * stepsPerBeat)) * (b * stepsPerBeat + 0)
+                (computeTickCountForPattern(beatCount, TICK) / (beatCount * stepsPerBeat)) * (b * stepsPerBeat + 0)
             const flatNotes = flatMap.get(tick)
             expect(flatNotes).toBeDefined()
             expect(flatNotes.length).toBe(3)
@@ -322,7 +322,7 @@ describe('Multiple notes at the same step', () => {
             const flatMap = recomputeFlatNotes(pattern, 0)
             expect(flatMap.get(0).length).toBe(2)
 
-            const tick1 = (computeNbTickForPattern(beatCount, TICK) / (beatCount * stepsPerBeat)) * stepsPerBeat
+            const tick1 = (computeTickCountForPattern(beatCount, TICK) / (beatCount * stepsPerBeat)) * stepsPerBeat
             const tickN = flatMap.get(tick1)
             expect(tickN).toBeDefined()
             expect(tickN.length).toBe(1)

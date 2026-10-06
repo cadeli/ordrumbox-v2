@@ -32,7 +32,7 @@ describe('Pattern Panel UI Grid', () => {
                     loopAtStep: 3, // Loop point at index 2 (4th step of 1st beat)
                     notes: [
                         { beat: 0, beatStep: 0, pitch: 0, velocity: 1 }, // Main note
-                        { beat: 0, beatStep: 1, pitch: 0, velocity: 0.8, retriggerNum: 3, rate: 1 }, // Note with 2 ghost notes
+                        { beat: 0, beatStep: 1, pitch: 0, velocity: 0.8, retriggerCount: 3, rate: 1 }, // Note with 2 ghost notes
                     ],
                 },
             },
@@ -94,7 +94,7 @@ describe('Pattern Panel UI Grid', () => {
     })
 
     it('renders ghost notes for retriggering notes', () => {
-        // The second note (beat 0, step 1) has retriggerNum: 3
+        // The second note (beat 0, step 1) has retriggerCount: 3
         // This should generate 2 ghost notes in addition to the main note
         const ghosts = document.querySelectorAll('.pp-ghost')
         expect(ghosts.length).toBeGreaterThan(0)

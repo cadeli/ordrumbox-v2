@@ -34,8 +34,8 @@ export default class SampleVoice extends BaseVoice {
         const tune = this.sample?.tune ?? 0
         let playbackRate = (flatNote.fpitch ?? 1) * Math.pow(2, tune / 12)
         if (track.pitchLfo && lfoContext) {
-            const { tick, nbTicks } = lfoContext
-            const lfoSemi = computeLfoValue(track.pitchLfo, tick, nbTicks, 'pitch')
+            const { tick, tickCount } = lfoContext
+            const lfoSemi = computeLfoValue(track.pitchLfo, tick, tickCount, 'pitch')
             playbackRate *= Math.pow(2, lfoSemi / 12)
         }
         this.snd.playbackRate.setTargetAtTime(playbackRate, time, PITCH_RAMP_TIME)

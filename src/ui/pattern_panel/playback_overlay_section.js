@@ -173,10 +173,10 @@ export default class PlaybackOverlaySection {
         if (!pattern || !editor.container || !editor.layoutCache) return
         this.ensurePlayhead()
 
-        const nbTicks = TICK * (pattern.beatCount ?? 4)
-        if (nbTicks <= 0) return
+        const tickCount = TICK * (pattern.beatCount ?? 4)
+        if (tickCount <= 0) return
 
-        const loopTick = (transport.tick ?? 0) % nbTicks
+        const loopTick = (transport.tick ?? 0) % tickCount
 
         if (loopTick === this.#prevLoopTick && this.#playhead.style.display !== 'none') return
         this.#prevLoopTick = loopTick

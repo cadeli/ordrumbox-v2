@@ -180,7 +180,7 @@ describe('sendMidiNotes', () => {
         expect(midi.sendNoteOn).not.toHaveBeenCalled()
     })
 
-    it('wraps tick into the pattern loop (tick % nbTickForPattern)', () => {
+    it('wraps tick into the pattern loop (tick % tickCountForPattern)', () => {
         const midi = makeReadyMidi()
         serviceRegistry.midiManager = midi
         const track = { id: 'KICK', mute: false, solo: false }

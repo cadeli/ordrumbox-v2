@@ -83,10 +83,10 @@ function parseMTrkEvents(bytes, dataOffset, length) {
  * Parse a MIDI Uint8Array into a structured object.
  *
  * @param {Uint8Array} bytes - Raw MIDI file bytes
- * @returns {{ header: { format, numTracks, division }, tracks: Array<Array<event>>, trackNames: string[] }}
+ * @returns {{ header: { format, trackCount, division }, tracks: Array<Array<event>>, trackNames: string[] }}
  */
 export function parseMidi(bytes) {
-    const header = { format: 0, numTracks: 0, division: 96 }
+    const header = { format: 0, trackCount: 0, division: 96 }
     const tracks = []
 
     let i = 0
@@ -96,7 +96,7 @@ export function parseMidi(bytes) {
 
         if (tag === 'MThd') {
             header.format = readUint16BE(bytes, i + 8)
-            header.numTracks = readUint16BE(bytes, i + 10)
+            header.trackCount = readUint16BE(bytes, i + 10)
             header.division = readUint16BE(bytes, i + 12)
         } else if (tag === 'MTrk') {
             tracks.push(parseMTrkEvents(bytes, i + 8, length))

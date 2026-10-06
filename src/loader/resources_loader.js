@@ -238,7 +238,7 @@ export default class ResourcesLoader {
                 // NOT merged with SESSION_DEFAULTS: that would write
                 // selectedDrumkitIdx: 0 over a legacy snapshot's
                 // selectedDrumkitNum, and `restoreSession` reads
-                // `idx ?? legacyNum` — the legacy value could then never win,
+                // `idx ?? legacyIdx` — the legacy value could then never win,
                 // i.e. exactly the reset this compat path exists to prevent.
                 // The "nothing stored" case is covered by defaults.session below.
                 if (raw.session) raw.session = { ...raw.session }
@@ -437,15 +437,15 @@ export default class ResourcesLoader {
     }
 
     #loadSampleEntries = async (samplesToLoad) => {
-        let nbLoad = 0
-        const nbToLoad = samplesToLoad.length
+        let loadedCount = 0
+        const totalCount = samplesToLoad.length
 
-        if (nbToLoad === 0) {
+        if (totalCount === 0) {
             return []
         }
 
         const updateProgress = () => {
-            this.onSoundsProgress(Math.floor((nbLoad * 100) / nbToLoad))
+            this.onSoundsProgress(Math.floor((loadedCount * 100) / totalCount))
         }
 
         const results = await Promise.all(
@@ -456,7 +456,7 @@ export default class ResourcesLoader {
                     logger.error('ResourcesLoader', 'ResourcesLoader::loadSample error ' + sample.url, error)
                     return null
                 } finally {
-                    nbLoad++
+                    loadedCount++
                     updateProgress()
                 }
             }),

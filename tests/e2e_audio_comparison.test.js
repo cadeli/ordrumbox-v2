@@ -360,7 +360,7 @@ describe('E2E Audio 4 — Flat notes computation matches export structure', () =
         pat.beatCount = 4
         const kick = cmd.addTrack(pat, 'KICK', 4)
         const note = cmd.addNote(kick, 0, 0, 0)
-        note.retriggerNum = 4
+        note.retriggerCount = 4
         note.retriggerRate = 1
 
         const flat = recomputeFlatNotes(pat, 0)
@@ -376,7 +376,7 @@ describe('E2E Audio 4 — Flat notes computation matches export structure', () =
         const bass = cmd.addTrack(pat, 'BASS', 4)
         const note = cmd.addNote(bass, 0, 0, 0)
         note.arp = [0, 7, 12]
-        note.retriggerNum = 3
+        note.retriggerCount = 3
 
         const flat = recomputeFlatNotes(pat, 0)
         let count = 0

@@ -340,12 +340,12 @@ describe('MidiExporter', () => {
         expect(readUint16BE(result, 12)).toBe(96)
     })
 
-    it('numTracks = 1 (tempo) when no tracks in pattern', () => {
+    it('trackCount = 1 (tempo) when no tracks in pattern', () => {
         const result = exporter.export(makePattern({ tracks: [] }))
         expect(readUint16BE(result, 10)).toBe(1)
     })
 
-    it('numTracks = 1 + number of non-muted tracks', () => {
+    it('trackCount = 1 + number of non-muted tracks', () => {
         const pattern = makePattern({
             tracks: [makeTrack('KICK', [makeNote(0, 0)]), makeTrack('SNARE', [makeNote(1, 0)])],
         })
@@ -458,10 +458,10 @@ describe('MidiExporter', () => {
         const bytes = Array.from(result)
         const chunks = parseChunks(bytes)
 
-        // numTracks in header should match actual MTrk count
-        const numTracksHeader = readUint16BE(result, 10)
+        // trackCount in header should match actual MTrk count
+        const trackCountHeader = readUint16BE(result, 10)
         const mtrks = chunks.filter((c) => c.tag === 'MTrk')
-        expect(mtrks.length).toBe(numTracksHeader)
+        expect(mtrks.length).toBe(trackCountHeader)
 
         // Sum of all chunk sizes should equal total file size
         let total = 0

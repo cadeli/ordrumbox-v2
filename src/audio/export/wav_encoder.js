@@ -1,7 +1,7 @@
 import { clamp } from '../../core/numbers.js'
 export function bufferToWav(abuffer) {
-    const numOfChan = abuffer.numberOfChannels,
-        length = abuffer.length * numOfChan * 2 + 44,
+    const channelCount = abuffer.numberOfChannels,
+        length = abuffer.length * channelCount * 2 + 44,
         buffer = new ArrayBuffer(length),
         view = new DataView(buffer),
         channels = []
@@ -17,10 +17,10 @@ export function bufferToWav(abuffer) {
     setUint32(0x20746d66) // "fmt " chunk
     setUint32(16) // length = 16
     setUint16(1) // PCM (uncompressed)
-    setUint16(numOfChan)
+    setUint16(channelCount)
     setUint32(abuffer.sampleRate)
-    setUint32(abuffer.sampleRate * 2 * numOfChan) // avg. bytes/sec
-    setUint16(numOfChan * 2) // block-align
+    setUint32(abuffer.sampleRate * 2 * channelCount) // avg. bytes/sec
+    setUint16(channelCount * 2) // block-align
     setUint16(16) // 16-bit (hardcoded)
 
     setUint32(0x61746164) // "data" - chunk
@@ -29,7 +29,7 @@ export function bufferToWav(abuffer) {
     for (i = 0; i < abuffer.numberOfChannels; i++) channels.push(abuffer.getChannelData(i))
 
     while (pos < length) {
-        for (i = 0; i < numOfChan; i++) {
+        for (i = 0; i < channelCount; i++) {
             sample = clamp(channels[i][offset], -1, 1)
             sample = (sample < 0 ? sample * 0x8000 : sample * 0x7fff) | 0
             view.setInt16(pos, sample, true)
@@ -51,13 +51,13 @@ export function bufferToWav(abuffer) {
     }
 }
 
-export function computeWavExportDuration(bpm, beatCount, numLoops) {
+export function computeWavExportDuration(bpm, beatCount, loopCount) {
     const secondsPerBeat = 60 / bpm
     const patternDuration = beatCount * secondsPerBeat
-    return patternDuration * numLoops
+    return patternDuration * loopCount
 }
 
-export function computeWavExportSamples(bpm, beatCount, numLoops, sampleRate) {
-    const duration = computeWavExportDuration(bpm, beatCount, numLoops)
+export function computeWavExportSamples(bpm, beatCount, loopCount, sampleRate) {
+    const duration = computeWavExportDuration(bpm, beatCount, loopCount)
     return Math.round(duration * sampleRate)
 }

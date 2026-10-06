@@ -1,6 +1,11 @@
 import { fixPattern } from '../../patterns/fixer.js'
 import { TRACK_DEFAULTS } from '../../model/track_schema.js'
-import { areValidNoteKeys, compactArrayToNote, isCompactFormat } from '../../core/note_schema.js'
+import {
+    areValidNoteKeys,
+    compactArrayToNote,
+    isCompactFormat,
+    migrateLegacyPatternKeys,
+} from '../../core/note_schema.js'
 import { reportUserError } from '../../core/notify.js'
 import { toFiniteNumber } from '../../core/numbers.js'
 import { logger } from '../../core/logger.js'
@@ -108,7 +113,7 @@ function copyNoteProps(note, sourceNote, track) {
         'pos',
         'prob',
         'arpTriggerProbability',
-        'retriggerNum',
+        'retriggerCount',
         'rate',
         'euclideanFill',
         'euclideanRotation',
@@ -151,6 +156,11 @@ function copyNoteProps(note, sourceNote, track) {
  * @returns {object} the imported pattern
  */
 export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNote) {
+    // Files written before a note-key rename still carry the old spelling, in
+    // object notes and in the compact noteKeys header. Map it first: the header
+    // is validated (areValidNoteKeys) and decoded below, the object notes are
+    // copied property by property.
+    migrateLegacyPatternKeys(sourcePattern)
     const patternName = sourcePattern?.name ?? undefined
     const importedPattern = addPattern(patternName)
 

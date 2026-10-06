@@ -213,18 +213,18 @@ export default class MidiImportService {
 
         const results = []
         let drumFound = false
-        for (const [noteNum, grpNotes] of noteGroups) {
-            let drumInst = im.findInstrumentFromMidi(channel, noteNum)
+        for (const [noteKey, grpNotes] of noteGroups) {
+            let drumInst = im.findInstrumentFromMidi(channel, noteKey)
             let matchMethod = drumInst.id !== NOT_FOUND ? 'findInstrumentFromMidi' : null
             if (drumInst.id === NOT_FOUND) {
-                const gmName = GM_DRUM_NAMES[noteNum]
+                const gmName = GM_DRUM_NAMES[noteKey]
                 if (gmName) {
                     drumInst = im.findInstrumentFromFileName(gmName)
                     if (drumInst.id !== NOT_FOUND)
-                        matchMethod = `GM_DRUM_NAMES[${noteNum}]="${gmName}" → findInstrumentFromFileName`
+                        matchMethod = `GM_DRUM_NAMES[${noteKey}]="${gmName}" → findInstrumentFromFileName`
                 }
                 if (drumInst.id === NOT_FOUND) {
-                    logger.warn('MidiImport', `  note ${noteNum}: no instrument found`)
+                    logger.warn('MidiImport', `  note ${noteKey}: no instrument found`)
                     continue
                 }
             }
@@ -234,15 +234,15 @@ export default class MidiImportService {
                 results.push({
                     trackName,
                     groupNotes: grpNotes,
-                    baseNote: noteNum,
+                    baseNote: noteKey,
                     midiTrackName,
                     program,
                     channel,
                     isDrum: true,
-                    key: noteNum,
+                    key: noteKey,
                 })
                 drumFound = true
-                logger.warn('MidiImport', `  → ${trackName} (tier2: ${matchMethod}, note=${noteNum})`)
+                logger.warn('MidiImport', `  → ${trackName} (tier2: ${matchMethod}, note=${noteKey})`)
             }
         }
 
@@ -304,21 +304,21 @@ export default class MidiImportService {
         const totalEngineTicks = Math.round(maxTick / TICK_RATIO)
         const totalBeats = Math.max(1, Math.ceil(totalEngineTicks / TICK))
 
-        const numPatterns = Math.min(MIDI_MAX_PATTERNS, Math.ceil(totalBeats / MIDI_MAX_BEATS))
+        const patternCount = Math.min(MIDI_MAX_PATTERNS, Math.ceil(totalBeats / MIDI_MAX_BEATS))
         const beatsPerPattern = MIDI_MAX_BEATS
 
         logger.debug(
             'MidiImport',
-            `maxTick=${maxTick}, PPQN=${PPQN}, TICK_RATIO=${TICK_RATIO.toFixed(3)}, totalBeats=${totalBeats}, patterns=${numPatterns}, beatsPerPattern=${beatsPerPattern}`,
+            `maxTick=${maxTick}, PPQN=${PPQN}, TICK_RATIO=${TICK_RATIO.toFixed(3)}, totalBeats=${totalBeats}, patterns=${patternCount}, beatsPerPattern=${beatsPerPattern}`,
         )
 
         // The whole import is ONE undoable history entry (not one per note).
         cmd.recordTransaction('Import MIDI file', () => {
-            for (let p = 0; p < numPatterns; p++) {
+            for (let p = 0; p < patternCount; p++) {
                 const patStartBeat = p * beatsPerPattern
                 const patEndBeat = patStartBeat + beatsPerPattern
 
-                const suffix = numPatterns > 1 ? ` ${p + 1}/${numPatterns}` : ''
+                const suffix = patternCount > 1 ? ` ${p + 1}/${patternCount}` : ''
                 const pattern = cmd.addPattern(`${baseName}${suffix}`)
                 pattern.beatCount = beatsPerPattern
                 pattern.bpm = bpm
@@ -354,6 +354,6 @@ export default class MidiImportService {
             }
         })
 
-        return numPatterns
+        return patternCount
     }
 }

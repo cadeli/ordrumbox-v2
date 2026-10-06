@@ -19,7 +19,7 @@
  *   - Basic notes (single kicks, snares)
  *   - Track loop shorter than the pattern (loop repeat)
  *   - every / pos  (note fires every N loops)
- *   - retriggerNum / rate (note fires N times from one beatStep)
+ *   - retriggerCount / rate (note fires N times from one beatStep)
  *   - Arpeggio (array of semitone intervals, modes: up / down / updown)
  *   - Combination: arp + retrigger on melodic track
  *   - Multi-loop export (pattern repeated 4×)
@@ -248,7 +248,7 @@ describe('MidiExporter — functional end-to-end', () => {
         })
     })
 
-    // ── 4. retriggerNum / rate ───────────────────────────────────────
+    // ── 4. retriggerCount / rate ───────────────────────────────────────
 
     describe('Case 4: retrigger — 1 note fires 4 times, spacing=1 step', () => {
         // stepsPerBeat=4, rate=1 → spacing = (1/8)*TICK = 4 engine ticks
@@ -257,7 +257,7 @@ describe('MidiExporter — functional end-to-end', () => {
             name: 'Retrigger',
             bpm: 120,
             beatCount: 4,
-            tracks: [track('KICK', 4, 4, 4, [makeNote(0, 0, { velocity: 0.8, retriggerNum: 4, rate: 1 })])],
+            tracks: [track('KICK', 4, 4, 4, [makeNote(0, 0, { velocity: 0.8, retriggerCount: 4, rate: 1 })])],
         }
 
         it('engine produces 4 notes from 1 beatStep', () => {
@@ -312,7 +312,7 @@ describe('MidiExporter — functional end-to-end', () => {
             name: 'RetrigCoarse',
             bpm: 120,
             beatCount: 4,
-            tracks: [track('SNARE', 4, 4, 4, [makeNote(0, 0, { velocity: 0.9, retriggerNum: 3, rate: 4 })])],
+            tracks: [track('SNARE', 4, 4, 4, [makeNote(0, 0, { velocity: 0.9, retriggerCount: 3, rate: 4 })])],
         }
 
         it('engine generates 3 notes at positions 0, 4, 8 engine ticks', () => {
@@ -351,7 +351,7 @@ describe('MidiExporter — functional end-to-end', () => {
                     makeNote(0, 0, {
                         velocity: 0.8,
                         arp: [0, 4, 7, 12],
-                        retriggerNum: 4,
+                        retriggerCount: 4,
                         rate: 2,
                         pitch: 0,
                     }),
@@ -413,7 +413,7 @@ describe('MidiExporter — functional end-to-end', () => {
                     makeNote(0, 0, {
                         velocity: 0.8,
                         arp: { intervals: [0, 4, 7], mode: 'down' },
-                        retriggerNum: 3,
+                        retriggerCount: 3,
                         rate: 2,
                     }),
                 ]),
@@ -456,7 +456,7 @@ describe('MidiExporter — functional end-to-end', () => {
                     makeNote(0, 0, {
                         velocity: 0.8,
                         arp: { intervals: [0, 4, 7], mode: 'updown' },
-                        retriggerNum: 4,
+                        retriggerCount: 4,
                         rate: 2,
                     }),
                 ]),
@@ -489,7 +489,7 @@ describe('MidiExporter — functional end-to-end', () => {
                     makeNote(0, 0, { velocity: 0.7, pitch: -5 }),
                     makeNote(1, 0, { velocity: 0.8, pitch: 0 }),
                     makeNote(2, 0, { velocity: 0.9, pitch: +5 }),
-                    makeNote(3, 0, { velocity: 1.0, pitch: -5, retriggerNum: 2, rate: 2 }),
+                    makeNote(3, 0, { velocity: 1.0, pitch: -5, retriggerCount: 2, rate: 2 }),
                 ]),
             ],
         }
@@ -551,7 +551,7 @@ describe('MidiExporter — functional end-to-end', () => {
                     makeNote(0, 1, {
                         velocity: 0.75,
                         arp: [0, 12],
-                        retriggerNum: 2,
+                        retriggerCount: 2,
                         rate: 4,
                         every: 4,
                         pos: 0,
@@ -728,13 +728,13 @@ describe('MidiExporter — functional end-to-end', () => {
                 name: 'Truncate',
                 bpm: 120,
                 beatCount: 1,
-                tracks: [track('KICK', 4, 1, 1, [makeNote(0, 3, { velocity: 0.8, retriggerNum: 10, rate: 2 })])],
+                tracks: [track('KICK', 4, 1, 1, [makeNote(0, 3, { velocity: 0.8, retriggerCount: 10, rate: 2 })])],
             }
             const fm = recomputeFlatNotes(pattern, 0)
             let total = 0
             for (const v of fm.values()) total += v.length
             // rate=2 → getStepSpacing(2) = 0.25 step = 2 engine ticks, and
-            // retriggerNum=10 would keep going: from tick 24 the notes are 24, 26,
+            // retriggerCount=10 would keep going: from tick 24 the notes are 24, 26,
             // 28, 30 inside [0,32); the 5th (32) is past the pattern and dropped.
             expect(total).toBe(4)
             expect(fm.get(32)).toBeUndefined()
@@ -880,7 +880,7 @@ describe('MidiExporter — functional end-to-end', () => {
 
         it('pitchLfo shifts MIDI note number (KICK 36 + 6 semitones = 42)', () => {
             // LFO {freq:1, min:0, max:12, phase:0.25} at tick 0:
-            //   midpoint = 6 → noteNum = 36 + 6 = 42
+            //   midpoint = 6 → noteKey = 36 + 6 = 42
             const pattern = {
                 name: 'LfoPitch',
                 bpm: 120,
@@ -1160,7 +1160,7 @@ describe('MidiExporter — functional end-to-end', () => {
                         makeNote(0, 0, {
                             velocity: 0.8,
                             arp: [0, 4, 7],
-                            retriggerNum: 3,
+                            retriggerCount: 3,
                             rate: 2,
                             arpTriggerProbability: 0,
                         }),
@@ -1241,7 +1241,7 @@ describe('MidiExporter — functional end-to-end', () => {
                 bpm: 120,
                 beatCount: 1,
                 tracks: [
-                    track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 0.5, retriggerNum: 3, rate: 4 })], {
+                    track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 0.5, retriggerCount: 3, rate: 4 })], {
                         velocityLfo: { freq: 2.0, min: 0.3, max: 1.0, phase: 0 },
                     }),
                 ],
@@ -1267,7 +1267,7 @@ describe('MidiExporter — functional end-to-end', () => {
                 bpm: 120,
                 beatCount: 1,
                 tracks: [
-                    track('KICK', 4, 1, 1, [makeNote(0, 0, { pitch: 2, retriggerNum: 2, rate: 4 })], {
+                    track('KICK', 4, 1, 1, [makeNote(0, 0, { pitch: 2, retriggerCount: 2, rate: 4 })], {
                         pitchLfo: { freq: 1 / 32, min: 0, max: 6, phase: 0 },
                     }),
                 ],

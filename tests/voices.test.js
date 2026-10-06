@@ -304,7 +304,7 @@ describe('SampleVoice', () => {
         it('setup applies the pitch LFO value (in semitones, snapshot at note start)', () => {
             const flatNote = makeFlatNote({ fpitch: 1 })
             flatNote.track.pitchLfo = { freq: 1, min: 0, max: 12, phase: 0.25 }
-            voice.setup(flatNote, 1.0, { tick: 0, nbTicks: 128 })
+            voice.setup(flatNote, 1.0, { tick: 0, tickCount: 128 })
             expect(ctx.createGain.mock.calls.length).toBe(1)
             const expectedRate = Math.pow(2, 6 / 12)
             expect(voice.snd.playbackRate.setTargetAtTime).toHaveBeenCalledWith(

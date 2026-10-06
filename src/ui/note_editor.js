@@ -65,7 +65,7 @@ const GROUPS = [
         id: 'retrig',
         label: 'Retrig',
         props: [
-            { key: 'retriggerNum', label: 'Retrig', min: 1, max: 16, step: 1 },
+            { key: 'retriggerCount', label: 'Retrig', min: 1, max: 16, step: 1 },
             { key: 'rate', label: 'Rate', min: 1, max: 16, step: 1 },
             { key: 'arpTriggerProbability', label: 'Prob', min: 0, max: 1, step: 0.01 },
         ],

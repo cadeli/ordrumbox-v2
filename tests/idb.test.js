@@ -535,6 +535,96 @@ describe('IndexedDB helpers', () => {
             })
         })
 
+        // ─── MIGRATIONS[7]: retriggerNum → retriggerCount ────────────────────────────
+
+        const runMigration7 = (stores) => runMigrationN(7, stores)
+
+        describe('MIGRATIONS[7] renames retriggerNum to retriggerCount', () => {
+            it('rewrites object notes of every pattern of a raw song', () => {
+                const songs = [
+                    {
+                        key: 'my song',
+                        value: {
+                            name: 'my song',
+                            patterns: [
+                                { name: 'A', tracks: [{ name: 'KICK', notes: [{ beat: 0, retriggerNum: 3 }] }] },
+                                { name: 'B', tracks: [{ name: 'SNARE', notes: [{ beat: 1, retriggerNum: 1 }] }] },
+                            ],
+                        },
+                    },
+                ]
+
+                runMigration7({ songs })
+
+                const song = songs[0].value
+                expect(song.patterns[0].tracks[0].notes[0].retriggerCount).toBe(3)
+                expect(song.patterns[1].tracks[0].notes[0].retriggerCount).toBe(1)
+                expect(JSON.stringify(song)).not.toContain('retriggerNum')
+            })
+
+            it('rewrites the compact noteKeys header as well as the notes', () => {
+                const songs = [
+                    {
+                        key: 'compact',
+                        value: {
+                            patterns: [
+                                {
+                                    name: 'A',
+                                    tracks: [
+                                        { name: 'KICK', noteKeys: ['velocity', 'retriggerNum'], notes: [[0.9, 4]] },
+                                    ],
+                                },
+                            ],
+                        },
+                    },
+                ]
+
+                runMigration7({ songs })
+
+                const track = songs[0].value.patterns[0].tracks[0]
+                expect(track.noteKeys).toEqual(['velocity', 'retriggerCount'])
+                // Positional: the value stays in its slot, only the name moves.
+                expect(track.notes[0]).toEqual([0.9, 4])
+            })
+
+            it('rewrites the {data} envelope used by the patterns cache', () => {
+                const patterns = [
+                    {
+                        key: 'song.json',
+                        value: {
+                            data: { tracks: [{ name: 'BASS', notes: [{ beat: 2, retriggerNum: 5 }] }] },
+                            savedAt: 1700000000000,
+                        },
+                    },
+                ]
+
+                runMigration7({ patterns })
+
+                const entry = patterns[0].value
+                expect(entry.data.tracks[0].notes[0].retriggerCount).toBe(5)
+                // The cache TTL must not be refreshed by the migration.
+                expect(entry.savedAt).toBe(1700000000000)
+            })
+
+            it('leaves already-migrated data alone', () => {
+                const songs = [
+                    {
+                        key: 'ok',
+                        value: { patterns: [{ tracks: [{ notes: [{ beat: 0, retriggerCount: 2 }] }] }] },
+                    },
+                ]
+
+                runMigration7({ songs })
+
+                expect(songs[0].value.patterns[0].tracks[0].notes[0].retriggerCount).toBe(2)
+            })
+
+            it('is a no-op without a transaction', () => {
+                const db = { objectStoreNames: { contains: () => true } }
+                expect(() => idbModule.MIGRATIONS[7](db, null)).not.toThrow()
+            })
+        })
+
         it('is a no-op when there is no transaction', () => {
             const db = { objectStoreNames: { contains: () => true } }
             expect(() => idbModule.MIGRATIONS[5](db, null)).not.toThrow()

@@ -1089,7 +1089,7 @@ describe('Generators', () => {
             expect(track.notes.length).toBeGreaterThan(0)
             const withArp = track.notes.filter((n) => n.arp)
             expect(withArp.length).toBeGreaterThan(0)
-            expect(withArp[0].retriggerNum).toBe(4)
+            expect(withArp[0].retriggerCount).toBe(4)
             expect(withArp[0].rate).toBe(16)
         })
 

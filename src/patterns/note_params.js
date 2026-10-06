@@ -61,7 +61,7 @@ export default class NoteParams {
         )
     }
 
-    static tickToTime(tick, nbTickForPattern, patternDuration) {
-        return (tick / nbTickForPattern) * patternDuration
+    static tickToTime(tick, tickCountForPattern, patternDuration) {
+        return (tick / tickCountForPattern) * patternDuration
     }
 }

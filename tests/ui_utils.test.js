@@ -145,7 +145,7 @@ describe('formatNoteTooltip', () => {
             velocity: 0.5,
             prob: 0.7,
             every: 2,
-            retriggerNum: 3,
+            retriggerCount: 3,
             rate: 2,
             pan: -0.5,
             euclideanFill: 4,

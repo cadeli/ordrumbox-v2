@@ -80,7 +80,7 @@ function parseMTrkEvents(bytes, dataOffset, length) {
  * parser: the 0x51 meta event is not read, so it stays absent.
  * @typedef {object} MidiHeader
  * @property {number} format
- * @property {number} numTracks
+ * @property {number} trackCount
  * @property {number} division
  */
 
@@ -104,7 +104,7 @@ function parseMTrkEvents(bytes, dataOffset, length) {
  * @returns {{ header: MidiHeader, tracks: MidiEvent[][], trackNames: string[] }}
  */
 export function parseMidi(bytes) {
-    const header = { format: 0, numTracks: 0, division: 96 }
+    const header = { format: 0, trackCount: 0, division: 96 }
     const tracks = []
 
     let i = 0
@@ -114,7 +114,7 @@ export function parseMidi(bytes) {
 
         if (tag === 'MThd') {
             header.format = readUint16BE(bytes, i + 8)
-            header.numTracks = readUint16BE(bytes, i + 10)
+            header.trackCount = readUint16BE(bytes, i + 10)
             header.division = readUint16BE(bytes, i + 12)
         } else if (tag === 'MTrk') {
             tracks.push(parseMTrkEvents(bytes, i + 8, length))
@@ -191,17 +191,17 @@ export function extractProgramChanges(midi) {
 /**
  * Parse a raw MIDI Note On message (3 bytes: status, note, velocity).
  * @param {Uint8Array|number[]} data - Raw MIDI message bytes
- * @returns {{ noteNumber: number, channel: number, velocity: number }|null}
+ * @returns {{ noteKey: number, channel: number, velocity: number }|null}
  */
 export function parseMidiNoteOn(data) {
     if (!data || data.length < 3) return null
     const status = data[0]
     if ((status & 0xf0) !== 0x90) return null
     const channel = status & 0x0f
-    const noteNumber = data[1] & 0x7f
+    const noteKey = data[1] & 0x7f
     const velocity = data[2] & 0x7f
     if (velocity === 0) return null // Note On with velocity 0 = Note Off
-    return { noteNumber, channel, velocity }
+    return { noteKey, channel, velocity }
 }
 
 /**

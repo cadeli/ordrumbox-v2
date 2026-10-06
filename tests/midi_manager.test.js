@@ -279,7 +279,7 @@ describe('MidiManager', () => {
 
         it('ignores note on channel != 9', async () => {
             const { parseMidiNoteOn } = await import('../src/logic/midi/midi_parser.js')
-            parseMidiNoteOn.mockReturnValue({ noteNumber: 60, channel: 0 })
+            parseMidiNoteOn.mockReturnValue({ noteKey: 60, channel: 0 })
 
             const mgr = createManager()
             const activitySpy = vi.fn()

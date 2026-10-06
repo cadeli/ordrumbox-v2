@@ -43,8 +43,8 @@ export function sendMidiNotes(deps, tick, atTime) {
     const selectedPattern = patterns[getSelectedPatternIdx()]
     if (!selectedPattern) return
 
-    const nbTickForPattern = TICK * selectedPattern.beatCount
-    const loopStep = tick % nbTickForPattern
+    const tickCountForPattern = TICK * selectedPattern.beatCount
+    const loopStep = tick % tickCountForPattern
     const flatNotesMap = player.getCurrentFlatNotesMap() ?? getFlatNotes(player.loop)
 
     if (!(flatNotesMap instanceof Map)) return
@@ -102,11 +102,11 @@ export function sendTriggerMidi({ track, note, resolveMapping }) {
     const rawCh = parseInt(String(mapping.channel), 10)
     const rawNote = parseInt(String(mapping.key), 10)
     const channel = Number.isFinite(rawCh) ? rawCh : 9
-    const noteNum = Number.isFinite(rawNote) ? rawNote : 60
+    const noteKey = Number.isFinite(rawNote) ? rawNote : 60
     if (!Number.isFinite(rawCh) || !Number.isFinite(rawNote)) {
         logger.warn('Engine', 'MIDI mapping NaN fallback', { ch: mapping.channel, key: mapping.key })
     }
     const vel = Math.floor((note?.velocity ?? track.velocity ?? 0.8) * 127)
-    midi.sendNoteOn(channel, noteNum, vel)
-    setTimeout(() => midi.sendNoteOff(channel, noteNum), 100)
+    midi.sendNoteOn(channel, noteKey, vel)
+    setTimeout(() => midi.sendNoteOff(channel, noteKey), 100)
 }

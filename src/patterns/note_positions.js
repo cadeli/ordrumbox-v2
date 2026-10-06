@@ -12,7 +12,7 @@ import { createStepResolver } from './step_resolver.js'
  * `pitchOffset` is the arp sequence step relative to the note row — the pattern
  * grid ignores it (no pitch dimension), the piano roll renders it.
  *
- * @param {{rate?: number, euclideanFill?: number, euclideanRotation?: number, arp?: object, retriggerNum?: number}} note
+ * @param {{rate?: number, euclideanFill?: number, euclideanRotation?: number, arp?: object, retriggerCount?: number}} note
  * @param {{stepsPerBeat?: number}} track
  * @param {number} totalSteps - bar length in steps (positions beyond are dropped)
  * @param {Function} [resolveSpanEnd] - note → exclusive end step (span resolver)
@@ -25,8 +25,8 @@ export function getNoteSubPositions(note, track, totalSteps, resolveSpanEnd = cr
     const euclideanFill = note.euclideanFill ?? 0
     const arpConfig = normalizeArp(note.arp)
     // The engine clamps the arp note count: keep the ghosts on the same steps.
-    const retriggerNum = arpConfig ? getArpNoteCount(note) : (note.retriggerNum ?? 1)
-    const hasTriggers = arpConfig || retriggerNum > 1 || euclideanFill > 0
+    const retriggerCount = arpConfig ? getArpNoteCount(note) : (note.retriggerCount ?? 1)
+    const hasTriggers = arpConfig || retriggerCount > 1 || euclideanFill > 0
 
     const positions = []
     if (!hasTriggers) return positions
@@ -34,7 +34,7 @@ export function getNoteSubPositions(note, track, totalSteps, resolveSpanEnd = cr
     const stepSpacing = getStepSpacing(rate)
     const seq = arpConfig?.sequence
 
-    for (let i = 1; i < retriggerNum; i++) {
+    for (let i = 1; i < retriggerCount; i++) {
         const pos = Math.round(basePos + i * stepSpacing)
         if (pos < totalSteps) positions.push({ pos, type: 'retrigger', pitchOffset: seq ? seq[i % seq.length] : 0 })
     }
@@ -53,7 +53,7 @@ export function getNoteSubPositions(note, track, totalSteps, resolveSpanEnd = cr
                 positions.push({
                     pos,
                     type: 'euclidean',
-                    pitchOffset: seq ? seq[(retriggerNum + euclidIndex) % seq.length] : 0,
+                    pitchOffset: seq ? seq[(retriggerCount + euclidIndex) % seq.length] : 0,
                 })
             euclidIndex++
         }

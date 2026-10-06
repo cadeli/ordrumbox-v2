@@ -30,7 +30,7 @@ const makeNote = (beat, beatStep, opts = {}) => ({
     velocity: 1,
     every: 1,
     prob: 1,
-    retriggerNum: 1,
+    retriggerCount: 1,
     rate: 1,
     arp: null,
     arpTriggerProbability: 1,
@@ -137,7 +137,7 @@ describe('ghost sync — grid, piano roll and engine agree', () => {
         pattern = makePattern([
             makeNote(0, 0, { euclideanFill: 3 }),
             makeNote(2, 2),
-            makeNote(3, 0, { retriggerNum: 3, rate: 8 }),
+            makeNote(3, 0, { retriggerCount: 3, rate: 8 }),
         ])
     })
 
@@ -158,7 +158,7 @@ describe('ghost sync — grid, piano roll and engine agree', () => {
         const mapPattern = makePattern({
             '0:0': makeNote(0, 0, { euclideanFill: 3 }),
             '2:2': makeNote(2, 2),
-            '3:0': makeNote(3, 0, { retriggerNum: 3, rate: 8 }),
+            '3:0': makeNote(3, 0, { retriggerCount: 3, rate: 8 }),
         })
         const { grid } = boot(mapPattern, { withPiano: false })
 
@@ -166,8 +166,8 @@ describe('ghost sync — grid, piano roll and engine agree', () => {
         expect(ui).toEqual(engineSteps(mapPattern))
     })
 
-    it('clamps the arp ghost count like the engine (retriggerNum > 16)', () => {
-        const arpPattern = makePattern([makeNote(0, 0, { retriggerNum: 20, arp: { intervals: [0, 4, 7] } })])
+    it('clamps the arp ghost count like the engine (retriggerCount > 16)', () => {
+        const arpPattern = makePattern([makeNote(0, 0, { retriggerCount: 20, arp: { intervals: [0, 4, 7] } })])
         const { grid, piano } = boot(arpPattern)
 
         const engineCount = engineSteps(arpPattern).length
@@ -180,7 +180,7 @@ describe('ghost sync — grid, piano roll and engine agree', () => {
     // engine repeats what it plays, the editors show what is stored.
     it('a loop shorter than the pattern: the engine tiles it, the editors do not', () => {
         const shortLoop = makePattern(
-            [makeNote(0, 0, { euclideanFill: 3 }), makeNote(2, 2), makeNote(3, 0, { retriggerNum: 3, rate: 8 })],
+            [makeNote(0, 0, { euclideanFill: 3 }), makeNote(2, 2), makeNote(3, 0, { retriggerCount: 3, rate: 8 })],
             SHORT_LOOP_AT_STEP,
         )
         const { grid, piano } = boot(shortLoop)

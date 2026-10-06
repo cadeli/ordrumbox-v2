@@ -66,7 +66,7 @@ export default class HatGenerator extends BaseGenerator {
             trackType: 'CHH',
             loopBeats: 4,
             rollBeat: 3,
-            retriggerNum: 4,
+            retriggerCount: 4,
             rate: 86,
             velocity: {
                 base: 0.38,
@@ -144,7 +144,7 @@ export default class HatGenerator extends BaseGenerator {
             trackType: 'OHH',
             loopBeats: 4,
             rollBeat: 3,
-            retriggerNum: 3,
+            retriggerCount: 3,
             rate: 86,
             velocity: {
                 base: 0.5,
@@ -160,7 +160,7 @@ export default class HatGenerator extends BaseGenerator {
             trackType: 'HAT',
             loopBeats: 1,
             startBeatOffset: 1,
-            retriggerNum: 6,
+            retriggerCount: 6,
             rate: 8,
             velocity: {
                 base: 0.34,
@@ -327,8 +327,8 @@ export default class HatGenerator extends BaseGenerator {
                     ghost: step !== stepsPerBeat - interval,
                 }),
             )
-            if (step === stepsPerBeat - interval && typeof config.retriggerNum === 'number') {
-                note.retriggerNum = config.retriggerNum
+            if (step === stepsPerBeat - interval && typeof config.retriggerCount === 'number') {
+                note.retriggerCount = config.retriggerCount
                 note.rate = config.rate ?? 1
             }
         }
@@ -338,7 +338,7 @@ export default class HatGenerator extends BaseGenerator {
         const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 4)
         const stepsPerBeat = hatTrack.stepsPerBeat ?? 4
         const rollBeat = config.rollBeat ?? Math.max(0, (hatTrack.beatCount ?? 1) - 1)
-        const retriggerNum = config.retriggerNum ?? 4
+        const retriggerCount = config.retriggerCount ?? 4
         const rate = config.rate ?? 1
 
         for (let step = 0; step < stepsPerBeat; step++) {
@@ -346,7 +346,7 @@ export default class HatGenerator extends BaseGenerator {
             if (absoluteStep >= loopPointAbsolute) continue
 
             const progress = stepsPerBeat > 1 ? step / (stepsPerBeat - 1) : 1
-            const ratchetCount = Math.max(1, Math.round(1 + (retriggerNum - 1) * progress))
+            const ratchetCount = Math.max(1, Math.round(1 + (retriggerCount - 1) * progress))
 
             const note = this.addNote(
                 hatTrack,
@@ -360,7 +360,7 @@ export default class HatGenerator extends BaseGenerator {
                 }),
             )
             if (ratchetCount > 1) {
-                note.retriggerNum = ratchetCount
+                note.retriggerCount = ratchetCount
                 note.rate = rate
             }
         }

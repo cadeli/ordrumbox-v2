@@ -34,7 +34,7 @@ export default class MelodyGenerator extends BaseGenerator {
             phraseLength: 8,
             loopBeats: 4,
             arp: { intervals: [0, 4, 7, 12], mode: 'updown' },
-            retriggerNum: 4,
+            retriggerCount: 4,
             rate: 16,
             velocity: {
                 base: 0.55,
@@ -284,7 +284,7 @@ export default class MelodyGenerator extends BaseGenerator {
         const averageSpacing = Math.max(1, config.noteSpacing ?? 2)
         const spacingJitter = Math.max(0, config.spacingJitter ?? 0)
         const arp = config.arp ?? null
-        const retriggerNum = config.retriggerNum ?? 1
+        const retriggerCount = config.retriggerCount ?? 1
         const rate = config.rate ?? 1
 
         for (let beat = 0; beat < (melodyTrack.beatCount ?? 1); beat++) {
@@ -311,7 +311,7 @@ export default class MelodyGenerator extends BaseGenerator {
                     )
                     if (arp) {
                         note.arp = arp
-                        note.retriggerNum = retriggerNum
+                        note.retriggerCount = retriggerCount
                         note.rate = rate
                     }
                 }

@@ -172,8 +172,8 @@ export default class PointerSection {
         if (e.target.closest('#pp-add-track')) {
             const pattern = this.#editor.appState.selectedPattern
             if (!pattern) return
-            const trackNum = getTracksArray(pattern).length + 1
-            this.#editor.serviceRegistry.cmd?.addTrack(pattern, `T${trackNum}`)
+            const trackCount = getTracksArray(pattern).length + 1
+            this.#editor.serviceRegistry.cmd?.addTrack(pattern, `T${trackCount}`)
             this.#editor.emitStructureChange()
             return
         }

@@ -7,7 +7,7 @@ import { hasAnySolo, shouldTrackPlay } from '../core/tracks.js'
 import { logger } from '../core/logger.js'
 
 /**
- * Render `pattern` for `numLoops` loops in an OfflineAudioContext and encode WAV.
+ * Render `pattern` for `loopCount` loops in an OfflineAudioContext and encode WAV.
  *
  * @param {object} deps
  * @param {AudioContext} deps.audioCtx - live ctx (sampleRate source only)
@@ -16,17 +16,17 @@ import { logger } from '../core/logger.js'
  * @param {number} deps.TICK
  * @param {(pattern: object, loop: number) => Map} deps.computeFlatNotes
  * @param {any} pattern
- * @param {number} numLoops
+ * @param {number} loopCount
  * @param {typeof OfflineAudioContext} OfflineAudioContextClass
  * @param {(buffer: AudioBuffer) => Uint8Array} bufferToWavFn
  * @returns {Promise<{blob: Uint8Array|null, fileName: string}>}
  */
-export async function exportOffline(deps, pattern, numLoops, OfflineAudioContextClass, bufferToWavFn) {
+export async function exportOffline(deps, pattern, loopCount, OfflineAudioContextClass, bufferToWavFn) {
     const { audioCtx, sounds, generatedSounds, TICK, computeFlatNotes } = deps
     try {
         const bpm = pattern.bpm
         const beatCount = pattern.beatCount
-        const totalLoops = Math.max(1, numLoops)
+        const totalLoops = Math.max(1, loopCount)
         const secondsPerBeat = 60 / bpm
         const secondsPerTick = secondsPerBeat / TICK
         const patternDuration = beatCount * secondsPerBeat
@@ -67,8 +67,8 @@ export async function exportOffline(deps, pattern, numLoops, OfflineAudioContext
 
             for (const [tick, notesAtTick] of flatNotes.entries()) {
                 for (const flatNote of notesAtTick) {
-                    const nbTickForPattern = TICK * beatCount
-                    const noteTime = NoteParams.tickToTime(tick, nbTickForPattern, truePatternDuration)
+                    const tickCountForPattern = TICK * beatCount
+                    const noteTime = NoteParams.tickToTime(tick, tickCountForPattern, truePatternDuration)
                     const absoluteTime = loopStartTime + noteTime
                     NoteParams.applyNoteParams(flatNote, secondsPerTick)
 

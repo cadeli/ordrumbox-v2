@@ -332,7 +332,7 @@ describe('core/tracks', () => {
 
 // loopAtStep is the ONLY loop field: 0 and null both mean "no explicit loop point"
 // and resolve to the track length (getTrackStepLength). Resolving them to a
-// zero-length loop is what made computeNbTickForLoop answer "0 ticks" = no
+// zero-length loop is what made computeTickCountForLoop answer "0 ticks" = no
 // repetition at all.
 // The three vocabularies (names, types, substring rules) used to be independent:
 // CHH was pan index 5 but type HAT, and only this composition told you so.

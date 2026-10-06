@@ -28,7 +28,7 @@
 
 import InstrumentsManager from '../services/instrument_manager/index.js'
 import { soundRegistry } from '../../state/sound_registry.js'
-import { recomputeFlatNotes, computeNbTickForPattern } from '../../patterns/engine.js'
+import { recomputeFlatNotes, computeTickCountForPattern } from '../../patterns/engine.js'
 import { TICK } from '../../core/constants.js'
 import { computeLfoValue } from '../../audio/math.js'
 import { clamp } from '../../core/numbers.js'
@@ -79,8 +79,8 @@ function buildMTrk(eventBytes) {
 
 // ─── SMF header ───────────────────────────────────────────────────────────────
 
-function buildMThd(numTracks) {
-    return [0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, ...uint16BE(1), ...uint16BE(numTracks), ...uint16BE(PPQN)]
+function buildMThd(trackCount) {
+    return [0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, ...uint16BE(1), ...uint16BE(trackCount), ...uint16BE(PPQN)]
 }
 
 // ─── Tempo track ──────────────────────────────────────────────────────────────
@@ -166,18 +166,18 @@ export function resolveTrackMidi(trackName, instrumentsManager) {
  * @param {string}   trackName
  * @param {number}   midiNote    base MIDI note for this track
  * @param {number}   channel     0-indexed MIDI channel
- * @param {{ absMidiTick: number, noteNum: number, velocity: number }[]} events
+ * @param {{ absMidiTick: number, noteKey: number, velocity: number }[]} events
  */
 export function buildInstrumentTrackFromEvents(trackName, midiNote, channel, events, program = null) {
     if (events.length === 0) return buildMTrk([])
 
-    events.sort((a, b) => a.absMidiTick - b.absMidiTick || a.noteNum - b.noteNum)
+    events.sort((a, b) => a.absMidiTick - b.absMidiTick || a.noteKey - b.noteKey)
 
     // Expand into Note On + Note Off pairs
     const raw = []
     for (const ev of events) {
-        raw.push({ tick: ev.absMidiTick, type: 'on', noteNum: ev.noteNum, velocity: ev.velocity })
-        raw.push({ tick: ev.absMidiTick + NOTE_DURATION, type: 'off', noteNum: ev.noteNum })
+        raw.push({ tick: ev.absMidiTick, type: 'on', noteKey: ev.noteKey, velocity: ev.velocity })
+        raw.push({ tick: ev.absMidiTick + NOTE_DURATION, type: 'off', noteKey: ev.noteKey })
     }
     raw.sort((a, b) => a.tick - b.tick || (a.type === 'off' ? -1 : 1))
 
@@ -195,9 +195,9 @@ export function buildInstrumentTrackFromEvents(trackName, midiNote, channel, eve
         const delta = ev.tick - cursor
         cursor = ev.tick
         if (ev.type === 'on') {
-            evBytes.push(...midiEvent(delta, [statusOn, ev.noteNum, ev.velocity]))
+            evBytes.push(...midiEvent(delta, [statusOn, ev.noteKey, ev.velocity]))
         } else {
-            evBytes.push(...midiEvent(delta, [statusOff, ev.noteNum, 0]))
+            evBytes.push(...midiEvent(delta, [statusOff, ev.noteKey, 0]))
         }
     }
     return buildMTrk(evBytes)
@@ -226,7 +226,7 @@ export default class MidiExporter {
         const bpm = pattern.bpm ?? 120
         const beatCount = pattern.beatCount ?? 4
         const tracks = /** @type {Array<{name: string}>} */ (pattern.tracks ?? [])
-        const nbTickForPattern = computeNbTickForPattern(beatCount, TICK)
+        const tickCountForPattern = computeTickCountForPattern(beatCount, TICK)
 
         // Collect engine events per track name
         // key: track name,  value: { midiNote, channel, events[] }
@@ -255,7 +255,7 @@ export default class MidiExporter {
         // Run engine for each loop iteration
         for (let loop = 0; loop < loops; loop++) {
             const flatMap = recomputeFlatNotes(pattern, loop)
-            const loopMidiOffset = loop * nbTickForPattern * MIDI_RATIO
+            const loopMidiOffset = loop * tickCountForPattern * MIDI_RATIO
 
             for (const [engineTick, flatNotes] of flatMap) {
                 const absMidiTick = engineTick * MIDI_RATIO + loopMidiOffset
@@ -273,7 +273,7 @@ export default class MidiExporter {
                         // by it. It used to REPLACE the velocity, which threw the
                         // note's own value away and made the export louder or
                         // quieter than what the app plays.
-                        const lfoVal = computeLfoValue(fn.track.velocityLfo, engineTick, nbTickForPattern)
+                        const lfoVal = computeLfoValue(fn.track.velocityLfo, engineTick, tickCountForPattern)
                         velocity = clamp(velocity * lfoVal, 0, 1)
                     }
 
@@ -284,12 +284,12 @@ export default class MidiExporter {
                     // a different pitch than the app played.
                     let pitchOffset = (fn.note.pitch ?? 0) + (fn.track.pitch ?? 0)
                     if (fn.track.pitchLfo) {
-                        pitchOffset += computeLfoValue(fn.track.pitchLfo, engineTick, nbTickForPattern)
+                        pitchOffset += computeLfoValue(fn.track.pitchLfo, engineTick, tickCountForPattern)
                     }
 
-                    const noteNum = clamp(td.midiNote + pitchOffset, 0, 127)
+                    const noteKey = clamp(td.midiNote + pitchOffset, 0, 127)
                     const midiVel = Math.round(velocity * 127)
-                    td.events.push({ absMidiTick, noteNum, velocity: midiVel })
+                    td.events.push({ absMidiTick, noteKey, velocity: midiVel })
                 }
             }
         }
@@ -301,8 +301,8 @@ export default class MidiExporter {
             trackChunks.push(buildInstrumentTrackFromEvents(name, td.midiNote, td.channel, td.events, td.program))
         }
 
-        const numTracks = 1 + trackChunks.length
-        const allBytes = [...buildMThd(numTracks), ...buildTempoTrack(bpm)]
+        const trackCount = 1 + trackChunks.length
+        const allBytes = [...buildMThd(trackCount), ...buildTempoTrack(bpm)]
         for (const chunk of trackChunks) allBytes.push(...chunk)
         return new Uint8Array(allBytes)
     }

@@ -267,3 +267,31 @@ describe('SongService — arrangements', () => {
         expect(appState.selectedSongIdx).toBe(0)
     })
 })
+
+// .odbox files exported before the retriggerNum → retriggerCount rename still
+// have to keep their retrigger value (no fixPattern runs on this path).
+describe('SongService - legacy note keys', () => {
+    it('maps retriggerNum of an imported file onto retriggerCount', async () => {
+        const data = {
+            name: 'Legacy',
+            patterns: [{ name: 'A', tracks: [{ name: 'KICK', notes: [{ beat: 0, retriggerNum: 4 }] }] }],
+        }
+        await songService.applyToAppState(data, 'Legacy')
+        expect(appState.patterns[0].tracks[0].notes[0].retriggerCount).toBe(4)
+        expect(appState.patterns[0].tracks[0].notes[0]).not.toHaveProperty('retriggerNum')
+    })
+
+    it('maps a legacy compact noteKeys header', async () => {
+        const data = {
+            name: 'Legacy',
+            patterns: [
+                {
+                    name: 'A',
+                    tracks: [{ name: 'KICK', noteKeys: ['beat', 'retriggerNum'], notes: [[0, 5]] }],
+                },
+            ],
+        }
+        await songService.applyToAppState(data, 'Legacy')
+        expect(appState.patterns[0].tracks[0].noteKeys).toEqual(['beat', 'retriggerCount'])
+    })
+})

@@ -208,10 +208,10 @@ describe('E2E Flow 2 — Set triggers and note parameters', () => {
         const pat = cmd.addPattern('Retrig')
         const snare = cmd.addTrack(pat, 'SNARE', 4)
         const note = cmd.addNote(snare, 1, 0, 0)
-        note.retriggerNum = 4
+        note.retriggerCount = 4
         note.retriggerRate = 2
 
-        expect(note.retriggerNum).toBe(4)
+        expect(note.retriggerCount).toBe(4)
         expect(note.retriggerRate).toBe(2)
     })
 
@@ -777,7 +777,7 @@ describe('E2E Flow 8 — Full user session simulation', () => {
 
         // Snare with retrigger
         const snareNote = cmd.addNote(snare, 1, 0, 0)
-        snareNote.retriggerNum = 4
+        snareNote.retriggerCount = 4
         snareNote.retriggerRate = 2
 
         // Bass with arp

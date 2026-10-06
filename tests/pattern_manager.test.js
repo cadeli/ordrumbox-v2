@@ -109,12 +109,12 @@ describe('PatternManager', () => {
             expect(hasArp({ type: 'up', notes: 4 })).toBe(true)
         })
 
-        it('getArpNoteCount reads retriggerNum from note', () => {
-            const note = { retriggerNum: 4 }
+        it('getArpNoteCount reads retriggerCount from note', () => {
+            const note = { retriggerCount: 4 }
             expect(getArpNoteCount(note)).toBe(4)
         })
 
-        it('getArpNoteCount defaults to 1 when retriggerNum is missing', () => {
+        it('getArpNoteCount defaults to 1 when retriggerCount is missing', () => {
             expect(getArpNoteCount({})).toBe(1)
         })
     })
@@ -141,16 +141,16 @@ describe('PatternManager', () => {
         it('adds a flatNote when no arp configured', () => {
             const flatNotes = new Map()
             const track = makeTrack('KICK')
-            const note = makeNote(0, 0, { retriggerNum: 1 })
+            const note = makeNote(0, 0, { retriggerCount: 1 })
             generateSubNotes(flatNotes, 0, track, note, 16, 32)
             expect(flatNotes.has(0)).toBe(true)
             expect(flatNotes.get(0)).toHaveLength(1)
         })
 
-        it('generates retrigger notes when retriggerNum > 1', () => {
+        it('generates retrigger notes when retriggerCount > 1', () => {
             const flatNotes = new Map()
             const track = makeTrack('KICK')
-            const note = makeNote(0, 0, { retriggerNum: 3, rate: 1 })
+            const note = makeNote(0, 0, { retriggerCount: 3, rate: 1 })
             generateSubNotes(flatNotes, 0, track, note, 32, 32)
             expect(flatNotes.size).toBeGreaterThan(1)
         })
@@ -159,7 +159,7 @@ describe('PatternManager', () => {
             const flatNotes = new Map()
             const track = makeTrack('KICK')
             const note = makeNote(0, 0, {
-                retriggerNum: 4,
+                retriggerCount: 4,
                 arp: { mode: 'up', intervals: [0, 3, 7] },
             })
             generateSubNotes(flatNotes, 0, track, note, 32, 32)
@@ -168,10 +168,10 @@ describe('PatternManager', () => {
             expect(notes.length).toBeGreaterThan(1)
         })
 
-        it('does not exceed nbTickForPattern', () => {
+        it('does not exceed tickCountForPattern', () => {
             const flatNotes = new Map()
             const track = makeTrack('KICK')
-            const note = makeNote(0, 0, { retriggerNum: 8, rate: 1 })
+            const note = makeNote(0, 0, { retriggerCount: 8, rate: 1 })
             generateSubNotes(flatNotes, 0, track, note, 8, 32)
             for (const tick of flatNotes.keys()) {
                 expect(tick).toBeLessThan(8)

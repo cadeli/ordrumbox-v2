@@ -40,7 +40,7 @@ const NOTE_KEY_ORDER = [
     'every',
     'prob',
     'rate',
-    'retriggerNum',
+    'retriggerCount',
     'arp',
     'arpTriggerProbability',
     'euclideanFill',
@@ -74,7 +74,7 @@ const NOTE_KEY_ORDER = [
  *                                          `>=8` -> value-7 steps). Bigger = WIDER, and
  *                                          1 is the tightest setting, not "normal".
  *                                          Default: 1
- * @property {number} retriggerNum          - Number of retriggers per step (1=no retrigger). Default: 1
+ * @property {number} retriggerCount          - Number of retriggers per step (1=no retrigger). Default: 1
  * @property {Array|null} arp               - Arpeggio intervals (e.g. [0, 4, 7]). Default: null (disabled)
  * @property {number} arpTriggerProbability - Probability of arpeggio trigger (0-1). Default: 1
  * @property {number} euclideanFill         - Euclidean pulses k over the span to the next note, base note included (0-16, 0=disabled). Default: 0 (disabled)
@@ -94,7 +94,7 @@ export const NOTE_DEFAULTS = {
     every: 1,
     prob: 1,
     rate: 1,
-    retriggerNum: 1,
+    retriggerCount: 1,
     arp: null,
     arpTriggerProbability: 1,
     euclideanFill: 0,
@@ -184,6 +184,83 @@ export function detectUsedKeys(notes) {
 }
 
 /**
+ * Note keys renamed by past versions, keyed by their CURRENT name.
+ *
+ * Files written before a rename still carry the old spelling, in object notes
+ * and in the compact `noteKeys` header, so every read path maps it back:
+ * `fixPattern` (library load + .odbox via song_service), `importPatternFromJson`
+ * and the one-shot `MIGRATIONS[7]` rewrite of the IndexedDB copy.
+ * @type {Readonly<Record<string, string>>}
+ */
+export const LEGACY_NOTE_KEY_ALIASES = Object.freeze({ retriggerNum: 'retriggerCount' })
+
+/**
+ * Rewrite a note's legacy keys onto their current names, in place. The current
+ * key wins when a note carries both, and the legacy one is dropped so it cannot
+ * leak back out through the exporter.
+ *
+ * @param {any} note an object note — anything else is left alone
+ * @returns {boolean} true when a key was rewritten
+ */
+export function migrateLegacyNoteKeys(note) {
+    if (!note || typeof note !== 'object' || Array.isArray(note)) return false
+    let changed = false
+    for (const [legacy, current] of Object.entries(LEGACY_NOTE_KEY_ALIASES)) {
+        if (!Object.prototype.hasOwnProperty.call(note, legacy)) continue
+        if (note[current] === undefined) note[current] = note[legacy]
+        delete note[legacy]
+        changed = true
+    }
+    return changed
+}
+
+/**
+ * Map a `noteKeys` header onto current names. Compact notes decode
+ * positionally, so renaming the header entry moves no value.
+ *
+ * @param {unknown} keys
+ * @returns {string[]} current names (always a fresh array)
+ */
+export function canonicalNoteKeys(keys) {
+    if (!Array.isArray(keys)) return []
+    return keys.map((key) => (typeof key === 'string' ? (LEGACY_NOTE_KEY_ALIASES[key] ?? key) : key))
+}
+
+/**
+ * Rewrite the legacy note keys of every track of a pattern, in place: the
+ * compact `noteKeys` header and the object notes. Compact note arrays are
+ * left alone — they are positional and follow their header.
+ *
+ * Track walking is inlined rather than borrowed from `./tracks.js`: that
+ * module reaches this one through `./notes.js`, so importing it back would
+ * close a cycle (tests/module_graph.test.js).
+ *
+ * @param {any} pattern
+ * @returns {boolean} true when a key was rewritten
+ */
+export function migrateLegacyPatternKeys(pattern) {
+    const tracks = !pattern?.tracks
+        ? []
+        : Array.isArray(pattern.tracks)
+          ? pattern.tracks
+          : Object.values(pattern.tracks)
+    let changed = false
+    for (const track of tracks) {
+        if (Array.isArray(track?.noteKeys)) {
+            const canonical = canonicalNoteKeys(track.noteKeys)
+            if (canonical.some((key, i) => key !== track.noteKeys[i])) {
+                track.noteKeys = canonical
+                changed = true
+            }
+        }
+        if (Array.isArray(track?.notes)) {
+            for (const note of track.notes) changed = migrateLegacyNoteKeys(note) || changed
+        }
+    }
+    return changed
+}
+
+/**
  * Check if a track uses compact array format (notes as arrays with noteKeys header).
  *
  * @param {Object} track - The track object
@@ -203,13 +280,17 @@ export function isCompactFormat(track) {
  * carrying an unknown key (or reordering the known ones) therefore rewrites
  * note values onto the wrong properties — silently, with no decode error.
  * Only a header made of distinct known keys, in NOTE_KEY_ORDER, is trusted.
+ * A legacy spelling (LEGACY_NOTE_KEY_ALIASES) counts as its current name, so a
+ * file written before a rename still validates — decode must use
+ * canonicalNoteKeys() with the same mapping.
  * @param {unknown} keys
  * @returns {boolean}
  */
 export function areValidNoteKeys(keys) {
     if (!Array.isArray(keys)) return false
-    if (new Set(keys).size !== keys.length) return false
-    const positions = keys.map((k) => NOTE_KEY_ORDER.indexOf(k))
+    const mapped = canonicalNoteKeys(keys)
+    if (new Set(mapped).size !== mapped.length) return false
+    const positions = mapped.map((k) => NOTE_KEY_ORDER.indexOf(k))
     if (positions.some((i) => i < 0)) return false
     return positions.every((pos, i) => i === 0 || pos > positions[i - 1])
 }
@@ -232,7 +313,7 @@ export function normalizeNote(note) {
         every: note.every ?? NOTE_DEFAULTS.every,
         prob: note.prob ?? NOTE_DEFAULTS.prob,
         rate: note.rate ?? NOTE_DEFAULTS.rate,
-        retriggerNum: note.retriggerNum ?? NOTE_DEFAULTS.retriggerNum,
+        retriggerCount: note.retriggerCount ?? NOTE_DEFAULTS.retriggerCount,
         arp: note.arp ?? NOTE_DEFAULTS.arp,
         arpTriggerProbability: note.arpTriggerProbability ?? NOTE_DEFAULTS.arpTriggerProbability,
         euclideanFill: note.euclideanFill ?? NOTE_DEFAULTS.euclideanFill,

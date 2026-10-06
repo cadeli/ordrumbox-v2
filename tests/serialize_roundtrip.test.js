@@ -31,7 +31,7 @@ describe('Functional: Pattern serialization round-trip', () => {
                     ],
                     { beatCount: 8, stepsPerBeat: 4, loopAtStep: 32, velocity: 0.9, pan: 0 },
                 ),
-                makeTrack('SNARE', [makeNote(1, 0, { velocity: 0.8, pitch: 0, arp: [0, 7], retriggerNum: 3 })], {
+                makeTrack('SNARE', [makeNote(1, 0, { velocity: 0.8, pitch: 0, arp: [0, 7], retriggerCount: 3 })], {
                     beatCount: 8,
                     stepsPerBeat: 4,
                     loopAtStep: 32,
@@ -68,7 +68,7 @@ describe('Functional: Pattern serialization round-trip', () => {
                 if (srcNote.velocity !== undefined) expect(impNote.velocity).toBe(srcNote.velocity)
                 if (srcNote.pitch !== undefined) expect(impNote.pitch).toBe(srcNote.pitch)
                 if (srcNote.arp !== undefined) expect(impNote.arp).toEqual(srcNote.arp)
-                if (srcNote.retriggerNum !== undefined) expect(impNote.retriggerNum).toBe(srcNote.retriggerNum)
+                if (srcNote.retriggerCount !== undefined) expect(impNote.retriggerCount).toBe(srcNote.retriggerCount)
             }
         }
     })
@@ -115,7 +115,7 @@ describe('Functional: Pattern serialization round-trip', () => {
         expect(note.pitch).toBe(0)
         expect(note.every).toBe(1)
         expect(note.pos).toBe(0)
-        expect(note.retriggerNum).toBe(1)
+        expect(note.retriggerCount).toBe(1)
         expect(note.euclideanFill).toBe(0)
     })
 
@@ -182,7 +182,7 @@ describe('Functional: Pattern serialization round-trip', () => {
             bpm: 120,
             beatCount: 4,
             tracks: [
-                makeTrack('SNARE', [makeNote(1, 0, { arp: [0, 4, 7], retriggerNum: 3, rate: 2, euclideanFill: 5 })], {
+                makeTrack('SNARE', [makeNote(1, 0, { arp: [0, 4, 7], retriggerCount: 3, rate: 2, euclideanFill: 5 })], {
                     beatCount: 4,
                     stepsPerBeat: 4,
                 }),
@@ -194,7 +194,7 @@ describe('Functional: Pattern serialization round-trip', () => {
         const note = reimported.tracks[0].notes[0]
 
         expect(note.arp).toEqual([0, 4, 7])
-        expect(note.retriggerNum).toBe(3)
+        expect(note.retriggerCount).toBe(3)
         expect(note.rate).toBe(2)
         expect(note.euclideanFill).toBe(5)
     })

@@ -126,22 +126,22 @@ export default class BassGenerator extends BaseGenerator {
             loopBeats: 4,
             phraseSets: [
                 [
-                    { beat: 0, step: 0, source: 'root', retriggerNum: 2, rate: 86 },
+                    { beat: 0, step: 0, source: 'root', retriggerCount: 2, rate: 86 },
                     { beat: 0, step: 2, source: 'fifth' },
                     { beat: 1, step: 0, source: 'root' },
-                    { beat: 1, step: 3, source: 'octave', retriggerNum: 3, rate: 86 },
-                    { beat: 2, step: 0, source: 'root', retriggerNum: 2, rate: 86 },
+                    { beat: 1, step: 3, source: 'octave', retriggerCount: 3, rate: 86 },
+                    { beat: 2, step: 0, source: 'root', retriggerCount: 2, rate: 86 },
                     { beat: 2, step: 2, source: 'fifth' },
                     { beat: 3, step: 0, source: 'root' },
                     { beat: 3, step: 2, source: 'approach' },
                 ],
                 [
                     // offbeat pulse, no downbeat anchor
-                    { beat: 0, step: 2, source: 'root', retriggerNum: 2, rate: 86 },
+                    { beat: 0, step: 2, source: 'root', retriggerCount: 2, rate: 86 },
                     { beat: 1, step: 2, source: 'seventh', chance: 0.5 },
                     { beat: 1, step: 3, source: 'root' },
                     { beat: 2, step: 1, source: 'fifth', alternateSource: 'third', alternateChance: 0.4 },
-                    { beat: 2, step: 3, source: 'root', retriggerNum: 4, rate: 86 },
+                    { beat: 2, step: 3, source: 'root', retriggerCount: 4, rate: 86 },
                     { beat: 3, step: 2, source: 'approach' },
                 ],
             ],
@@ -185,7 +185,7 @@ export default class BassGenerator extends BaseGenerator {
                     source: 'root',
                     accent: true,
                     arp: { intervals: [0, 3, 7, 10, 12, 10, 7, 3], mode: 'updown' },
-                    retriggerNum: 6,
+                    retriggerCount: 6,
                     rate: 8,
                 },
                 {
@@ -194,7 +194,7 @@ export default class BassGenerator extends BaseGenerator {
                     source: 'root',
                     accent: true,
                     arp: { intervals: [0, 5, 7, 12], mode: 'up' },
-                    retriggerNum: 4,
+                    retriggerCount: 4,
                     rate: 8,
                 },
                 {
@@ -203,7 +203,7 @@ export default class BassGenerator extends BaseGenerator {
                     source: 'root',
                     accent: true,
                     arp: { intervals: [0, 3, 7, 10, 12, 15], mode: 'updown' },
-                    retriggerNum: 8,
+                    retriggerCount: 8,
                     rate: 8,
                 },
                 {
@@ -212,7 +212,7 @@ export default class BassGenerator extends BaseGenerator {
                     source: 'root',
                     accent: true,
                     arp: { intervals: [0, 7, 12], mode: 'up' },
-                    retriggerNum: 3,
+                    retriggerCount: 3,
                     rate: 86,
                 },
             ],

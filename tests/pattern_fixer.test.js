@@ -9,7 +9,7 @@ import {
     getUnloadedSamplesFromDrumkits,
 } from '../src/patterns/fixer.js'
 import { normalizeNote } from '../src/core/note_schema.js'
-import { computeNbTickForLoop } from '../src/patterns/engine.js'
+import { computeTickCountForLoop } from '../src/patterns/engine.js'
 
 describe('patternFixer - fixTrackPanning', () => {
     // PAN_MAP is indexed by drum type, so the pan follows the TYPE. It used to be
@@ -60,7 +60,7 @@ describe('patternFixer - fixNoteDefaults', () => {
     it('applies note defaults', () => {
         const note = { beat: 0, beatStep: 0 }
         const result = { ...note, ...normalizeNote(note) }
-        expect(result.retriggerNum).toBe(1)
+        expect(result.retriggerCount).toBe(1)
         expect(result.every).toBe(1)
         expect(result.pos).toBe(0)
         expect(result.prob).toBe(1)
@@ -243,12 +243,12 @@ describe.each(PARAM_SETS)('normalizeNoteGridPosition — spb=%i bpm=%i beats=%i 
 
 describe.each(PARAM_SETS)('fixTrackDefaults — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
     // loopAtStep null is TRACK_DEFAULTS' "loop the whole track". Deriving a zero
-    // loop from it is what made computeNbTickForLoop answer "0 ticks", i.e. no
+    // loop from it is what made computeTickCountForLoop answer "0 ticks", i.e. no
     // repetition at all, for every track that never had an explicit loop point.
     it('resolves a null loopAtStep to the track length, not to zero', () => {
         const track = { beatCount, stepsPerBeat, loopAtStep: null }
         const fixed = fixTrackDefaults(track)
-        expect(computeNbTickForLoop(fixed)).toBe(beatCount * 32)
+        expect(computeTickCountForLoop(fixed)).toBe(beatCount * 32)
     })
 
     it('keeps an explicit loopAtStep, including one off the beat grid', () => {
@@ -321,5 +321,41 @@ describe('fixPattern assigns stable ids', () => {
         ])
         expect(a.id).toBe('taken')
         expect(b.id).not.toBe('taken')
+    })
+})
+
+// Files written before a note-key rename (retriggerNum → retriggerCount) keep
+// loading: the key is mapped on read, in both note shapes.
+describe('patternFixer - legacy note keys', () => {
+    const makeTrack = (extra) => ({ name: 'KICK', stepsPerBeat: 4, notes: [{ beat: 0, beatStep: 0, ...extra }] })
+
+    it('renames a legacy key on an object note', () => {
+        const [track] = fixPattern({ name: 'P', tracks: [makeTrack({ retriggerNum: 3 })] }).tracks
+        expect(track.notes[0].retriggerCount).toBe(3)
+        expect(track.notes[0]).not.toHaveProperty('retriggerNum')
+    })
+
+    it('decodes a compact track whose noteKeys header is legacy', () => {
+        const track = fixTrackDefaults({
+            name: 'KICK',
+            stepsPerBeat: 4,
+            noteKeys: ['velocity', 'beat', 'retriggerNum'],
+            notes: [[0.9, 1, 4]],
+        })
+        expect(track.notes).toHaveLength(1)
+        expect(track.notes[0].retriggerCount).toBe(4)
+        expect(track.notes[0].velocity).toBe(0.9)
+        expect(track).not.toHaveProperty('noteKeys')
+    })
+
+    it('keeps the current key when a note carries both spellings', () => {
+        const [track] = fixPattern({ name: 'P', tracks: [makeTrack({ retriggerCount: 7, retriggerNum: 3 })] }).tracks
+        expect(track.notes[0].retriggerCount).toBe(7)
+        expect(track.notes[0]).not.toHaveProperty('retriggerNum')
+    })
+
+    it('does not re-export the legacy key', () => {
+        const [track] = fixPattern({ name: 'P', tracks: [makeTrack({ retriggerNum: 3 })] }).tracks
+        expect(Object.keys(track.notes[0])).not.toContain('retriggerNum')
     })
 })

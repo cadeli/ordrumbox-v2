@@ -71,7 +71,7 @@ export default class SnareGenerator extends BaseGenerator {
             mode: 'roll',
             loopBeats: 1,
             startBeatOffset: 1,
-            retriggerNum: 8,
+            retriggerCount: 8,
             rate: 16,
             minVelocity: 0.32,
             maxVelocity: 1,
@@ -146,7 +146,7 @@ export default class SnareGenerator extends BaseGenerator {
 
         const lastBeat = Math.max(0, (snareTrack.beatCount ?? 1) - 1)
         const lastStep = Math.max(0, stepsPerBeat - 1)
-        const retriggerNum = config.retriggerNum ?? 4
+        const retriggerCount = config.retriggerCount ?? 4
         const rate = config.rate ?? 1
 
         for (let step = 0; step < stepsPerBeat; step++) {
@@ -156,7 +156,7 @@ export default class SnareGenerator extends BaseGenerator {
             const progress = lastStep === 0 ? 1 : step / lastStep
             const velocity =
                 (config.minVelocity ?? 0.3) + ((config.maxVelocity ?? 1) - (config.minVelocity ?? 0.3)) * progress
-            const ratchetCount = Math.max(1, Math.round(1 + (retriggerNum - 1) * progress))
+            const ratchetCount = Math.max(1, Math.round(1 + (retriggerCount - 1) * progress))
 
             const note = this.addNote(
                 snareTrack,
@@ -171,7 +171,7 @@ export default class SnareGenerator extends BaseGenerator {
                 }),
             )
             if (ratchetCount > 1) {
-                note.retriggerNum = ratchetCount
+                note.retriggerCount = ratchetCount
                 note.rate = rate
             }
         }
@@ -234,7 +234,7 @@ export default class SnareGenerator extends BaseGenerator {
             if (retriggerNumMax > 1) {
                 const ratchetCount = Math.max(1, Math.round(1 + (retriggerNumMax - 1) * prob))
                 if (ratchetCount > 1) {
-                    note.retriggerNum = ratchetCount
+                    note.retriggerCount = ratchetCount
                     note.rate = rate
                 }
             }

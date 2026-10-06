@@ -46,7 +46,7 @@ export default class LfoUiBridge {
         }
     }
 
-    compute(track, tick, nbTicks) {
+    compute(track, tick, tickCount) {
         const lfos = {}
         for (const { lfoKey, resultKey } of LFO_MAP) {
             const lfo = track[lfoKey]
@@ -58,7 +58,7 @@ export default class LfoUiBridge {
             const values = {}
             for (const { lfoKey, resultKey } of LFO_MAP) {
                 const lfo = track[lfoKey]
-                values[resultKey] = lfo ? computeLfoValue(lfo, tick, nbTicks, resultKey, null, 120) : 0
+                values[resultKey] = lfo ? computeLfoValue(lfo, tick, tickCount, resultKey, null, 120) : 0
             }
             return values
         }
@@ -83,7 +83,7 @@ export default class LfoUiBridge {
                 settle(null)
             }, timeoutMs)
             this.#pending.set(id, settle)
-            this.#node.port.postMessage({ id, lfos, tick, nbTicks })
+            this.#node.port.postMessage({ id, lfos, tick, tickCount })
         })
     }
 

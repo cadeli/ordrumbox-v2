@@ -33,12 +33,12 @@ export function detectOnsets(samples, sampleRate, options = {}) {
     let lastOnsetSample = -Infinity
 
     // Compute energy per window
-    const numWindows = Math.floor((samples.length - windowSize) / hopSize) + 1
-    if (numWindows < 1) return onsets
+    const windowCount = Math.floor((samples.length - windowSize) / hopSize) + 1
+    if (windowCount < 1) return onsets
 
-    const energies = new Float64Array(numWindows)
+    const energies = new Float64Array(windowCount)
 
-    for (let w = 0; w < numWindows; w++) {
+    for (let w = 0; w < windowCount; w++) {
         const offset = w * hopSize
         let energy = 0
         for (let i = 0; i < windowSize && offset + i < samples.length; i++) {
@@ -50,11 +50,11 @@ export function detectOnsets(samples, sampleRate, options = {}) {
 
     // Find local maxima: windows where energy is above threshold and
     // higher than both neighbors (or at boundary)
-    for (let w = 0; w < numWindows; w++) {
+    for (let w = 0; w < windowCount; w++) {
         if (energies[w] < threshold) continue
 
         const isLocalMax =
-            (w === 0 || energies[w] >= energies[w - 1]) && (w === numWindows - 1 || energies[w] >= energies[w + 1])
+            (w === 0 || energies[w] >= energies[w - 1]) && (w === windowCount - 1 || energies[w] >= energies[w + 1])
 
         if (isLocalMax) {
             const onsetSample = w * hopSize

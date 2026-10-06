@@ -378,7 +378,7 @@
                         "beat",
                         "every",
                         "rate",
-                        "retriggerNum"
+                        "retriggerCount"
                     ]
                 },
                 {
@@ -467,7 +467,7 @@
                         "velocity",
                         "every",
                         "rate",
-                        "retriggerNum"
+                        "retriggerCount"
                     ]
                 }
             ],
@@ -574,7 +574,7 @@
                         "beatStep",
                         "every",
                         "rate",
-                        "retriggerNum",
+                        "retriggerCount",
                         "pos"
                     ]
                 },
@@ -2013,7 +2013,7 @@
                         "beatStep",
                         "every",
                         "rate",
-                        "retriggerNum"
+                        "retriggerCount"
                     ]
                 },
                 {
@@ -3256,7 +3256,7 @@
                         "pitch",
                         "every",
                         "rate",
-                        "retriggerNum"
+                        "retriggerCount"
                     ]
                 },
                 {
@@ -3601,7 +3601,7 @@
                         "velocity",
                         "every",
                         "rate",
-                        "retriggerNum"
+                        "retriggerCount"
                     ]
                 }
             ],
@@ -4340,7 +4340,7 @@
                         "beat",
                         "beatStep",
                         "every",
-                        "retriggerNum",
+                        "retriggerCount",
                         "pos"
                     ]
                 }
@@ -4573,7 +4573,7 @@
                         "beatStep",
                         "every",
                         "rate",
-                        "retriggerNum",
+                        "retriggerCount",
                         "pos"
                     ]
                 },
@@ -4646,7 +4646,7 @@
                         "beatStep",
                         "every",
                         "rate",
-                        "retriggerNum"
+                        "retriggerCount"
                     ]
                 },
                 {
@@ -4679,7 +4679,7 @@
                         "beatStep",
                         "every",
                         "rate",
-                        "retriggerNum"
+                        "retriggerCount"
                     ]
                 },
                 {
@@ -4715,7 +4715,7 @@
                     "noteKeys": [
                         "beat",
                         "every",
-                        "retriggerNum",
+                        "retriggerCount",
                         "pos"
                     ]
                 },
@@ -5066,7 +5066,7 @@
                         "beat",
                         "pitch",
                         "rate",
-                        "retriggerNum"
+                        "retriggerCount"
                     ]
                 },
                 {
@@ -5571,7 +5571,7 @@
                         "beatStep",
                         "every",
                         "rate",
-                        "retriggerNum",
+                        "retriggerCount",
                         "arp"
                     ]
                 },
@@ -5713,7 +5713,7 @@
                         "beatStep",
                         "pitch",
                         "rate",
-                        "retriggerNum",
+                        "retriggerCount",
                         "arp"
                     ]
                 },

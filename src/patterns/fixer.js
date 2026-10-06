@@ -1,7 +1,13 @@
 import { getPanFromTrackName } from '../core/drum_taxonomy.js'
 import { getTracksArray } from '../core/tracks.js'
 import { normalizeTrack } from '../model/track_schema.js'
-import { compactArrayToNote, isCompactFormat, normalizeNote } from '../core/note_schema.js'
+import {
+    canonicalNoteKeys,
+    compactArrayToNote,
+    isCompactFormat,
+    migrateLegacyNoteKeys,
+    normalizeNote,
+} from '../core/note_schema.js'
 import { ensurePatternId } from '../core/ids.js'
 import { normalizeSongs } from '../model/song_schema.js'
 
@@ -12,7 +18,7 @@ import { normalizeSongs } from '../model/song_schema.js'
 function expandCompactNotes(track) {
     if (!isCompactFormat(track)) return
 
-    const keys = track.noteKeys
+    const keys = canonicalNoteKeys(track.noteKeys)
     track.notes = track.notes.map((arr) => compactArrayToNote(arr, keys))
     delete track.noteKeys
 }
@@ -57,6 +63,9 @@ export function fixTrackDefaults(track) {
     if (track.useAutoAssignSound === undefined) track.useAutoAssignSound = true
     track.notes ??= []
     track.notes.forEach((note) => {
+        // before normalizeNote(): a legacy key must be renamed (and dropped) so
+        // it cannot survive the `...note` spread and reach the exporter again
+        migrateLegacyNoteKeys(note)
         normalizeNoteGridPosition(track, note)
         Object.assign(note, normalizeNote(note))
     })

@@ -40,8 +40,8 @@ function restoreInitialView() {
 
     serviceRegistry.resourcesLoader.restoreSession()
 
-    const dkNum = Math.min(appState.selectedDrumkitIdx, soundRegistry.drumkitList.length - 1)
-    const patNum = Math.min(appState.selectedPatternIdx, appState.patterns.length - 1)
+    const dkIdx = Math.min(appState.selectedDrumkitIdx, soundRegistry.drumkitList.length - 1)
+    const patIdx = Math.min(appState.selectedPatternIdx, appState.patterns.length - 1)
 
     playbackEvents.batch(() => {
         playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
@@ -49,8 +49,8 @@ function restoreInitialView() {
         playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
     })
 
-    serviceRegistry.cmd.setSelectedDrumkitIdx(dkNum)
-    serviceRegistry.cmd.setSelectedPatternIdx(patNum)
+    serviceRegistry.cmd.setSelectedDrumkitIdx(dkIdx)
+    serviceRegistry.cmd.setSelectedPatternIdx(patIdx)
 
     const savedView = appState.currentView
     const resolvedView = savedView === 'output' ? 'master' : savedView

@@ -1,8 +1,9 @@
 import { logger } from './logger.js'
 import { ensurePatternId } from './ids.js'
+import { migrateLegacyPatternKeys } from './note_schema.js'
 
 const DB_NAME = 'ordrumbox'
-const DB_VERSION = 6
+const DB_VERSION = 7
 
 const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples', 'generated_sounds']
 
@@ -69,9 +70,27 @@ function assignPatternIds(value) {
 }
 
 /**
+ * Rewrite the legacy spelling of a note key (LEGACY_NOTE_KEY_ALIASES) across a
+ * stored record. Handles the three shapes the stores carry: a raw song
+ * ({patterns}), a bare pattern ({tracks}) and a `{data}` envelope around either.
+ * @param {any} value
+ * @returns {boolean} whether anything changed
+ */
+function migrateStoredNoteKeys(value) {
+    if (!value || typeof value !== 'object') return false
+    if (Array.isArray(value.patterns)) {
+        let changed = false
+        for (const pattern of value.patterns) changed = migrateLegacyPatternKeys(pattern) || changed
+        return changed
+    }
+    if (value.data && typeof value.data === 'object') return migrateStoredNoteKeys(value.data)
+    return migrateLegacyPatternKeys(value)
+}
+
+/**
  * Schema migrations keyed by the DB_VERSION they ship with:
- *     6: (db, tx) => { ... }
- * They run inside `onupgradeneeded` when upgrading from a version < 6, so add
+ *     7: (db, tx) => { ... }
+ * They run inside `onupgradeneeded` when upgrading from a version < 7, so add
  * an entry here (and bump DB_VERSION) whenever persisted data changes shape.
  */
 export const MIGRATIONS = {
@@ -124,6 +143,31 @@ export const MIGRATIONS = {
                 const cursor = request.result
                 if (!cursor) return
                 if (assignPatternIds(cursor.value)) cursor.update(cursor.value)
+                cursor.continue()
+            }
+        }
+    },
+
+    /**
+     * v7: `retriggerNum` → `retriggerCount`, in the notes of every song and
+     * cached pattern (object notes and the compact `noteKeys` header alike).
+     *
+     * Same request-chained walk as v5: see the note there. Files outside the
+     * DB (.odbox, built-in assets) are mapped on read instead, by
+     * migrateLegacyPatternKeys() — the settings/samples stores carry no notes.
+     * @param {IDBDatabase} db
+     * @param {IDBTransaction|null} tx
+     */
+    7: (db, tx) => {
+        if (!tx) return
+        for (const storeName of ['songs', 'patterns']) {
+            if (!db.objectStoreNames.contains(storeName)) continue
+            const store = tx.objectStore(storeName)
+            const request = store.openCursor()
+            request.onsuccess = () => {
+                const cursor = request.result
+                if (!cursor) return
+                if (migrateStoredNoteKeys(cursor.value)) cursor.update(cursor.value)
                 cursor.continue()
             }
         }

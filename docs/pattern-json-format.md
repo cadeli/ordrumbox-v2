@@ -144,7 +144,7 @@ When `null`, the LFO is disabled.
 | `every`                 | `integer`          | `1`     | Play every N steps (1=every step, 2=every other, etc).                 |
 | `prob`                  | `number`           | `1`     | Trigger probability (0–1). 1 = certain.                                |
 | `rate`                  | `number`           | `1`     | Playback rate multiplier. 1 = normal.                                  |
-| `retriggerNum`          | `integer`          | `1`     | Retriggers per step (1 = no retrigger).                                |
+| `retriggerCount`        | `integer`          | `1`     | Retriggers per step (1 = no retrigger).                                |
 | `arp`                   | `number[] \| null` | `null`  | Arpeggio intervals in semitones (e.g. `[0, 4, 7]`). `null` = disabled. |
 | `arpTriggerProbability` | `number`           | `1`     | Probability of arpeggio trigger (0–1).                                 |
 | `euclideanFill`         | `integer`          | `0`     | Euclidean fill amount (0–16). 0 = disabled.                            |
@@ -287,7 +287,7 @@ All properties are optional. Missing values are filled from defaults.
                     "velocity": 0.6,
                     "beat": 0,
                     "beatStep": 12,
-                    "retriggerNum": 3
+                    "retriggerCount": 3
                 }
             ]
         },

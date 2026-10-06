@@ -219,7 +219,7 @@ export default class MidiManager extends EventTarget {
         if (noteOn.channel !== 9) return
 
         this.dispatchEvent(new Event('activity'))
-        this.previewMappedTrack(noteOn.noteNumber)
+        this.previewMappedTrack(noteOn.noteKey)
     }
 
     onRealtimeMessage = (status) => {
@@ -316,21 +316,18 @@ export default class MidiManager extends EventTarget {
      * Audition the track a GM drum note maps to: resolves the track then plays one
      * short beep of its sound. It does NOT trigger the track in the pattern and
      * does not touch the sequencer.
-     * @param {number} noteNumber
+     * @param {number} noteKey
      */
-    previewMappedTrack = async (noteNumber) => {
+    previewMappedTrack = async (noteKey) => {
         const pattern = appState.patterns?.[appState.selectedPatternIdx]
         if (!pattern) {
             logger.info('MidiManager', `${MidiManager.TAG}: No current pattern available`)
             return
         }
 
-        const trackIdx = this.instrumentsManager.findTrackIndexFromMidi(pattern, 9, noteNumber)
+        const trackIdx = this.instrumentsManager.findTrackIndexFromMidi(pattern, 9, noteKey)
         if (trackIdx < 0) {
-            logger.info(
-                'MidiManager',
-                `${MidiManager.TAG}: No GM track mapped for MIDI note ${noteNumber} on channel 9`,
-            )
+            logger.info('MidiManager', `${MidiManager.TAG}: No GM track mapped for MIDI note ${noteKey} on channel 9`)
             return
         }
 

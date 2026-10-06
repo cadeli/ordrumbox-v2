@@ -24,7 +24,7 @@ function makePattern(id, beatCount) {
     const trackName = id
     const notes = []
     for (let beat = 0; beat < beatCount; beat++) {
-        notes.push({ beat, beatStep: 0, velocity: 1, pitch: 0, pos: 0, every: 1, prob: 1, retriggerNum: 1 })
+        notes.push({ beat, beatStep: 0, velocity: 1, pitch: 0, pos: 0, every: 1, prob: 1, retriggerCount: 1 })
     }
     return {
         id,

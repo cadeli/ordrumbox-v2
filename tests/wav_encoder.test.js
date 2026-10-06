@@ -106,7 +106,7 @@ describe('wavEncoder - computeWavExportDuration', () => {
         expect(duration).toBeCloseTo(2, 5)
     })
 
-    it('scales with numLoops', () => {
+    it('scales with loopCount', () => {
         const d1 = computeWavExportDuration(120, 4, 1)
         const d2 = computeWavExportDuration(120, 4, 2)
         expect(d2).toBeCloseTo(d1 * 2, 5)

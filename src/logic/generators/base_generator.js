@@ -3,7 +3,7 @@
  * shape when read and when written: this is the copy contract, not the full Note
  * model.
  * @typedef {object} NoteEngineProps
- * @property {number}  [retriggerNum]
+ * @property {number}  [retriggerCount]
  * @property {number}  [rate]
  * @property {number}  [euclideanFill]
  * @property {object}  [arp]
@@ -298,7 +298,7 @@ export default class BaseGenerator {
      * @param {NoteEngineProps} source - config or phrase object containing optional engine properties
      */
     applyNoteProperties = (note, source) => {
-        if (typeof source.retriggerNum === 'number') note.retriggerNum = source.retriggerNum
+        if (typeof source.retriggerCount === 'number') note.retriggerCount = source.retriggerCount
         if (typeof source.rate === 'number') note.rate = source.rate
         if (typeof source.euclideanFill === 'number') note.euclideanFill = source.euclideanFill
         if (source.arp != null) note.arp = source.arp

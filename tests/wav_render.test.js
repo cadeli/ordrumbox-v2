@@ -81,12 +81,12 @@ describe('real render — tempo accuracy', () => {
     it('four-on-the-floor at 120 BPM renders notes at correct positions', async () => {
         const bpm = 120
         const beatDuration = 60 / bpm // 0.5s per beat
-        const numBeats = 4
-        const duration = numBeats * beatDuration + 0.5 // extra tail
+        const beatCount = 4
+        const duration = beatCount * beatDuration + 0.5 // extra tail
 
         const ctx = new OfflineAudioContext(1, Math.ceil(duration * SAMPLE_RATE), SAMPLE_RATE)
 
-        for (let beat = 0; beat < numBeats; beat++) {
+        for (let beat = 0; beat < beatCount; beat++) {
             scheduleBurst(ctx, beat * beatDuration, 60, 0.1, 0.8)
         }
 
@@ -102,24 +102,24 @@ describe('real render — tempo accuracy', () => {
         })
 
         // Expected positions in samples
-        const expectedSamples = Array.from({ length: numBeats }, (_, i) => Math.round(i * beatDuration * SAMPLE_RATE))
+        const expectedSamples = Array.from({ length: beatCount }, (_, i) => Math.round(i * beatDuration * SAMPLE_RATE))
 
         const tolerance = SAMPLE_RATE * 0.03 // 30ms tolerance
         const { matched, missed } = matchOnsets(onsets, expectedSamples, tolerance)
 
-        expect(matched.length).toBe(numBeats)
+        expect(matched.length).toBe(beatCount)
         expect(missed.length).toBe(0)
     })
 
     it('90 BPM half-time feel has correct spacing', async () => {
         const bpm = 90
         const beatDuration = 60 / bpm // ~0.667s
-        const numBeats = 4
-        const duration = numBeats * beatDuration + 0.5
+        const beatCount = 4
+        const duration = beatCount * beatDuration + 0.5
 
         const ctx = new OfflineAudioContext(1, Math.ceil(duration * SAMPLE_RATE), SAMPLE_RATE)
 
-        for (let beat = 0; beat < numBeats; beat++) {
+        for (let beat = 0; beat < beatCount; beat++) {
             scheduleBurst(ctx, beat * beatDuration, 200, 0.08, 0.7)
         }
 
@@ -134,23 +134,23 @@ describe('real render — tempo accuracy', () => {
             minOnsetGap: beatDuration * 0.5,
         })
 
-        const expectedSamples = Array.from({ length: numBeats }, (_, i) => Math.round(i * beatDuration * SAMPLE_RATE))
+        const expectedSamples = Array.from({ length: beatCount }, (_, i) => Math.round(i * beatDuration * SAMPLE_RATE))
 
         const tolerance = SAMPLE_RATE * 0.03
         const { matched } = matchOnsets(onsets, expectedSamples, tolerance)
 
-        expect(matched.length).toBe(numBeats)
+        expect(matched.length).toBe(beatCount)
     })
 
     it('150 BPM fast pattern has correct spacing', async () => {
         const bpm = 150
         const beatDuration = 60 / bpm // 0.4s
-        const numBeats = 8
-        const duration = numBeats * beatDuration + 0.5
+        const beatCount = 8
+        const duration = beatCount * beatDuration + 0.5
 
         const ctx = new OfflineAudioContext(1, Math.ceil(duration * SAMPLE_RATE), SAMPLE_RATE)
 
-        for (let beat = 0; beat < numBeats; beat++) {
+        for (let beat = 0; beat < beatCount; beat++) {
             scheduleBurst(ctx, beat * beatDuration, 440, 0.06, 0.8)
         }
 
@@ -165,13 +165,13 @@ describe('real render — tempo accuracy', () => {
             minOnsetGap: beatDuration * 0.4,
         })
 
-        const expectedSamples = Array.from({ length: numBeats }, (_, i) => Math.round(i * beatDuration * SAMPLE_RATE))
+        const expectedSamples = Array.from({ length: beatCount }, (_, i) => Math.round(i * beatDuration * SAMPLE_RATE))
 
         const tolerance = SAMPLE_RATE * 0.03
         const { matched } = matchOnsets(onsets, expectedSamples, tolerance)
 
         // At 150 BPM beats are very close (0.4s), allow slight tolerance
-        expect(matched.length).toBeGreaterThanOrEqual(numBeats - 1)
+        expect(matched.length).toBeGreaterThanOrEqual(beatCount - 1)
     })
 
     it('mixed kick + snare at 120 BPM', async () => {

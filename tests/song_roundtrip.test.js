@@ -161,8 +161,8 @@ function buildComplexProject() {
                         mute: false,
                         solo: false,
                         notes: [
-                            { beat: 1, beatStep: 0, velocity: 0.85, pitch: 0, arp: [0, 7], retriggerNum: 2, pos: 0 },
-                            { beat: 3, beatStep: 0, velocity: 0.9, pitch: 0, arp: [0, 12], retriggerNum: 1, pos: 1 },
+                            { beat: 1, beatStep: 0, velocity: 0.85, pitch: 0, arp: [0, 7], retriggerCount: 2, pos: 0 },
+                            { beat: 3, beatStep: 0, velocity: 0.9, pitch: 0, arp: [0, 12], retriggerCount: 1, pos: 1 },
                         ],
                     },
                     {
@@ -360,7 +360,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             const snare = p0.tracks[1]
             expect(snare.notes).toHaveLength(2)
             expect(snare.notes[0].arp).toEqual([0, 7])
-            expect(snare.notes[0].retriggerNum).toBe(2)
+            expect(snare.notes[0].retriggerCount).toBe(2)
             expect(snare.notes[1].arp).toEqual([0, 12])
 
             // Track 2 (BASS_SYNTH): softsynth track

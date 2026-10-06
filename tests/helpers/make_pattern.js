@@ -14,7 +14,7 @@ const NOTE_DEFAULTS = {
     every: 1,
     pos: 0,
     prob: 1,
-    retriggerNum: 1,
+    retriggerCount: 1,
     rate: 1,
     arp: null,
     arpTriggerProbability: 1,

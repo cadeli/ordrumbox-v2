@@ -115,13 +115,13 @@ export default class PatternCommands {
     }
 
     setPatternBpm(pattern, bpm) {
-        const bpmNum = Number(bpm)
+        const bpmValue = Number(bpm)
         const oldBpm = pattern.bpm
-        if (!Number.isFinite(bpmNum) || bpmNum === 0) {
+        if (!Number.isFinite(bpmValue) || bpmValue === 0) {
             logger.warn('Command', 'bpm NaN/0', bpm)
             pattern.bpm = Defaults.getPatternProp({}, 'bpm')
         } else {
-            pattern.bpm = bpmNum
+            pattern.bpm = bpmValue
         }
         const appliedBpm = pattern.bpm
         this.#host.persist()

@@ -33,13 +33,13 @@ const TEST_PATTERN = {
                 { beat: 2, beatStep: 0, pitch: 7, velocity: 0.7 },
                 { beat: 2, beatStep: 4, pitch: 0, velocity: 0.8, every: 2 },
                 { beat: 2, beatStep: 8, pitch: 0, velocity: 0.8, prob: 0.5 },
-                { beat: 3, beatStep: 0, pitch: 0, velocity: 0.8, retriggerNum: 3, rate: 8 },
+                { beat: 3, beatStep: 0, pitch: 0, velocity: 0.8, retriggerCount: 3, rate: 8 },
                 {
                     beat: 3,
                     beatStep: 0,
                     pitch: 0,
                     velocity: 0.8,
-                    retriggerNum: 3,
+                    retriggerCount: 3,
                     rate: 8,
                     arp: { intervals: [0, 4, 7], mode: 'up' },
                 },
@@ -420,7 +420,7 @@ describe('PianoRollPanel', () => {
 
         it('ghosts for arp notes have pitch offset (different row than parent)', () => {
             const track = getTrack()
-            const arpNote = track.notes.find((n) => n.arp && (n.retriggerNum ?? 1) > 1)
+            const arpNote = track.notes.find((n) => n.arp && (n.retriggerCount ?? 1) > 1)
             if (!arpNote) return
             const step = arpNote.beat * track.stepsPerBeat + arpNote.beatStep
             if (step >= 4 * track.stepsPerBeat) return
@@ -900,7 +900,7 @@ describe('PianoRollPanel', () => {
         it('illuminates retrigger sub-notes at their positions', () => {
             const track = getTrack()
             const retrigNote = track.notes.find(
-                (n) => (n.retriggerNum ?? 1) > 1 && !(n.arp && (n.retriggerNum ?? 1) > 1),
+                (n) => (n.retriggerCount ?? 1) > 1 && !(n.arp && (n.retriggerCount ?? 1) > 1),
             )
             if (!retrigNote) return
             const spb = track.stepsPerBeat

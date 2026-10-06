@@ -330,9 +330,9 @@ export default class TrackEditor extends BasePanel {
         if (!this.#track) return null
         const pattern = this.#appState.selectedPattern
         if (!pattern) return null
-        const nbTicks = TICK * pattern.beatCount
+        const tickCount = TICK * pattern.beatCount
         if (!this.#lfoBridge) this.#lfoBridge = new LfoUiBridge(this.#serviceRegistry.audioCtx)
-        return this.#lfoBridge.compute(this.#track, tick, nbTicks)
+        return this.#lfoBridge.compute(this.#track, tick, tickCount)
     }
 
     #applyLfoValues(lfoValues) {

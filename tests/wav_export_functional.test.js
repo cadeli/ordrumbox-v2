@@ -33,7 +33,7 @@ function parseWav(arrayBuffer) {
     result.fmt.chunkId = String.fromCharCode(view.getUint8(12), view.getUint8(13), view.getUint8(14), view.getUint8(15))
     result.fmt.chunkSize = view.getUint32(16, true)
     result.fmt.audioFormat = view.getUint16(20, true)
-    result.fmt.numChannels = view.getUint16(22, true)
+    result.fmt.channelCount = view.getUint16(22, true)
     result.fmt.sampleRate = view.getUint32(24, true)
     result.fmt.byteRate = view.getUint32(28, true)
     result.fmt.blockAlign = view.getUint16(32, true)
@@ -50,16 +50,16 @@ function parseWav(arrayBuffer) {
 
     const sampleStart = dataOffset + 8
     const totalSamples = result.data.chunkSize / 2
-    const numCh = result.fmt.numChannels
-    const frames = totalSamples / numCh
+    const channelCount = result.fmt.channelCount
+    const frames = totalSamples / channelCount
 
     result.sampleData = []
-    for (let ch = 0; ch < numCh; ch++) {
+    for (let ch = 0; ch < channelCount; ch++) {
         result.sampleData[ch] = new Float32Array(frames)
     }
     for (let i = 0; i < frames; i++) {
-        for (let ch = 0; ch < numCh; ch++) {
-            const offset = sampleStart + (i * numCh + ch) * 2
+        for (let ch = 0; ch < channelCount; ch++) {
+            const offset = sampleStart + (i * channelCount + ch) * 2
             const raw = view.getInt16(offset, true)
             result.sampleData[ch][i] = raw < 0 ? raw / 0x8000 : raw / 0x7fff
         }
@@ -302,11 +302,11 @@ describe('WAV Export — functional end-to-end', () => {
 
             expect(wav.fmt.audioFormat).toBe(1)
             expect(wav.fmt.bitsPerSample).toBe(16)
-            expect(wav.fmt.numChannels).toBe(2)
+            expect(wav.fmt.channelCount).toBe(2)
             expect(wav.fmt.sampleRate).toBe(SAMPLE_RATE)
         })
 
-        it('block align = numChannels × (bitsPerSample / 8)', async () => {
+        it('block align = channelCount × (bitsPerSample / 8)', async () => {
             const pattern = {
                 name: 'BlockAlign',
                 bpm: 120,
@@ -318,7 +318,7 @@ describe('WAV Export — functional end-to-end', () => {
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
 
-            expect(wav.fmt.blockAlign).toBe(wav.fmt.numChannels * (wav.fmt.bitsPerSample / 8))
+            expect(wav.fmt.blockAlign).toBe(wav.fmt.channelCount * (wav.fmt.bitsPerSample / 8))
         })
 
         it('byteRate = sampleRate × blockAlign', async () => {
@@ -514,7 +514,7 @@ describe('WAV Export — functional end-to-end', () => {
             const wav = parseWav(ab)
 
             const frames = wav.sampleData[0].length
-            const expectedSize = 44 + frames * wav.fmt.numChannels * 2
+            const expectedSize = 44 + frames * wav.fmt.channelCount * 2
             expect(blob.size).toBe(expectedSize)
         })
 
@@ -531,7 +531,7 @@ describe('WAV Export — functional end-to-end', () => {
             const wav = parseWav(ab)
 
             const frames = wav.sampleData[0].length
-            const expectedDataSize = frames * wav.fmt.numChannels * 2
+            const expectedDataSize = frames * wav.fmt.channelCount * 2
             expect(wav.data.chunkSize).toBe(expectedDataSize)
         })
 
@@ -635,7 +635,7 @@ describe('WAV Export — functional end-to-end', () => {
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
 
-            for (let ch = 0; ch < wav.fmt.numChannels; ch++) {
+            for (let ch = 0; ch < wav.fmt.channelCount; ch++) {
                 for (let i = 0; i < wav.sampleData[ch].length; i++) {
                     expect(wav.sampleData[ch][i]).toBeGreaterThanOrEqual(-1)
                     expect(wav.sampleData[ch][i]).toBeLessThanOrEqual(1)
@@ -657,11 +657,11 @@ describe('WAV Export — functional end-to-end', () => {
             const view = new DataView(ab)
             const dataOffset = 20 + 16
             const sampleStart = dataOffset + 8
-            const numCh = 2
-            const frameCount = (ab.byteLength - sampleStart) / (numCh * 2)
+            const channelCount = 2
+            const frameCount = (ab.byteLength - sampleStart) / (channelCount * 2)
 
             for (let i = 0; i < Math.min(100, frameCount); i++) {
-                const raw = view.getInt16(sampleStart + i * numCh * 2, true)
+                const raw = view.getInt16(sampleStart + i * channelCount * 2, true)
                 const decoded = raw / 0x7fff
                 expect(decoded).toBeGreaterThanOrEqual(-1)
                 expect(decoded).toBeLessThanOrEqual(1)
@@ -990,39 +990,39 @@ describe('WAV Export — functional end-to-end', () => {
         })
     })
 
-    // ── 14. retriggerNum — multiple notes from one beatStep ───────────────────
+    // ── 14. retriggerCount — multiple notes from one beatStep ───────────────────
 
     describe('Case 14: retrigger scheduling', () => {
-        it('retriggerNum=1 → 1 start() (+ silent buffer)', async () => {
+        it('retriggerCount=1 → 1 start() (+ silent buffer)', async () => {
             const pattern = {
                 name: 'Retrig1',
                 bpm: 120,
                 beatCount: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerNum: 1, rate: 1 })])],
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerCount: 1, rate: 1 })])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             expect(getStartTimes().length).toBe(2)
         })
 
-        it('retriggerNum=3 → 3 start() calls from one beatStep', async () => {
+        it('retriggerCount=3 → 3 start() calls from one beatStep', async () => {
             const pattern = {
                 name: 'Retrig3',
                 bpm: 120,
                 beatCount: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerNum: 3, rate: 1 })])],
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerCount: 3, rate: 1 })])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             expect(getStartTimes().length).toBe(4)
         })
 
-        it('retriggerNum=4, rate=2 → 4 start() calls', async () => {
+        it('retriggerCount=4, rate=2 → 4 start() calls', async () => {
             const pattern = {
                 name: 'Retrig4Step2',
                 bpm: 120,
                 beatCount: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerNum: 4, rate: 2 })])],
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerCount: 4, rate: 2 })])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -1034,7 +1034,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'RetrigTicks',
                 bpm: 120,
                 beatCount: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerNum: 3, rate: 1 })])],
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerCount: 3, rate: 1 })])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -1044,12 +1044,12 @@ describe('WAV Export — functional end-to-end', () => {
             expect(noteTimes[0]).toBeLessThan(noteTimes[1])
         })
 
-        it('retriggerNum=4 → 4 start() calls', async () => {
+        it('retriggerCount=4 → 4 start() calls', async () => {
             const pattern = {
                 name: 'RetrigFlat',
                 bpm: 120,
                 beatCount: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerNum: 4, rate: 1 })])],
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerCount: 4, rate: 1 })])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -1067,7 +1067,7 @@ describe('WAV Export — functional end-to-end', () => {
                 beatCount: 1,
                 tracks: [
                     makeTrack('BASS', 'kick.wav', [
-                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
+                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerCount: 3 }),
                     ]),
                 ],
             }
@@ -1088,7 +1088,7 @@ describe('WAV Export — functional end-to-end', () => {
                 beatCount: 1,
                 tracks: [
                     makeTrack('BASS', 'kick.wav', [
-                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'down' }, retriggerNum: 3 }),
+                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'down' }, retriggerCount: 3 }),
                     ]),
                 ],
             }
@@ -1109,7 +1109,7 @@ describe('WAV Export — functional end-to-end', () => {
                 beatCount: 1,
                 tracks: [
                     makeTrack('BASS', 'kick.wav', [
-                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'updown' }, retriggerNum: 5 }),
+                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'updown' }, retriggerCount: 5 }),
                     ]),
                 ],
             }
@@ -1128,7 +1128,7 @@ describe('WAV Export — functional end-to-end', () => {
                 bpm: 120,
                 beatCount: 1,
                 tracks: [
-                    makeTrack('BASS', 'kick.wav', [makeNote(0, 0, { pitch: 0, arp: [0, 5, 7], retriggerNum: 3 })]),
+                    makeTrack('BASS', 'kick.wav', [makeNote(0, 0, { pitch: 0, arp: [0, 5, 7], retriggerCount: 3 })]),
                 ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
@@ -1147,7 +1147,7 @@ describe('WAV Export — functional end-to-end', () => {
                 beatCount: 1,
                 tracks: [
                     makeTrack('BASS', 'kick.wav', [
-                        makeNote(0, 0, { pitch: 12, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
+                        makeNote(0, 0, { pitch: 12, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerCount: 3 }),
                     ]),
                 ],
             }
@@ -1168,7 +1168,7 @@ describe('WAV Export — functional end-to-end', () => {
                 beatCount: 1,
                 tracks: [
                     makeTrack('BASS', 'kick.wav', [
-                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
+                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerCount: 3 }),
                     ]),
                 ],
             }
@@ -1180,7 +1180,7 @@ describe('WAV Export — functional end-to-end', () => {
             expect(noteTimes[0]).toBeLessThan(noteTimes[1])
         })
 
-        it('arp retriggerNum=4 + arp [0,3,7] → 4 arp notes', async () => {
+        it('arp retriggerCount=4 + arp [0,3,7] → 4 arp notes', async () => {
             const pattern = {
                 name: 'ArpRetrig',
                 bpm: 120,
@@ -1189,7 +1189,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeTrack('BASS', 'kick.wav', [
                         makeNote(0, 0, {
                             pitch: 0,
-                            retriggerNum: 4,
+                            retriggerCount: 4,
                             rate: 1,
                             arp: { intervals: [0, 3, 7], mode: 'up' },
                         }),
@@ -1300,12 +1300,14 @@ describe('WAV Export — functional end-to-end', () => {
     // ── 18. Combined: retrigger + velocity + pitch ───────────────────────────
 
     describe('Case 18: combined retrigger + velocity + pitch', () => {
-        it('retriggerNum=3 with different velocities on each note', () => {
+        it('retriggerCount=3 with different velocities on each note', () => {
             const pattern = {
                 name: 'RetrigVel',
                 bpm: 120,
                 beatCount: 1,
-                tracks: [makeTrack('SNARE', 'kick.wav', [makeNote(0, 0, { velocity: 0.5, retriggerNum: 3, rate: 1 })])],
+                tracks: [
+                    makeTrack('SNARE', 'kick.wav', [makeNote(0, 0, { velocity: 0.5, retriggerCount: 3, rate: 1 })]),
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
@@ -1317,12 +1319,12 @@ describe('WAV Export — functional end-to-end', () => {
             }
         })
 
-        it('retriggerNum=2 + pitch offset → both notes have same pitch', () => {
+        it('retriggerCount=2 + pitch offset → both notes have same pitch', () => {
             const pattern = {
                 name: 'RetrigPitch',
                 bpm: 120,
                 beatCount: 1,
-                tracks: [makeTrack('BASS', 'kick.wav', [makeNote(0, 0, { pitch: 5, retriggerNum: 2, rate: 1 })])],
+                tracks: [makeTrack('BASS', 'kick.wav', [makeNote(0, 0, { pitch: 5, retriggerCount: 2, rate: 1 })])],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
@@ -1333,7 +1335,7 @@ describe('WAV Export — functional end-to-end', () => {
             expect(allNotes[1].note.pitch).toBe(5)
         })
 
-        it('arp + retrigger + pitch: arp [0,3,7] with retriggerNum=2', () => {
+        it('arp + retrigger + pitch: arp [0,3,7] with retriggerCount=2', () => {
             const pattern = {
                 name: 'CombinedAll',
                 bpm: 120,
@@ -1342,7 +1344,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeTrack('BASS', 'kick.wav', [
                         makeNote(0, 0, {
                             pitch: 12,
-                            retriggerNum: 2,
+                            retriggerCount: 2,
                             rate: 1,
                             arp: { intervals: [0, 3, 7], mode: 'up' },
                         }),

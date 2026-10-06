@@ -99,9 +99,9 @@ export default class InstrumentsManager {
         return new Instrument()
     }
 
-    findInstrumentFromMidi = (channel, noteNumber) => {
+    findInstrumentFromMidi = (channel, noteKey) => {
         const normalizedChannel = String(channel)
-        const normalizedKey = String(noteNumber)
+        const normalizedKey = String(noteKey)
 
         for (const instrument of this.byId.values()) {
             const midiMatch = instrument.midi.find((midi) => {
@@ -180,8 +180,8 @@ export default class InstrumentsManager {
         return candidates
     }
 
-    findTrackIndexFromMidi = (pattern, channel, noteNumber) => {
-        const instrument = this.findInstrumentFromMidi(channel, noteNumber)
+    findTrackIndexFromMidi = (pattern, channel, noteKey) => {
+        const instrument = this.findInstrumentFromMidi(channel, noteKey)
         if (!instrument || instrument.id === Instrument.NOT_FOUND) {
             return -1
         }

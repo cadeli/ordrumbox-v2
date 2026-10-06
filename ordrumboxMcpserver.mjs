@@ -15,7 +15,7 @@ import { WAVE_TYPES } from './src/audio/fx_values.js'
 
 import { getTracksArray } from './src/core/tracks.js'
 import { normalizeTrack, TRACK_VALUE_RANGES } from './src/model/track_schema.js'
-import { compactArrayToNote, normalizeNote } from './src/core/note_schema.js'
+import { canonicalNoteKeys, compactArrayToNote, migrateLegacyNoteKeys, normalizeNote } from './src/core/note_schema.js'
 import { songLengthBars } from './src/model/song_schema.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -133,7 +133,7 @@ async function savePatternToDisk(pattern) {
     return filePath
 }
 
-function normalizePattern(source) {
+export function normalizePattern(source) {
     const pattern = { ...source }
     delete pattern.loopPointBeat
     delete pattern.loopPointStep
@@ -142,7 +142,11 @@ function normalizePattern(source) {
         delete track.loopPointBeat
         delete track.loopPointStep
         track.notes = (t.notes ?? []).map((n) => {
-            const decoded = Array.isArray(n) ? compactArrayToNote(n, t.noteKeys) : n
+            // A file written before a note-key rename decodes through the
+            // canonical header, and its object notes are mapped too — same rule
+            // as the app (core/note_schema.js), so both sides see one spelling.
+            const decoded = Array.isArray(n) ? compactArrayToNote(n, canonicalNoteKeys(t.noteKeys)) : { ...n }
+            migrateLegacyNoteKeys(decoded)
             return { ...normalizeNote(decoded) }
         })
         return track
@@ -316,7 +320,7 @@ export function upsertNoteOnTrack(cmd, track, noteInput) {
         Math.max(Number(noteInput.arpTriggerProbability ?? note.arpTriggerProbability ?? 1), 0),
         1,
     )
-    note.retriggerNum = Math.min(Math.max(Number(noteInput.retriggerNum ?? note.retriggerNum ?? 1), 1), 16)
+    note.retriggerCount = Math.min(Math.max(Number(noteInput.retriggerCount ?? note.retriggerCount ?? 1), 1), 16)
     note.rate = Math.min(Math.max(Number(noteInput.rate ?? note.rate ?? 1), 1), 16)
     note.euclideanFill = Math.min(Math.max(Number(noteInput.euclideanFill ?? note.euclideanFill ?? 0), 0), 16)
     note.euclideanRotation = Math.min(
@@ -429,7 +433,7 @@ export const tools = [
                             },
                             prob: { type: 'number', minimum: 0, maximum: 1, default: 1 },
                             arpTriggerProbability: { type: 'number', minimum: 0, maximum: 1, default: 1 },
-                            retriggerNum: {
+                            retriggerCount: {
                                 type: 'integer',
                                 minimum: 1,
                                 maximum: 16,
@@ -583,7 +587,7 @@ export const tools = [
                         pos: { type: 'number', minimum: 0, maximum: 15 },
                         prob: { type: 'number', minimum: 0, maximum: 1 },
                         arpTriggerProbability: { type: 'number', minimum: 0, maximum: 1 },
-                        retriggerNum: { type: 'number', minimum: 1, maximum: 16 },
+                        retriggerCount: { type: 'number', minimum: 1, maximum: 16 },
                         rate: { type: 'number', minimum: 1, maximum: 16 },
                         arp: { type: 'string' },
                         euclideanFill: { type: 'integer', minimum: 0, maximum: 16 },
@@ -824,7 +828,7 @@ export async function handleToolCall(toolName, args, onError) {
                     pos: n.pos,
                     prob: n.prob,
                     arpTriggerProbability: n.arpTriggerProbability,
-                    retriggerNum: n.retriggerNum,
+                    retriggerCount: n.retriggerCount,
                     rate: n.rate,
                     arp: n.arp,
                     euclideanFill: n.euclideanFill,
@@ -874,7 +878,7 @@ export async function handleToolCall(toolName, args, onError) {
                     'pos',
                     'prob',
                     'arpTriggerProbability',
-                    'retriggerNum',
+                    'retriggerCount',
                     'rate',
                     'arp',
                     'euclideanFill',
@@ -896,8 +900,8 @@ export async function handleToolCall(toolName, args, onError) {
                                 Math.max(Number(noteUpdates.arpTriggerProbability), 0),
                                 1,
                             )
-                        if (noteUpdates.retriggerNum !== undefined)
-                            note.retriggerNum = Math.min(Math.max(Number(noteUpdates.retriggerNum), 1), 16)
+                        if (noteUpdates.retriggerCount !== undefined)
+                            note.retriggerCount = Math.min(Math.max(Number(noteUpdates.retriggerCount), 1), 16)
                         if (noteUpdates.rate !== undefined)
                             note.rate = Math.min(Math.max(Number(noteUpdates.rate), 1), 16)
                         if (noteUpdates.arp !== undefined) note.arp = noteUpdates.arp

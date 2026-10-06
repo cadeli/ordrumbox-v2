@@ -20,7 +20,7 @@ import { findAllNotes, parseMidi } from '../tests/helpers/midi_reader.js'
 import {
     alignedRange,
     diffPatterns,
-    expectNum,
+    expectNumber,
     expectVal,
     exportPatternAt,
     fillInput,
@@ -98,7 +98,7 @@ const TRACK_KEYS = [
 // Note keys that must survive a reload (steppc is recalculated,
 // _arpScale/_arpType survive a raw reload but not a JSON round-trip; the arp
 // range is arp.intervals.length, there is no separate field).
-// prob/rate/retriggerNum/euclideanFill are excluded: track.variation2 > 0
+// prob/rate/retriggerCount/euclideanFill are excluded: track.variation2 > 0
 // re-randomizes them in place on every flat-notes computation.
 const NOTE_KEYS = ['beat', 'beatStep', 'velocity', 'pitch', 'pan', 'every', 'pos', 'arpTriggerProbability', 'arp']
 
@@ -232,26 +232,26 @@ test.describe.serial('Full session lifecycle', () => {
         await test.step('phase 3a — transport: 8 beats', async () => {
             await page.locator('.tb-beats-group select').selectOption('8')
             await expect.poll(() => page.evaluate((i) => window.__e2e.appState.patterns[i]?.beatCount, newIdx)).toBe(8)
-            await expectNum(() => trackField(page, 0, 'beatCount'), 8)
+            await expectNumber(() => trackField(page, 0, 'beatCount'), 8)
         })
 
         await test.step('phase 3b — knob bar: velocity, pan, pitch', async () => {
             await knobSet(dialogs, page.locator('.te-knob-bar'), 'velocity', 0.62)
-            await expectNum(() => trackField(page, 0, 'velocity'), 0.62)
+            await expectNumber(() => trackField(page, 0, 'velocity'), 0.62)
             await knobSet(dialogs, page.locator('.te-knob-bar'), 'pan', 0.25)
-            await expectNum(() => trackField(page, 0, 'pan'), 0.25)
+            await expectNumber(() => trackField(page, 0, 'pan'), 0.25)
             await knobSet(dialogs, page.locator('.te-knob-bar'), 'pitch', -7)
-            await expectNum(() => trackField(page, 0, 'pitch'), -7)
+            await expectNumber(() => trackField(page, 0, 'pitch'), -7)
         })
 
         await test.step('phase 3c — loop tab: stepsPerBeat, loopAtStep, swing', async () => {
             await page.locator('#te-panel button[data-ne-tab="loop"]').click()
             await fillInput(page.locator('#te-panel input[data-loop="stepsPerBeat"]'), 8)
-            await expectNum(() => trackField(page, 0, 'stepsPerBeat'), 8)
+            await expectNumber(() => trackField(page, 0, 'stepsPerBeat'), 8)
             await fillInput(page.locator('#te-panel input[data-loop="loopAtStep"]'), 24)
-            await expectNum(() => trackField(page, 0, 'loopAtStep'), 24)
+            await expectNumber(() => trackField(page, 0, 'loopAtStep'), 24)
             await fillInput(page.locator('#te-panel input[data-loop="swingAmount"]'), 0.35)
-            await expectNum(() => trackField(page, 0, 'swingAmount'), 0.35)
+            await expectNumber(() => trackField(page, 0, 'swingAmount'), 0.35)
             // the grid rebuilds with 8 cells per beat
             await expect(page.locator('.pp-cell[data-track="0"][data-beat="0"]')).toHaveCount(8)
         })
@@ -263,14 +263,14 @@ test.describe.serial('Full session lifecycle', () => {
             await page.locator('#te-panel select[data-key="reverbType"]').selectOption('hall')
             await knobSet(dialogs, page.locator('[data-fx-panel="0"]'), 'reverbAmount', 0.4)
             await expectVal(() => trackField(page, 0, 'reverbType'), 'hall')
-            await expectNum(() => trackField(page, 0, 'reverbAmount'), 0.4)
+            await expectNumber(() => trackField(page, 0, 'reverbAmount'), 0.4)
             // LED toggle dance: amount > 0 -> off (0) -> on (0.5) -> back to 0.4
             await page.locator('[data-fx-toggle-btn="reverbAmount"]').click()
-            await expectNum(() => trackField(page, 0, 'reverbAmount'), 0)
+            await expectNumber(() => trackField(page, 0, 'reverbAmount'), 0)
             await page.locator('[data-fx-toggle-btn="reverbAmount"]').click()
-            await expectNum(() => trackField(page, 0, 'reverbAmount'), 0.5)
+            await expectNumber(() => trackField(page, 0, 'reverbAmount'), 0.5)
             await knobSet(dialogs, page.locator('[data-fx-panel="0"]'), 'reverbAmount', 0.4)
-            await expectNum(() => trackField(page, 0, 'reverbAmount'), 0.4)
+            await expectNumber(() => trackField(page, 0, 'reverbAmount'), 0.4)
 
             // Delay
             await page.locator('#te-panel [data-fx-tab="1"]').click()
@@ -278,15 +278,15 @@ test.describe.serial('Full session lifecycle', () => {
             await page.locator('#te-panel select[data-key="delayTime"]').selectOption('0.25')
             await knobSet(dialogs, page.locator('[data-fx-panel="1"]'), 'delayDepth', 0.3)
             await expectVal(() => trackField(page, 0, 'delayType'), 'pingpong')
-            await expectNum(() => trackField(page, 0, 'delayTime'), 0.25)
-            await expectNum(() => trackField(page, 0, 'delayDepth'), 0.3)
+            await expectNumber(() => trackField(page, 0, 'delayTime'), 0.25)
+            await expectNumber(() => trackField(page, 0, 'delayDepth'), 0.3)
 
             // Saturation
             await page.locator('#te-panel [data-fx-tab="2"]').click()
             await page.locator('#te-panel select[data-key="saturationType"]').selectOption('tape')
             await knobSet(dialogs, page.locator('[data-fx-panel="2"]'), 'saturationAmount', 0.5)
             await expectVal(() => trackField(page, 0, 'saturationType'), 'tape')
-            await expectNum(() => trackField(page, 0, 'saturationAmount'), 0.5)
+            await expectNumber(() => trackField(page, 0, 'saturationAmount'), 0.5)
 
             // Filter: icon toggle dance allpass -> highpass -> allpass -> highpass
             await page.locator('#te-panel [data-fx-tab="3"]').click()
@@ -298,9 +298,9 @@ test.describe.serial('Full session lifecycle', () => {
             await hpIcon.click()
             await expectVal(() => trackField(page, 0, 'filterType'), 'highpass')
             await knobSet(dialogs, page.locator('[data-fx-panel="3"]'), 'filterFreq', 1200)
-            await expectNum(() => trackField(page, 0, 'filterFreq'), 1200)
+            await expectNumber(() => trackField(page, 0, 'filterFreq'), 1200)
             await knobSet(dialogs, page.locator('[data-fx-panel="3"]'), 'filterQ', 4.5)
-            await expectNum(() => trackField(page, 0, 'filterQ'), 4.5)
+            await expectNumber(() => trackField(page, 0, 'filterQ'), 4.5)
         })
 
         await test.step('phase 3e — mod tab: one LFO per supported target', async () => {
@@ -336,10 +336,10 @@ test.describe.serial('Full session lifecycle', () => {
                 await fillInput(page.locator('#te-panel input[data-lfo-key="phase"]'), 0.5)
 
                 await expectVal(() => lfoField(page, 0, target.lfo, 'type'), 'sawtooth')
-                await expectNum(() => lfoField(page, 0, target.lfo, 'freq'), 1.2)
-                await expectNum(() => lfoField(page, 0, target.lfo, 'min'), low)
-                await expectNum(() => lfoField(page, 0, target.lfo, 'max'), high)
-                await expectNum(() => lfoField(page, 0, target.lfo, 'phase'), 0.5)
+                await expectNumber(() => lfoField(page, 0, target.lfo, 'freq'), 1.2)
+                await expectNumber(() => lfoField(page, 0, target.lfo, 'min'), low)
+                await expectNumber(() => lfoField(page, 0, target.lfo, 'max'), high)
+                await expectNumber(() => lfoField(page, 0, target.lfo, 'phase'), 0.5)
             }
         })
 
@@ -388,14 +388,14 @@ test.describe.serial('Full session lifecycle', () => {
                 auto_density: 0.4,
             }
             for (const [key, value] of Object.entries(expected)) {
-                await expectNum(() => trackField(page, 0, key), value)
+                await expectNumber(() => trackField(page, 0, key), value)
             }
             await expectVal(() => trackField(page, 0, 'auto_variant'), 'fill')
         })
 
         await test.step('phase 3g — grid row controls: volume, mute, solo', async () => {
             await fillInput(page.locator('.pp-volume[data-track="1"]'), 0.45)
-            await expectNum(() => trackField(page, 1, 'velocity'), 0.45)
+            await expectNumber(() => trackField(page, 1, 'velocity'), 0.45)
             await page.locator('.pp-divider[data-track="0"]').click()
             await expectVal(() => trackField(page, 0, 'mute'), true)
             await page.locator('.pp-solo[data-track="1"]').click()
@@ -415,7 +415,7 @@ test.describe.serial('Full session lifecycle', () => {
                     delayOn: false,
                 })
             }, newIdx)
-            await expectNum(() => trackField(page, 0, 'swingResolution'), 2)
+            await expectNumber(() => trackField(page, 0, 'swingResolution'), 2)
             await expectVal(() => trackField(page, 0, 'fxSelected'), 'delay')
             await expectVal(() => trackField(page, 0, 'sat'), false)
             await expectVal(() => trackField(page, 0, 'reverbOn'), false)
@@ -432,24 +432,24 @@ test.describe.serial('Full session lifecycle', () => {
             await fillInput(ne.locator('input[data-key="pos"]'), 5)
             await fillInput(ne.locator('input[data-key="prob"]'), 0.85)
 
-            await expectNum(async () => (await noteAt(0, 0))?.velocity, 0.55)
-            await expectNum(async () => (await noteAt(0, 0))?.pitch, -3)
-            await expectNum(async () => (await noteAt(0, 0))?.pan, 0.4)
-            await expectNum(async () => (await noteAt(0, 0))?.every, 2)
-            await expectNum(async () => (await noteAt(0, 0))?.pos, 5)
-            await expectNum(async () => (await noteAt(0, 0))?.prob, 0.85)
+            await expectNumber(async () => (await noteAt(0, 0))?.velocity, 0.55)
+            await expectNumber(async () => (await noteAt(0, 0))?.pitch, -3)
+            await expectNumber(async () => (await noteAt(0, 0))?.pan, 0.4)
+            await expectNumber(async () => (await noteAt(0, 0))?.every, 2)
+            await expectNumber(async () => (await noteAt(0, 0))?.pos, 5)
+            await expectNumber(async () => (await noteAt(0, 0))?.prob, 0.85)
 
             await ne.locator('button[data-ne-tab="retrig"]').click()
-            await fillInput(ne.locator('input[data-key="retriggerNum"]'), 3)
+            await fillInput(ne.locator('input[data-key="retriggerCount"]'), 3)
             await fillInput(ne.locator('input[data-key="rate"]'), 2)
             await fillInput(ne.locator('input[data-key="arpTriggerProbability"]'), 0.5)
-            await expectNum(async () => (await noteAt(0, 0))?.retriggerNum, 3)
-            await expectNum(async () => (await noteAt(0, 0))?.rate, 2)
-            await expectNum(async () => (await noteAt(0, 0))?.arpTriggerProbability, 0.5)
+            await expectNumber(async () => (await noteAt(0, 0))?.retriggerCount, 3)
+            await expectNumber(async () => (await noteAt(0, 0))?.rate, 2)
+            await expectNumber(async () => (await noteAt(0, 0))?.arpTriggerProbability, 0.5)
 
             await ne.locator('button[data-ne-tab="eucl"]').click()
             await fillInput(ne.locator('input[data-key="euclideanFill"]'), 6)
-            await expectNum(async () => (await noteAt(0, 0))?.euclideanFill, 6)
+            await expectNumber(async () => (await noteAt(0, 0))?.euclideanFill, 6)
 
             await ne.locator('button[data-ne-tab="arp"]').click()
             const scaleSel = ne.locator('select[data-key="arpScale"]')
@@ -466,7 +466,7 @@ test.describe.serial('Full session lifecycle', () => {
             await expectVal(async () => (await noteAt(0, 0))?._arpScale, scale)
             await expectVal(async () => (await noteAt(0, 0))?._arpType, 'updown')
             // the range lives in arp.intervals.length: there is no arpRange field
-            await expectNum(async () => (await noteAt(0, 0))?.arp?.intervals?.length, 7)
+            await expectNumber(async () => (await noteAt(0, 0))?.arp?.intervals?.length, 7)
             const note0 = await noteAt(0, 0)
             expect(note0.arp?.mode).toBe('updown')
             expect(Array.isArray(note0.arp?.intervals)).toBe(true)
@@ -486,8 +486,8 @@ test.describe.serial('Full session lifecycle', () => {
             await expect.poll(async () => (await trackAt(page, 1)).notes.length).toBe(2)
             await expect.poll(async () => (await trackAt(page, 2)).notes.length).toBe(1)
             await expect.poll(async () => (await trackAt(page, 3)).notes.length).toBe(0)
-            await expectNum(async () => (await noteAt(0, 1))?.velocity, 0.7)
-            await expectNum(async () => (await noteAt(0, 2))?.pitch, 5)
+            await expectNumber(async () => (await noteAt(0, 1))?.velocity, 0.7)
+            await expectNumber(async () => (await noteAt(0, 2))?.pitch, 5)
         })
 
         await test.step('phase 5 — switch drumkit (auto-assign kicks in)', async () => {
@@ -602,7 +602,7 @@ test.describe.serial('Full session lifecycle', () => {
 
             // decay writes into the loaded sound object (not the track)
             await knobSet(dialogs, page.locator('.te-knob-bar'), 'decay', 1200)
-            await expectNum(
+            await expectNumber(
                 () =>
                     page.evaluate((patternIdx) => {
                         const { appState, soundRegistry } = window.__e2e
@@ -657,7 +657,7 @@ test.describe.serial('Full session lifecycle', () => {
                 ['fm', 'amount', 0.6],
             ]
             for (const [group, key, value] of expected) {
-                await expectNum(() => synthField(page, 'BASS1', group, key), value)
+                await expectNumber(() => synthField(page, 'BASS1', group, key), value)
             }
             await expectVal(() => synthField(page, 'BASS1', 'vco1', 'wave'), 'sawtooth')
             await expectVal(() => synthField(page, 'BASS1', 'vco2', 'wave'), 'square')
@@ -680,14 +680,14 @@ test.describe.serial('Full session lifecycle', () => {
             await ss.locator('select[data-synth-path="modEnvelope.target"]').selectOption('filter')
 
             await expectVal(() => synthField(page, 'BASS1', 'filter', 'type'), 'highpass')
-            await expectNum(() => synthField(page, 'BASS1', 'filter', 'freq'), 2500)
-            await expectNum(() => synthField(page, 'BASS1', 'filter', 'Q'), 8.5)
-            await expectNum(() => synthField(page, 'BASS1', 'filter', 'drive'), 0.5)
-            await expectNum(() => synthField(page, 'BASS1', 'filterEnv', 'filterEnvelopeAmount'), 0.7)
-            await expectNum(() => synthField(page, 'BASS1', 'modEnvelope', 'attack'), 0.05)
-            await expectNum(() => synthField(page, 'BASS1', 'modEnvelope', 'decay'), 0.2)
-            await expectNum(() => synthField(page, 'BASS1', 'modEnvelope', 'sustain'), 0.4)
-            await expectNum(() => synthField(page, 'BASS1', 'modEnvelope', 'release'), 0.15)
+            await expectNumber(() => synthField(page, 'BASS1', 'filter', 'freq'), 2500)
+            await expectNumber(() => synthField(page, 'BASS1', 'filter', 'Q'), 8.5)
+            await expectNumber(() => synthField(page, 'BASS1', 'filter', 'drive'), 0.5)
+            await expectNumber(() => synthField(page, 'BASS1', 'filterEnv', 'filterEnvelopeAmount'), 0.7)
+            await expectNumber(() => synthField(page, 'BASS1', 'modEnvelope', 'attack'), 0.05)
+            await expectNumber(() => synthField(page, 'BASS1', 'modEnvelope', 'decay'), 0.2)
+            await expectNumber(() => synthField(page, 'BASS1', 'modEnvelope', 'sustain'), 0.4)
+            await expectNumber(() => synthField(page, 'BASS1', 'modEnvelope', 'release'), 0.15)
             await expectVal(() => synthField(page, 'BASS1', 'modEnvelope', 'target'), 'filter')
         })
 
@@ -716,18 +716,18 @@ test.describe.serial('Full session lifecycle', () => {
 
             await expectVal(() => synthField(page, 'BASS1', 'lfo', 'target'), 'filter.freq')
             await expectVal(() => synthField(page, 'BASS1', 'lfo', 'wave'), 'triangle')
-            await expectNum(() => synthField(page, 'BASS1', 'lfo', 'freq'), 1.5)
-            await expectNum(() => synthField(page, 'BASS1', 'lfo', 'depth'), 0.8)
+            await expectNumber(() => synthField(page, 'BASS1', 'lfo', 'freq'), 1.5)
+            await expectNumber(() => synthField(page, 'BASS1', 'lfo', 'depth'), 0.8)
             await expectVal(() => synthField(page, 'BASS1', 'lfo', 'sync'), '1/4')
             await expectVal(() => synthField(page, 'BASS1', 'lfo2', 'target'), 'vco1.detune')
             await expectVal(() => synthField(page, 'BASS1', 'lfo2', 'wave'), 'square')
-            await expectNum(() => synthField(page, 'BASS1', 'lfo2', 'freq'), 0.5)
-            await expectNum(() => synthField(page, 'BASS1', 'lfo2', 'depth'), 0.4)
+            await expectNumber(() => synthField(page, 'BASS1', 'lfo2', 'freq'), 0.5)
+            await expectNumber(() => synthField(page, 'BASS1', 'lfo2', 'depth'), 0.4)
             await expectVal(() => synthField(page, 'BASS1', 'lfo2', 'sync'), '1/8')
-            await expectNum(() => synthField(page, 'BASS1', 'noise', 'mix'), 0.6)
+            await expectNumber(() => synthField(page, 'BASS1', 'noise', 'mix'), 0.6)
             await expectVal(() => synthField(page, 'BASS1', 'noise', 'filterType'), 'highpass')
-            await expectNum(() => synthField(page, 'BASS1', 'noise', 'filterFreq'), 4000)
-            await expectNum(() => synthField(page, 'BASS1', 'noise', 'filterQ'), 3)
+            await expectNumber(() => synthField(page, 'BASS1', 'noise', 'filterFreq'), 4000)
+            await expectNumber(() => synthField(page, 'BASS1', 'noise', 'filterQ'), 3)
 
             // power card dance: bypass on -> off
             await ss.locator('button[data-power-card="noise"]').click()
@@ -747,13 +747,13 @@ test.describe.serial('Full session lifecycle', () => {
             await knobSet(dialogs, ss, 'subGain', 0.3)
             await knobSet(dialogs, ss, 'pitchPunch', 0.5)
 
-            await expectNum(() => synthField(page, 'BASS1', 'envelope', 'attack'), 0.02)
-            await expectNum(() => synthField(page, 'BASS1', 'envelope', 'decay'), 0.15)
-            await expectNum(() => synthField(page, 'BASS1', 'envelope', 'sustain'), 0.6)
-            await expectNum(() => synthField(page, 'BASS1', 'envelope', 'release'), 0.25)
-            await expectNum(() => synthField(page, 'BASS1', 'masterVolume'), 0.9)
-            await expectNum(() => synthField(page, 'BASS1', 'subGain'), 0.3)
-            await expectNum(() => synthField(page, 'BASS1', 'pitchPunch'), 0.5)
+            await expectNumber(() => synthField(page, 'BASS1', 'envelope', 'attack'), 0.02)
+            await expectNumber(() => synthField(page, 'BASS1', 'envelope', 'decay'), 0.15)
+            await expectNumber(() => synthField(page, 'BASS1', 'envelope', 'sustain'), 0.6)
+            await expectNumber(() => synthField(page, 'BASS1', 'envelope', 'release'), 0.25)
+            await expectNumber(() => synthField(page, 'BASS1', 'masterVolume'), 0.9)
+            await expectNumber(() => synthField(page, 'BASS1', 'subGain'), 0.3)
+            await expectNumber(() => synthField(page, 'BASS1', 'pitchPunch'), 0.5)
         })
 
         await test.step('phase 8 — back to the grid, persist and snapshot', async () => {
@@ -843,10 +843,10 @@ test.describe.serial('Full session lifecycle', () => {
         expect(afterNote0.arp).toEqual(beforeNote0.arp)
 
         // variation2 > 0 computes its layer on clones: the source note fields
-        // it used to rewrite in place (prob/rate/retriggerNum/euclideanFill)
+        // it used to rewrite in place (prob/rate/retriggerCount/euclideanFill)
         // must survive a raw reload untouched
         expect(afterTracks[0].variation2).toBe(65)
-        const VOLATILE_KEYS = ['prob', 'rate', 'retriggerNum', 'euclideanFill']
+        const VOLATILE_KEYS = ['prob', 'rate', 'retriggerCount', 'euclideanFill']
         expect((afterTracks[0].notes ?? []).map((n) => VOLATILE_KEYS.map((k) => n[k]))).toEqual(
             (beforeTracks[0].notes ?? []).map((n) => VOLATILE_KEYS.map((k) => n[k])),
         )
@@ -952,7 +952,7 @@ test.describe.serial('Full session lifecycle', () => {
 
         expect(midi.header.format).toBe(1)
         expect(midi.header.division).toBe(96)
-        expect(midi.tracks).toHaveLength(midi.header.numTracks)
+        expect(midi.tracks).toHaveLength(midi.header.trackCount)
 
         // conductor track: name, 4/4 time signature and the pattern tempo
         expect(midi.trackNames[0]).toBe('orDrumbox Pattern')

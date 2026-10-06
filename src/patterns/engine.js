@@ -77,7 +77,7 @@ export function normalizeArp(arp) {
 }
 
 export function getArpNoteCount(note) {
-    const totalNotes = parseInt(note.retriggerNum ?? 1)
+    const totalNotes = parseInt(note.retriggerCount ?? 1)
     return Number.isFinite(totalNotes) ? clamp(totalNotes, 1, 16) : 1
 }
 
@@ -85,7 +85,7 @@ export function computeTickForNote(note, track, tick = TICK) {
     return stepToTick(getNoteAbsoluteStep(note, track.stepsPerBeat), track.stepsPerBeat, tick)
 }
 
-export function computeNbTickForPattern(beatCount, tick = TICK) {
+export function computeTickCountForPattern(beatCount, tick = TICK) {
     return tick * beatCount
 }
 
@@ -96,7 +96,7 @@ export function computeNbTickForPattern(beatCount, tick = TICK) {
  * track's own length, so a track with no loop point loops over beatCount beats
  * rather than not at all.
  */
-export function computeNbTickForLoop(track, tick = TICK) {
+export function computeTickCountForLoop(track, tick = TICK) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
     const declared = Number(track.loopAtStep)
     const trackBeats = Defaults.getTrackProp(track, 'beatCount')
@@ -104,16 +104,16 @@ export function computeNbTickForLoop(track, tick = TICK) {
     return Math.floor((loopSteps / stepsPerBeat) * tick)
 }
 
-export function expandLoopOccurrences(baseTick, nbTickForLoop, nbTickForPattern) {
-    if (baseTick >= nbTickForLoop) {
+export function expandLoopOccurrences(baseTick, tickCountForLoop, tickCountForPattern) {
+    if (baseTick >= tickCountForLoop) {
         return [baseTick]
     }
     const occurrences = [baseTick]
-    if (nbTickForLoop < nbTickForPattern) {
-        let currentTick = baseTick + nbTickForLoop
-        while (currentTick < nbTickForPattern) {
+    if (tickCountForLoop < tickCountForPattern) {
+        let currentTick = baseTick + tickCountForLoop
+        while (currentTick < tickCountForPattern) {
             occurrences.push(currentTick)
-            currentTick += nbTickForLoop
+            currentTick += tickCountForLoop
         }
     }
     return occurrences
@@ -142,11 +142,11 @@ function addFlatNote(flatNotes, tick, flatNote) {
     flatNotes.get(tick).push(flatNote)
 }
 
-export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPattern, tick = TICK) {
+export function generateSubNotes(flatNotes, baseTick, track, note, tickCountForPattern, tick = TICK) {
     const arpConfig = normalizeArp(note.arp)
     const rate = note.rate ?? 1
     const arpTriggerProb = note.arpTriggerProbability ?? 1
-    const retriggerNum = note.retriggerNum ?? 1
+    const retriggerCount = note.retriggerCount ?? 1
 
     if (arpConfig && arpConfig.sequence.length > 0) {
         const totalNotes = getArpNoteCount(note)
@@ -155,7 +155,7 @@ export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPatt
         for (let i = 0; i < totalNotes; i++) {
             if (isProbabilityTriggered(arpTriggerProb)) {
                 const tickPos = baseTick + i * tickSpacing
-                if (tickPos < nbTickForPattern) {
+                if (tickPos < tickCountForPattern) {
                     const semitoneOffset = arpConfig.sequence[i % arpConfig.sequence.length]
                     addFlatNote(flatNotes, tickPos, createArpFlatNote(tickPos, track, note, semitoneOffset))
                 }
@@ -164,11 +164,11 @@ export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPatt
     } else {
         addFlatNote(flatNotes, baseTick, createFlatNote(baseTick, track, note))
 
-        if (retriggerNum > 1) {
+        if (retriggerCount > 1) {
             const tickSpacing = computeTickSpacing(track, rate, tick)
-            for (let i = 1; i < retriggerNum; i++) {
+            for (let i = 1; i < retriggerCount; i++) {
                 const tickPos = baseTick + i * tickSpacing
-                if (tickPos < nbTickForPattern && isProbabilityTriggered(arpTriggerProb)) {
+                if (tickPos < tickCountForPattern && isProbabilityTriggered(arpTriggerProb)) {
                     addFlatNote(flatNotes, tickPos, createFlatNote(tickPos, track, note))
                 }
             }
@@ -181,11 +181,11 @@ export function generateSubNotesWithEuclidean(
     baseTick,
     track,
     note,
-    nbTickForPattern,
+    tickCountForPattern,
     computeNextStep = null,
     tick = TICK,
 ) {
-    generateSubNotes(flatNotes, baseTick, track, note, nbTickForPattern, tick)
+    generateSubNotes(flatNotes, baseTick, track, note, tickCountForPattern, tick)
 
     const euclideanFill = note.euclideanFill ?? 0
     if (euclideanFill <= 0) return
@@ -204,7 +204,7 @@ export function generateSubNotesWithEuclidean(
     for (let i = 0; i < positions.length; i++) {
         const tickPos = baseTick + Math.round((positions[i] - startStep) * ticksPerStep)
 
-        if (tickPos < nbTickForPattern) {
+        if (tickPos < tickCountForPattern) {
             if (arpConfig) {
                 const totalArpNotes = getArpNoteCount(note)
                 const arpIndex = totalArpNotes + i
@@ -223,10 +223,10 @@ export function generateSubNotesWithEuclidean(
 
 export function recomputeFlatNotes(pattern, loop = 0, tick = TICK) {
     const flatNotes = new Map()
-    const nbTickForPattern = computeNbTickForPattern(pattern.beatCount, tick)
+    const tickCountForPattern = computeTickCountForPattern(pattern.beatCount, tick)
 
     for (const track of Object.values(pattern.tracks)) {
-        const nbTickForLoop = computeNbTickForLoop(track, tick)
+        const tickCountForLoop = computeTickCountForLoop(track, tick)
 
         // variation2 layer: lookup of per-source-note clones, source data untouched
         const variedNotes = TrackVariation.computeNoteVariation(track)
@@ -246,16 +246,16 @@ export function recomputeFlatNotes(pattern, loop = 0, tick = TICK) {
 
             const baseTick = computeTickForNote(note, track, tick)
 
-            if (baseTick >= nbTickForPattern) continue
+            if (baseTick >= tickCountForPattern) continue
 
-            const occurrences = expandLoopOccurrences(baseTick, nbTickForLoop, nbTickForPattern)
+            const occurrences = expandLoopOccurrences(baseTick, tickCountForLoop, tickCountForPattern)
 
             for (const t of occurrences) {
-                generateSubNotesWithEuclidean(flatNotes, t, track, note, nbTickForPattern, resolver, tick)
+                generateSubNotesWithEuclidean(flatNotes, t, track, note, tickCountForPattern, resolver, tick)
             }
         }
 
-        TrackVariation.apply(flatNotes, track, nbTickForLoop, nbTickForPattern, tick)
+        TrackVariation.apply(flatNotes, track, tickCountForLoop, tickCountForPattern, tick)
     }
 
     return flatNotes

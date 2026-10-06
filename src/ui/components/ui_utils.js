@@ -90,8 +90,8 @@ export function formatNoteTooltip(note, trackPitch = 0) {
     const every = note.every ?? 1
     if (every !== 1) parts.push(`every:${every}`)
 
-    const retriggerNum = note.retriggerNum ?? 1
-    if (retriggerNum !== 1) parts.push(`retrig:${retriggerNum}`)
+    const retriggerCount = note.retriggerCount ?? 1
+    if (retriggerCount !== 1) parts.push(`retrig:${retriggerCount}`)
 
     const arp = note.arp
     if (arp && Array.isArray(arp) && arp.length >= 2) {

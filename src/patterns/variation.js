@@ -205,7 +205,7 @@ function varyNotes(sourceNotes, budget, track) {
         switch (op.type) {
             case 'retrigRate': {
                 const note = cloneVaried(varied, source)
-                note.retriggerNum = op.newRetrig
+                note.retriggerCount = op.newRetrig
                 note.rate = op.newRate
                 remaining -= op.cost
                 break
@@ -234,22 +234,22 @@ function varyNotes(sourceNotes, budget, track) {
 }
 
 export default class TrackVariation {
-    static apply(flatNotes, track, nbTickForLoop, nbTickForPattern, tick, variationOverride = null) {
+    static apply(flatNotes, track, tickCountForLoop, tickCountForPattern, tick, variationOverride = null) {
         const variation = variationOverride ?? track.variation ?? 0
         if (variation <= 0) return
 
         const budget = Math.round((variation * 16) / 100)
         const stepsPerBeat = track.stepsPerBeat ?? 4
-        const totalStepsInLoop = Math.round((nbTickForLoop * stepsPerBeat) / tick)
-        const loopCount = Math.max(1, Math.ceil(nbTickForPattern / nbTickForLoop))
+        const totalStepsInLoop = Math.round((tickCountForLoop * stepsPerBeat) / tick)
+        const loopCount = Math.max(1, Math.ceil(tickCountForPattern / tickCountForLoop))
 
         for (let loop = 0; loop < loopCount; loop++) {
             const occupied = new Set()
             const byStep = new Map()
 
             for (let step = 0; step < totalStepsInLoop; step++) {
-                const t = loop * nbTickForLoop + stepToTick(step, stepsPerBeat, tick)
-                if (t >= nbTickForPattern) continue
+                const t = loop * tickCountForLoop + stepToTick(step, stepsPerBeat, tick)
+                if (t >= tickCountForPattern) continue
 
                 const existing = flatNotes.get(t)
                 const flatNote = existing?.find((n) => n.track === track)
@@ -275,7 +275,7 @@ export default class TrackVariation {
                 const hasNext = nextStep >= 0 && occupied.has(nextStep)
 
                 if (!hasPrev && nextStep >= 0 && !occupied.has(nextStep)) {
-                    const t = loop * nbTickForLoop + stepToTick(nextStep, stepsPerBeat, tick)
+                    const t = loop * tickCountForLoop + stepToTick(nextStep, stepsPerBeat, tick)
                     ops.push({
                         type: 'anticipation',
                         cost: COST_ADD,
@@ -292,7 +292,7 @@ export default class TrackVariation {
                 ops.push({ type: 'pitch', cost: COST_PITCH, flatNote })
 
                 if (!hasNext && nextStep >= 0 && !occupied.has(nextStep)) {
-                    const t = loop * nbTickForLoop + stepToTick(nextStep, stepsPerBeat, tick)
+                    const t = loop * tickCountForLoop + stepToTick(nextStep, stepsPerBeat, tick)
                     ops.push({
                         type: 'double',
                         cost: COST_ADD,
@@ -307,7 +307,7 @@ export default class TrackVariation {
                 if (gap < 3) continue
 
                 const midStep = sortedSteps[i] + Math.floor(gap / 2)
-                const t = loop * nbTickForLoop + stepToTick(midStep, stepsPerBeat, tick)
+                const t = loop * tickCountForLoop + stepToTick(midStep, stepsPerBeat, tick)
 
                 ops.push({
                     type: 'ghost',
