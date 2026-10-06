@@ -176,6 +176,24 @@ describe('Functional: Pattern serialization round-trip', () => {
         expect(track.beatCount).toBe(4)
     })
 
+    it('a pan kept by the exporter survives export → reimport', () => {
+        const source = makePattern({
+            name: 'PanRoundTrip',
+            tracks: [
+                // A track renamed to a drum name keeps the pan it had before the
+                // rename: dropping the 0 from the file would re-derive -0.3 from CHH.
+                makeTrack('CHH', [makeNote(0, 0)], { pan: 0 }),
+            ],
+        })
+
+        const imported = cmd.importPatternFromJson(source)
+        expect(Exporter.export(imported).tracks[0].pan).toBe(0)
+
+        const reimported = cmd.importPatternFromJson(Exporter.export(imported))
+        expect(reimported.tracks[0].pan).toBe(0)
+        expect(Exporter.export(reimported).tracks[0].pan).toBe(0)
+    })
+
     it('notes with arp and retrigger survive round-trip', () => {
         const source = makePattern({
             name: 'ArpTest',

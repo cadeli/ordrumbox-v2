@@ -1,5 +1,6 @@
 import { PATTERN_DEFAULTS } from '../model/pattern_schema.js'
 import { TRACK_DEFAULTS } from '../model/track_schema.js'
+import { getPanFromTrackName } from '../core/drum_taxonomy.js'
 import { NOTE_DEFAULTS, NOTE_RECALCULATED, detectUsedKeys, noteToObjectCompact } from '../core/note_schema.js'
 
 const ROUND_2D = new Set([
@@ -55,7 +56,15 @@ export class Exporter {
                 cleaned[key] = val
                 continue
             }
-            if (!this.isDefaultValue(val, TRACK_DEFAULTS[key])) {
+            // `pan` is re-derived from the track name whenever a file leaves it
+            // out (fixTrackPanning), so a pan that differs from that derivation
+            // must be written even when it equals the model default: a track
+            // renamed to a drum name (instrument pick, auto-assign) keeps its
+            // old pan of 0, and stripping it would re-pan the track on the next
+            // import (a CHH track came back at -0.3).
+            const panDiffersFromName =
+                key === 'pan' && typeof val === 'number' && val !== getPanFromTrackName(track.name)
+            if (panDiffersFromName || !this.isDefaultValue(val, TRACK_DEFAULTS[key])) {
                 if (key === 'notes') {
                     const encoded = this.encodeNotes(val, track)
                     if (encoded) {

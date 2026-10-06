@@ -91,6 +91,23 @@ describe('Exporter', () => {
             expect(cleaned.myMeta).toBe('session1')
         })
 
+        it('keeps a pan that differs from the one imported from the track name', () => {
+            // The import derives a missing pan from the name (CHH -> -0.3), so an
+            // explicit 0 on a CHH track must be written or it comes back panned.
+            const track = { ...TRACK_DEFAULTS, name: 'CHH', pan: 0, notes: [] }
+            expect(Exporter.cleanTrack(track).pan).toBe(0)
+        })
+
+        it('strips a pan equal to the one imported from the track name', () => {
+            const track = { ...TRACK_DEFAULTS, name: 'T3', pan: 0, notes: [] }
+            expect(Exporter.cleanTrack(track)).not.toHaveProperty('pan')
+        })
+
+        it('keeps a non-default pan', () => {
+            const track = { ...TRACK_DEFAULTS, name: 'T3', pan: 0.25, notes: [] }
+            expect(Exporter.cleanTrack(track).pan).toBe(0.25)
+        })
+
         it('cleans notes inside the track (compact format)', () => {
             const track = {
                 ...TRACK_DEFAULTS,
