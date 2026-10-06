@@ -10,7 +10,7 @@
  * What does NOT survive (by design):
  *   - Tracks with no notes are NOT exported to MIDI
  *   - Track-level properties: pan, reverb, filter, delay, saturation,
- *     swing, velocity (track multiplier), velocityLfo, panLfo, soundId, etc.
+ *     swing, velocity (track multiplier), velocityLfo, panLfo, sampleId, etc.
  *   - Note velocity (MIDI velocity ≠ orDrumbox velocity in all cases)
  */
 

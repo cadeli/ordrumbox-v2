@@ -27,7 +27,7 @@ function makeTrack(overrides = {}) {
         stepsPerBeat: 4,
         loopAtStep: 16,
         mute: false,
-        soundId: 'kick_url',
+        sampleId: 'kick_url',
         useAutoAssignSound: true,
         useSoftSynth: false,
         ...overrides,

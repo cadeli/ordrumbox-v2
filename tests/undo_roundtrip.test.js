@@ -110,7 +110,7 @@ describe('Undo Roundtrip & State Inversion', () => {
             expect(history.pastLength).toBe(15)
             expect(pattern.name).toBe('Mutated_Pattern_Name')
             expect(pattern.bpm).toBe(148)
-            expect(pattern.tracks[0].soundId).toBe('custom/punchy_kick.wav')
+            expect(pattern.tracks[0].sampleId).toBe('custom/punchy_kick.wav')
             expect(pattern.tracks[1].mute).toBe(true)
             expect(pattern.tracks[2].solo).toBe(true)
             expect(pattern.tracks).toHaveLength(4)
@@ -140,7 +140,7 @@ describe('Undo Roundtrip & State Inversion', () => {
             expect(restoredSnare.name).toBe('SNARE')
 
             // Track parameters restored
-            expect(restoredKick.soundId).toBe(p0Snapshot.tracks[0].soundId)
+            expect(restoredKick.sampleId).toBe(p0Snapshot.tracks[0].sampleId)
             expect(restoredKick.velocity).toBe(p0Snapshot.tracks[0].velocity)
             expect(restoredKick.pan).toBe(p0Snapshot.tracks[0].pan)
             expect(restoredSnare.mute).toBe(false)

@@ -37,7 +37,7 @@ function hostileSound() {
 /** Minimal editor stub — only the fields SoundSection.render() reads. */
 function makeEditor(track = {}) {
     return {
-        track: { name: 'KICK', soundId: SOUND_URL, useSoftSynth: false, useAutoAssignSound: false, ...track },
+        track: { name: 'KICK', sampleId: SOUND_URL, useSoftSynth: false, useAutoAssignSound: false, ...track },
         soundRegistry,
         serviceRegistry,
         appState: { selectedDrumkitIdx: 0 },

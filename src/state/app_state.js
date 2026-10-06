@@ -38,7 +38,7 @@ class AppState {
         workletStatus: 'unknown',
         showVus: true,
         songInfos: { name: '', description: '', date: '' },
-        /** Arrangements: each is a list of clips placing patterns on a bar timeline. */
+        /** Arrangements: each is a list of clips placing patterns on a measure timeline. */
         songs: [],
         selectedSongIdx: 0,
     }

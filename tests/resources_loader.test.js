@@ -183,7 +183,7 @@ describe('ResourcesLoader', () => {
             expect(appState.songInfos.name).toBe('Test')
         })
 
-        it('resets soundId when useAutoAssignSound is not false', async () => {
+        it('resets sampleId when useAutoAssignSound is not false', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             serviceRegistry.cmd = {
                 importPatternFromJson: vi.fn(),
@@ -196,7 +196,7 @@ describe('ResourcesLoader', () => {
                         name: 'P1',
                         bpm: 120,
                         beatCount: 4,
-                        tracks: [{ name: 'KICK', soundId: 'kick.wav', useAutoAssignSound: true, notes: [] }],
+                        tracks: [{ name: 'KICK', sampleId: 'kick.wav', useAutoAssignSound: true, notes: [] }],
                     },
                 ],
             }
@@ -205,10 +205,10 @@ describe('ResourcesLoader', () => {
             await loader.loadSong('song.json')
 
             const imported = serviceRegistry.cmd.importPatternFromJson.mock.calls[0][0]
-            expect(imported.tracks[0].soundId).toBe('NOT_DEFINED')
+            expect(imported.tracks[0].sampleId).toBe('NOT_DEFINED')
         })
 
-        it('keeps soundId when useAutoAssignSound is false', async () => {
+        it('keeps sampleId when useAutoAssignSound is false', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             serviceRegistry.cmd = {
                 importPatternFromJson: vi.fn(),
@@ -221,7 +221,7 @@ describe('ResourcesLoader', () => {
                         name: 'P1',
                         bpm: 120,
                         beatCount: 4,
-                        tracks: [{ name: 'KICK', soundId: 'kick.wav', useAutoAssignSound: false, notes: [] }],
+                        tracks: [{ name: 'KICK', sampleId: 'kick.wav', useAutoAssignSound: false, notes: [] }],
                     },
                 ],
             }
@@ -230,10 +230,10 @@ describe('ResourcesLoader', () => {
             await loader.loadSong('song.json')
 
             const imported = serviceRegistry.cmd.importPatternFromJson.mock.calls[0][0]
-            expect(imported.tracks[0].soundId).toBe('kick.wav')
+            expect(imported.tracks[0].sampleId).toBe('kick.wav')
         })
 
-        it('skips tracks with soundId NOT_DEFINED', async () => {
+        it('skips tracks with sampleId NOT_DEFINED', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             serviceRegistry.cmd = {
                 importPatternFromJson: vi.fn(),
@@ -246,7 +246,7 @@ describe('ResourcesLoader', () => {
                         name: 'P1',
                         bpm: 120,
                         beatCount: 4,
-                        tracks: [{ name: 'KICK', soundId: 'NOT_DEFINED', notes: [] }],
+                        tracks: [{ name: 'KICK', sampleId: 'NOT_DEFINED', notes: [] }],
                     },
                 ],
             }
@@ -255,7 +255,7 @@ describe('ResourcesLoader', () => {
             await loader.loadSong('song.json')
 
             const imported = serviceRegistry.cmd.importPatternFromJson.mock.calls[0][0]
-            expect(imported.tracks[0].soundId).toBe('NOT_DEFINED')
+            expect(imported.tracks[0].sampleId).toBe('NOT_DEFINED')
         })
 
         it('imports under record suppression and clears history after boot', async () => {
@@ -592,7 +592,7 @@ describe('ResourcesLoader', () => {
                 arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
             })
 
-            const patterns = [{ tracks: [{ soundId: 'real/bass-c2.wav' }, { soundId: 'matt/CHH.wav' }] }]
+            const patterns = [{ tracks: [{ sampleId: 'real/bass-c2.wav' }, { sampleId: 'matt/CHH.wav' }] }]
             const loaded = await loader.loadSamplesForPatterns(patterns)
 
             expect(loaded.map((s) => s.url)).toEqual(['real/bass-c2.wav'])
@@ -611,20 +611,20 @@ describe('ResourcesLoader', () => {
             })
 
             const loaded = await loader.loadSamplesForPatterns({
-                tracks: { t1: { soundId: 'real/kick.wav' } },
+                tracks: { t1: { sampleId: 'real/kick.wav' } },
             })
 
             expect(loaded.map((s) => s.url)).toEqual(['real/kick.wav'])
         })
 
-        it('ignores NOT_DEFINED, unknown soundIds and empty patterns', async () => {
+        it('ignores NOT_DEFINED, unknown sampleIds and empty patterns', async () => {
             const { soundRegistry } = await import('../src/state/sound_registry.js')
             loader = makeLoader()
             soundRegistry.drumkitList = [{ name: 'real', instruments: [{ url: 'real/kick.wav' }] }]
             soundRegistry.sounds = {}
 
             const loaded = await loader.loadSamplesForPatterns([
-                { tracks: [{ soundId: 'NOT_DEFINED' }, { soundId: 'ghost.wav' }, {}] },
+                { tracks: [{ sampleId: 'NOT_DEFINED' }, { sampleId: 'ghost.wav' }, {}] },
             ])
 
             expect(loaded).toEqual([])

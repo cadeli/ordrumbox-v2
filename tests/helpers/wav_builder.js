@@ -142,17 +142,17 @@ export async function buildWavFromOnsets(options) {
  *
  * @param {Object} options
  * @param {number} options.bpm - BPM
- * @param {number} [options.ticksPerBar=32] - Ticks per beat (orDrumbox uses 32)
+ * @param {number} [options.ticksPerBeat=32] - Ticks per beat (orDrumbox uses 32)
  * @param {number} [options.sampleRate=44100] - Sample rate
  * @param {Array<{ tick: number, freq?: number, duration?: number, amplitude?: number }>} options.onsets
  *   Array of onset positions in engine ticks.
  * @returns {Uint8Array} - Complete WAV file as bytes
  */
 export async function buildWavFromTicks(options) {
-    const { bpm, ticksPerBar = 32, sampleRate = DEFAULT_SAMPLE_RATE, onsets = [], ...rest } = options
+    const { bpm, ticksPerBeat = 32, sampleRate = DEFAULT_SAMPLE_RATE, onsets = [], ...rest } = options
 
-    // Convert ticks to seconds: tickTime = (60 * 4) / (bpm * ticksPerBar) * 0.25
-    const tickTime = ((60 * 4) / (bpm * ticksPerBar)) * 0.25
+    // Convert ticks to seconds: tickTime = (60 * 4) / (bpm * ticksPerBeat) * 0.25
+    const tickTime = ((60 * 4) / (bpm * ticksPerBeat)) * 0.25
 
     const sampleOnsets = onsets.map((o) => ({
         ...o,

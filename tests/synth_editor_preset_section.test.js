@@ -42,7 +42,7 @@ function makeTrack(overrides = {}) {
         stepsPerBeat: 4,
         loopAtStep: 16,
         mute: false,
-        soundId: '',
+        sampleId: '',
         useAutoAssignSound: true,
         useSoftSynth: true,
         synthSoundKey: 'BASS1',

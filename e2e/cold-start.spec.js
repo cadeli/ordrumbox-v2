@@ -64,7 +64,7 @@ test.describe('E2E-A : Cold start → first sound', () => {
             .toBe('running')
     })
 
-    test('tracks have soundIds assigned (auto-assign on first start)', async ({ page }) => {
+    test('tracks have sampleIds assigned (auto-assign on first start)', async ({ page }) => {
         await page.goto('/')
 
         await page.locator('#waiting-screen-start-btn').click()
@@ -81,7 +81,7 @@ test.describe('E2E-A : Cold start → first sound', () => {
                     page.evaluate(() => {
                         const tracks = window.__e2e.appState.patterns[0]?.tracks ?? []
                         return tracks.filter(
-                            (t) => t.soundId && t.soundId !== 'NOT_DEFINED' && t.soundId !== 'NOT_FOUND',
+                            (t) => t.sampleId && t.sampleId !== 'NOT_DEFINED' && t.sampleId !== 'NOT_FOUND',
                         ).length
                     }),
                 { timeout: 15_000 },

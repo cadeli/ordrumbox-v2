@@ -9,13 +9,13 @@
 // ruler aims the cursor, which is where the next play starts.
 
 import { test, expect } from '@playwright/test'
-import { bootApp, stackClipOnBar } from './fixtures.js'
-import { BAR_WIDTH, CLIP_INSET, ROW_HEIGHT } from '../src/ui/song_panel/layout.js'
-import { BEATS_PER_BAR } from '../src/model/song_schema.js'
+import { bootApp, stackClipOnMeasure } from './fixtures.js'
+import { MEASURE_WIDTH, CLIP_INSET, ROW_HEIGHT } from '../src/ui/song_panel/layout.js'
+import { BEATS_PER_MEASURE } from '../src/model/song_schema.js'
 import { TICK } from '../src/core/constants.js'
 
-/** ticks in one measure: X is time, one measure per BAR_WIDTH px */
-const BAR_TICKS = TICK * BEATS_PER_BAR
+/** ticks in one measure: X is time, one measure per MEASURE_WIDTH px */
+const MEASURE_TICKS = TICK * BEATS_PER_MEASURE
 
 async function openSongView(page) {
     await bootApp(page)
@@ -61,26 +61,26 @@ test.describe('Song arrangement grid', () => {
         const geom = await page.evaluate(() => {
             const list = document.getElementById('sa-list')
             const body = document.querySelector('.sa-body')
-            const firstBar = document.querySelector('.sa-bar-head')
+            const firstMeasure = document.querySelector('.sa-measure-head')
             const name = document.querySelector('.sa-row-name')
             return {
-                totalBars: Number(list.dataset.totalBars),
-                cells: document.querySelectorAll('.sa-bar-head').length,
-                firstBarLabel: firstBar.textContent,
-                firstBarLeft: Math.round(firstBar.getBoundingClientRect().left),
+                totalMeasures: Number(list.dataset.totalMeasures),
+                cells: document.querySelectorAll('.sa-measure-head').length,
+                firstMeasureLabel: firstMeasure.textContent,
+                firstMeasureLeft: Math.round(firstMeasure.getBoundingClientRect().left),
                 bodyLeft: Math.round(body.getBoundingClientRect().left),
                 nameRight: Math.round(name.getBoundingClientRect().right),
                 listLeft: Math.round(list.getBoundingClientRect().left),
             }
         })
-        expect(geom.cells).toBe(geom.totalBars)
-        expect(geom.firstBarLabel).toBe('1')
+        expect(geom.cells).toBe(geom.totalMeasures)
+        expect(geom.firstMeasureLabel).toBe('1')
         // the ruler starts where the body starts, i.e. after the frozen names
-        expect(geom.firstBarLeft).toBe(geom.bodyLeft)
+        expect(geom.firstMeasureLeft).toBe(geom.bodyLeft)
         expect(geom.nameRight).toBeLessThanOrEqual(geom.bodyLeft + 1)
     })
 
-    test('a rectangle sits on its pattern row, at its start bar along X', async ({ page }) => {
+    test('a rectangle sits on its pattern row, at its start measure along X', async ({ page }) => {
         await openSongView(page)
         const geom = await page.evaluate(() => {
             const song = window.__e2e.appState.songs[0]
@@ -88,36 +88,36 @@ test.describe('Song arrangement grid', () => {
             // happen to mention the patterns in.
             const used = [...new Set(song.clips.map((c) => c.pattern))]
             const rows = window.__e2e.appState.patterns.filter((p) => used.includes(p.id)).map((p) => p.id)
-            const clip = song.clips.find((c) => c.startBar > 0)
+            const clip = song.clips.find((c) => c.startMeasure > 0)
             const el = document.querySelector(
-                `.sa-clip[data-pattern="${clip.pattern}"][data-start-bar="${clip.startBar}"]`,
+                `.sa-clip[data-pattern="${clip.pattern}"][data-start-measure="${clip.startMeasure}"]`,
             )
             const body = document.querySelector('.sa-body').getBoundingClientRect()
             const box = el.getBoundingClientRect()
             return {
-                startBar: clip.startBar,
+                startMeasure: clip.startMeasure,
                 row: rows.indexOf(clip.pattern),
                 leftInBody: Math.round(box.left - body.left),
                 topInBody: Math.round(box.top - body.top),
             }
         })
-        // X = time (one measure per BAR_WIDTH px), Y = pattern row
-        expect(geom.leftInBody).toBe(geom.startBar * BAR_WIDTH)
+        // X = time (one measure per MEASURE_WIDTH px), Y = pattern row
+        expect(geom.leftInBody).toBe(geom.startMeasure * MEASURE_WIDTH)
         expect(geom.topInBody).toBe(geom.row * ROW_HEIGHT + CLIP_INSET / 2)
     })
 
     // Overlapping clips is the whole point of the feature: two patterns starting
-    // on the same bar must sit on two rows at the same X position. The demo
+    // on the same measure must sit on two rows at the same X position. The demo
     // arrangement stacks nothing, so the second clip is placed on the spot.
     test('shows overlapping clips on separate rows', async ({ page }) => {
         await openSongView(page)
-        await stackClipOnBar(page, 0)
+        await stackClipOnMeasure(page, 0)
 
         const overlap = await page.evaluate(() => {
             const song = window.__e2e.appState.songs[0]
-            const at0 = song.clips.filter((c) => c.startBar === 0)
+            const at0 = song.clips.filter((c) => c.startMeasure === 0)
             const body = document.querySelector('.sa-body').getBoundingClientRect()
-            const els = [...document.querySelectorAll('.sa-clip[data-start-bar="0"]')]
+            const els = [...document.querySelectorAll('.sa-clip[data-start-measure="0"]')]
             return {
                 count: at0.length,
                 rendered: els.length,
@@ -134,14 +134,16 @@ test.describe('Song arrangement grid', () => {
     test('the rectangle width encodes the clip duration', async ({ page }) => {
         await openSongView(page)
         // the spec's constants live in Node, so they cross the bridge as arguments
-        const widths = await page.evaluate((bar) => {
+        const widths = await page.evaluate((measure) => {
             const song = window.__e2e.appState.songs[0]
-            const clip = song.clips.find((c) => c.bars === 4)
-            const el = document.querySelector(`.sa-clip[data-start-bar="${clip.startBar}"][data-bars="4"]`)
-            return { w: Math.round(el.getBoundingClientRect().width), bar }
-        }, BAR_WIDTH)
-        // 4 bars minus the inset that separates neighbouring clips
-        expect(widths.w).toBe(4 * widths.bar - CLIP_INSET)
+            const clip = song.clips.find((c) => c.measureCount === 4)
+            const el = document.querySelector(
+                `.sa-clip[data-start-measure="${clip.startMeasure}"][data-measure-count="4"]`,
+            )
+            return { w: Math.round(el.getBoundingClientRect().width), measure }
+        }, MEASURE_WIDTH)
+        // 4 measures minus the inset that separates neighbouring clips
+        expect(widths.w).toBe(4 * widths.measure - CLIP_INSET)
     })
 
     test('names the patterns in the first column', async ({ page }) => {
@@ -170,7 +172,7 @@ test.describe('Song arrangement grid', () => {
 /**
  * Right-click menus on the arrangement grid:
  *   - on a clip        → Next (repeat just after) / Delete
- *   - on a pattern name → Add at bar N (place that pattern) / Delete row (every clip of it)
+ *   - on a pattern name → Add at measure N (place that pattern) / Delete row (every clip of it)
  *   - on an empty cell  → Add here (the row's pattern at that measure)
  */
 test.describe('Song arrangement context menus', () => {
@@ -184,73 +186,73 @@ test.describe('Song arrangement context menus', () => {
     test('on a clip: Next repeats the pattern right after it', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
-        // the demo arrangement's smrock clip: one bar long, on measure 4 (index 3)
-        await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="3"]').click({ button: 'right' })
+        // the demo arrangement's smrock clip: one measure long, on measure 4 (index 3)
+        await page.locator('.sa-clip[data-pattern="smrock"][data-start-measure="3"]').click({ button: 'right' })
         await expect(page.locator('.cm-menu')).toBeVisible()
         await page.locator('.cm-menu-item', { hasText: 'Next' }).click()
 
         await expect.poll(() => clips(page)).toBe(before + 1)
         // so Next lands right after it, on measure 5
-        expect(await clipsWhere(page, "c.pattern === 'smrock' && c.startBar === 4")).toBe(1)
+        expect(await clipsWhere(page, "c.pattern === 'smrock' && c.startMeasure === 4")).toBe(1)
     })
 
     test('on a clip: Delete removes just that clip', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
-        await page.locator('.sa-clip[data-pattern="funkfill"][data-start-bar="38"]').click({ button: 'right' })
+        await page.locator('.sa-clip[data-pattern="funkfill"][data-start-measure="38"]').click({ button: 'right' })
         await page.locator('.cm-menu-item', { hasText: 'Delete' }).click()
 
         await expect.poll(() => clips(page)).toBe(before - 1)
-        expect(await clipsWhere(page, "c.pattern === 'funkfill' && c.startBar === 38")).toBe(0)
+        expect(await clipsWhere(page, "c.pattern === 'funkfill' && c.startMeasure === 38")).toBe(0)
     })
 
     // The loop is both the grid width and what playback loops over, so it
     // follows the clips instead of freezing at the length song.json declares.
     test('deleting the last clip shortens the arrangement', async ({ page }) => {
         await openSongView(page)
-        const bars = () => page.evaluate(() => Number(document.getElementById('sa-list').dataset.totalBars))
+        const measures = () => page.evaluate(() => Number(document.getElementById('sa-list').dataset.totalMeasures))
         const last = await page.evaluate(() => window.__e2e.appState.songs[0].clips.at(-1))
-        const before = last.startBar + last.bars
-        expect(await bars()).toBe(before)
+        const before = last.startMeasure + last.measureCount
+        expect(await measures()).toBe(before)
 
         await page
-            .locator(`.sa-clip[data-pattern="${last.pattern}"][data-start-bar="${last.startBar}"]`)
+            .locator(`.sa-clip[data-pattern="${last.pattern}"][data-start-measure="${last.startMeasure}"]`)
             .click({ button: 'right' })
         await page.locator('.cm-menu-item', { hasText: 'Delete' }).click()
 
-        await expect.poll(() => bars()).toBeLessThan(before)
+        await expect.poll(() => measures()).toBeLessThan(before)
         // the playback loop followed, not only the drawing
-        expect(await page.evaluate(() => window.__e2e.appState.songs[0].loopBars)).toBe(await bars())
+        expect(await page.evaluate(() => window.__e2e.appState.songs[0].loopMeasureCount)).toBe(await measures())
     })
 
-    test('on a pattern name: Add at bar places that pattern in the arrangement', async ({ page }) => {
+    test('on a pattern name: Add at measure places that pattern in the arrangement', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
         // a pattern that already has clips, so this adds a second placement
         // rather than the row's first
         await page.locator('.sa-row-name[data-pattern="cmpbeat"]').click({ button: 'right' })
-        await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar 1' })).toBeVisible()
-        await page.locator('.cm-menu-item', { hasText: 'Add at bar 1' }).click()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add at measure 1' })).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Add at measure 1' }).click()
 
         await expect.poll(() => clips(page)).toBe(before + 1)
-        expect(await clipsWhere(page, "c.pattern === 'cmpbeat' && c.startBar === 0")).toBe(1)
+        expect(await clipsWhere(page, "c.pattern === 'cmpbeat' && c.startMeasure === 0")).toBe(1)
     })
 
     // The name column is frozen: no measure sits under the pointer there, so the
     // item inserts at the cursor, wrapped on the arrangement loop.
-    test('on a pattern name: the insert bar follows the transport', async ({ page }) => {
+    test('on a pattern name: the insert measure follows the transport', async ({ page }) => {
         await openSongView(page)
         await page.evaluate(
             (tick) => {
                 window.__e2e.serviceRegistry.transport.tick = tick
             },
-            4 * BAR_TICKS + 10,
+            4 * MEASURE_TICKS + 10,
         )
         await page.locator('.sa-row-name[data-pattern="funk"]').click({ button: 'right' })
-        await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar 5' })).toBeVisible()
-        await page.locator('.cm-menu-item', { hasText: 'Add at bar 5' }).click()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add at measure 5' })).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Add at measure 5' }).click()
 
-        expect(await clipsWhere(page, "c.pattern === 'funk' && c.startBar === 4")).toBe(1)
+        expect(await clipsWhere(page, "c.pattern === 'funk' && c.startMeasure === 4")).toBe(1)
     })
 
     // Same pattern => same length wherever it is placed, and adding must not
@@ -258,17 +260,20 @@ test.describe('Song arrangement context menus', () => {
     test('on a pattern name: Add reuses the pattern length and keeps Delete row', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
-        const barsOf = (page2, id) =>
-            page2.evaluate((p) => window.__e2e.appState.songs[0].clips.find((c) => c.pattern === p)?.bars ?? null, id)
-        const reference = await barsOf(page, 'cmpbeat')
+        const measuresOf = (page2, id) =>
+            page2.evaluate(
+                (p) => window.__e2e.appState.songs[0].clips.find((c) => c.pattern === p)?.measureCount ?? null,
+                id,
+            )
+        const reference = await measuresOf(page, 'cmpbeat')
 
         await page.locator('.sa-row-name[data-pattern="cmpbeat"]').click({ button: 'right' })
-        await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar' })).toBeVisible()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add at measure' })).toBeVisible()
         await expect(page.locator('.cm-menu-item', { hasText: 'Delete row' })).toBeVisible()
-        await page.locator('.cm-menu-item', { hasText: 'Add at bar 1' }).click()
+        await page.locator('.cm-menu-item', { hasText: 'Add at measure 1' }).click()
 
         await expect.poll(() => clips(page)).toBe(before + 1)
-        expect(await barsOf(page, 'cmpbeat')).toBe(reference)
+        expect(await measuresOf(page, 'cmpbeat')).toBe(reference)
 
         // and the removal entry still removes every clip of that pattern
         const ofPattern = await clipsWhere(page, "c.pattern === 'cmpbeat'")
@@ -297,21 +302,25 @@ test.describe('Song arrangement context menus', () => {
         const before = await clips(page)
         const body = await page.locator('.sa-body').boundingBox()
 
-        // row of `funk` (index 5), bar cell 1 — empty, funk starts at bar 3
-        await page.mouse.click(body.x + 1 * BAR_WIDTH + BAR_WIDTH / 2, body.y + 5 * ROW_HEIGHT + ROW_HEIGHT / 2, {
-            button: 'right',
-        })
+        // row of `funk` (index 5), measure cell 1 — empty, funk starts at measure 3
+        await page.mouse.click(
+            body.x + 1 * MEASURE_WIDTH + MEASURE_WIDTH / 2,
+            body.y + 5 * ROW_HEIGHT + ROW_HEIGHT / 2,
+            {
+                button: 'right',
+            },
+        )
         await expect(page.locator('.cm-menu-item', { hasText: 'Add here' })).toBeVisible()
         await page.locator('.cm-menu-item', { hasText: 'Add here' }).click()
 
         await expect.poll(() => clips(page)).toBe(before + 1)
-        // cell 1 is bar 2 displayed, i.e. index 1
-        expect(await clipsWhere(page, "c.pattern === 'funk' && c.startBar === 1")).toBe(1)
+        // cell 1 is measure 2 displayed, i.e. index 1
+        expect(await clipsWhere(page, "c.pattern === 'funk' && c.startMeasure === 1")).toBe(1)
     })
 
     test('clicking a filled cell offers the clip menu, not Add here', async ({ page }) => {
         await openSongView(page)
-        await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="3"]').click({ button: 'right' })
+        await page.locator('.sa-clip[data-pattern="smrock"][data-start-measure="3"]').click({ button: 'right' })
         await expect(page.locator('.cm-menu-item', { hasText: 'Add here' })).toHaveCount(0)
         await expect(page.locator('.cm-menu-item', { hasText: 'Delete' })).toBeVisible()
     })
@@ -319,7 +328,7 @@ test.describe('Song arrangement context menus', () => {
     test('Escape closes the menu without changing anything', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
-        await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="3"]').click({ button: 'right' })
+        await page.locator('.sa-clip[data-pattern="smrock"][data-start-measure="3"]').click({ button: 'right' })
         await expect(page.locator('.cm-menu')).toBeVisible()
         await page.keyboard.press('Escape')
         await expect(page.locator('.cm-menu')).toHaveCount(0)
@@ -329,7 +338,7 @@ test.describe('Song arrangement context menus', () => {
     test('arrangement edits are undoable', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
-        await page.locator('.sa-clip[data-pattern="funkfill"][data-start-bar="38"]').click({ button: 'right' })
+        await page.locator('.sa-clip[data-pattern="funkfill"][data-start-measure="38"]').click({ button: 'right' })
         await page.locator('.cm-menu-item', { hasText: 'Delete' }).click()
         await expect.poll(() => clips(page)).toBe(before - 1)
 
@@ -358,7 +367,7 @@ test.describe('Song arrangement cursor', () => {
         })
     const start = (page) => page.evaluate(() => window.__e2e.serviceRegistry.seq.toggleStartStop?.())
 
-    const BAR = BAR_WIDTH
+    const MEASURE = MEASURE_WIDTH
 
     test('rests on the first measure while the transport is stopped', async ({ page }) => {
         await openSongView(page)
@@ -386,24 +395,24 @@ test.describe('Song arrangement cursor', () => {
     // The ruler click: aim the cursor, then play from there.
     test('clicking a measure in the ruler aims the cursor there', async ({ page }) => {
         await openSongView(page)
-        await page.locator('.sa-bar-head[data-bar="3"]').click()
+        await page.locator('.sa-measure-head[data-measure="3"]').click()
 
         await expect(head(page)).toBeVisible()
-        expect(await px(page)).toBe(3 * BAR)
-        expect(await page.evaluate(() => window.__e2e.serviceRegistry.seq.songCursorBar)).toBe(3)
+        expect(await px(page)).toBe(3 * MEASURE)
+        expect(await page.evaluate(() => window.__e2e.serviceRegistry.seq.songCursorMeasure)).toBe(3)
         // and the ruler says which measure that is
-        await expect(page.locator('.sa-bar-head.sa-bar-current')).toHaveText('4')
+        await expect(page.locator('.sa-measure-head.sa-measure-current')).toHaveText('4')
     })
 
     test('play starts from the measure the cursor was put on', async ({ page }) => {
         await openSongView(page)
-        await page.locator('.sa-bar-head[data-bar="3"]').click()
+        await page.locator('.sa-measure-head[data-measure="3"]').click()
         await start(page)
         await expect(head(page)).toBeVisible()
 
         const first = await px(page)
-        expect(first).toBeGreaterThanOrEqual(3 * BAR)
-        expect(first).toBeLessThan(4 * BAR)
+        expect(first).toBeGreaterThanOrEqual(3 * MEASURE)
+        expect(first).toBeLessThan(4 * MEASURE)
 
         await start(page)
     })
@@ -415,11 +424,13 @@ test.describe('Song arrangement cursor', () => {
         await start(page)
         await expect(head(page)).toBeVisible()
 
-        await page.locator('.sa-bar-head[data-bar="20"]').click()
+        await page.locator('.sa-measure-head[data-measure="20"]').click()
         const jumped = await px(page)
-        expect(jumped).toBeGreaterThanOrEqual(20 * BAR)
-        expect(jumped).toBeLessThan(21 * BAR)
-        expect(await page.evaluate(() => window.__e2e.serviceRegistry.seq.tick)).toBeGreaterThanOrEqual(20 * BAR_TICKS)
+        expect(jumped).toBeGreaterThanOrEqual(20 * MEASURE)
+        expect(jumped).toBeLessThan(21 * MEASURE)
+        expect(await page.evaluate(() => window.__e2e.serviceRegistry.seq.tick)).toBeGreaterThanOrEqual(
+            20 * MEASURE_TICKS,
+        )
 
         await start(page)
     })
@@ -428,8 +439,8 @@ test.describe('Song arrangement cursor', () => {
     // stray selection cannot re-aim playback.
     test('a click on a clip leaves the cursor alone', async ({ page }) => {
         await openSongView(page)
-        await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="3"]').click()
-        expect(await page.evaluate(() => window.__e2e.serviceRegistry.seq.songCursorBar)).toBe(0)
+        await page.locator('.sa-clip[data-pattern="smrock"][data-start-measure="3"]').click()
+        expect(await page.evaluate(() => window.__e2e.serviceRegistry.seq.songCursorMeasure)).toBe(0)
         expect(await px(page)).toBe(0)
     })
 
@@ -441,25 +452,25 @@ test.describe('Song arrangement cursor', () => {
         await start(page)
         await expect(head(page)).toBeVisible()
 
-        const { px, tick, loopBars } = await page.evaluate(() => ({
+        const { px, tick, loopMeasureCount } = await page.evaluate(() => ({
             px: Number(/translateX\((-?[\d.]+)px\)/.exec(document.querySelector('.sa-cursor').style.transform)?.[1]),
             tick: window.__e2e.serviceRegistry.seq.tick,
-            loopBars: window.__e2e.appState.songs[0].loopBars,
+            loopMeasureCount: window.__e2e.appState.songs[0].loopMeasureCount,
         }))
-        // one cell is BAR_WIDTH px, one bar is BAR_TICKS ticks
-        expect(px).toBeCloseTo((((tick / BAR_TICKS) % loopBars) * BAR_WIDTH) % BAR_WIDTH, 0)
+        // one cell is MEASURE_WIDTH px, one measure is MEASURE_TICKS ticks
+        expect(px).toBeCloseTo((((tick / MEASURE_TICKS) % loopMeasureCount) * MEASURE_WIDTH) % MEASURE_WIDTH, 0)
         // The cursor is painted in a rAF while `tick` is read live, so the two can
         // be a frame apart: tolerate one CELL of lag, not one pixel (1px was ~330ms
         // of drift at 120bpm and only passed on a quiet machine).
-        const lagBars = Math.abs(px - (tick / BAR_TICKS) * BAR_WIDTH) / BAR_WIDTH
-        expect(lagBars).toBeLessThan(1)
+        const lagMeasures = Math.abs(px - (tick / MEASURE_TICKS) * MEASURE_WIDTH) / MEASURE_WIDTH
+        expect(lagMeasures).toBeLessThan(1)
     })
 
     test('wraps back inside the grid instead of running off the end', async ({ page }) => {
         await openSongView(page)
-        // a 2-bar loop makes the wrap observable in a few seconds; the grid keeps
+        // a 2-measure loop makes the wrap observable in a few seconds; the grid keeps
         // the demo arrangement's own width
-        await page.evaluate(() => (window.__e2e.appState.songs[0].loopBars = 2))
+        await page.evaluate(() => (window.__e2e.appState.songs[0].loopMeasureCount = 2))
         await start(page)
         await expect(head(page)).toBeVisible()
 
@@ -474,8 +485,8 @@ test.describe('Song arrangement cursor', () => {
         await start(page)
 
         // never past the loop, it comes back near its start...
-        expect(Math.max(...seen)).toBeLessThanOrEqual(2 * BAR_WIDTH)
-        expect(Math.min(...seen)).toBeLessThan(BAR_WIDTH)
+        expect(Math.max(...seen)).toBeLessThanOrEqual(2 * MEASURE_WIDTH)
+        expect(Math.min(...seen)).toBeLessThan(MEASURE_WIDTH)
         // ...so the cursor went backwards at least once instead of only creeping
         // right for the whole sample window
         expect(seen.some((value, i) => i > 0 && value < seen[i - 1])).toBe(true)
@@ -507,14 +518,14 @@ test.describe('Song pattern list context menu', () => {
     /** A library pattern the demo arrangement never places. */
     const UNUSED = 'hard'
 
-    test('on a library pattern: Add at bar places it in the arrangement', async ({ page }) => {
+    test('on a library pattern: Add at measure places it in the arrangement', async ({ page }) => {
         await openSongView(page)
         expect(await clipsOf(page, UNUSED)).toBe(0)
         const before = await clips(page)
 
         await page.locator(`.sg-item[data-pattern="${UNUSED}"]`).click({ button: 'right' })
-        await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar 1' })).toBeVisible()
-        await page.locator('.cm-menu-item', { hasText: 'Add at bar 1' }).click()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add at measure 1' })).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Add at measure 1' }).click()
 
         await expect.poll(() => clips(page)).toBe(before + 1)
         expect(await clipsOf(page, UNUSED)).toBe(1)
@@ -522,17 +533,17 @@ test.describe('Song pattern list context menu', () => {
         await expect(page.locator(`.sa-row-name[data-pattern="${UNUSED}"]`)).toHaveCount(1)
     })
 
-    // Transport stopped: nothing overwrites the tick, so the bar is exact.
+    // Transport stopped: nothing overwrites the tick, so the measure is exact.
     test('inserts at the measure the transport is on', async ({ page }) => {
         await openSongView(page)
-        await page.evaluate((t) => (window.__e2e.serviceRegistry.transport.tick = t), 3 * BAR_TICKS + 5)
+        await page.evaluate((t) => (window.__e2e.serviceRegistry.transport.tick = t), 3 * MEASURE_TICKS + 5)
         await page.locator(`.sg-item[data-pattern="${UNUSED}"]`).click({ button: 'right' })
 
-        await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar 4' })).toBeVisible()
-        await page.locator('.cm-menu-item', { hasText: 'Add at bar 4' }).click()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add at measure 4' })).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Add at measure 4' }).click()
         expect(
             await page.evaluate(
-                () => window.__e2e.appState.songs[0].clips.filter((c) => c.pattern === 'hard')[0]?.startBar,
+                () => window.__e2e.appState.songs[0].clips.filter((c) => c.pattern === 'hard')[0]?.startMeasure,
             ),
         ).toBe(3)
     })
@@ -542,7 +553,7 @@ test.describe('Song pattern list context menu', () => {
         await openSongView(page)
         const before = await clipsOf(page, 'funk')
         await page.locator('.sg-item[data-pattern="funk"]').click({ button: 'right' })
-        await page.locator('.cm-menu-item', { hasText: 'Add at bar 1' }).click()
+        await page.locator('.cm-menu-item', { hasText: 'Add at measure 1' }).click()
 
         await expect.poll(() => clipsOf(page, 'funk')).toBe(before + 1)
     })
@@ -563,7 +574,7 @@ test.describe('Song pattern list context menu', () => {
 
         for (const id of unused.slice(0, 3)) {
             await page.locator(`.sg-item[data-pattern="${id}"]`).click({ button: 'right' })
-            await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar' })).toBeVisible()
+            await expect(page.locator('.cm-menu-item', { hasText: 'Add at measure' })).toBeVisible()
             await page.keyboard.press('Escape')
         }
     })

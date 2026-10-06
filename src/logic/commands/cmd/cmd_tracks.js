@@ -186,7 +186,7 @@ export default class TrackCommands {
      * Set stepsPerBeat to an absolute value (clamped 1..8) and migrate the
      * notes / loop point proportionally:
      * - notes: steppc (absolute position) is preserved → beatStep rescaled
-     * - loopAtStep is clamped to the new bar length
+     * - loopAtStep is clamped to the new beat length
      * @param {any} track
      * @param {number} value - target steps per beat
      * @param {object} [opts]
@@ -281,13 +281,13 @@ export default class TrackCommands {
         })
     }
 
-    changeTrackSound(track, soundId) {
+    changeTrackSound(track, sampleId) {
         this.#withUndo(
             track,
-            ['soundId', 'useAutoAssignSound', 'useSoftSynth'],
+            ['sampleId', 'useAutoAssignSound', 'useSoftSynth'],
             `Sound on ${track.name}`,
             () => {
-                track.soundId = soundId
+                track.sampleId = sampleId
                 track.useAutoAssignSound = false
                 track.useSoftSynth = false
             },
@@ -307,7 +307,7 @@ export default class TrackCommands {
         )
     }
 
-    getSoundIdFromUrl(url) {
+    getSampleIdFromUrl(url) {
         const entry = Object.entries(soundRegistry.sounds).find(([, s]) => s.url === url)
         return entry?.[0] ?? NOT_FOUND
     }

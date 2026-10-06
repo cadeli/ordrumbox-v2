@@ -205,7 +205,7 @@ function createComplexPattern() {
                 saturationType: 'soft',
                 swingAmount: 0, // No swing
                 loopAtStep: 16,
-                soundId: 'kick.wav',
+                sampleId: 'kick.wav',
                 velocityLfo: null, // No LFOs (baked at export, lost on import)
                 pitchLfo: null,
                 filterFreqLfo: null,
@@ -239,7 +239,7 @@ function createComplexPattern() {
                 saturationType: 'soft',
                 swingAmount: 0,
                 loopAtStep: 16,
-                soundId: 'snare.wav',
+                sampleId: 'snare.wav',
                 velocityLfo: null,
                 pitchLfo: null,
                 filterFreqLfo: null,
@@ -294,7 +294,7 @@ function createComplexPattern() {
                 filterFreqLfo: null,
                 panLfo: null,
                 filterQLfo: null,
-                soundId: 'chh.wav',
+                sampleId: 'chh.wav',
                 // Arpeggio: major triad
                 notes: [
                     {
@@ -339,7 +339,7 @@ function createComplexPattern() {
                 saturationType: 'soft',
                 swingAmount: 0,
                 loopAtStep: 16,
-                soundId: 'tom.wav',
+                sampleId: 'tom.wav',
                 velocityLfo: null,
                 pitchLfo: null,
                 filterFreqLfo: null,
@@ -371,7 +371,7 @@ function createComplexPattern() {
                 saturationType: 'soft',
                 swingAmount: 0,
                 loopAtStep: 16,
-                soundId: 'clap.wav',
+                sampleId: 'clap.wav',
                 velocityLfo: null,
                 pitchLfo: null,
                 filterFreqLfo: null,

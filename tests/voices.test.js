@@ -94,7 +94,7 @@ function createMockLfo() {
 
 function makeFlatNote(overrides = {}) {
     return {
-        soundId: 'snd_kick',
+        sampleId: 'snd_kick',
         fpitch: 1,
         pan: 0,
         note: { velocity: 0.8 },
@@ -103,7 +103,7 @@ function makeFlatNote(overrides = {}) {
             useSoftSynth: false,
             pitchLfo: null,
             panLfo: null,
-            soundId: 'snd_kick',
+            sampleId: 'snd_kick',
         },
         ...overrides,
     }
@@ -642,17 +642,17 @@ describe('VoiceFactory', () => {
 
     it('returns null for SampleVoice when no soundBuffer is found', async () => {
         const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
-        const flatNote = makeFlatNote({ soundId: 'missing_sound' })
-        flatNote.track.soundId = 'also_missing'
+        const flatNote = makeFlatNote({ sampleId: 'missing_sound' })
+        flatNote.track.sampleId = 'also_missing'
         const voice = await factory.createVoice(flatNote)
         expect(voice).toBeNull()
         warnSpy.mockRestore()
     })
 
-    it('falls back to track.soundId when flatNote.soundId has no buffer', async () => {
+    it('falls back to track.sampleId when flatNote.sampleId has no buffer', async () => {
         sounds['snd_snare'] = { buffer: ctx.createBuffer(1, 512, 44100) }
-        const flatNote = makeFlatNote({ soundId: 'missing_sound' })
-        flatNote.track.soundId = 'snd_snare'
+        const flatNote = makeFlatNote({ sampleId: 'missing_sound' })
+        flatNote.track.sampleId = 'snd_snare'
         const voice = await factory.createVoice(flatNote)
         expect(voice).toBeInstanceOf(SampleVoice)
     })

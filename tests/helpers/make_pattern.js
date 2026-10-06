@@ -42,7 +42,7 @@ const TRACK_DEFAULTS = {
     mute: false,
     solo: false,
     auto: false,
-    soundId: 'NOT_DEFINED',
+    sampleId: 'NOT_DEFINED',
     useAutoAssignSound: true,
     useSoftSynth: false,
     mono: false,

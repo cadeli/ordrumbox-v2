@@ -14,7 +14,7 @@ import { createStepResolver } from './step_resolver.js'
  *
  * @param {{rate?: number, euclideanFill?: number, euclideanRotation?: number, arp?: object, retriggerCount?: number}} note
  * @param {{stepsPerBeat?: number}} track
- * @param {number} totalSteps - bar length in steps (positions beyond are dropped)
+ * @param {number} totalSteps - track length in steps (positions beyond are dropped)
  * @param {Function} [resolveSpanEnd] - note → exclusive end step (span resolver)
  * @returns {Array<{pos: number, type: 'retrigger'|'euclidean', pitchOffset: number}>}
  */

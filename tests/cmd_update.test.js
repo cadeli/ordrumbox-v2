@@ -4,7 +4,7 @@
  * Commander update commands introduced by the Lot B write-surface cleanup:
  *  - updateNote: partial note edits with no-op skip + undo + coalescing
  *  - updateTrack: desc/coalesce options (continuous UI gestures)
- *  - setStepsPerBeat: absolute steps-per-bar change with note/loop migration
+ *  - setStepsPerBeat: absolute steps-per-beat change with note/loop migration
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
@@ -198,7 +198,7 @@ describe('Commander — updateNote / updateTrack opts / setStepsPerBeat', () => 
             expect(history.pastLength).toBe(0)
         })
 
-        it('clamps loopAtStep to the new bar length and re-derives the loop point', () => {
+        it('clamps loopAtStep to the new beat length and re-derives the loop point', () => {
             const track = makeTrack({ beatCount: 4, stepsPerBeat: 4, loopAtStep: 16 })
 
             cmd.setStepsPerBeat(track, 2)

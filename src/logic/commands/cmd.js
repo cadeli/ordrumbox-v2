@@ -54,7 +54,7 @@ export default class Commander {
         'randomizeTrack',
         'changeTrackSound',
         'changeTrackName',
-        'getSoundIdFromUrl',
+        'getSampleIdFromUrl',
         'addPattern',
         'removePattern',
         'renamePattern',
@@ -67,9 +67,9 @@ export default class Commander {
         'createPattern',
         'addSongClip',
         'removeSongClips',
-        'addPatternAtBar',
-        'repeatPatternAtBar',
-        'removePatternAtBar',
+        'addPatternAtMeasure',
+        'repeatPatternAtMeasure',
+        'removePatternAtMeasure',
         'removePatternClips',
         'addSong',
         'removeSong',
@@ -124,7 +124,7 @@ export default class Commander {
         this.randomizeTrack = (...args) => this.#tracks.randomizeTrack(...args)
         this.changeTrackSound = (...args) => this.#tracks.changeTrackSound(...args)
         this.changeTrackName = (...args) => this.#tracks.changeTrackName(...args)
-        this.getSoundIdFromUrl = (...args) => this.#tracks.getSoundIdFromUrl(...args)
+        this.getSampleIdFromUrl = (...args) => this.#tracks.getSampleIdFromUrl(...args)
         this.addPattern = (...args) => this.#patterns.addPattern(...args)
         this.removePattern = (...args) => this.#patterns.removePattern(...args)
         this.renamePattern = (...args) => this.#patterns.renamePattern(...args)
@@ -137,9 +137,9 @@ export default class Commander {
         this.createPattern = (...args) => this.#patterns.createPattern(...args)
         this.addSongClip = (...args) => this.#songs.addSongClip(...args)
         this.removeSongClips = (...args) => this.#songs.removeSongClips(...args)
-        this.addPatternAtBar = (...args) => this.#songs.addPatternAtBar(...args)
-        this.repeatPatternAtBar = (...args) => this.#songs.repeatPatternAtBar(...args)
-        this.removePatternAtBar = (...args) => this.#songs.removePatternAtBar(...args)
+        this.addPatternAtMeasure = (...args) => this.#songs.addPatternAtMeasure(...args)
+        this.repeatPatternAtMeasure = (...args) => this.#songs.repeatPatternAtMeasure(...args)
+        this.removePatternAtMeasure = (...args) => this.#songs.removePatternAtMeasure(...args)
         this.removePatternClips = (...args) => this.#songs.removePatternClips(...args)
         this.addSong = (...args) => this.#songs.addSong(...args)
         this.removeSong = (...args) => this.#songs.removeSong(...args)

@@ -284,7 +284,7 @@ describe('Granular patternChange events', () => {
                     name: 'Test',
                     beatCount: 4,
                     bpm: 120,
-                    tracks: [{ name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, soundId: 'kick_old' }],
+                    tracks: [{ name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, sampleId: 'kick_old' }],
                 },
             ]
             const pp = new PatternPanel()
@@ -295,7 +295,7 @@ describe('Granular patternChange events', () => {
             expect(urlEl).toBeTruthy()
             expect(urlEl.textContent).toBe('kick_old')
 
-            appState.patterns[0].tracks[0].soundId = 'kick_new'
+            appState.patterns[0].tracks[0].sampleId = 'kick_new'
             playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
             await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
 
@@ -340,7 +340,7 @@ describe('Granular patternChange events', () => {
                     name: 'Test',
                     beatCount: 4,
                     bpm: 120,
-                    tracks: [{ name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, soundId: 'old_sound' }],
+                    tracks: [{ name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, sampleId: 'old_sound' }],
                 },
             ]
             const pp = new PatternPanel()
@@ -349,7 +349,7 @@ describe('Granular patternChange events', () => {
 
             expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('old_sound')
 
-            appState.patterns[0].tracks[0].soundId = 'new_sound'
+            appState.patterns[0].tracks[0].sampleId = 'new_sound'
             playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, appState.patterns[0].tracks[0])
             await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
 
@@ -393,7 +393,7 @@ describe('Granular patternChange events', () => {
                     name: 'Test',
                     beatCount: 4,
                     bpm: 120,
-                    tracks: [{ name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, soundId: 'samples/kick.wav' }],
+                    tracks: [{ name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, sampleId: 'samples/kick.wav' }],
                 },
             ]
             soundRegistry.sounds['samples/kick.wav'] = { url: 'assets/sounds/kick_heavy.wav' }

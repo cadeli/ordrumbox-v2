@@ -60,7 +60,7 @@ const runAutoAssign = (trackName) => {
         warnLogs.push(args.join(' '))
     }
 
-    const track = { name: trackName, soundId: null, useAutoAssignSound: true, useSoftSynth: false }
+    const track = { name: trackName, sampleId: null, useAutoAssignSound: true, useSoftSynth: false }
     const autoAssign = new AutoAssign({ appState, soundRegistry })
     autoAssign.autoAssignTrackSounds(track)
 
@@ -91,12 +91,14 @@ const runAutoAssign = (trackName) => {
         info = 'NOT_DEFINED'
     }
 
-    const soundUrl =
-        track.soundId && track.soundId !== 'NOT_DEFINED' ? (realSounds[track.soundId]?.url ?? track.soundId) : 'NONE'
+    const sampleUrl =
+        track.sampleId && track.sampleId !== 'NOT_DEFINED'
+            ? (realSounds[track.sampleId]?.url ?? track.sampleId)
+            : 'NONE'
     const soundKit =
-        track.soundId && track.soundId !== 'NOT_DEFINED' ? (realSounds[track.soundId]?.kitName ?? '?') : '-'
+        track.sampleId && track.sampleId !== 'NOT_DEFINED' ? (realSounds[track.sampleId]?.kitName ?? '?') : '-'
 
-    return { track, soundUrl, soundKit, info, tier }
+    return { track, sampleUrl, soundKit, info, tier }
 }
 
 const pad = (s, n) => String(s).padStart(n)
@@ -120,11 +122,11 @@ for (const [note, gmName] of Object.entries(GM_DRUM_NAMES)) {
         continue
     }
     const matchInfo = isExact ? 'exact_id' : `syn="${syn}"`
-    const { soundUrl, soundKit, info, tier } = runAutoAssign(inst.id)
+    const { sampleUrl, soundKit, info, tier } = runAutoAssign(inst.id)
     const tierTag = `[t${tier}]`
     const infoStr = info ? ` ${info}` : ''
     console.log(
-        `  [${pad(note, 3)}] "${gmName}" → ${inst.id.padEnd(14)} [${matchInfo}] → ${soundUrl.padEnd(36)} ${tierTag}${infoStr} (${soundKit})`,
+        `  [${pad(note, 3)}] "${gmName}" → ${inst.id.padEnd(14)} [${matchInfo}] → ${sampleUrl.padEnd(36)} ${tierTag}${infoStr} (${soundKit})`,
     )
 }
 
@@ -136,11 +138,11 @@ for (const [prog, gmName] of Object.entries(GM_PROGRAM_NAMES)) {
         continue
     }
     const matchInfo = isExact ? 'exact_id' : `syn="${syn}"`
-    const { soundUrl, soundKit, info, tier } = runAutoAssign(inst.id)
+    const { sampleUrl, soundKit, info, tier } = runAutoAssign(inst.id)
     const tierTag = `[t${tier}]`
     const infoStr = info ? ` ${info}` : ''
     console.log(
-        `  [${pad(prog, 3)}] "${gmName}" → ${inst.id.padEnd(14)} [${matchInfo}] → ${soundUrl.padEnd(36)} ${tierTag}${infoStr} (${soundKit})`,
+        `  [${pad(prog, 3)}] "${gmName}" → ${inst.id.padEnd(14)} [${matchInfo}] → ${sampleUrl.padEnd(36)} ${tierTag}${infoStr} (${soundKit})`,
     )
 }
 

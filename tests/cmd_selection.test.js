@@ -99,7 +99,7 @@ describe('cmd_selection', () => {
         })
 
         it('loads the samples referenced by the selected pattern', async () => {
-            const pattern = { name: 'A', bpm: 120, tracks: [{ soundId: 'real/bass-c2.wav' }] }
+            const pattern = { name: 'A', bpm: 120, tracks: [{ sampleId: 'real/bass-c2.wav' }] }
             appState.patterns = [pattern]
             await cmd.setSelectedPatternIdx(0)
             expect(mocks.loadSamplesForPatterns).toHaveBeenCalledWith([pattern])

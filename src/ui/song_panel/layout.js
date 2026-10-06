@@ -8,10 +8,10 @@
 /** Width of the frozen pattern-name column, in px. */
 export const LABEL_WIDTH = 74
 /** Width of one measure along X, in px. */
-export const BAR_WIDTH = 24
+export const MEASURE_WIDTH = 24
 /** Height of one pattern row, in px. */
 export const ROW_HEIGHT = 22
-/** Height of the bar ruler, in px. */
+/** Height of the measure ruler, in px. */
 export const HEADER_HEIGHT = 18
 /** Gap a clip leaves to its neighbours, in px (2 = 1px on each side). */
 export const CLIP_INSET = 2

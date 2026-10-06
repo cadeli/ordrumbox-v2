@@ -189,9 +189,9 @@ export default class GridSection {
             const isSelected = effectiveTrackIdx === tIdx
             const isMuted = track.mute === true
             const isSolo = track.solo === true
-            const soundUrl =
-                track.soundId && track.soundId !== 'NOT_DEFINED'
-                    ? (soundRegistry.sounds[track.soundId]?.url ?? track.soundId)
+            const sampleUrl =
+                track.sampleId && track.sampleId !== 'NOT_DEFINED'
+                    ? (soundRegistry.sounds[track.sampleId]?.url ?? track.sampleId)
                     : ''
             html += `
                 <div class="pp-track ${isMuted ? 'pp-muted' : ''} ${isSelected ? 'pp-selected' : ''}">
@@ -201,7 +201,7 @@ export default class GridSection {
                             <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${editor.esc(valueOrFallback(track.name, 'Track', 'PatternPanel', 'track name fallback'))}</span>
                             <input type="range" class="pp-volume" min="0" max="1" step="0.01" value="${track.velocity ?? 1}" data-track="${tIdx}">
                         </div>
-                        ${track.useSoftSynth && track.synthSoundKey ? `<div class="pp-track-url">SYNTH: ${editor.esc(track.synthSoundKey)}</div>` : soundUrl ? `<div class="pp-track-url" title="${editor.esc(soundUrl)}">${editor.esc(soundUrl)}</div>` : ''}
+                        ${track.useSoftSynth && track.synthSoundKey ? `<div class="pp-track-url">SYNTH: ${editor.esc(track.synthSoundKey)}</div>` : sampleUrl ? `<div class="pp-track-url" title="${editor.esc(sampleUrl)}">${editor.esc(sampleUrl)}</div>` : ''}
                     </div>
                     <div class="pp-divider ${isMuted ? 'muted' : ''}" data-track="${tIdx}" role="button" tabindex="0" title="Mute"></div>
                     <div class="pp-solo ${isSolo ? 'active' : ''}" data-track="${tIdx}" role="button" tabindex="0" title="Solo"></div>

@@ -39,12 +39,12 @@ export default class SoundSection {
             .filter((id) => keysWithSamples.has(id))
             .sort()
         const currentInstrumentId = getCurrentInstrumentId(editor, instrumentIds, keysWithSamples)
-        const currentSoundId = getCurrentSoundUrl(editor)
+        const currentSampleId = getCurrentSoundUrl(editor)
         const matchingSounds = getSamplesForInstrument(editor, currentInstrumentId)
 
         const NL = '&#10;'
         const esc = editor.esc
-        const currentSound = sr.sounds[currentSoundId]
+        const currentSound = sr.sounds[currentSampleId]
         // Kit/sample names come from user-imported drumkits: escape them so a
         // quote inside a name cannot break out of the title attribute.
         const sampleTooltip = currentSound
@@ -70,7 +70,7 @@ export default class SoundSection {
                 const name = s.display_name ?? s.url ?? '??'
                 return kit ? `${kit}/${name}` : name
             })
-            content += renderOptions(sampleValues, currentSoundId, { labels: sampleLabels, escape: esc })
+            content += renderOptions(sampleValues, currentSampleId, { labels: sampleLabels, escape: esc })
         }
         const synthOpts = ['none', ...generatedSoundKeys]
         if (track.useSoftSynth === true && !generatedSoundKeys.includes(currentGeneratedSound)) {
@@ -172,7 +172,7 @@ export default class SoundSection {
         if (track.useSoftSynth === true) {
             return track.synthSoundKey ?? null
         }
-        const sound = this.#editor.soundRegistry.sounds[track.soundId]
+        const sound = this.#editor.soundRegistry.sounds[track.sampleId]
         if (!sound) return null
         const kit = sound.kitName ?? ''
         const name = sound.display_name ?? sound.key ?? sound.url ?? ''

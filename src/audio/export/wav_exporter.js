@@ -7,7 +7,7 @@ import { soundRegistry } from '../../state/sound_registry.js'
 import { valueOrFallback, logger } from '../../core/logger.js'
 import { downloadBlob } from '../../core/download.js'
 import { appState } from '../../state/app_state.js'
-import { BEATS_PER_BAR, songLengthBars } from '../../model/song_schema.js'
+import { BEATS_PER_MEASURE, songLengthMeasures } from '../../model/song_schema.js'
 import { songTempo } from '../../logic/song_playback.js'
 import { getTracksArray } from '../../core/tracks.js'
 
@@ -148,7 +148,6 @@ export default class WavExporter {
                 sounds: soundRegistry.sounds,
                 generatedSounds: soundRegistry.generatedSounds,
                 patterns: [pattern],
-                selectedPatternIdx: 0,
                 getSelectedPatternIdx: () => 0,
                 getAutoGenerator: getAutoGeneratorService,
                 uiState: {},
@@ -190,21 +189,21 @@ export default class WavExporter {
      * @param {import('../../model/song_schema.js').Song} song a normalized song
      * @param {object} [opts]
      * @param {Array<{id?: string, bpm?: number}>} [opts.patterns] the pattern library (defaults to appState)
-     * @param {number} [opts.loopBars] override the arrangement length
+     * @param {number} [opts.loopMeasureCount] override the arrangement length
      * @returns {Promise<Blob>}
      */
-    exportSongToWav = async (song, { patterns = appState.patterns ?? [], loopBars } = {}) => {
+    exportSongToWav = async (song, { patterns = appState.patterns ?? [], loopMeasureCount } = {}) => {
         /** @type {Map<string, { bpm?: number }>} */
         const library = new Map(patterns.filter((p) => p?.id).map((p) => [p.id, p]))
         const usedPatterns = (song.clips ?? []).map((c) => library.get(c.pattern)).filter(Boolean)
         if (usedPatterns.length === 0) throw new Error('This song has no playable clip')
 
         const bpm = songTempo(song, library) ?? 120
-        const totalBars = Math.max(1, loopBars ?? song.loopBars ?? songLengthBars(song))
+        const totalMeasures = Math.max(1, loopMeasureCount ?? song.loopMeasureCount ?? songLengthMeasures(song))
 
         // same formula as Transport.setBpm: TICK ticks per beat
         const secondsPerTick = 60 / (bpm * TICK)
-        const totalTicks = Math.ceil(totalBars * BEATS_PER_BAR * TICK)
+        const totalTicks = Math.ceil(totalMeasures * BEATS_PER_MEASURE * TICK)
         const duration = totalTicks * secondsPerTick
         const sampleRate = 44100
 
@@ -217,7 +216,6 @@ export default class WavExporter {
                 generatedSounds: soundRegistry.generatedSounds,
                 // The whole library: clips reference patterns by id, not by index.
                 patterns,
-                selectedPatternIdx: 0,
                 getSelectedPatternIdx: () => 0,
                 getAutoGenerator: getAutoGeneratorService,
                 // Song mode: the engine derives its playback mode from the view

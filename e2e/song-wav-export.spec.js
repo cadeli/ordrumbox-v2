@@ -4,7 +4,7 @@
 // clip layered, at the song's single tempo.
 //
 // Two things the export can silently get wrong, and what each test pins down:
-//   - the file length: rendering one pattern, or ignoring `loopBars`, produces
+//   - the file length: rendering one pattern, or ignoring `loopMeasureCount`, produces
 //     a valid WAV of the wrong size;
 //   - whether the clips really are all in it: a render that only sounds the
 //     first clip is also the right size, so length alone proves nothing.
@@ -17,7 +17,7 @@
 import { test, expect } from '@playwright/test'
 import { bootApp } from './fixtures.js'
 import { TICK } from '../src/core/constants.js'
-import { BEATS_PER_BAR } from '../src/model/song_schema.js'
+import { BEATS_PER_MEASURE } from '../src/model/song_schema.js'
 
 const SR = 44100
 
@@ -25,14 +25,14 @@ const SR = 44100
  * Renders a song inside the page and returns the decoded WAV facts.
  *
  * Uses a purpose-built arrangement rather than the demo song so the render stays
- * short: two bars holding both demo patterns on the same bar.
+ * short: two measures holding both demo patterns on the same measure.
  */
-async function renderSongWav(page, { bpm = 120, loopBars = 2, clips }) {
+async function renderSongWav(page, { bpm = 120, loopMeasureCount = 2, clips }) {
     return page.evaluate(
-        async ({ bpm, loopBars, clips }) => {
+        async ({ bpm, loopMeasureCount, clips }) => {
             const { default: WavExporter } = await import('/src/audio/export/wav_exporter.js')
             const { appState } = window.__e2e
-            const song = { id: 'e2e', name: 'E2E Song', description: '', bpm, loopBars, clips }
+            const song = { id: 'e2e', name: 'E2E Song', description: '', bpm, loopMeasureCount, clips }
 
             const blob = await new WavExporter().exportSongToWav(song, { patterns: appState.patterns })
             const dv = new DataView(await blob.arrayBuffer())
@@ -68,7 +68,7 @@ async function renderSongWav(page, { bpm = 120, loopBars = 2, clips }) {
                 left: Array.from(left),
             }
         },
-        { bpm, loopBars, clips },
+        { bpm, loopMeasureCount, clips },
     )
 }
 
@@ -97,10 +97,10 @@ test.describe('Song WAV export', () => {
 
         const wav = await renderSongWav(page, {
             bpm: 120,
-            loopBars: 2,
+            loopMeasureCount: 2,
             clips: [
-                { pattern: a, startBar: 0, bars: 2 },
-                { pattern: b, startBar: 0, bars: 2 },
+                { pattern: a, startMeasure: 0, measureCount: 2 },
+                { pattern: b, startMeasure: 0, measureCount: 2 },
             ],
         })
 
@@ -110,7 +110,7 @@ test.describe('Song WAV export', () => {
         expect(wav.sampleRate).toBe(SR)
         expect(wav.bits).toBe(16)
 
-        // 2 bars of 4/4 at 120 bpm = 2 * 4 * 0.5 s
+        // 2 measures of 4/4 at 120 bpm = 2 * 4 * 0.5 s
         expect(wav.seconds).toBeCloseTo(4, 3)
 
         // and it is actually filled, not a valid-but-empty render
@@ -125,8 +125,8 @@ test.describe('Song WAV export', () => {
 
         const wav = await renderSongWav(page, {
             bpm: 240,
-            loopBars: 2,
-            clips: [{ pattern: a, startBar: 0, bars: 2 }],
+            loopMeasureCount: 2,
+            clips: [{ pattern: a, startMeasure: 0, measureCount: 2 }],
         })
 
         // twice the tempo, half the wall-clock time
@@ -136,22 +136,22 @@ test.describe('Song WAV export', () => {
 
     // The length above is also what a single-pattern render would give, so this
     // is the assertion that actually proves the arrangement was exported.
-    test('a second clip on the same bar changes the render', async ({ page }) => {
+    test('a second clip on the same measure changes the render', async ({ page }) => {
         test.setTimeout(120_000)
         await bootApp(page)
         const [a, b] = await demoClipIds(page)
 
         const single = await renderSongWav(page, {
             bpm: 120,
-            loopBars: 2,
-            clips: [{ pattern: a, startBar: 0, bars: 2 }],
+            loopMeasureCount: 2,
+            clips: [{ pattern: a, startMeasure: 0, measureCount: 2 }],
         })
         const layered = await renderSongWav(page, {
             bpm: 120,
-            loopBars: 2,
+            loopMeasureCount: 2,
             clips: [
-                { pattern: a, startBar: 0, bars: 2 },
-                { pattern: b, startBar: 0, bars: 2 },
+                { pattern: a, startMeasure: 0, measureCount: 2 },
+                { pattern: b, startMeasure: 0, measureCount: 2 },
             ],
         })
 
@@ -181,12 +181,12 @@ test.describe('Song WAV export', () => {
     })
 
     // The button itself, on the demo song. Its loop is shortened first: the demo
-    // arrangement is 66 bars (132 s of audio to render), far too long for a test,
+    // arrangement is 66 measures (132 s of audio to render), far too long for a test,
     // and the export follows the arrangement exactly as it is configured.
     test('the Export Song button downloads the whole arrangement', async ({ page }) => {
         test.setTimeout(180_000)
         await bootApp(page)
-        await page.evaluate(() => (window.__e2e.appState.songs[0].loopBars = 2))
+        await page.evaluate(() => (window.__e2e.appState.songs[0].loopMeasureCount = 2))
 
         // the Export tab is not the one shown when the panel opens
         await page.locator('.tb-tools').click()
@@ -207,17 +207,17 @@ test.describe('Song WAV export', () => {
         expect(String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3))).toBe('RIFF')
         expect(dv.getUint16(22, true)).toBe(2)
         const frames = dv.getUint32(40, true) / (2 * 2)
-        // 2 bars of 4/4 at 120 bpm = 2 * 4 * 0.5 s
+        // 2 measures of 4/4 at 120 bpm = 2 * 4 * 0.5 s
         expect(frames / dv.getUint32(24, true)).toBeCloseTo(4, 1)
     })
 
     // cross-check the numbers above against the shared constants, so the
     // expectations cannot silently drift from the engine
     test('the expected lengths match the engine constants', () => {
-        expect(BEATS_PER_BAR).toBe(4)
-        expect(BEATS_PER_BAR * TICK).toBe(128)
-        // 2 bars of 4/4, at 120 bpm and then at 240 bpm
-        expect(2 * BEATS_PER_BAR * (60 / 120)).toBeCloseTo(4, 6)
-        expect(2 * BEATS_PER_BAR * (60 / 240)).toBeCloseTo(2, 6)
+        expect(BEATS_PER_MEASURE).toBe(4)
+        expect(BEATS_PER_MEASURE * TICK).toBe(128)
+        // 2 measures of 4/4, at 120 bpm and then at 240 bpm
+        expect(2 * BEATS_PER_MEASURE * (60 / 120)).toBeCloseTo(4, 6)
+        expect(2 * BEATS_PER_MEASURE * (60 / 240)).toBeCloseTo(2, 6)
     })
 })

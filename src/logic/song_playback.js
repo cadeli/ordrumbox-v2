@@ -14,9 +14,9 @@
 //    Patterns have their own length (beatCount), so `tick % patternTicks` would
 //    drift as soon as a clip did not start on a cycle boundary of that pattern.
 //    Each clip therefore owns its own phase: the pattern started playing at
-//    `clip.startBar`, so its local step is measured from there.
+//    `clip.startMeasure`, so its local step is measured from there.
 
-import { BEATS_PER_BAR, songBpm, songLengthBars } from '../model/song_schema.js'
+import { BEATS_PER_MEASURE, songBpm, songLengthMeasures } from '../model/song_schema.js'
 
 /** Playback modes: loop the selected pattern, or follow a song arrangement. */
 export const PLAYBACK_MODE = Object.freeze({ PATTERN: 'pattern', SONG: 'song' })
@@ -31,9 +31,9 @@ export const PLAYBACK_MODE = Object.freeze({ PATTERN: 'pattern', SONG: 'song' })
  * @property {number} patternTicks  length of the pattern in ticks
  */
 
-/** Transport tick -> position in the song, in bars (fractional). */
-export function tickToSongBars(tick, tickPerBar) {
-    return tick / tickPerBar
+/** Transport tick -> position in the song, in measures (fractional). */
+export function tickToSongMeasures(tick, tickPerMeasure) {
+    return tick / tickPerMeasure
 }
 
 /**
@@ -43,39 +43,39 @@ export function tickToSongBars(tick, tickPerBar) {
  * @param {Map<string, {beatCount?: number, bpm?: number}>|Record<string, {beatCount?: number, bpm?: number}>} patternsById
  * @param {number} tick transport tick (monotonic; never reset by this module)
  * @param {number} ticksPerBeat 32
- * @param {number} [loopBars] overrides the song's own loop length
+ * @param {number} [loopMeasureCount] overrides the song's own loop length
  * @returns {SongSource[]}
  */
-export function resolveSongSources(song, patternsById, tick, ticksPerBeat, loopBars) {
+export function resolveSongSources(song, patternsById, tick, ticksPerBeat, loopMeasureCount) {
     if (!song || tick == null || !Number.isFinite(tick)) return []
 
-    const tickPerBar = ticksPerBeat * BEATS_PER_BAR
-    if (!(tickPerBar > 0)) return []
+    const tickPerMeasure = ticksPerBeat * BEATS_PER_MEASURE
+    if (!(tickPerMeasure > 0)) return []
 
-    const total = Number(loopBars) > 0 ? Number(loopBars) : songLengthBars(song)
+    const total = Number(loopMeasureCount) > 0 ? Number(loopMeasureCount) : songLengthMeasures(song)
     if (!(total > 0)) return []
 
     // Wrapping here (rather than resetting the transport) keeps the transport
-    // free to keep counting, and makes "play the same bar twice" impossible.
-    const bars = tickToSongBars(tick, tickPerBar) % total
+    // free to keep counting, and makes "play the same measure twice" impossible.
+    const measures = tickToSongMeasures(tick, tickPerMeasure) % total
     const clips = song.clips ?? []
 
     /** @type {SongSource[]} */
     const sources = []
     for (let i = 0; i < clips.length; i++) {
         const clip = clips[i]
-        const startBar = Number(clip.startBar) || 0
-        const bars_ = Number(clip.bars) > 0 ? Number(clip.bars) : 1
-        // bars < startBar + bars_: a 0.75-bar clip still occupies the bar it
+        const startMeasure = Number(clip.startMeasure) || 0
+        const measureCount = Number(clip.measureCount) > 0 ? Number(clip.measureCount) : 1
+        // measures < startMeasure + measureCount: a 0.75-measure clip still occupies the measure it
         // starts in, which is why this compares against the fractional end.
-        if (bars < startBar || bars >= startBar + bars_) continue
+        if (measures < startMeasure || measures >= startMeasure + measureCount) continue
 
         const pattern = patternsById instanceof Map ? patternsById.get(clip.pattern) : patternsById?.[clip.pattern]
         if (!pattern) continue
 
         const beatCount = Number(pattern.beatCount)
         const patternTicks = (Number.isFinite(beatCount) && beatCount > 0 ? beatCount : 4) * ticksPerBeat
-        const clipStartTick = startBar * tickPerBar
+        const clipStartTick = startMeasure * tickPerMeasure
         const elapsed = Math.max(0, tick - clipStartTick)
         sources.push({
             pattern,
@@ -117,33 +117,33 @@ export function songPatterns(song, patterns) {
 }
 
 /**
- * Where the transport sits in the arrangement, in bars (fractional).
+ * Where the transport sits in the arrangement, in measures (fractional).
  *
- * The transport keeps counting past the last bar — the song wraps inside
+ * The transport keeps counting past the last measure — the song wraps inside
  * resolveSongSources rather than resetting the transport — so the position is
  * wrapped on the loop length. Shared by the grid playhead and the menus that
- * insert a clip, which must agree on the bar they name.
+ * insert a clip, which must agree on the measure they name.
  *
  * @param {import('../model/song_schema.js').Song|null|undefined} song
  * @param {number} tick transport tick
  * @param {number} [ticksPerBeat] 32
  * @returns {number}
  */
-export function songBarAtTick(song, tick, ticksPerBeat = 32) {
-    const bar = tickToSongBars(tick ?? 0, ticksPerBeat * BEATS_PER_BAR)
-    const total = song?.loopBars ?? songLengthBars(song)
-    if (!(total > 0) || bar <= 0) return Math.max(0, bar)
-    return ((bar % total) + total) % total
+export function songMeasureAtTick(song, tick, ticksPerBeat = 32) {
+    const measure = tickToSongMeasures(tick ?? 0, ticksPerBeat * BEATS_PER_MEASURE)
+    const total = song?.loopMeasureCount ?? songLengthMeasures(song)
+    if (!(total > 0) || measure <= 0) return Math.max(0, measure)
+    return ((measure % total) + total) % total
 }
 
 /**
- * Transport tick for a given bar, so the UI can show where the song is.
- * @param {number} bar
+ * Transport tick for a given measure, so the UI can show where the song is.
+ * @param {number} measure
  * @param {number} ticksPerBeat
  * @returns {number}
  */
-export function barToTick(bar, ticksPerBeat) {
-    return Math.floor(bar * ticksPerBeat * BEATS_PER_BAR)
+export function measureToTick(measure, ticksPerBeat) {
+    return Math.floor(measure * ticksPerBeat * BEATS_PER_MEASURE)
 }
 
 /**

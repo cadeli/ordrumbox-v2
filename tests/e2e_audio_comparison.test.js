@@ -150,7 +150,7 @@ function makeTestPattern(cmd, name, bpm, beatCount, tracks) {
     pat.beatCount = beatCount
     for (const t of tracks) {
         const track = cmd.addTrack(pat, t.name, 4)
-        track.soundId = t.soundId ?? `${t.name.toLowerCase()}_test.wav`
+        track.sampleId = t.sampleId ?? `${t.name.toLowerCase()}_test.wav`
         for (const n of t.notes) {
             cmd.addNote(track, n.beat, n.beatStep ?? 0, n.pitch ?? 0)
         }

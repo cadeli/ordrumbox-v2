@@ -23,7 +23,7 @@ function makeMockEditor(overrides = {}) {
     return {
         track: {
             name: 'KICK',
-            soundId: 'kick_1.wav',
+            sampleId: 'kick_1.wav',
             useSoftSynth: false,
             useAutoAssignSound: true,
             mono: false,
@@ -105,7 +105,7 @@ describe('SoundSection', () => {
         })
 
         it('shows no-samples message when matchingSounds is empty', () => {
-            const editor = makeMockEditor({ track: { name: 'TOM', soundId: 'unknown_sound' } })
+            const editor = makeMockEditor({ track: { name: 'TOM', sampleId: 'unknown_sound' } })
             editor.soundRegistry.sounds = {}
             editor.soundRegistry.drumkitList = []
             section = new SoundSection(editor)
@@ -601,20 +601,20 @@ describe('SoundSection', () => {
     })
 
     describe('getCurrentSoundUrl()', () => {
-        it('returns url when soundId maps to a sound entry', () => {
+        it('returns url when sampleId maps to a sound entry', () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
             expect(getCurrentSoundUrl(editor)).toBe('kick_1.wav')
         })
 
-        it('returns soundId directly when not found in sounds registry', () => {
-            const editor = makeMockEditor({ track: { soundId: 'unknown_id' } })
+        it('returns sampleId directly when not found in sounds registry', () => {
+            const editor = makeMockEditor({ track: { sampleId: 'unknown_id' } })
             section = new SoundSection(editor)
             expect(getCurrentSoundUrl(editor)).toBe('unknown_id')
         })
 
-        it('returns empty string when soundId is empty', () => {
-            const editor = makeMockEditor({ track: { soundId: '' } })
+        it('returns empty string when sampleId is empty', () => {
+            const editor = makeMockEditor({ track: { sampleId: '' } })
             section = new SoundSection(editor)
             expect(getCurrentSoundUrl(editor)).toBe('')
         })
@@ -641,7 +641,7 @@ describe('SoundSection', () => {
         })
 
         it('returns null when sound is not found in registry', () => {
-            const editor = makeMockEditor({ track: { soundId: 'nonexistent' } })
+            const editor = makeMockEditor({ track: { sampleId: 'nonexistent' } })
             section = new SoundSection(editor)
             expect(section.getSoundInfo()).toBeNull()
         })
@@ -664,7 +664,7 @@ describe('SoundSection', () => {
         })
 
         it('falls back to track.name when sound key not in keysWithSamples', () => {
-            const editor = makeMockEditor({ track: { name: 'SNARE', soundId: 'unknown_sound' } })
+            const editor = makeMockEditor({ track: { name: 'SNARE', sampleId: 'unknown_sound' } })
             editor.soundRegistry.sounds = {}
             section = new SoundSection(editor)
             const ids = ['KICK', 'SNARE']
@@ -673,7 +673,7 @@ describe('SoundSection', () => {
         })
 
         it('falls back to first instrument id when neither matches', () => {
-            const editor = makeMockEditor({ track: { name: 'TOM', soundId: 'unknown_sound' } })
+            const editor = makeMockEditor({ track: { name: 'TOM', sampleId: 'unknown_sound' } })
             editor.soundRegistry.sounds = {}
             section = new SoundSection(editor)
             const ids = ['KICK', 'SNARE']
@@ -682,7 +682,7 @@ describe('SoundSection', () => {
         })
 
         it('returns KICK as final fallback when instrumentIds is empty', () => {
-            const editor = makeMockEditor({ track: { name: 'TOM', soundId: 'unknown_sound' } })
+            const editor = makeMockEditor({ track: { name: 'TOM', sampleId: 'unknown_sound' } })
             editor.soundRegistry.sounds = {}
             section = new SoundSection(editor)
             const ids = []

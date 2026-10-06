@@ -321,8 +321,8 @@ describe('Sequencer', () => {
     // ── arrangement cursor: the ruler click ─────────────────────────────
 
     describe('song cursor', () => {
-        // one bar is 4 beats of 32 ticks
-        const BAR_TICKS = 4 * 32
+        // one measure is 4 beats of 32 ticks
+        const MEASURE_TICKS = 4 * 32
 
         /** A transport stub the cursor tests can aim. */
         function makeTransport(isRunning) {
@@ -349,11 +349,11 @@ describe('Sequencer', () => {
                 invalidateCache: vi.fn(),
             }
             seq.setSongCursor(3)
-            expect(seq.songCursorBar).toBe(3)
+            expect(seq.songCursorMeasure).toBe(3)
 
             await seq.start()
             // transport.start() re-anchors to zero, the cursor re-aims it right after
-            expect(serviceRegistry.transport.tick).toBe(3 * BAR_TICKS)
+            expect(serviceRegistry.transport.tick).toBe(3 * MEASURE_TICKS)
         })
 
         // A song measure would land mid-pattern, so the pattern view keeps its
@@ -380,7 +380,7 @@ describe('Sequencer', () => {
             serviceRegistry.transport.tick = 99
 
             seq.setSongCursor(5)
-            expect(serviceRegistry.transport.tick).toBe(5 * BAR_TICKS)
+            expect(serviceRegistry.transport.tick).toBe(5 * MEASURE_TICKS)
             expect(serviceRegistry.transport.nextStepTime).toBe(12)
             expect(serviceRegistry.audioEngine.invalidateCache).toHaveBeenCalled()
         })
@@ -394,7 +394,7 @@ describe('Sequencer', () => {
             seq.setSongCursor(2)
             expect(serviceRegistry.transport.tick).toBe(99)
             expect(serviceRegistry.transport.nextStepTime).toBe(0)
-            expect(seq.songCursorBar).toBe(2)
+            expect(seq.songCursorMeasure).toBe(2)
         })
 
         it('clamps and floors the measure it is given', () => {
@@ -402,11 +402,11 @@ describe('Sequencer', () => {
             serviceRegistry.transport = makeTransport(false)
 
             seq.setSongCursor(4.7)
-            expect(seq.songCursorBar).toBe(4)
+            expect(seq.songCursorMeasure).toBe(4)
             seq.setSongCursor(-3)
-            expect(seq.songCursorBar).toBe(0)
+            expect(seq.songCursorMeasure).toBe(0)
             seq.setSongCursor(Number.NaN)
-            expect(seq.songCursorBar).toBe(0)
+            expect(seq.songCursorMeasure).toBe(0)
         })
     })
 

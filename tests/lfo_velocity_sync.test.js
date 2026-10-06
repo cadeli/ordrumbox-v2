@@ -176,7 +176,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 useAutoAssignSound: false,
                 useSoftSynth: false,
                 synthSoundKey: null,
-                soundId: '',
+                sampleId: '',
                 swingAmount: 0,
             }
             appState.patterns = [{ tracks: [track], beatCount: 4 }]
@@ -220,7 +220,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 useAutoAssignSound: false,
                 useSoftSynth: false,
                 synthSoundKey: null,
-                soundId: '',
+                sampleId: '',
                 swingAmount: 0,
             }
             appState.patterns = [{ tracks: [track], beatCount: 4 }]
@@ -264,7 +264,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 useAutoAssignSound: false,
                 useSoftSynth: false,
                 synthSoundKey: null,
-                soundId: '',
+                sampleId: '',
                 swingAmount: 0,
             }
             appState.patterns = [{ tracks: [track], beatCount: 4 }]

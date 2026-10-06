@@ -270,7 +270,7 @@ export default class PatternPanel extends BasePanel {
         this.#scheduleSync()
     }
 
-    /** Shared requestAnimationFrame callback for sync + bar cache update. */
+    /** Shared requestAnimationFrame callback for sync + beat-rects cache update. */
     #scheduleSync() {
         this.#syncRafId = requestAnimationFrame(() => {
             this.sync()
@@ -364,8 +364,8 @@ export default class PatternPanel extends BasePanel {
                     const newLabel =
                         track.useSoftSynth && track.synthSoundKey
                             ? `SYNTH: ${track.synthSoundKey}`
-                            : track.soundId && track.soundId !== 'NOT_DEFINED'
-                              ? (soundRegistry.sounds[track.soundId]?.url ?? track.soundId)
+                            : track.sampleId && track.sampleId !== 'NOT_DEFINED'
+                              ? (soundRegistry.sounds[track.sampleId]?.url ?? track.sampleId)
                               : ''
                     if (urlEl.textContent !== newLabel) {
                         urlEl.textContent = newLabel

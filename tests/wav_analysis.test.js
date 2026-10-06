@@ -179,8 +179,8 @@ describe('onset_detector', () => {
 describe('wav analysis pipeline integration', () => {
     it('four-on-the-floor kick at 120 BPM', async () => {
         const bpm = 120
-        const ticksPerBar = 32
-        const tickTime = ((60 * 4) / (bpm * ticksPerBar)) * 0.25
+        const ticksPerBeat = 32
+        const tickTime = ((60 * 4) / (bpm * ticksPerBeat)) * 0.25
 
         const kicks = [0, 32, 64, 96].map((tick) => ({
             tick,
@@ -189,7 +189,7 @@ describe('wav analysis pipeline integration', () => {
             amplitude: 0.9,
         }))
 
-        const wav = await buildWavFromTicks({ bpm, ticksPerBar, sampleRate: SAMPLE_RATE, onsets: kicks })
+        const wav = await buildWavFromTicks({ bpm, ticksPerBeat, sampleRate: SAMPLE_RATE, onsets: kicks })
 
         const { onsets } = detectOnsetsFromWav(analyzer, wav, DETECT_OPTIONS)
 
@@ -206,15 +206,15 @@ describe('wav analysis pipeline integration', () => {
 
     it('snare on beats 2 and 4 at 90 BPM', async () => {
         const bpm = 90
-        const ticksPerBar = 32
-        const tickTime = ((60 * 4) / (bpm * ticksPerBar)) * 0.25
+        const ticksPerBeat = 32
+        const tickTime = ((60 * 4) / (bpm * ticksPerBeat)) * 0.25
 
         const snares = [
             { tick: 8, freq: 200, duration: 0.04, amplitude: 0.7 },
             { tick: 24, freq: 200, duration: 0.04, amplitude: 0.7 },
         ]
 
-        const wav = await buildWavFromTicks({ bpm, ticksPerBar, sampleRate: SAMPLE_RATE, onsets: snares })
+        const wav = await buildWavFromTicks({ bpm, ticksPerBeat, sampleRate: SAMPLE_RATE, onsets: snares })
 
         const { onsets } = detectOnsetsFromWav(analyzer, wav, DETECT_OPTIONS)
 
@@ -229,8 +229,8 @@ describe('wav analysis pipeline integration', () => {
 
     it('mixed kick + snare pattern', async () => {
         const bpm = 120
-        const ticksPerBar = 32
-        const tickTime = ((60 * 4) / (bpm * ticksPerBar)) * 0.25
+        const ticksPerBeat = 32
+        const tickTime = ((60 * 4) / (bpm * ticksPerBeat)) * 0.25
 
         const notes = [
             { tick: 0, freq: 60, duration: 0.05, amplitude: 0.9 },
@@ -239,7 +239,7 @@ describe('wav analysis pipeline integration', () => {
             { tick: 24, freq: 200, duration: 0.04, amplitude: 0.7 },
         ]
 
-        const wav = await buildWavFromTicks({ bpm, ticksPerBar, sampleRate: SAMPLE_RATE, onsets: notes })
+        const wav = await buildWavFromTicks({ bpm, ticksPerBeat, sampleRate: SAMPLE_RATE, onsets: notes })
 
         const { onsets } = detectOnsetsFromWav(analyzer, wav, {
             threshold: 0.0001,
@@ -277,8 +277,8 @@ describe('wav analysis pipeline integration', () => {
 
     it('handles 2-beat pattern with loop', async () => {
         const bpm = 120
-        const ticksPerBar = 32
-        const tickTime = ((60 * 4) / (bpm * ticksPerBar)) * 0.25
+        const ticksPerBeat = 32
+        const tickTime = ((60 * 4) / (bpm * ticksPerBeat)) * 0.25
 
         const notes = []
         for (let loop = 0; loop < 2; loop++) {
@@ -293,7 +293,7 @@ describe('wav analysis pipeline integration', () => {
             }
         }
 
-        const wav = await buildWavFromTicks({ bpm, ticksPerBar, sampleRate: SAMPLE_RATE, onsets: notes })
+        const wav = await buildWavFromTicks({ bpm, ticksPerBeat, sampleRate: SAMPLE_RATE, onsets: notes })
 
         const { onsets } = detectOnsetsFromWav(analyzer, wav, DETECT_OPTIONS)
 

@@ -8,7 +8,7 @@ import { downloadJson } from './components/ui_utils.js'
 import { EVENTS } from '../core/events.js'
 import ArrangementSection from './song_panel/arrangement_section.js'
 import ContextMenu from './components/context_menu.js'
-import { songBarAtTick } from '../logic/song_playback.js'
+import { songMeasureAtTick } from '../logic/song_playback.js'
 import { TICK } from '../core/constants.js'
 
 /**
@@ -174,16 +174,16 @@ export default class SongPanel extends BasePanel {
 
         const pattern = appState.patterns?.find((p) => p.id === patternId)
         const label = pattern?.name ?? patternId
-        const startBar = Math.floor(songBarAtTick(song, serviceRegistry.seq?.tick, TICK))
+        const startMeasure = Math.floor(songMeasureAtTick(song, serviceRegistry.seq?.tick, TICK))
 
         this.#listMenu.show(
             label,
             [
                 {
-                    label: `Add at bar ${startBar + 1}`,
+                    label: `Add at measure ${startMeasure + 1}`,
                     run: () => {
-                        serviceRegistry.cmd.addPatternAtBar(patternId, startBar)
-                        showToast(`"${label}" added at bar ${startBar + 1}`, 'success')
+                        serviceRegistry.cmd.addPatternAtMeasure(patternId, startMeasure)
+                        showToast(`"${label}" added at measure ${startMeasure + 1}`, 'success')
                         this.#arrangement?.sync()
                     },
                 },

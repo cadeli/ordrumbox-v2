@@ -20,7 +20,7 @@ async function waitForBootSettle(page) {
                     const tracks = window.__e2e.appState.patterns[0]?.tracks ?? []
                     return tracks
                         .filter((t) => t.useAutoAssignSound)
-                        .filter((t) => t.soundId && t.soundId !== 'NOT_DEFINED' && t.soundId !== 'NOT_FOUND').length
+                        .filter((t) => t.sampleId && t.sampleId !== 'NOT_DEFINED' && t.sampleId !== 'NOT_FOUND').length
                 }),
             { timeout: 15_000 },
         )

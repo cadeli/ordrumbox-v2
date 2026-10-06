@@ -310,10 +310,10 @@ export default class HatGenerator extends BaseGenerator {
         const interval = trackType === 'OHH' ? 2 : 1
 
         const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 1)
-        const lastBarAbsolute = lastBeat * stepsPerBeat
+        const lastMeasureAbsolute = lastBeat * stepsPerBeat
 
         for (let step = 0; step < stepsPerBeat; step += interval) {
-            const absoluteStep = lastBarAbsolute + step
+            const absoluteStep = lastMeasureAbsolute + step
             if (absoluteStep >= loopPointAbsolute) continue
 
             const note = this.addNote(

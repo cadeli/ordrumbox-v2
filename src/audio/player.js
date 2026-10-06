@@ -1,4 +1,5 @@
 import Sound from './sound.js'
+import { resolveSelectedPatternIdxGetter } from './selected_pattern_idx.js'
 import FlatNote from '../model/flatnote.js'
 import NoteParams from '../patterns/note_params.js'
 import { getAutoGeneratorService } from '../state/service_loader.js'
@@ -7,8 +8,8 @@ import { logger, valueOrFallback } from '../core/logger.js'
 import { isMelodicTrack } from '../core/drum_taxonomy.js'
 import { getTracksArray, hasAnySolo, shouldTrackPlay } from '../core/tracks.js'
 import { EVENTS } from '../core/events.js'
-import { BEATS_PER_BAR } from '../model/song_schema.js'
-import { PLAYBACK_MODE, resolveSongSources, songTempo, tickToSongBars } from '../logic/song_playback.js'
+import { BEATS_PER_MEASURE } from '../model/song_schema.js'
+import { PLAYBACK_MODE, resolveSongSources, songTempo, tickToSongMeasures } from '../logic/song_playback.js'
 
 export default class Player {
     static TAG = 'Player'
@@ -21,7 +22,7 @@ export default class Player {
     #trackIdxMapRef = null
     #trackIdxMapCount = -1
     #patternsById = null
-    #songBar = 0
+    #songMeasure = 0
 
     /**
      * Drop every playback-derived cache. Called by AudioEngine.invalidateCache()
@@ -44,7 +45,7 @@ export default class Player {
         this.sounds = config.sounds
         this.generatedSounds = valueOrFallback(config.generatedSounds, {}, 'Player', 'generatedSounds fallback')
         this.patterns = config.patterns
-        this.getSelectedPatternIdx = config.getSelectedPatternIdx ?? (() => config.selectedPatternIdx ?? 0)
+        this.getSelectedPatternIdx = resolveSelectedPatternIdxGetter(config)
         this.computeFlatNotes = config.computeFlatNotes
         this.getAutoGenerator = config.getAutoGenerator
         this.getFlatNotes = config.getFlatNotes
@@ -125,21 +126,21 @@ export default class Player {
         return this.getPlaybackMode() === PLAYBACK_MODE.SONG && this.getSong() != null
     }
 
-    /** Where the transport sits in the arrangement, in bars (fractional). */
-    get currentSongBar() {
-        return this.#songBar
+    /** Where the transport sits in the arrangement, in measures (fractional). */
+    get currentSongMeasure() {
+        return this.#songMeasure
     }
 
     /** The song's own tempo, or null outside song mode. */
     getSongTempo = () => (this.isSongMode ? songTempo(this.getSong(), this.patternsById) : null)
 
-    #songBarOf = (tick) => {
-        const tickPerBar = this.TICK * BEATS_PER_BAR
+    #songMeasureOf = (tick) => {
+        const tickPerMeasure = this.TICK * BEATS_PER_MEASURE
         // Measured from the clip under the playhead, so it stays unwrapped and
         // the UI does not jump back to 0 when the arrangement loops.
         const source = resolveSongSources(this.getSong(), this.patternsById, tick, this.TICK)[0]
-        if (!source) return tickToSongBars(tick, tickPerBar)
-        return source.clip.startBar + (tick - source.clip.startBar * tickPerBar) / tickPerBar
+        if (!source) return tickToSongMeasures(tick, tickPerMeasure)
+        return source.clip.startMeasure + (tick - source.clip.startMeasure * tickPerMeasure) / tickPerMeasure
     }
 
     playNotes = async (tick, atTime) => {
@@ -217,7 +218,7 @@ export default class Player {
     }
 
     /**
-     * Sound every clip covering the current bar, at the same time.
+     * Sound every clip covering the current measure, at the same time.
      *
      * A gap is silent but still publishes the position, so the UI playhead
      * keeps moving across empty measures of the arrangement.
@@ -225,7 +226,7 @@ export default class Player {
     #playSongNotes = async (tick, atTime) => {
         const song = this.getSong()
         const sources = resolveSongSources(song, this.patternsById, tick, this.TICK)
-        this.#songBar = this.#songBarOf(tick)
+        this.#songMeasure = this.#songMeasureOf(tick)
         if (sources.length === 0) return
 
         const secondsPerTick = this.secondsPerTick
@@ -316,7 +317,7 @@ export default class Player {
 
         const previewNote = {
             name: 'N_' + (track.name ?? indexTrack) + '_preview',
-            soundId: track.soundId,
+            sampleId: track.sampleId,
             beatStep: note?.beatStep ?? 0,
             steppc: 0,
             beat: note?.beat ?? 0,
@@ -338,7 +339,7 @@ export default class Player {
         await this.sound.play(flatNote, this.audioCtx.currentTime)
         logger.info(
             'Player',
-            'Play :' + track.name + '=' + (this.sounds[track.soundId]?.url ?? track.synthSoundKey ?? 'synth'),
+            'Play :' + track.name + '=' + (this.sounds[track.sampleId]?.url ?? track.synthSoundKey ?? 'synth'),
         )
     }
 

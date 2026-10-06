@@ -1,7 +1,7 @@
 // e2e/song-playback.spec.js
 //
 // Playback follows the visible view: the Song view plays the arrangement
-// (every clip covering the current bar, layered), any other view keeps looping
+// (every clip covering the current measure, layered), any other view keeps looping
 // the selected pattern.
 //
 // Live audio is not observable in headless Chromium, so layering is asserted by
@@ -9,7 +9,7 @@
 // how many patterns sound on a tick.
 
 import { test, expect } from '@playwright/test'
-import { bootApp, stackClipOnBar } from './fixtures.js'
+import { bootApp, stackClipOnMeasure } from './fixtures.js'
 
 /**
  * Records which patterns the engine resolves flat notes for.
@@ -94,21 +94,21 @@ test.describe('Song playback mode follows the visible view', () => {
         await page.locator('.tb-view-btn[data-view="song"]').click()
         await startPlayback(page)
 
-        const bar = () => page.evaluate(() => window.__e2e.serviceRegistry.audioEngine.player.currentSongBar)
-        const first = await bar()
+        const measure = () => page.evaluate(() => window.__e2e.serviceRegistry.audioEngine.player.currentSongMeasure)
+        const first = await measure()
         await page.waitForTimeout(1200)
-        const later = await bar()
+        const later = await measure()
 
         expect(later).toBeGreaterThan(first)
         await page.evaluate(() => window.__e2e.serviceRegistry.seq.toggleStartStop?.())
     })
 
-    // The demo arrangement stacks nothing, so a second clip is placed on bar 0
+    // The demo arrangement stacks nothing, so a second clip is placed on measure 0
     // first: this is about the resolver layering, not about the demo song.
     test('overlapping clips are resolved together, not one after the other', async ({ page }) => {
         await bootApp(page)
         await page.locator('.tb-view-btn[data-view="song"]').click()
-        await stackClipOnBar(page, 0)
+        await stackClipOnMeasure(page, 0)
         await startPlayback(page)
         await spyOnFlatNotes(page)
         await page.waitForTimeout(600)
@@ -116,7 +116,7 @@ test.describe('Song playback mode follows the visible view', () => {
         const patterns = await resolvedPatterns(page)
         const expected = await page.evaluate(() => {
             const song = window.__e2e.appState.songs[0]
-            return [...new Set(song.clips.filter((c) => c.startBar === 0).map((c) => c.pattern))]
+            return [...new Set(song.clips.filter((c) => c.startMeasure === 0).map((c) => c.pattern))]
         })
         expect(expected.length).toBeGreaterThan(1)
         for (const id of expected) {
@@ -143,7 +143,7 @@ test.describe('Song playback mode follows the visible view', () => {
 
     // Regression: the sequencer only ever auto-assigned the *selected* pattern,
     // so in song mode every other pattern the arrangement plays kept
-    // soundId 'NOT_DEFINED' and no voice could be built (silent playback, plus
+    // sampleId 'NOT_DEFINED' and no voice could be built (silent playback, plus
     // a "VoiceFactory: No soundBuffer" warning per track).
     test('starting in song mode makes every pattern it plays audible', async ({ page }) => {
         const noBuffer = []
@@ -164,7 +164,7 @@ test.describe('Song playback mode follows the visible view', () => {
                     const pattern = byId.get(id)
                     const tracks = Object.values(pattern?.tracks ?? {})
                     const silent = tracks.filter(
-                        (t) => !t.useSoftSynth && !t.synthSoundKey && !soundRegistry.sounds?.[t.soundId]?.buffer,
+                        (t) => !t.useSoftSynth && !t.synthSoundKey && !soundRegistry.sounds?.[t.sampleId]?.buffer,
                     )
                     return { id, total: tracks.length, silent: silent.map((t) => t.name) }
                 })

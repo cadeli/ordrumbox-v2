@@ -141,3 +141,36 @@ describe('importPatternFromJson preserves the pattern id', () => {
         expect(importPattern({ name: 'A', tracks: [] }).id).toBe('minted-from-the-name')
     })
 })
+
+describe('importPatternFromJson maps legacy track keys', () => {
+    const importPattern = (source) =>
+        importPatternFromJson(
+            source,
+            () => ({ name: 'tmp', description: '', tracks: [], bpm: 120, beatCount: 4 }),
+            (pattern, name) => {
+                const track = { name, notes: [] }
+                pattern.tracks.push(track)
+                return track
+            },
+            (track, beat, beatStep, pitch) => {
+                const note = { beat, beatStep, pitch }
+                track.notes.push(note)
+                return note
+            },
+        )
+
+    it('renames soundId to sampleId on the imported track', () => {
+        const imported = importPattern({ name: 'A', tracks: [{ name: 'KICK', soundId: 'kick01', notes: [] }] })
+        expect(imported.tracks[0].sampleId).toBe('kick01')
+        expect(imported.tracks[0]).not.toHaveProperty('soundId')
+    })
+
+    it('keeps a sampleId already present', () => {
+        const imported = importPattern({
+            name: 'A',
+            tracks: [{ name: 'KICK', soundId: 'old', sampleId: 'new', notes: [] }],
+        })
+        expect(imported.tracks[0].sampleId).toBe('new')
+        expect(imported.tracks[0]).not.toHaveProperty('soundId')
+    })
+})

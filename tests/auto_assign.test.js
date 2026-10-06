@@ -29,7 +29,7 @@ describe('Functional: Auto-assign sounds', () => {
 
         autoAssign.autoAssignTrackSounds(track)
 
-        expect(track.soundId).toBe('snd_kick')
+        expect(track.sampleId).toBe('snd_kick')
     })
 
     it('autoAssignTrackSounds renames track when instrument name is found', () => {
@@ -40,7 +40,7 @@ describe('Functional: Auto-assign sounds', () => {
         autoAssign.autoAssignTrackSounds(track)
 
         expect(track.name).toBe('KICK')
-        expect(track.soundId).toBe('snd_kick')
+        expect(track.sampleId).toBe('snd_kick')
         warnSpy.mockRestore()
     })
 
@@ -48,28 +48,28 @@ describe('Functional: Auto-assign sounds', () => {
         const pattern = cmd.addPattern('Test')
         const track = cmd.addTrack(pattern, 'KICK', 4)
         track.useAutoAssignSound = false
-        track.soundId = 'existing_sound'
+        track.sampleId = 'existing_sound'
 
         autoAssign.autoAssignSounds(pattern)
 
-        expect(track.soundId).toBe('existing_sound')
+        expect(track.sampleId).toBe('existing_sound')
     })
 
     // A soft-synth track has no sample to assign, so the drum tiers must leave its
-    // soundId alone — but it does need a synth patch, which is the whole point of
+    // sampleId alone — but it does need a synth patch, which is the whole point of
     // useSoftSynth.
-    it('autoAssignSounds leaves a soft-synth track soundId alone but gives it a patch', () => {
+    it('autoAssignSounds leaves a soft-synth track sampleId alone but gives it a patch', () => {
         soundRegistry.generatedSounds = { BASS1: {}, PIANO: {} }
         const pattern = cmd.addPattern('Test')
         const track = cmd.addTrack(pattern, 'SYNTH', 4)
         track.useAutoAssignSound = true
         track.useSoftSynth = true
-        track.soundId = 'NOT_DEFINED'
+        track.sampleId = 'NOT_DEFINED'
         track.synthSoundKey = null
 
         autoAssign.autoAssignSounds(pattern)
 
-        expect(track.soundId).toBe('NOT_DEFINED') // the drum path still skips it
+        expect(track.sampleId).toBe('NOT_DEFINED') // the drum path still skips it
         expect(Object.keys(soundRegistry.generatedSounds)).toContain(track.synthSoundKey)
     })
 
@@ -137,9 +137,9 @@ describe('Functional: Auto-assign sounds', () => {
 
         autoAssign.autoAssignSounds(pattern)
 
-        expect(kick.soundId).toBe('snd_kick')
-        expect(snare.soundId).toBe('snd_snare')
-        expect(chh.soundId).toBe('snd_chh')
+        expect(kick.sampleId).toBe('snd_kick')
+        expect(snare.sampleId).toBe('snd_snare')
+        expect(chh.sampleId).toBe('snd_chh')
     })
 
     it('finds equivalent instrument when direct match fails', () => {
@@ -149,46 +149,46 @@ describe('Functional: Auto-assign sounds', () => {
         autoAssign.autoAssignTrackSounds(track)
 
         // CLAP has no direct sound but should try equivalents
-        expect(track.soundId).not.toBe('NOT_DEFINED')
+        expect(track.sampleId).not.toBe('NOT_DEFINED')
     })
 
-    it('getSoundIdFromKitAndTrackname returns matching sound in kit', () => {
-        const result = autoAssign.getSoundIdFromKitAndTrackname('real', 'KICK')
+    it('getSampleIdFromKitAndTrackname returns matching sound in kit', () => {
+        const result = autoAssign.getSampleIdFromKitAndTrackname('real', 'KICK')
         expect(result).toBe('snd_kick')
     })
 
-    it('getSoundIdFromKitAndTrackname returns NOT_FOUND for unknown track', () => {
-        const result = autoAssign.getSoundIdFromKitAndTrackname('real', 'TOM')
+    it('getSampleIdFromKitAndTrackname returns NOT_FOUND for unknown track', () => {
+        const result = autoAssign.getSampleIdFromKitAndTrackname('real', 'TOM')
         expect(result).toBe(AutoAssign.NOT_FOUND)
     })
 
-    it('getSoundIdFromKitAndTrackname returns NOT_FOUND for unknown kit', () => {
-        const result = autoAssign.getSoundIdFromKitAndTrackname('nonexistent', 'KICK')
+    it('getSampleIdFromKitAndTrackname returns NOT_FOUND for unknown kit', () => {
+        const result = autoAssign.getSampleIdFromKitAndTrackname('nonexistent', 'KICK')
         expect(result).toBe(AutoAssign.NOT_FOUND)
     })
 
-    it('getSoundIdFromTrackname finds sound by key match', () => {
-        const result = autoAssign.getSoundIdFromTrackname('KICK')
+    it('getSampleIdFromTrackname finds sound by key match', () => {
+        const result = autoAssign.getSampleIdFromTrackname('KICK')
         expect(result).toBe('snd_kick')
     })
 
-    it('getSoundIdFromTrackname returns NOT_FOUND for unknown name', () => {
-        const result = autoAssign.getSoundIdFromTrackname('GUITAR')
+    it('getSampleIdFromTrackname returns NOT_FOUND for unknown name', () => {
+        const result = autoAssign.getSampleIdFromTrackname('GUITAR')
         expect(result).toBe(AutoAssign.NOT_FOUND)
     })
 
-    it('getSoundIdByKeyContaining finds sound by partial key match', () => {
-        const result = autoAssign.getSoundIdByKeyContaining('real', 'KIC')
+    it('getSampleIdByKeyContaining finds sound by partial key match', () => {
+        const result = autoAssign.getSampleIdByKeyContaining('real', 'KIC')
         expect(result).toBe('snd_kick')
     })
 
-    it('getSoundIdByKeyContaining with null kit searches all kits', () => {
-        const result = autoAssign.getSoundIdByKeyContaining(null, 'KIC')
+    it('getSampleIdByKeyContaining with null kit searches all kits', () => {
+        const result = autoAssign.getSampleIdByKeyContaining(null, 'KIC')
         expect(result).toBe('snd_kick')
     })
 
-    it('getSoundIdByKeyContaining returns NOT_FOUND for empty search', () => {
-        const result = autoAssign.getSoundIdByKeyContaining('real', '')
+    it('getSampleIdByKeyContaining returns NOT_FOUND for empty search', () => {
+        const result = autoAssign.getSampleIdByKeyContaining('real', '')
         expect(result).toBe(AutoAssign.NOT_FOUND)
     })
 
@@ -197,10 +197,10 @@ describe('Functional: Auto-assign sounds', () => {
         const pattern = cmd.addPattern('Test')
         const track = cmd.addTrack(pattern, 'KICK', 4)
         track.useAutoAssignSound = true
-        const originalSoundId = track.soundId
+        const originalSampleId = track.sampleId
 
         autoAssign.autoAssignSounds(pattern)
 
-        expect(track.soundId).toBe(originalSoundId)
+        expect(track.sampleId).toBe(originalSampleId)
     })
 })

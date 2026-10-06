@@ -5,7 +5,7 @@
 //        parameter (knobs via their numeric prompt, sliders via fill, selects,
 //        toggles, icons), change drumkit, assign sample and synth sounds.
 //   T2 — persist to IndexedDB, reload the page, verify nothing was lost and
-//        assert the documented design losses (auto-assigned soundId reset).
+//        assert the documented design losses (auto-assigned sampleId reset).
 //   T3 — export the pattern as a JSON file, verify its content, then re-import
 //        it through the "replace" action and verify the round-trip.
 //
@@ -41,7 +41,7 @@ import {
 
 const NEW_PATTERN = 'LifecyclePat'
 
-// Track keys that must survive a reload (pan + soundId are documented losses).
+// Track keys that must survive a reload (pan + sampleId are documented losses).
 const TRACK_KEYS = [
     'name',
     'beatCount',
@@ -498,11 +498,11 @@ test.describe.serial('Full session lifecycle', () => {
             await expectVal(() => page.evaluate(() => window.__e2e.appState.selectedDrumkitIdx), 1)
             // auto-assign runs for every auto track: T4 must get a concrete sound
             await expect
-                .poll(async () => (await trackAt(page, 3))?.soundId, { timeout: 30_000 })
+                .poll(async () => (await trackAt(page, 3))?.sampleId, { timeout: 30_000 })
                 .not.toBe('NOT_DEFINED')
             for (const idx of [0, 1, 2]) {
                 await expect
-                    .poll(async () => (await trackAt(page, idx))?.soundId, { timeout: 30_000 })
+                    .poll(async () => (await trackAt(page, idx))?.sampleId, { timeout: 30_000 })
                     .not.toBe('NOT_DEFINED')
             }
         })
@@ -529,7 +529,7 @@ test.describe.serial('Full session lifecycle', () => {
                 .poll(async () => {
                     const track = await trackAt(page, 1)
                     const url = await sampleSel.inputValue()
-                    return url !== '' && track?.soundId === url
+                    return url !== '' && track?.sampleId === url
                 })
                 .toBe(true)
 
@@ -540,7 +540,7 @@ test.describe.serial('Full session lifecycle', () => {
             const sample2 = sampleOptions.find((v) => v !== currentSample && v !== '')
             if (sample2) {
                 await sampleSel.selectOption(sample2)
-                await expectVal(() => trackField(page, 1, 'soundId'), sample2)
+                await expectVal(() => trackField(page, 1, 'sampleId'), sample2)
             }
         })
 
@@ -566,7 +566,7 @@ test.describe.serial('Full session lifecycle', () => {
                 .poll(async () => {
                     const track = await trackAt(page, 2)
                     const url = await sampleSel.inputValue()
-                    return url !== '' && track?.soundId === url
+                    return url !== '' && track?.sampleId === url
                 })
                 .toBe(true)
 
@@ -577,7 +577,7 @@ test.describe.serial('Full session lifecycle', () => {
             const sample3 = sampleOptions.find((v) => v !== currentSample && v !== '')
             if (sample3) {
                 await sampleSel.selectOption(sample3)
-                await expectVal(() => trackField(page, 2, 'soundId'), sample3)
+                await expectVal(() => trackField(page, 2, 'sampleId'), sample3)
             }
         })
 
@@ -594,7 +594,7 @@ test.describe.serial('Full session lifecycle', () => {
             await autoLed.click()
             await expectVal(() => trackField(page, 0, 'useAutoAssignSound'), false)
             await expect
-                .poll(async () => (await trackAt(page, 0))?.soundId, { timeout: 30_000 })
+                .poll(async () => (await trackAt(page, 0))?.sampleId, { timeout: 30_000 })
                 .not.toBe('NOT_DEFINED')
 
             await page.locator('#te-panel [data-tab-panel="snd"] button[data-key="mono"]').click()
@@ -610,7 +610,7 @@ test.describe.serial('Full session lifecycle', () => {
                         const tracks = Array.isArray(pattern.tracks)
                             ? pattern.tracks
                             : Object.values(pattern.tracks ?? {})
-                        return soundRegistry.sounds[tracks[0]?.soundId]?.decay
+                        return soundRegistry.sounds[tracks[0]?.sampleId]?.decay
                     }, newIdx),
                 1200,
             )
@@ -813,27 +813,27 @@ test.describe.serial('Full session lifecycle', () => {
         expect(beforeTracks.map((track) => track.pan)).toEqual([0.25, 0, 0, 0])
         expect(afterTracks.map((track) => track.pan)).toEqual(beforeTracks.map((track) => track.pan))
 
-        // documented loss 2: auto-assigned soundId is reset to NOT_DEFINED
-        // documented loss 2: the persisted soundId of an auto track is discarded
+        // documented loss 2: auto-assigned sampleId is reset to NOT_DEFINED
+        // documented loss 2: the persisted sampleId of an auto track is discarded
         // on load (resources_loader.js:302-304) and re-derived by the boot
         // auto-assign — proven by the boot log, since a random pick could
         // coincidentally match the persisted value.
         expect(beforeTracks[3].useAutoAssignSound).toBe(true)
         expect(afterTracks[3].useAutoAssignSound).toBe(true)
-        expect(beforeTracks[3].soundId).not.toBe('NOT_DEFINED')
-        expect(afterTracks[3].soundId).not.toBe('NOT_DEFINED')
+        expect(beforeTracks[3].sampleId).not.toBe('NOT_DEFINED')
+        expect(afterTracks[3].sampleId).not.toBe('NOT_DEFINED')
         expect(
             pageLogs.some((line) => line.includes(NEW_PATTERN) && line.includes('Auto-assign')),
             'boot auto-assign must run for the restored pattern',
         ).toBe(true)
         expect(
-            pageLogs.some((line) => line.includes('T4') && line.includes(`=> ${afterTracks[3].soundId}`)),
-            'T4 soundId must come from the boot auto-assign, not from storage',
+            pageLogs.some((line) => line.includes('T4') && line.includes(`=> ${afterTracks[3].sampleId}`)),
+            'T4 sampleId must come from the boot auto-assign, not from storage',
         ).toBe(true)
         // manual and synth assignments are restored as-is
-        expect(afterTracks[0].soundId).toBe(beforeTracks[0].soundId)
-        expect(afterTracks[1].soundId).toBe(beforeTracks[1].soundId)
-        expect(afterTracks[2].soundId).toBe(beforeTracks[2].soundId)
+        expect(afterTracks[0].sampleId).toBe(beforeTracks[0].sampleId)
+        expect(afterTracks[1].sampleId).toBe(beforeTracks[1].sampleId)
+        expect(afterTracks[2].sampleId).toBe(beforeTracks[2].sampleId)
 
         // the arp editor fields survive a raw reload (only lost on JSON round-trip)
         const beforeNote0 = beforeTracks[0].notes[0]
@@ -875,7 +875,7 @@ test.describe.serial('Full session lifecycle', () => {
         expect(fileTracks).toHaveLength(4)
 
         // the file matches the pre-reload export modulo documented losses:
-        // pan/soundId rewritten at load, variation2 note fields re-randomized
+        // pan/sampleId rewritten at load, variation2 note fields re-randomized
         // on every computation and ARP tab fields dropped by the exporter
         expect(stripForComparison(fileJson)).toEqual(stripForComparison(exportBeforeReload))
 

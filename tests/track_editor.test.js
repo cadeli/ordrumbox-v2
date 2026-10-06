@@ -55,7 +55,7 @@ describe('TrackEditor sound panel', () => {
     it('renders selected-kit samples first in the sample dropdown', () => {
         const wrapper = renderSoundPanelHtml({
             name: 'KICK',
-            soundId: 'real/kick.wav',
+            sampleId: 'real/kick.wav',
             useAutoAssignSound: false,
             useSoftSynth: false,
         })
@@ -72,7 +72,7 @@ describe('TrackEditor sound panel', () => {
     it('keeps the instrument dropdown aligned with the current sound key', () => {
         const wrapper = renderSoundPanelHtml({
             name: 'OLDNAME',
-            soundId: 'real/kick.wav',
+            sampleId: 'real/kick.wav',
             useAutoAssignSound: false,
             useSoftSynth: false,
         })

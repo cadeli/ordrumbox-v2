@@ -1,6 +1,6 @@
 /**
  * Song playback mode: when the Song view is visible the transport follows the
- * arrangement, and every clip covering the current bar sounds at once.
+ * arrangement, and every clip covering the current measure sounds at once.
  *
  * What the *arrangement* means at a given tick — overlap, per-clip phase, the loop
  * length — is asserted on the pure resolver in tests/song_playback.test.js. What is
@@ -15,9 +15,9 @@ import Player from '../src/audio/player.js'
 import { PLAYBACK_MODE } from '../src/logic/song_playback.js'
 import FlatNote from '../src/model/flatnote.js'
 import { TICK } from '../src/core/constants.js'
-import { BEATS_PER_BAR } from '../src/model/song_schema.js'
+import { BEATS_PER_MEASURE } from '../src/model/song_schema.js'
 
-const BAR = TICK * BEATS_PER_BAR // one bar in ticks
+const MEASURE = TICK * BEATS_PER_MEASURE // one measure in ticks
 
 /** Pattern whose every beat has a note, so layer count is easy to assert. */
 function makePattern(id, beatCount) {
@@ -87,9 +87,9 @@ describe('Player — song playback mode', () => {
             name: 'Demo',
             bpm: 120,
             clips: [
-                { pattern: 'rock', startBar: 0, bars: 2 },
-                { pattern: 'bass', startBar: 0, bars: 2 },
-                { pattern: 'lead', startBar: 4, bars: 4 },
+                { pattern: 'rock', startMeasure: 0, measureCount: 2 },
+                { pattern: 'bass', startMeasure: 0, measureCount: 2 },
+                { pattern: 'lead', startMeasure: 4, measureCount: 4 },
             ],
         }
     })
@@ -108,23 +108,23 @@ describe('Player — song playback mode', () => {
         expect(player.isSongMode).toBe(false)
     })
 
-    // The whole point: two clips on bar 0 must both sound on the same tick.
-    it('sounds every clip covering the current bar at once', async () => {
+    // The whole point: two clips on measure 0 must both sound on the same tick.
+    it('sounds every clip covering the current measure at once', async () => {
         const { player, played } = makePlayer({ patterns, song })
         await player.playNotes(0, 0)
         expect(played.map((n) => n.track.name).sort()).toEqual(['bass', 'rock'])
     })
 
-    it('plays only the clip that is alone on that bar', async () => {
+    it('plays only the clip that is alone on that measure', async () => {
         const { player, played } = makePlayer({ patterns, song })
-        await player.playNotes(4 * BAR, 0)
+        await player.playNotes(4 * MEASURE, 0)
         expect(played.map((n) => n.track.name)).toEqual(['lead'])
     })
 
     it('reports its position in the song for the UI', async () => {
         const { player } = makePlayer({ patterns, song })
-        await player.playNotes(4 * BAR + 64, 0)
-        expect(player.currentSongBar).toBeCloseTo(4.5, 5)
+        await player.playNotes(4 * MEASURE + 64, 0)
+        expect(player.currentSongMeasure).toBeCloseTo(4.5, 5)
     })
 
     it('has no song tempo in pattern mode', () => {

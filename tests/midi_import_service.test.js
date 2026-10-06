@@ -280,7 +280,7 @@ describe('MidiImportService', () => {
         expect(result.trackCount).toBeGreaterThanOrEqual(1)
     })
 
-    it('imports multi-bar MIDI (multiple patterns)', async () => {
+    it('imports multi-measure MIDI (multiple patterns)', async () => {
         const notes = []
         for (let i = 0; i < 64; i++) {
             notes.push({ tick: i * 96, note: 36, velocity: 100 })

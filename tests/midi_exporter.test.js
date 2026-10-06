@@ -7,7 +7,7 @@ import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pat
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const TICKS_PER_BAR = PPQN * 1
+const TICKS_PER_MEASURE = PPQN * 1
 
 /** Decode all chunk types and their positions from a raw SMF Uint8Array */
 function parseChunks(bytes) {
@@ -226,7 +226,7 @@ describe('buildInstrumentTrack', () => {
         const on = events.find((e) => e.type === 'midi' && e.status === 0x90)
         // beat=1, beatStep=0 → absoluteTick = 1 * 96 = 96
         // delta from cursor=0 → delta=96
-        expect(on.delta).toBe(TICKS_PER_BAR)
+        expect(on.delta).toBe(TICKS_PER_MEASURE)
     })
 
     it('beatStep subdivision is correct (stepsPerBeat=16 → 6 ticks/step)', () => {

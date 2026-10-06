@@ -38,7 +38,7 @@ Source of truth files:
 | Property             | Type              | Default         | Range                                                | Description                                                                             |
 | -------------------- | ----------------- | --------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | `name`               | `string`          | `""`            | —                                                    | Display name (e.g. `"KICK"`, `"SNARE"`).                                                |
-| `soundId`            | `string`          | `"NOT_DEFINED"` | —                                                    | URL or key of the assigned sample. `"NOT_DEFINED"` = no sound.                          |
+| `sampleId`           | `string`          | `"NOT_DEFINED"` | —                                                    | URL or key of the assigned sample. `"NOT_DEFINED"` = no sound.                          |
 | `useAutoAssignSound` | `boolean`         | `true`          | —                                                    | Auto-assign sound by track name on load. Forced to `false` if `useSoftSynth` is `true`. |
 | `beatCount`          | `integer`         | `4`             | 1–16                                                 | Beats in this track. Independent of the pattern-level `beatCount`.                      |
 | `stepsPerBeat`       | `integer`         | `4`             | 1–8                                                  | Subdivision per beat. Total steps = `beatCount × stepsPerBeat`.                         |
@@ -159,7 +159,7 @@ When `null`, the LFO is disabled.
 
 ### Implicit rules
 
-- `fixNoteStepBar()` runs on every note at import time: if `beatStep >= stepsPerBeat`, it wraps the step into the next beat.
+- `normalizeNoteGridPosition()` runs on every note at import time: if `beatStep >= stepsPerBeat`, it wraps the step into the next beat.
 - Values are rounded to 2 decimals on export for: `velocity`, `pan`, `prob`, `rate`.
 
 ---
@@ -227,7 +227,7 @@ All properties are optional. Missing values are filled from defaults.
     "tracks": [
         {
             "name": "KICK",
-            "soundId": "samples/kick.wav",
+            "sampleId": "samples/kick.wav",
             "useAutoAssignSound": false,
             "beatCount": 4,
             "stepsPerBeat": 4,
@@ -273,7 +273,7 @@ All properties are optional. Missing values are filled from defaults.
         },
         {
             "name": "SNARE",
-            "soundId": "samples/snare.wav",
+            "sampleId": "samples/snare.wav",
             "useAutoAssignSound": false,
             "beatCount": 4,
             "stepsPerBeat": 4,

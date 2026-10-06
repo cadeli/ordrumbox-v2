@@ -302,7 +302,7 @@ describe('real render — orDrumbox pattern', () => {
             tracks: [
                 {
                     name: 'KICK',
-                    soundId: 'kick.wav',
+                    sampleId: 'kick.wav',
                     beatCount: 1,
                     stepsPerBeat: 4,
                     mute: false,

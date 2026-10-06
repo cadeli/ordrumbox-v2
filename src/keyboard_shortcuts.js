@@ -218,7 +218,7 @@ function assignRandomSampleAllTracks() {
     Object.values(selectedPattern.tracks).forEach((track) => {
         track.useAutoAssignSound = false
         track.useSoftSynth = false
-        track.soundId = allSounds[Math.floor(Math.random() * allSounds.length)]
+        track.sampleId = allSounds[Math.floor(Math.random() * allSounds.length)]
     })
 
     serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)

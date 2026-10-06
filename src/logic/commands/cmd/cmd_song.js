@@ -1,17 +1,17 @@
 import { appState } from '../../../state/app_state.js'
 import { reportUserError } from '../../../core/notify.js'
 import {
-    barsForPattern,
+    measuresForPattern,
     ensurePatternId,
     normalizeSong,
-    songContentBars,
+    songContentMeasures,
     uniqueId,
 } from '../../../model/song_schema.js'
 import { clamp } from '../../../core/numbers.js'
 
 /**
  * @typedef {object} SongClipOptions
- * @property {number} [bars]    clip duration in bars (defaults to the pattern's own length)
+ * @property {number} [measureCount]    clip duration in measures (defaults to the pattern's own length)
  * @property {number} [songIdx] song to apply to (defaults to the selected one)
  */
 
@@ -20,20 +20,20 @@ import { clamp } from '../../../core/numbers.js'
  * @property {string}  [name]
  * @property {string}  [description]
  * @property {number}  [bpm]        clamped to SONG_MIN_BPM..SONG_MAX_BPM
- * @property {number}  [loopBars]   starting loop length; every later clip edit
+ * @property {number}  [loopMeasureCount]   starting loop length; every later clip edit
  *                                  moves it onto the last occupied measure
  */
 
 /**
  * Song commands — sub-module of the Commander (see CommanderHost in ../cmd.js).
  *
- * A song (an arrangement) is an ordered list of clips placing patterns on the bar timeline
+ * A song (an arrangement) is an ordered list of clips placing patterns on the measure timeline
  * (see src/model/song_schema.js for the persisted format).
  *
  * Two layers:
  *  - `addSongClip` / `removeSongClips` are the primitives, they take a raw clip
  *    and clip indices;
- *  - `addPatternAtBar` / `repeatPatternAtBar` / `removePatternAtBar` /
+ *  - `addPatternAtMeasure` / `repeatPatternAtMeasure` / `removePatternAtMeasure` /
  *    `removePatternClips` are the API callers should use: they resolve a
  *    pattern by name or id, derive the clip duration from it, and report what
  *    they could not do instead of failing silently.
@@ -106,35 +106,35 @@ export default class SongCommands {
     /**
      * Point the loop at the last measure the arrangement occupies.
      *
-     * `loopBars` is both the grid width and what the player loops over, so a loop
+     * `loopMeasureCount` is both the grid width and what the player loops over, so a loop
      * left at its old value draws measures nothing occupies any more, and a clip
      * added past it would never sound at all. Every clip edit therefore moves the
-     * loop onto the content: a `loopBars` written by a song file is honoured when
+     * loop onto the content: a `loopMeasureCount` written by a song file is honoured when
      * it loads, but it stops being a promise once the arrangement is edited.
      *
      * @param {import('../../../model/song_schema.js').Song} song
      * @returns {number} the loop length now in force, 0 when nothing is placed
      */
     #followContent(song) {
-        const bars = songContentBars(song)
-        this.#setLoop(song, bars)
-        return bars
+        const measures = songContentMeasures(song)
+        this.#setLoop(song, measures)
+        return measures
     }
 
     /**
      * Set the loop length, or drop the field when there is none: an arrangement
      * with no clip has no loop, and a stored 0 would be meaningless.
      * @param {import('../../../model/song_schema.js').Song} song
-     * @param {number|null|undefined} bars
+     * @param {number|null|undefined} measures
      */
-    #setLoop(song, bars) {
-        if (bars == null || !(bars > 0)) delete song.loopBars
-        else song.loopBars = bars
+    #setLoop(song, measures) {
+        if (measures == null || !(measures > 0)) delete song.loopMeasureCount
+        else song.loopMeasureCount = measures
     }
 
     /**
-     * Place a pattern on the bar timeline of a song. One undo step.
-     * @param {{pattern: string, startBar: number, bars: number}} clip
+     * Place a pattern on the measure timeline of a song. One undo step.
+     * @param {{pattern: string, startMeasure: number, measureCount: number}} clip
      * @param {number} [songIdx] defaults to the selected song
      */
     addSongClip(clip, songIdx) {
@@ -143,16 +143,16 @@ export default class SongCommands {
         const { song, index } = found
         const added = {
             pattern: String(clip.pattern),
-            startBar: Math.max(0, Math.floor(Number(clip.startBar) || 0)),
-            bars: Number(clip.bars) > 0 ? Number(clip.bars) : 1,
+            startMeasure: Math.max(0, Math.floor(Number(clip.startMeasure) || 0)),
+            measureCount: Number(clip.measureCount) > 0 ? Number(clip.measureCount) : 1,
         }
-        const loopBefore = song.loopBars
+        const loopBefore = song.loopMeasureCount
         song.clips.push(added)
         const loopAfter = this.#followContent(song)
         this.#host.persist()
         this.#host.record({
-            desc: `Add "${added.pattern}" at bar ${added.startBar + 1}`,
-            params: { pattern: added.pattern, startBar: added.startBar, song: index },
+            desc: `Add "${added.pattern}" at measure ${added.startMeasure + 1}`,
+            params: { pattern: added.pattern, startMeasure: added.startMeasure, song: index },
             execute: () => {
                 song.clips.push({ ...added })
                 this.#setLoop(song, loopAfter)
@@ -187,7 +187,7 @@ export default class SongCommands {
         // reorder the arrangement (removing a and c from [a,b,c] then undoing
         // by pushing them back yields [b,a,c]).
         const removed = targets.map((i) => ({ clip: song.clips[i], index: i }))
-        const loopBefore = song.loopBars
+        const loopBefore = song.loopMeasureCount
         for (const i of targets) song.clips.splice(i, 1)
         const loopAfter = this.#followContent(song)
         this.#host.persist()
@@ -218,26 +218,26 @@ export default class SongCommands {
     // ── high-level placement API ────────────────────────────────────────────────
 
     /**
-     * Place a pattern in the arrangement, at `startBar` (0-based measure).
+     * Place a pattern in the arrangement, at `startMeasure` (0-based measure).
      *
      * `patternRef` is a pattern id or name — the name is what the library and
      * the UI show, the id is what a clip stores. The clip lasts as long as the
-     * pattern itself unless `bars` says otherwise.
+     * pattern itself unless `measureCount` says otherwise.
      *
      * @param {any} patternRef pattern id or name
-     * @param {number} [startBar] 0-based measure (default 0)
+     * @param {number} [startMeasure] 0-based measure (default 0)
      * @param {SongClipOptions} [options]
      * @returns {import('../../../model/song_schema.js').SongClip|null} the clip added
      */
-    addPatternAtBar(patternRef, startBar = 0, { bars, songIdx } = {}) {
+    addPatternAtMeasure(patternRef, startMeasure = 0, { measureCount, songIdx } = {}) {
         const found = this.#requireSong(songIdx)
         if (!found) return null
         const pattern = this.#patternByRef(patternRef)
         if (!pattern) {
             reportUserError(
-                'SongCommands.addPatternAtBar.unknownPattern',
+                'SongCommands.addPatternAtMeasure.unknownPattern',
                 `No pattern named "${String(patternRef ?? '').trim()}" in the library`,
-                { cause: new Error(`addPatternAtBar: unknown pattern "${patternRef}"`) },
+                { cause: new Error(`addPatternAtMeasure: unknown pattern "${patternRef}"`) },
             )
             return null
         }
@@ -245,55 +245,68 @@ export default class SongCommands {
         // normalizeSong() on the next load: repair it rather than write a
         // dangling clip.
         const patternId = ensurePatternId(pattern, this.#takenIds())
-        const requested = Number(bars)
-        const duration = Number.isFinite(requested) && requested > 0 ? requested : barsForPattern(pattern)
-        const added = this.addSongClip({ pattern: patternId, startBar, bars: duration }, songIdx)
+        const requested = Number(measureCount)
+        const duration = Number.isFinite(requested) && requested > 0 ? requested : measuresForPattern(pattern)
+        const added = this.addSongClip({ pattern: patternId, startMeasure, measureCount: duration }, songIdx)
         return added ? found.song.clips[found.song.clips.length - 1] : null
     }
 
     /**
-     * Repeat the clip starting at `startBar` right after itself, with the same
+     * Repeat the clip starting at `startMeasure` right after itself, with the same
      * duration — the DAW "clone to the right" gesture.
      *
-     * @param {number} startBar measure of the clip to repeat
+     * @param {number} startMeasure measure of the clip to repeat
      * @param {SongClipOptions} [options]
      * @returns {import('../../../model/song_schema.js').SongClip|null} the new clip
      */
-    repeatPatternAtBar(startBar, { songIdx } = {}) {
+    repeatPatternAtMeasure(startMeasure, { songIdx } = {}) {
         const found = this.#song(songIdx)
         if (!found) {
             this.#requireSong(songIdx)
             return null
         }
-        const clip = found.song.clips.find((entry) => entry?.startBar === startBar)
+        const clip = found.song.clips.find((entry) => entry?.startMeasure === startMeasure)
         if (!clip) {
-            reportUserError('SongCommands.repeatPatternAtBar.noClip', `No clip at bar ${Number(startBar) + 1}`, {
-                cause: new Error(`repeatPatternAtBar: no clip at bar ${startBar}`),
-            })
+            reportUserError(
+                'SongCommands.repeatPatternAtMeasure.noClip',
+                `No clip at measure ${Number(startMeasure) + 1}`,
+                {
+                    cause: new Error(`repeatPatternAtMeasure: no clip at measure ${startMeasure}`),
+                },
+            )
             return null
         }
-        return this.addPatternAtBar(clip.pattern, clip.startBar + clip.bars, { bars: clip.bars, songIdx })
+        return this.addPatternAtMeasure(clip.pattern, clip.startMeasure + clip.measureCount, {
+            measureCount: clip.measureCount,
+            songIdx,
+        })
     }
 
     // ── high-level removal API ──────────────────────────────────────────────────
 
     /**
-     * Remove every clip starting at `startBar` (one undo step).
+     * Remove every clip starting at `startMeasure` (one undo step).
      *
-     * @param {number} startBar 0-based measure
+     * @param {number} startMeasure 0-based measure
      * @param {object} [options]
      * @param {number} [options.songIdx]
      * @returns {import('../../../model/song_schema.js').SongClip[]} the clips removed (empty when there was nothing to remove)
      */
-    removePatternAtBar(startBar, { songIdx } = {}) {
+    removePatternAtMeasure(startMeasure, { songIdx } = {}) {
         const found = this.#requireSong(songIdx)
         if (!found) return []
         const { song } = found
-        const indices = song.clips.map((clip, i) => (clip?.startBar === startBar ? i : -1)).filter((i) => i >= 0)
+        const indices = song.clips
+            .map((clip, i) => (clip?.startMeasure === startMeasure ? i : -1))
+            .filter((i) => i >= 0)
         if (indices.length === 0) {
-            reportUserError('SongCommands.removePatternAtBar.noClip', `No clip at bar ${Number(startBar) + 1}`, {
-                cause: new Error(`removePatternAtBar: no clip at bar ${startBar}`),
-            })
+            reportUserError(
+                'SongCommands.removePatternAtMeasure.noClip',
+                `No clip at measure ${Number(startMeasure) + 1}`,
+                {
+                    cause: new Error(`removePatternAtMeasure: no clip at measure ${startMeasure}`),
+                },
+            )
             return []
         }
         const removed = indices.map((i) => song.clips[i])
@@ -338,7 +351,7 @@ export default class SongCommands {
      *
      * Empty on purpose: clips reference patterns by id and are dropped by
      * normalizeSong() when that id is unknown, so a caller places them with
-     * addPatternAtBar() right after. One undo step.
+     * addPatternAtMeasure() right after. One undo step.
      *
      * @param {SongSpec} [spec]
      * @returns {import('../../../model/song_schema.js').Song|null} the new arrangement

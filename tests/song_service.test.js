@@ -51,13 +51,15 @@ describe('SongService', () => {
 
         // Arrangements travel with the song: v2 of the .odbox format added them.
         it('carries the arrangements and the selected song', () => {
-            appState.songs = [{ id: 'demo', name: 'Demo', bpm: 120, clips: [{ pattern: 'a', startBar: 0, bars: 2 }] }]
+            appState.songs = [
+                { id: 'demo', name: 'Demo', bpm: 120, clips: [{ pattern: 'a', startMeasure: 0, measureCount: 2 }] },
+            ]
             appState.selectedSongIdx = 0
 
             const data = songService.buildSongData('TestSong')
 
             expect(data.songs).toHaveLength(1)
-            expect(data.songs[0].clips).toEqual([{ pattern: 'a', startBar: 0, bars: 2 }])
+            expect(data.songs[0].clips).toEqual([{ pattern: 'a', startMeasure: 0, measureCount: 2 }])
             expect(data.selectedSongIdx).toBe(0)
         })
 
@@ -228,14 +230,16 @@ describe('SongService — arrangements', () => {
 
     it('restores arrangements whose pattern ids exist', async () => {
         const data = songService.buildSongData('S')
-        data.songs = [{ id: 'demo', name: 'Demo', bpm: 95, clips: [{ pattern: 'a', startBar: 0, bars: 2 }] }]
+        data.songs = [
+            { id: 'demo', name: 'Demo', bpm: 95, clips: [{ pattern: 'a', startMeasure: 0, measureCount: 2 }] },
+        ]
         data.patterns = [{ id: 'a', name: 'A', tracks: [], beatCount: 8 }]
 
         await songService.applyToAppState(data, 'fallback')
 
         expect(appState.songs).toHaveLength(1)
         expect(appState.songs[0].bpm).toBe(95)
-        expect(appState.songs[0].clips).toEqual([{ pattern: 'a', startBar: 0, bars: 2 }])
+        expect(appState.songs[0].clips).toEqual([{ pattern: 'a', startMeasure: 0, measureCount: 2 }])
     })
 
     it('drops a clip referencing an unknown pattern id but keeps the song', async () => {
@@ -245,15 +249,15 @@ describe('SongService — arrangements', () => {
             {
                 id: 'demo',
                 clips: [
-                    { pattern: 'ghost', startBar: 0, bars: 1 },
-                    { pattern: 'a', startBar: 4, bars: 1 },
+                    { pattern: 'ghost', startMeasure: 0, measureCount: 1 },
+                    { pattern: 'a', startMeasure: 4, measureCount: 1 },
                 ],
             },
         ]
 
         await songService.applyToAppState(data, 'fallback')
 
-        expect(appState.songs[0].clips).toEqual([{ pattern: 'a', startBar: 4, bars: 1 }])
+        expect(appState.songs[0].clips).toEqual([{ pattern: 'a', startMeasure: 4, measureCount: 1 }])
     })
 
     it('clamps selectedSongIdx when the song disappears', async () => {

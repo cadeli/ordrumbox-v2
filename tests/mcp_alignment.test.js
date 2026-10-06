@@ -122,4 +122,16 @@ describe('MCP server stays aligned with the app model', () => {
         expect(fromObject.retriggerCount).toBe(3)
         expect(fromObject).not.toHaveProperty('retriggerNum')
     })
+
+    // A file written before the soundId → sampleId rename must read back with
+    // the current spelling too: normalizeTrack() drops unknown keys, so the
+    // mapping has to happen before it, exactly like the app's import path.
+    it('reads legacy track keys like the app', () => {
+        const pattern = normalizePattern({ name: 'Legacy', tracks: [{ name: 'KICK', soundId: 'kick01' }] })
+        expect(pattern.tracks[0].sampleId).toBe('kick01')
+        expect(pattern.tracks[0]).not.toHaveProperty('soundId')
+
+        const both = normalizePattern({ name: 'Both', tracks: [{ name: 'KICK', soundId: 'old', sampleId: 'new' }] })
+        expect(both.tracks[0].sampleId).toBe('new')
+    })
 })

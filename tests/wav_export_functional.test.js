@@ -246,8 +246,8 @@ function startTimesToTicks(startTimes, bpm) {
     return startTimes.map((t) => Math.round(t / tickTime))
 }
 
-function makeTrack(name, soundId, notes, opts = {}) {
-    return sharedMakeTrack(name, notes, { beatCount: 1, ...opts, soundId })
+function makeTrack(name, sampleId, notes, opts = {}) {
+    return sharedMakeTrack(name, notes, { beatCount: 1, ...opts, sampleId })
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -878,7 +878,7 @@ describe('WAV Export — functional end-to-end', () => {
                 tracks: [
                     {
                         name: 'BASS',
-                        soundId: 'kick.wav',
+                        sampleId: 'kick.wav',
                         beatCount: 2,
                         stepsPerBeat: 4,
                         pitch: 7,

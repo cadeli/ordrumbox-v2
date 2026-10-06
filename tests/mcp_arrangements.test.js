@@ -55,7 +55,9 @@ afterEach(async () => {
 describe('MCP arrangement tools', () => {
     it('listArrangements reports the arrangements of song.json with pattern names', async () => {
         const index = await readIndex()
-        index.songs = [{ id: 'a1', name: 'Intro', bpm: 120, clips: [{ pattern: 'verse', startBar: 0, bars: 2 }] }]
+        index.songs = [
+            { id: 'a1', name: 'Intro', bpm: 120, clips: [{ pattern: 'verse', startMeasure: 0, measureCount: 2 }] },
+        ]
         await writeFile(resolve(dataDir, 'song.json'), JSON.stringify(index, null, 2), 'utf8')
 
         const { json } = await call('listArrangements', {})
@@ -64,8 +66,8 @@ describe('MCP arrangement tools', () => {
         expect(json.arrangements[0].clips[0]).toEqual({
             pattern: 'verse',
             patternName: 'Verse',
-            startBar: 0,
-            bars: 2,
+            startMeasure: 0,
+            measureCount: 2,
         })
     })
 
@@ -87,17 +89,17 @@ describe('MCP arrangement tools', () => {
         const { json } = await call('createArrangement', {
             name: 'Full',
             clips: [
-                { patternName: 'Verse', startBar: 0 },
-                { patternName: 'chorus', startBar: 2 },
-                { patternName: 'Ghost', startBar: 4 },
+                { patternName: 'Verse', startMeasure: 0 },
+                { patternName: 'chorus', startMeasure: 2 },
+                { patternName: 'Ghost', startMeasure: 4 },
             ],
         })
 
         expect(json.placedClips).toBe(2)
-        expect(json.skippedClips).toEqual([{ patternName: 'Ghost', startBar: 4 }])
+        expect(json.skippedClips).toEqual([{ patternName: 'Ghost', startMeasure: 4 }])
         expect(json.arrangement.clips).toEqual([
-            { pattern: 'verse', patternName: 'Verse', startBar: 0, bars: 2 },
-            { pattern: 'chorus', patternName: 'Chorus', startBar: 2, bars: 1 },
+            { pattern: 'verse', patternName: 'Verse', startMeasure: 0, measureCount: 2 },
+            { pattern: 'chorus', patternName: 'Chorus', startMeasure: 2, measureCount: 1 },
         ])
     })
 
@@ -107,26 +109,32 @@ describe('MCP arrangement tools', () => {
 
         const { json } = await call('addPatternToArrangement', {
             patternName: 'Chorus',
-            startBar: 4,
+            startMeasure: 4,
             arrangement: 'First',
         })
 
-        expect(json.clip).toEqual({ pattern: 'chorus', startBar: 4, bars: 1 })
+        expect(json.clip).toEqual({ pattern: 'chorus', startMeasure: 4, measureCount: 1 })
         expect(json.arrangement.name).toBe('First')
 
         const index = await readIndex()
-        expect(index.songs.find((s) => s.name === 'First').clips).toEqual([{ pattern: 'chorus', startBar: 4, bars: 1 }])
+        expect(index.songs.find((s) => s.name === 'First').clips).toEqual([
+            { pattern: 'chorus', startMeasure: 4, measureCount: 1 },
+        ])
         expect(index.songs.find((s) => s.name === 'Second').clips).toEqual([])
     })
 
     it('addPatternToArrangement honours an explicit clip length and allows overlaps', async () => {
         await call('createArrangement', { name: 'Layers' })
-        await call('addPatternToArrangement', { patternName: 'Verse', startBar: 0 })
-        const { json } = await call('addPatternToArrangement', { patternName: 'Chorus', startBar: 0, bars: 2 })
+        await call('addPatternToArrangement', { patternName: 'Verse', startMeasure: 0 })
+        const { json } = await call('addPatternToArrangement', {
+            patternName: 'Chorus',
+            startMeasure: 0,
+            measureCount: 2,
+        })
 
         expect(json.arrangement.clips).toHaveLength(2)
         expect(json.arrangement.clips.map((c) => c.pattern)).toEqual(['verse', 'chorus'])
-        expect(json.arrangement.bars).toBe(2)
+        expect(json.arrangement.measureCount).toBe(2)
     })
 
     it('addPatternToArrangement fails loudly on an unknown pattern or arrangement', async () => {
@@ -143,19 +151,19 @@ describe('MCP arrangement tools', () => {
         expect((await readIndex()).songs[0].clips).toEqual([])
     })
 
-    it('removePatternFromArrangement removes by bar, by pattern, or both', async () => {
+    it('removePatternFromArrangement removes by measure, by pattern, or both', async () => {
         await call('createArrangement', {
             name: 'Mixed',
             clips: [
-                { patternName: 'Verse', startBar: 0 },
-                { patternName: 'Chorus', startBar: 0 },
-                { patternName: 'Verse', startBar: 2 },
+                { patternName: 'Verse', startMeasure: 0 },
+                { patternName: 'Chorus', startMeasure: 0 },
+                { patternName: 'Verse', startMeasure: 2 },
             ],
         })
 
-        const byBar = await call('removePatternFromArrangement', { startBar: 0 })
-        expect(JSON.parse(byBar.text).removed).toHaveLength(2)
-        expect((await readIndex()).songs[0].clips).toEqual([{ pattern: 'verse', startBar: 2, bars: 2 }])
+        const byMeasure = await call('removePatternFromArrangement', { startMeasure: 0 })
+        expect(JSON.parse(byMeasure.text).removed).toHaveLength(2)
+        expect((await readIndex()).songs[0].clips).toEqual([{ pattern: 'verse', startMeasure: 2, measureCount: 2 }])
 
         await call('removePatternFromArrangement', { patternName: 'verse' })
         expect((await readIndex()).songs[0].clips).toEqual([])
@@ -166,7 +174,7 @@ describe('MCP arrangement tools', () => {
 
         expect((await call('removePatternFromArrangement', {})).res.isError).toBe(true)
 
-        const miss = await call('removePatternFromArrangement', { startBar: 7 })
+        const miss = await call('removePatternFromArrangement', { startMeasure: 7 })
         expect(miss.res.isError).toBe(true)
         expect(miss.text).toContain('No matching clip')
         expect(console.warn).toHaveBeenCalled()
@@ -175,7 +183,7 @@ describe('MCP arrangement tools', () => {
     it('an arrangement survives a write/reload cycle through song.json', async () => {
         await call('createArrangement', {
             name: 'Reload me',
-            clips: [{ patternName: 'Verse', startBar: 0 }],
+            clips: [{ patternName: 'Verse', startMeasure: 0 }],
         })
 
         // Fresh process state: a new module instance re-reads the file.
@@ -183,18 +191,20 @@ describe('MCP arrangement tools', () => {
         const { arrangements } = JSON.parse(listed.content[0].text)
 
         expect(arrangements).toHaveLength(1)
-        expect(arrangements[0].clips).toEqual([{ pattern: 'verse', patternName: 'Verse', startBar: 0, bars: 2 }])
+        expect(arrangements[0].clips).toEqual([
+            { pattern: 'verse', patternName: 'Verse', startMeasure: 0, measureCount: 2 },
+        ])
     })
 
     it('pattern writes keep the arrangements intact', async () => {
-        await call('createArrangement', { name: 'Keep me', clips: [{ patternName: 'Verse', startBar: 0 }] })
+        await call('createArrangement', { name: 'Keep me', clips: [{ patternName: 'Verse', startMeasure: 0 }] })
 
         const created = await call('createNewPattern', { patternName: 'Bridge' })
         expect(created.res.isError).toBeUndefined()
 
         const index = await readIndex()
         expect(index.songs).toHaveLength(1)
-        expect(index.songs[0].clips).toEqual([{ pattern: 'verse', startBar: 0, bars: 2 }])
+        expect(index.songs[0].clips).toEqual([{ pattern: 'verse', startMeasure: 0, measureCount: 2 }])
         expect(index.patterns.map((p) => p.name)).toEqual(['Verse', 'Chorus', 'Bridge'])
     })
 

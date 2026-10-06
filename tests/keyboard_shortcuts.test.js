@@ -425,7 +425,7 @@ describe('Keyboard shortcuts', () => {
         for (const track of tracks) {
             expect(track.useAutoAssignSound).toBe(false)
             expect(track.useSoftSynth).toBe(false)
-            expect(['kick.wav', 'snare.wav']).toContain(track.soundId)
+            expect(['kick.wav', 'snare.wav']).toContain(track.sampleId)
         }
         expect(serviceRegistry.flatNotes.applyFlatNotes).toHaveBeenCalledWith(appState.patterns[0])
         expect(showToast).toHaveBeenCalledWith('Random samples assigned', 'success')

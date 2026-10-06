@@ -109,7 +109,12 @@ describe('WavExporter — silent render retry', () => {
     })
 
     it('retries a song export too', async () => {
-        const song = { name: 'S', bpm: 120, loopBars: 1, clips: [{ pattern: 'p1', bar: 0, length: 1 }] }
+        const song = {
+            name: 'S',
+            bpm: 120,
+            loopMeasureCount: 1,
+            clips: [{ pattern: 'p1', startMeasure: 0, length: 1 }],
+        }
         const patterns = [{ id: 'p1', name: 'P', bpm: 120, beatCount: 1, tracks: withNote().tracks }]
         hoisted.silentRenders = 2
         const blob = await new WavExporter().exportSongToWav(song, { patterns })

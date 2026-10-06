@@ -15,7 +15,7 @@ import { valueOrFallback } from '../core/logger.js'
  *
  * @property {string}  name                 - Track display name (e.g. "KICK", "SNARE"). Default: ""
  * @property {boolean} useAutoAssignSound   - Auto-assign sound by name. Default: true
- * @property {string}  soundId              - Assigned sound URL. Default: "NOT_DEFINED"
+ * @property {string}  sampleId              - Assigned sound URL. Default: "NOT_DEFINED"
  * @property {number}  beatCount              - Number of beats in the track. Default: 4
  * @property {number}  stepsPerBeat         - Steps per beat (subdivision). Default: 4
  * @property {number|null} loopAtStep       - Loop point in steps (null = auto). Default: null
@@ -70,7 +70,7 @@ import { valueOrFallback } from '../core/logger.js'
 export const TRACK_DEFAULTS = {
     name: '',
     useAutoAssignSound: true,
-    soundId: 'NOT_DEFINED',
+    sampleId: 'NOT_DEFINED',
     beatCount: 4,
     stepsPerBeat: 4,
     loopAtStep: null,

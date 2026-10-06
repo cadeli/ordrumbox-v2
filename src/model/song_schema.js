@@ -1,7 +1,7 @@
 // src/model/song_schema.js
 //
 // Single source of truth for the *arrangement* format: a song is an ordered
-// list of clips that place patterns on a bar timeline, and several clips may
+// list of clips that place patterns on a measure timeline, and several clips may
 // overlap.
 //
 // ## Format
@@ -14,34 +14,34 @@
 //       patterns:[ { id, name, beatCount, tracks: [...] } ]
 //     }
 //
-// A clip is `{ pattern, startBar, bars }`:
+// A clip is `{ pattern, startMeasure, measureCount }`:
 //   - `pattern`   the **id** of a pattern, never its index or name: indices
 //                 shift when a pattern is removed, duplicated or undone, and a
 //                 rename would silently detach every clip.
-//   - `startBar`  0-based measure where the pattern starts (1 bar = 4 beats).
-//   - `bars`      duration in measures. A clip added through
+//   - `startMeasure`  0-based measure where the pattern starts (1 measure = 4 beats).
+//   - `measureCount`  duration in measures. A clip added through
 //                 `cmd.addSongClip()` defaults it to the pattern's own length
 //                 (beatCount / 4), so an 8-beat pattern needs only
-//                 `{pattern, startBar}`; `normalizeSong()`, which can be called
-//                 without the pattern library, falls back to 1 bar instead.
+//                 `{pattern, startMeasure}`; `normalizeSong()`, which can be called
+//                 without the pattern library, falls back to 1 measure instead.
 //
-// ## Bar maths
+// ## Measure maths
 //
 // `beatCount` is authored in beats and may be any value in 1..MAX_BEATS, so a
-// pattern is not necessarily a whole number of bars. We keep that: a clip may
-// last 0.75 bar. Only *positions* snap to whole bars, because that is what a
-// bar-based arrangement grid can draw.
+// pattern is not necessarily a whole number of measures. We keep that: a clip may
+// last 0.75 measure. Only *positions* snap to whole measures, because that is what a
+// measure-based arrangement grid can draw.
 
 /** Beats in one measure of 4/4. */
-export const BEATS_PER_BAR = 4
+export const BEATS_PER_MEASURE = 4
 
 /** BPM bounds accepted in a song file. */
 export const SONG_MIN_BPM = 20
 export const SONG_MAX_BPM = 300
 
 /**
- * One placement of a pattern on the bar timeline.
- * @typedef {{ pattern: string, startBar: number, bars: number }} SongClip
+ * One placement of a pattern on the measure timeline.
+ * @typedef {{ pattern: string, startMeasure: number, measureCount: number }} SongClip
  */
 
 /**
@@ -51,7 +51,7 @@ export const SONG_MAX_BPM = 300
  * @property {string} name
  * @property {string} description
  * @property {number} bpm
- * @property {number} [loopBars]
+ * @property {number} [loopMeasureCount]
  * @property {SongClip[]} clips
  */
 
@@ -72,50 +72,51 @@ export const SONG_DEFAULTS = Object.freeze({
 // The id helpers live in core/ids.js (core may not import model, and idb.js
 // needs them for its migration); re-exported here as the domain-facing entry.
 import { slugify, uniqueId, ensurePatternId } from '../core/ids.js'
+import { migrateLegacySongKeys } from '../core/legacy_keys.js'
 
 export { slugify, uniqueId, ensurePatternId }
 
 /**
- * Bars occupied by a pattern. A pattern shorter than a bar still occupies the
- * bar it starts in — the grid cannot draw a fraction of a row.
+ * Measures occupied by a pattern. A pattern shorter than a measure still occupies
+ * measure it starts in — the grid cannot draw a fraction of a row.
  * @param {{ beatCount?: number }|null|undefined} pattern
- * @returns {number} bars, > 0
+ * @returns {number} measures, > 0
  */
-export function barsForPattern(pattern) {
+export function measuresForPattern(pattern) {
     const beats = Number(pattern?.beatCount)
     if (!Number.isFinite(beats) || beats <= 0) return 1
     // Not floored to 1: beatCount is authored in beats and 1..MAX_BEATS are all
-    // legal, so a 3-beat pattern really is 0.75 bar long.
-    return beats / BEATS_PER_BAR
+    // legal, so a 3-beat pattern really is 0.75 measure long.
+    return beats / BEATS_PER_MEASURE
 }
 
 /**
  * How far the arrangement reaches: the furthest end across its clips.
  *
- * The measure after the last one, so a clip on bar 8 lasting 4 bars ends at 12.
+ * The measure after the last one, so a clip on measure 8 lasting 4 measures ends at 12.
  * The grid width and the loop length are both derived from this — see
- * songLengthBars and SongCommands.
+ * songLengthMeasures and SongCommands.
  * @param {Song|null|undefined} song a normalized song
- * @returns {number} bars, 0 when the song has no clip
+ * @returns {number} measures, 0 when the song has no clip
  */
-export function songContentBars(song) {
+export function songContentMeasures(song) {
     let end = 0
-    for (const clip of song?.clips ?? []) end = Math.max(end, (clip.startBar ?? 0) + clip.bars)
+    for (const clip of song?.clips ?? []) end = Math.max(end, (clip.startMeasure ?? 0) + clip.measureCount)
     return end
 }
 
 /**
- * Total length of a song in bars: the furthest end across its clips, or
- * `loopBars` when the song declares one.
+ * Total length of a song in measureCount: the furthest end across its clips, or
+ * `loopMeasureCount` when the song declares one.
  * @param {Song|null|undefined} song a normalized song
- * @returns {number} bars, 0 when the song has no clip
+ * @returns {number} measures, 0 when the song has no clip
  */
-export function songLengthBars(song) {
+export function songLengthMeasures(song) {
     if (!song) return 0
-    if (Number.isFinite(Number(song.loopBars)) && Number(song.loopBars) > 0) {
-        return Math.max(1, Math.floor(Number(song.loopBars)))
+    if (Number.isFinite(Number(song.loopMeasureCount)) && Number(song.loopMeasureCount) > 0) {
+        return Math.max(1, Math.floor(Number(song.loopMeasureCount)))
     }
-    return songContentBars(song)
+    return songContentMeasures(song)
 }
 
 /**
@@ -137,6 +138,10 @@ export function songBpm(song, fallbackBpm = SONG_DEFAULTS.bpm) {
  * is not in the library) are dropped and reported by name rather than failing
  * the whole file: a partially stale arrangement is still worth loading.
  *
+ * A file written before the measure rename (`startBar`/`bars`/`loopBars`) is
+ * mapped first, in place — raw is either a freshly parsed file or an
+ * already-normalized song, where the mapping is a no-op.
+ *
  * @param {any} raw
  * @param {Map<string, object>|Set<string>} knownPatternIds library ids, or a Map id→pattern
  * @returns {{ ok: boolean, song?: Song, error?: string, dropped?: DroppedClip[] }}
@@ -145,6 +150,7 @@ export function normalizeSong(raw, knownPatternIds) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
         return { ok: false, error: 'Each song must be a JSON object' }
     }
+    migrateLegacySongKeys(raw)
 
     const ids = knownPatternIds instanceof Map ? new Set(knownPatternIds.keys()) : (knownPatternIds ?? new Set())
     const clips = []
@@ -168,11 +174,11 @@ export function normalizeSong(raw, knownPatternIds) {
             dropped.push({ pattern: ref, reason: 'unknown pattern id' })
             continue
         }
-        const startBar = Math.max(0, Math.floor(Number(rawClip.startBar) || 0))
+        const startMeasure = Math.max(0, Math.floor(Number(rawClip.startMeasure) || 0))
         // Default length comes from the referenced pattern, which the caller may
-        // not have handed us; 1 bar is the sane floor either way.
-        const bars = Number(rawClip.bars) > 0 ? Number(rawClip.bars) : 1
-        clips.push({ pattern: ref, startBar, bars })
+        // not have handed us; 1 measure is the sane floor either way.
+        const measureCount = Number(rawClip.measureCount) > 0 ? Number(rawClip.measureCount) : 1
+        clips.push({ pattern: ref, startMeasure, measureCount })
     }
 
     const bpm = Number(raw.bpm)
@@ -183,7 +189,7 @@ export function normalizeSong(raw, knownPatternIds) {
             name: String(raw.name ?? SONG_DEFAULTS.name),
             description: String(raw.description ?? SONG_DEFAULTS.description),
             bpm: Number.isFinite(bpm) && bpm >= SONG_MIN_BPM && bpm <= SONG_MAX_BPM ? bpm : SONG_DEFAULTS.bpm,
-            ...(Number(raw.loopBars) > 0 ? { loopBars: Math.floor(Number(raw.loopBars)) } : {}),
+            ...(Number(raw.loopMeasureCount) > 0 ? { loopMeasureCount: Math.floor(Number(raw.loopMeasureCount)) } : {}),
             clips,
         },
         dropped,

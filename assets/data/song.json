@@ -12,32 +12,32 @@
             "name": "Demo arrangement",
             "description": "Intro / verse / chorus built on the demo pattern library.",
             "bpm": 120,
-            "loopBars": 66,
+            "loopMeasureCount": 66,
             "clips": [
-                { "pattern": "rock", "startBar": 0, "bars": 2 },
-                { "pattern": "basrock", "startBar": 2, "bars": 1 },
-                { "pattern": "smrock", "startBar": 3, "bars": 1 },
-                { "pattern": "basrock", "startBar": 4, "bars": 1 },
-                { "pattern": "rockcow", "startBar": 5, "bars": 1 },
-                { "pattern": "cmpbeat", "startBar": 6, "bars": 4 },
-                { "pattern": "rock", "startBar": 10, "bars": 4 },
-                { "pattern": "basrock", "startBar": 14, "bars": 4 },
-                { "pattern": "funk", "startBar": 18, "bars": 4 },
-                { "pattern": "cmpbeat", "startBar": 22, "bars": 4 },
-                { "pattern": "rock", "startBar": 26, "bars": 4 },
-                { "pattern": "basrock", "startBar": 30, "bars": 4 },
-                { "pattern": "funk", "startBar": 34, "bars": 4 },
-                { "pattern": "funkfill", "startBar": 38, "bars": 1 },
-                { "pattern": "smrock", "startBar": 39, "bars": 2 },
-                { "pattern": "basrock", "startBar": 41, "bars": 2 },
-                { "pattern": "rockcow", "startBar": 43, "bars": 2 },
-                { "pattern": "cmpbeat", "startBar": 45, "bars": 4 },
-                { "pattern": "rock", "startBar": 49, "bars": 4 },
-                { "pattern": "basrock", "startBar": 53, "bars": 4 },
-                { "pattern": "funk", "startBar": 57, "bars": 4 },
-                { "pattern": "funkfill", "startBar": 61, "bars": 1 },
-                { "pattern": "rock", "startBar": 62, "bars": 2 },
-                { "pattern": "basrock", "startBar": 64, "bars": 2 }
+                { "pattern": "rock", "startMeasure": 0, "measureCount": 2 },
+                { "pattern": "basrock", "startMeasure": 2, "measureCount": 1 },
+                { "pattern": "smrock", "startMeasure": 3, "measureCount": 1 },
+                { "pattern": "basrock", "startMeasure": 4, "measureCount": 1 },
+                { "pattern": "rockcow", "startMeasure": 5, "measureCount": 1 },
+                { "pattern": "cmpbeat", "startMeasure": 6, "measureCount": 4 },
+                { "pattern": "rock", "startMeasure": 10, "measureCount": 4 },
+                { "pattern": "basrock", "startMeasure": 14, "measureCount": 4 },
+                { "pattern": "funk", "startMeasure": 18, "measureCount": 4 },
+                { "pattern": "cmpbeat", "startMeasure": 22, "measureCount": 4 },
+                { "pattern": "rock", "startMeasure": 26, "measureCount": 4 },
+                { "pattern": "basrock", "startMeasure": 30, "measureCount": 4 },
+                { "pattern": "funk", "startMeasure": 34, "measureCount": 4 },
+                { "pattern": "funkfill", "startMeasure": 38, "measureCount": 1 },
+                { "pattern": "smrock", "startMeasure": 39, "measureCount": 2 },
+                { "pattern": "basrock", "startMeasure": 41, "measureCount": 2 },
+                { "pattern": "rockcow", "startMeasure": 43, "measureCount": 2 },
+                { "pattern": "cmpbeat", "startMeasure": 45, "measureCount": 4 },
+                { "pattern": "rock", "startMeasure": 49, "measureCount": 4 },
+                { "pattern": "basrock", "startMeasure": 53, "measureCount": 4 },
+                { "pattern": "funk", "startMeasure": 57, "measureCount": 4 },
+                { "pattern": "funkfill", "startMeasure": 61, "measureCount": 1 },
+                { "pattern": "rock", "startMeasure": 62, "measureCount": 2 },
+                { "pattern": "basrock", "startMeasure": 64, "measureCount": 2 }
             ]
         }
     ],
@@ -5322,7 +5322,7 @@
             "tracks": [
                 {
                     "name": "KICK",
-                    "soundId": "punchy/kick.wav",
+                    "sampleId": "punchy/kick.wav",
                     "beatCount": 16,
                     "loopAtStep": 64,
                     "notes": [
@@ -5343,7 +5343,7 @@
                 },
                 {
                     "name": "SNARE",
-                    "soundId": "punchy/snare.wav",
+                    "sampleId": "punchy/snare.wav",
                     "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": 0.3,
@@ -5362,7 +5362,7 @@
                 },
                 {
                     "name": "CHH",
-                    "soundId": "punchy/chh.wav",
+                    "sampleId": "punchy/chh.wav",
                     "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": 0.5,
@@ -5383,7 +5383,7 @@
                 },
                 {
                     "name": "OHH",
-                    "soundId": "punchy/ohh.wav",
+                    "sampleId": "punchy/ohh.wav",
                     "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": -0.4,
@@ -5402,7 +5402,7 @@
                 {
                     "name": "CHH",
                     "useAutoAssignSound": false,
-                    "soundId": "real/chh.wav",
+                    "sampleId": "real/chh.wav",
                     "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": 0.4,
@@ -5436,7 +5436,7 @@
                 {
                     "name": "CONGAS",
                     "useAutoAssignSound": false,
-                    "soundId": "real/congas.wav",
+                    "sampleId": "real/congas.wav",
                     "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": -0.3,
@@ -5465,7 +5465,7 @@
                 {
                     "name": "COWBELL",
                     "useAutoAssignSound": false,
-                    "soundId": "vintage/cow.wav",
+                    "sampleId": "vintage/cow.wav",
                     "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": -0.2,
@@ -5494,7 +5494,7 @@
                 {
                     "name": "CLAP",
                     "useAutoAssignSound": false,
-                    "soundId": "real/rim.wav",
+                    "sampleId": "real/rim.wav",
                     "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": 1,
@@ -5521,7 +5521,7 @@
                 {
                     "name": "HIT",
                     "useAutoAssignSound": false,
-                    "soundId": "punchy/hit.wav",
+                    "sampleId": "punchy/hit.wav",
                     "beatCount": 16,
                     "loopAtStep": 64,
                     "velocity": 0.45,
@@ -5553,7 +5553,7 @@
                 {
                     "name": "HIT",
                     "useAutoAssignSound": false,
-                    "soundId": "delagrange/hit.wav",
+                    "sampleId": "delagrange/hit.wav",
                     "beatCount": 16,
                     "loopAtStep": 8,
                     "useSoftSynth": true,
@@ -5578,7 +5578,7 @@
                 {
                     "name": "RIMSHOT",
                     "useAutoAssignSound": false,
-                    "soundId": "matt/RIMSHOT.wav",
+                    "sampleId": "matt/RIMSHOT.wav",
                     "beatCount": 16,
                     "loopAtStep": 64,
                     "notes": [
@@ -5614,7 +5614,7 @@
             "tracks": [
                 {
                     "name": "KICK",
-                    "soundId": "electro/kick.wav",
+                    "sampleId": "electro/kick.wav",
                     "loopAtStep": 4,
                     "velocity": 0.3,
                     "variation": 7,
@@ -5629,7 +5629,7 @@
                 },
                 {
                     "name": "SNARE",
-                    "soundId": "electro/snare.wav",
+                    "sampleId": "electro/snare.wav",
                     "loopAtStep": 4,
                     "pitch": 2,
                     "pan": 0.3,
@@ -5648,7 +5648,7 @@
                 },
                 {
                     "name": "TOM",
-                    "soundId": "electro/tom.wav",
+                    "sampleId": "electro/tom.wav",
                     "loopAtStep": 16,
                     "pan": 0.5,
                     "variation": 100,
@@ -5672,7 +5672,7 @@
                 },
                 {
                     "name": "CLAP",
-                    "soundId": "electro/clap.wav",
+                    "sampleId": "electro/clap.wav",
                     "loopAtStep": 16,
                     "pan": -0.4,
                     "reverbType": "room",
@@ -5690,7 +5690,7 @@
                 },
                 {
                     "name": "COWBELL",
-                    "soundId": "electro/cow.wav",
+                    "sampleId": "electro/cow.wav",
                     "loopAtStep": 16,
                     "swingResolution": 4,
                     "swingAmount": 0.05,
@@ -5719,7 +5719,7 @@
                 },
                 {
                     "name": "CHH",
-                    "soundId": "electro/chh.wav",
+                    "sampleId": "electro/chh.wav",
                     "loopAtStep": 4,
                     "velocity": 0.3,
                     "velocityLfo": {
@@ -5748,7 +5748,7 @@
                 },
                 {
                     "name": "OHH",
-                    "soundId": "electro/ohh.wav",
+                    "sampleId": "electro/ohh.wav",
                     "loopAtStep": 4,
                     "velocity": 0.6,
                     "pan": -0.2,
@@ -5763,7 +5763,7 @@
                 {
                     "name": "PIANO",
                     "useAutoAssignSound": false,
-                    "soundId": "electro/acid_piano_c4.wav",
+                    "sampleId": "electro/acid_piano_c4.wav",
                     "loopAtStep": 16,
                     "pan": 1,
                     "panLfo": {

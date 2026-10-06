@@ -2,21 +2,21 @@
 // Song arrangement grid, laid out like a DAW arrangement view:
 //   - time runs LEFT TO RIGHT on the X axis, one cell per measure (the ruler);
 //   - each pattern is a ROW, named in a frozen first column;
-//   - each clip is a rectangle spanning its bars along X.
+//   - each clip is a rectangle spanning its measures along X.
 //
 // Read-only for now: clips are placed and removed from the right-click menus,
 // never dragged. The one thing the grid drives is the transport — clicking a
 // measure in the ruler aims the cursor, which is where the next play starts.
 
 import { appState } from '../../state/app_state.js'
-import { songLengthBars, songBpm } from '../../model/song_schema.js'
-import { BAR_WIDTH, CLIP_INSET, HEADER_HEIGHT, LABEL_WIDTH, ROW_HEIGHT } from './layout.js'
+import { songLengthMeasures, songBpm } from '../../model/song_schema.js'
+import { MEASURE_WIDTH, CLIP_INSET, HEADER_HEIGHT, LABEL_WIDTH, ROW_HEIGHT } from './layout.js'
 import { escapeHtml } from '../components/ui_utils.js'
 import ContextMenu from '../components/context_menu.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { showToast } from '../../core/notify.js'
 import { TICK } from '../../core/constants.js'
-import { songBarAtTick } from '../../logic/song_playback.js'
+import { songMeasureAtTick } from '../../logic/song_playback.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { EVENTS } from '../../core/events.js'
 import { reportUserError } from '../../core/notify.js'
@@ -33,13 +33,13 @@ export default class ArrangementSection {
     /** @type {HTMLDivElement | null} */
     #cursorEl = null
     /** Ruler cells, indexed by the measure they number. */
-    #barHeads = []
+    #measureHeads = []
     /** @type {number | null} */
     #rafId = null
     /** last px written, so the hot loop touches the DOM only when it moved */
     #prevCursorPx = -1
     /** measure the ruler currently highlights, -1 when none */
-    #prevBar = -1
+    #prevMeasure = -1
     /** whether the cursor is painted as parked (transport stopped) */
     #cursorIdle = false
 
@@ -75,7 +75,7 @@ export default class ArrangementSection {
     }
 
     /**
-     * Position of the transport inside the arrangement, in bars, fractional.
+     * Position of the transport inside the arrangement, in measures, fractional.
      *
      * The transport keeps counting past the end of the arrangement (the song
      * wraps inside resolveSongSources), so the value is wrapped on the loop
@@ -83,7 +83,7 @@ export default class ArrangementSection {
      * @returns {number}
      */
     #transportBar() {
-        return songBarAtTick(this.#song, serviceRegistry.seq?.tick, TICK)
+        return songMeasureAtTick(this.#song, serviceRegistry.seq?.tick, TICK)
     }
 
     /**
@@ -91,13 +91,13 @@ export default class ArrangementSection {
      * measure the next play starts from once it is stopped.
      * @returns {number}
      */
-    #cursorBar() {
-        const bar = serviceRegistry.transport?.isRunning
+    #cursorMeasure() {
+        const measure = serviceRegistry.transport?.isRunning
             ? this.#transportBar()
-            : (serviceRegistry.seq?.songCursorBar ?? 0)
+            : (serviceRegistry.seq?.songCursorMeasure ?? 0)
         // The running position already wraps on the loop length, but a parked
         // cursor aimed on a longer arrangement must not be drawn off this grid.
-        return Math.min(bar, Math.max(0, songLengthBars(this.#song) - 1))
+        return Math.min(measure, Math.max(0, songLengthMeasures(this.#song) - 1))
     }
 
     /**
@@ -144,8 +144,8 @@ export default class ArrangementSection {
     #updateCursor() {
         const el = this.#cursorEl
         if (!el) return
-        const bar = this.#cursorBar()
-        const px = Math.round(bar * BAR_WIDTH)
+        const measure = this.#cursorMeasure()
+        const px = Math.round(measure * MEASURE_WIDTH)
         if (px !== this.#prevCursorPx) {
             this.#prevCursorPx = px
             el.style.display = ''
@@ -158,24 +158,24 @@ export default class ArrangementSection {
             this.#cursorIdle = idle
             el.classList.toggle('sa-cursor-idle', idle)
         }
-        this.#markRulerBar(Math.floor(bar))
+        this.#markRulerMeasure(Math.floor(measure))
     }
 
     /**
      * Highlights the measure number under the cursor, so its position is
      * readable in the ruler instead of only as a line across the rows.
-     * @param {number} bar
+     * @param {number} measure
      */
-    #markRulerBar(bar) {
-        if (bar === this.#prevBar) return
-        this.#barHeads[this.#prevBar]?.classList.remove('sa-bar-current')
-        this.#barHeads[bar]?.classList.add('sa-bar-current')
-        this.#prevBar = bar
+    #markRulerMeasure(measure) {
+        if (measure === this.#prevMeasure) return
+        this.#measureHeads[this.#prevMeasure]?.classList.remove('sa-measure-current')
+        this.#measureHeads[measure]?.classList.add('sa-measure-current')
+        this.#prevMeasure = measure
     }
 
     #hideCursor() {
         this.#prevCursorPx = -1
-        this.#markRulerBar(-1)
+        this.#markRulerMeasure(-1)
         if (this.#cursorEl) this.#cursorEl.style.display = 'none'
     }
 
@@ -187,11 +187,11 @@ export default class ArrangementSection {
      */
     #onGridClick(e) {
         const target = e.target instanceof Element ? e.target : null
-        const headEl = /** @type {HTMLElement | null} */ (target?.closest('.sa-bar-head'))
+        const headEl = /** @type {HTMLElement | null} */ (target?.closest('.sa-measure-head'))
         if (!headEl || !this.#song) return
-        const bar = Number(headEl.dataset.bar)
-        if (!Number.isInteger(bar) || bar < 0) return
-        serviceRegistry.seq?.setSongCursor(bar)
+        const measure = Number(headEl.dataset.measure)
+        if (!Number.isInteger(measure) || measure < 0) return
+        serviceRegistry.seq?.setSongCursor(measure)
         // Repaint now: while the transport runs the rAF loop would follow on the
         // next frame, and stopped there is no loop at all.
         this.#paintCursor()
@@ -235,14 +235,17 @@ export default class ArrangementSection {
         if (!clip) return
         const label = this.#patternName(clip.pattern)
         this.#menu.show(
-            `${label} — bar ${clip.startBar + 1}, ${clip.bars} bar(s)`,
+            `${label} — measure ${clip.startMeasure + 1}, ${clip.measureCount} measure(s)`,
             [
                 {
                     label: 'Next',
                     run: () => {
-                        serviceRegistry.cmd.repeatPatternAtBar(clip.startBar)
+                        serviceRegistry.cmd.repeatPatternAtMeasure(clip.startMeasure)
                         this.sync()
-                        showToast(`"${label}" repeated at bar ${clip.startBar + clip.bars + 1}`, 'success')
+                        showToast(
+                            `"${label}" repeated at measure ${clip.startMeasure + clip.measureCount + 1}`,
+                            'success',
+                        )
                     },
                 },
                 {
@@ -250,7 +253,7 @@ export default class ArrangementSection {
                     run: () => {
                         serviceRegistry.cmd.removeSongClips([index])
                         this.sync()
-                        showToast(`Removed "${label}" at bar ${clip.startBar + 1}`, 'success')
+                        showToast(`Removed "${label}" at measure ${clip.startMeasure + 1}`, 'success')
                     },
                 },
             ],
@@ -264,9 +267,9 @@ export default class ArrangementSection {
      *
      * The name column is frozen: there is no measure under the pointer there, so
      * the playhead is the only position the user can actually aim at. Wrapped on
-     * the arrangement loop length, so the bar matches what is playing.
+     * the arrangement loop length, so the measure matches what is playing.
      */
-    #playheadBar() {
+    #playheadMeasure() {
         return Math.floor(this.#transportBar())
     }
 
@@ -275,16 +278,16 @@ export default class ArrangementSection {
         const patternId = nameEl.dataset.pattern
         const indices = (this.#song.clips ?? []).map((c, i) => (c.pattern === patternId ? i : -1)).filter((i) => i >= 0)
         const label = this.#patternName(patternId)
-        const startBar = this.#playheadBar()
+        const startMeasure = this.#playheadMeasure()
         this.#menu.show(
             `${label} — ${indices.length} clip(s)`,
             [
                 {
-                    label: `Add at bar ${startBar + 1}`,
+                    label: `Add at measure ${startMeasure + 1}`,
                     run: () => {
-                        serviceRegistry.cmd.addPatternAtBar(patternId, startBar)
+                        serviceRegistry.cmd.addPatternAtMeasure(patternId, startMeasure)
                         this.sync()
-                        showToast(`"${label}" added at bar ${startBar + 1}`, 'success')
+                        showToast(`"${label}" added at measure ${startMeasure + 1}`, 'success')
                     },
                 },
                 {
@@ -312,16 +315,16 @@ export default class ArrangementSection {
         const pattern = this.#rows[row]
         if (!pattern) return
         // floor, not round: clicking a cell must place the clip in THAT cell
-        const startBar = Math.max(0, Math.floor((e.clientX - rect.left) / BAR_WIDTH))
+        const startMeasure = Math.max(0, Math.floor((e.clientX - rect.left) / MEASURE_WIDTH))
         this.#menu.show(
-            `Add "${pattern.name ?? pattern.id}" at bar ${startBar + 1}`,
+            `Add "${pattern.name ?? pattern.id}" at measure ${startMeasure + 1}`,
             [
                 {
                     label: 'Add here',
                     run: () => {
-                        serviceRegistry.cmd.addPatternAtBar(pattern.id, startBar)
+                        serviceRegistry.cmd.addPatternAtMeasure(pattern.id, startMeasure)
                         this.sync()
-                        showToast(`"${pattern.name ?? pattern.id}" added at bar ${startBar + 1}`, 'success')
+                        showToast(`"${pattern.name ?? pattern.id}" added at measure ${startMeasure + 1}`, 'success')
                     },
                 },
             ],
@@ -366,22 +369,22 @@ export default class ArrangementSection {
             this.#listEl.innerHTML = '<div class="sa-empty">No arrangement — this song has no clips yet.</div>'
             this.#root?.classList.remove('sa-has-song')
             this.#cursorEl = null
-            this.#barHeads = []
-            this.#prevBar = -1
+            this.#measureHeads = []
+            this.#prevMeasure = -1
             return
         }
         this.#root?.classList.add('sa-has-song')
 
-        const totalBars = Math.max(1, songLengthBars(song))
+        const totalMeasures = Math.max(1, songLengthMeasures(song))
         const rowCount = this.#rows.length
-        const gridWidth = LABEL_WIDTH + totalBars * BAR_WIDTH
+        const gridWidth = LABEL_WIDTH + totalMeasures * MEASURE_WIDTH
         const gridHeight = HEADER_HEIGHT + rowCount * ROW_HEIGHT
 
-        // Ruler: one measure per cell, numbered, running along X. data-bar is
+        // Ruler: one measure per cell, numbered, running along X. data-measure is
         // both what a click aims the cursor at and what the cursor highlights.
-        const ruler = Array.from({ length: totalBars }, (_, bar) => {
-            const marked = bar % 4 === 0
-            return `<div class="sa-bar-head${marked ? ' sa-bar-major' : ''}" data-bar="${bar}" style="left:${LABEL_WIDTH + bar * BAR_WIDTH}px;width:${BAR_WIDTH}px">${bar + 1}</div>`
+        const ruler = Array.from({ length: totalMeasures }, (_, measure) => {
+            const marked = measure % 4 === 0
+            return `<div class="sa-measure-head${marked ? ' sa-measure-major' : ''}" data-measure="${measure}" style="left:${LABEL_WIDTH + measure * MEASURE_WIDTH}px;width:${MEASURE_WIDTH}px">${measure + 1}</div>`
         }).join('')
 
         // One row per pattern. The name lives in the frozen first column, so it
@@ -401,18 +404,18 @@ export default class ArrangementSection {
                 const index = this.#rowIdx(clip.pattern)
                 if (index < 0) return ''
                 // Width along X is the duration; a clip may last a fraction of
-                // a bar (a 3-beat pattern is 0.75), so it is not rounded to a cell.
+                // a measure (a 3-beat pattern is 0.75), so it is not rounded to a cell.
                 // CLIP_INSET on each side keeps neighbouring clips apart.
-                const width = Math.max(4, clip.bars * BAR_WIDTH - CLIP_INSET)
+                const width = Math.max(4, clip.measureCount * MEASURE_WIDTH - CLIP_INSET)
                 return (
-                    `<div class="sa-clip${clip.bars > 1 ? ' sa-clip-long' : ''}" ` +
-                    `style="left:${clip.startBar * BAR_WIDTH}px;top:${index * ROW_HEIGHT + CLIP_INSET / 2}px;` +
+                    `<div class="sa-clip${clip.measureCount > 1 ? ' sa-clip-long' : ''}" ` +
+                    `style="left:${clip.startMeasure * MEASURE_WIDTH}px;top:${index * ROW_HEIGHT + CLIP_INSET / 2}px;` +
                     `width:${width}px;height:${ROW_HEIGHT - 2 * CLIP_INSET}px" ` +
                     `data-pattern="${escapeHtml(clip.pattern)}" ` +
                     `data-index="${clipIdx}" ` +
-                    `data-start-bar="${clip.startBar}" ` +
-                    `data-bars="${clip.bars}" ` +
-                    `title="${escapeHtml(clip.pattern)} — bar ${clip.startBar + 1}, ${clip.bars} bar(s)"></div>`
+                    `data-start-measure="${clip.startMeasure}" ` +
+                    `data-measure-count="${clip.measureCount}" ` +
+                    `title="${escapeHtml(clip.pattern)} — measure ${clip.startMeasure + 1}, ${clip.measureCount} measure(s)"></div>`
                 )
             })
             .join('')
@@ -421,7 +424,7 @@ export default class ArrangementSection {
             `<div class="sa-grid" style="width:${gridWidth}px;height:${gridHeight}px">` +
             `<div class="sa-header" style="width:${gridWidth}px;height:${HEADER_HEIGHT}px">${ruler}</div>` +
             `<div class="sa-body" style="left:${LABEL_WIDTH}px;top:${HEADER_HEIGHT}px;` +
-            `width:${totalBars * BAR_WIDTH}px;height:${rowCount * ROW_HEIGHT}px">` +
+            `width:${totalMeasures * MEASURE_WIDTH}px;height:${rowCount * ROW_HEIGHT}px">` +
             rows +
             clips +
             '<div class="sa-cursor" style="display:none"></div>' +
@@ -430,10 +433,10 @@ export default class ArrangementSection {
 
         // innerHTML was just rebuilt, so the references to the old nodes are dead.
         this.#cursorEl = this.#listEl.querySelector('.sa-cursor')
-        this.#barHeads = [...this.#listEl.querySelectorAll('.sa-bar-head')]
+        this.#measureHeads = [...this.#listEl.querySelectorAll('.sa-measure-head')]
         this.#prevCursorPx = -1
-        this.#prevBar = -1
-        this.#listEl.dataset.totalBars = String(totalBars)
+        this.#prevMeasure = -1
+        this.#listEl.dataset.totalMeasures = String(totalMeasures)
         this.#listEl.dataset.bpm = String(songBpm(song))
         // A re-render happens with no cursor loop running too (the arrangement
         // was edited while stopped), so the cursor is painted again here.
@@ -446,7 +449,7 @@ export default class ArrangementSection {
         for (const clip of this.#song?.clips ?? []) {
             const row = this.#rowIdx(clip.pattern)
             if (row < 0) continue
-            out.push({ pattern: clip.pattern, row, startBar: clip.startBar, bars: clip.bars })
+            out.push({ pattern: clip.pattern, row, startMeasure: clip.startMeasure, measureCount: clip.measureCount })
         }
         return out
     }

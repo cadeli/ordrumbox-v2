@@ -319,7 +319,7 @@ describe('E2E Flow 3 — Track parameter updates', () => {
         const pat = cmd.addPattern('Sound')
         const kick = cmd.addTrack(pat, 'KICK', 4)
         cmd.changeTrackSound(kick, 'kick_808')
-        expect(kick.soundId).toBe('kick_808')
+        expect(kick.sampleId).toBe('kick_808')
         expect(kick.useAutoAssignSound).toBe(false)
         expect(kick.useSoftSynth).toBe(false)
     })

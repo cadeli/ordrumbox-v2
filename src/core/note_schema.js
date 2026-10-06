@@ -25,6 +25,8 @@
  * Detection: if `noteKeys` is present on the track → compact format.
  */
 
+import { migrateLegacyTrackKeys } from './legacy_keys.js'
+
 /**
  * Ordered list of note properties for the compact array format.
  * Order matters: index in this array = index in the note array.
@@ -227,9 +229,14 @@ export function canonicalNoteKeys(keys) {
 }
 
 /**
- * Rewrite the legacy note keys of every track of a pattern, in place: the
- * compact `noteKeys` header and the object notes. Compact note arrays are
+ * Rewrite the legacy keys of every track of a pattern, in place: the note keys
+ * (the compact `noteKeys` header and the object notes) and the track keys
+ * (LEGACY_TRACK_KEY_ALIASES — `soundId` → `sampleId`). Compact note arrays are
  * left alone — they are positional and follow their header.
+ *
+ * This is the pattern-level entry point for every read path: the library load,
+ * .odbox (song_service), importPatternFromJson() and the IndexedDB walks in
+ * core/idb.js.
  *
  * Track walking is inlined rather than borrowed from `./tracks.js`: that
  * module reaches this one through `./notes.js`, so importing it back would
@@ -246,6 +253,7 @@ export function migrateLegacyPatternKeys(pattern) {
           : Object.values(pattern.tracks)
     let changed = false
     for (const track of tracks) {
+        changed = migrateLegacyTrackKeys(track) || changed
         if (Array.isArray(track?.noteKeys)) {
             const canonical = canonicalNoteKeys(track.noteKeys)
             if (canonical.some((key, i) => key !== track.noteKeys[i])) {

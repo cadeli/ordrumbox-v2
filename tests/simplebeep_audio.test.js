@@ -77,7 +77,7 @@ describe('simpleBeep — real audio rendering', () => {
             tracks: [
                 {
                     name: 'KICK',
-                    soundId: 'kick.wav',
+                    sampleId: 'kick.wav',
                     beatCount: 1,
                     stepsPerBeat: 4,
                     mute: false,
@@ -132,7 +132,7 @@ describe('simpleBeep — real audio rendering', () => {
             tracks: [
                 {
                     name: 'KICK',
-                    soundId: 'kick.wav',
+                    sampleId: 'kick.wav',
                     beatCount: 1,
                     stepsPerBeat: 4,
                     mute: false,
@@ -305,7 +305,7 @@ describe('simpleBeep — SampleVoice through real mixer chain', () => {
         const strip = await mixer.getOrCreateStrip('KICK')
         expect(strip).toBeTruthy()
 
-        const track = { name: 'KICK', soundId: 'kick.wav', pitchLfo: null }
+        const track = { name: 'KICK', sampleId: 'kick.wav', pitchLfo: null }
         const note = { beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, fpitch: 1, name: 'test' }
         const flatNote = new FlatNote(0, track, note)
 
@@ -342,7 +342,7 @@ describe('simpleBeep — SampleVoice through real mixer chain', () => {
         expect(strip2).toBeTruthy()
         expect(mixer.busInput).toBeTruthy()
 
-        const track = { name: 'KICK2', soundId: 'kick.wav', pitchLfo: null, sampleDecay: 0.3 }
+        const track = { name: 'KICK2', sampleId: 'kick.wav', pitchLfo: null, sampleDecay: 0.3 }
         const note = { beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, fpitch: 1, name: 'test' }
         const flatNote = new FlatNote(0, track, note)
 

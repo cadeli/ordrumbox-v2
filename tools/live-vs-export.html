@@ -216,7 +216,7 @@
                     velocity: 1,
                     pan: 0,
                     pitch: 0,
-                    soundId: 'NOT_DEFINED',
+                    sampleId: 'NOT_DEFINED',
                     useAutoAssignSound: true,
                     useSoftSynth: false,
                     mono: false,
@@ -264,7 +264,7 @@
                                 useAutoAssignSound: false,
                                 useSoftSynth: true,
                                 synthSoundKey: 'BASS0',
-                                soundId: 'SYNTH:BASS0',
+                                sampleId: 'SYNTH:BASS0',
                             },
                         ),
                         makeTrack(
@@ -274,14 +274,14 @@
                                 useAutoAssignSound: false,
                                 useSoftSynth: true,
                                 synthSoundKey: 'SYNTH1',
-                                soundId: 'SYNTH:SYNTH1',
+                                sampleId: 'SYNTH:SYNTH1',
                             },
                         ),
                         makeTrack('SYNTH_BELL', [makeNote(1, 0.5), makeNote(5, 0.45)], {
                             useAutoAssignSound: false,
                             useSoftSynth: true,
                             synthSoundKey: 'BELL1',
-                            soundId: 'SYNTH:BELL1',
+                            sampleId: 'SYNTH:BELL1',
                         }),
                         makeTrack(
                             'SHAKER',
@@ -685,7 +685,7 @@
                     appState.selectedDrumkitIdx = 0
                     const autoAssign = await getAutoAssignService()
                     autoAssign.autoAssignSounds(testPattern)
-                    for (const t of testPattern.tracks) log(`  ${t.name.padEnd(8)} → ${t.soundId}`, '')
+                    for (const t of testPattern.tracks) log(`  ${t.name.padEnd(8)} → ${t.sampleId}`, '')
 
                     // Add slow LFO1 modulation on VCO1 to the SYNTH_LEAD preset
                     const synthLead = soundRegistry.generatedSounds['SYNTH1']

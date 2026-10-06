@@ -46,8 +46,8 @@ export default class VoiceFactory {
             )
         }
 
-        let sound = this.sounds[flatNote.soundId]
-        if (!sound?.buffer) sound = this.sounds[track.soundId]
+        let sound = this.sounds[flatNote.sampleId]
+        if (!sound?.buffer) sound = this.sounds[track.sampleId]
         const soundBuffer = sound?.buffer
         if (!soundBuffer) {
             logger.warn(`VoiceFactory: No soundBuffer for track ${track.name}`)

@@ -2,7 +2,7 @@
 // Pattern header: name, BPM/meta, page info, action buttons.
 
 import { valueOrFallback } from '../../core/logger.js'
-import { BEATS_PER_BAR } from '../../model/song_schema.js'
+import { BEATS_PER_MEASURE } from '../../model/song_schema.js'
 
 export default class HeaderSection {
     #editor
@@ -19,10 +19,10 @@ export default class HeaderSection {
      */
     render(pattern, currentPage) {
         const totalBeats = pattern.beatCount ?? 4
-        // a measure is BEATS_PER_BAR beats of the time signature, NOT one step
+        // a measure is BEATS_PER_MEASURE beats of the time signature, NOT one step
         // group: dividing by stepsPerBeat made the number move when the user
         // changed the grid subdivision
-        const totalMeasures = Math.ceil(totalBeats / BEATS_PER_BAR)
+        const totalMeasures = Math.ceil(totalBeats / BEATS_PER_MEASURE)
 
         return `<div class="pp-header">
             <div class="pp-actions">

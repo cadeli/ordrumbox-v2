@@ -56,7 +56,7 @@ describe('Pattern Panel UI Grid', () => {
     // The header counts measures of the time signature: dividing by stepsPerBeat
     // made the number change with the grid subdivision (8 beats showed "1 measure"
     // at 8 steps/beat instead of 2).
-    it('counts measures in beats of the bar, not in step groups', () => {
+    it('counts measures in beats, not in step groups', () => {
         panel.sync()
         const meta = panel.container.querySelector('.pp-meta').textContent
         // fixture: beatCount 2 → 2 beats, one 4/4 measure

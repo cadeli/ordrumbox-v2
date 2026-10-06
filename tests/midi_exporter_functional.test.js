@@ -12,7 +12,7 @@
  * Timing bridge
  * ─────────────
  *   Engine uses TICK=32 (steps per beat).
- *   MIDI uses PPQN=96, TICKS_PER_BAR=96.
+ *   MIDI uses PPQN=96, TICKS_PER_MEASURE=96.
  *   Ratio = 96 / 32 = 3  →  midi_tick = engine_tick * 3
  *
  * The test covers:
@@ -35,8 +35,8 @@ import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pat
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const TICKS_PER_BAR = PPQN * 1 // 96
-const MIDI_RATIO = TICKS_PER_BAR / TICK // 3  (midi ticks per engine tick)
+const TICKS_PER_MEASURE = PPQN * 1 // 96
+const MIDI_RATIO = TICKS_PER_MEASURE / TICK // 3  (midi ticks per engine tick)
 
 // ─── MIDI helpers ─────────────────────────────────────────────────────────────
 

@@ -2,12 +2,12 @@
 //
 // E2E-C: Kit change mid-playback.
 // Playback running → drumkitChange → useAutoAssignSound tracks reassigned →
-// no orphaned notes, no soundId pointing to an absent sound.
+// no orphaned notes, no sampleId pointing to an absent sound.
 
 import { test, expect } from '@playwright/test'
 
 test.describe('E2E-C: Kit change mid-playback', () => {
-    test('changing kit during playback reassigns soundIds without orphans', async ({ page }) => {
+    test('changing kit during playback reassigns sampleIds without orphans', async ({ page }) => {
         await page.goto('/')
         await page.locator('#waiting-screen-start-btn').click()
         await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 })
@@ -39,10 +39,10 @@ test.describe('E2E-C: Kit change mid-playback', () => {
                     .filter((t) => t.useAutoAssignSound)
                     .filter(
                         (t) =>
-                            !t.soundId ||
-                            t.soundId === 'NOT_DEFINED' ||
-                            t.soundId === 'NOT_FOUND' ||
-                            !soundRegistry.sounds[t.soundId],
+                            !t.sampleId ||
+                            t.sampleId === 'NOT_DEFINED' ||
+                            t.sampleId === 'NOT_FOUND' ||
+                            !soundRegistry.sounds[t.sampleId],
                     )
                     .map((t) => t.name)
             })
@@ -55,9 +55,9 @@ test.describe('E2E-C: Kit change mid-playback', () => {
                 drumkitName: appState.selectedDrumkit,
                 tracks: tracks.map((t) => ({
                     name: t.name,
-                    soundId: t.soundId,
+                    sampleId: t.sampleId,
                     autoAssign: t.useAutoAssignSound,
-                    soundExists: !!(t.soundId && soundRegistry.sounds[t.soundId]),
+                    soundExists: !!(t.sampleId && soundRegistry.sounds[t.sampleId]),
                 })),
             }
         })
@@ -65,9 +65,9 @@ test.describe('E2E-C: Kit change mid-playback', () => {
         expect(afterChange.tracks.filter((t) => t.autoAssign).length).toBeGreaterThan(0)
         for (const track of afterChange.tracks) {
             if (track.autoAssign) {
-                expect(track.soundId).not.toBe('NOT_DEFINED')
-                expect(track.soundId).not.toBe('NOT_FOUND')
-                expect(track.soundExists, `track "${track.name}" soundId "${track.soundId}" missing`).toBe(true)
+                expect(track.sampleId).not.toBe('NOT_DEFINED')
+                expect(track.sampleId).not.toBe('NOT_FOUND')
+                expect(track.soundExists, `track "${track.name}" sampleId "${track.sampleId}" missing`).toBe(true)
             }
         }
 

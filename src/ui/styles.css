@@ -2848,9 +2848,9 @@ body {
 /* ---- Song arrangement grid ---- */
 /* A DAW arrangement view: time runs left to right on the X axis (the ruler,
    one cell per measure), each pattern is a row named in a frozen first column,
-   and each clip is a rectangle spanning its bars along X. Rows are a static
+   and each clip is a rectangle spanning its measures along X. Rows are a static
    background; the clips are absolutely positioned over it, so the node count
-   follows the clip count and not (patterns x bars). */
+   follows the clip count and not (patterns x measures). */
 .sa-root {
     display: flex;
     flex-direction: column;
@@ -2901,7 +2901,7 @@ body {
     background: var(--surface-2);
     border-bottom: 1px solid var(--line);
 }
-.sa-bar-head {
+.sa-measure-head {
     position: absolute;
     top: 0;
     height: 100%;
@@ -2913,14 +2913,14 @@ body {
     border-left: 1px solid color-mix(in srgb, var(--line) 45%, transparent);
     box-sizing: border-box;
 }
-.sa-bar-major {
+.sa-measure-major {
     color: var(--text);
     border-left-color: var(--line);
     background: color-mix(in srgb, var(--line) 22%, transparent);
 }
 /* The measure the cursor sits on, so its position is readable in the ruler and
    not only as a line across the rows. */
-.sa-bar-head.sa-bar-current {
+.sa-measure-head.sa-measure-current {
     color: var(--text);
     background: color-mix(in srgb, var(--toy-pink) 40%, transparent);
 }

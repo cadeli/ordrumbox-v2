@@ -390,7 +390,7 @@ describe('Mobile panel scrollability', () => {
 })
 
 // ══════════════════════════════════════════════════════════════════
-// TAB BAR — Position, size, visibility
+// TAB MEASURE — Position, size, visibility
 // ══════════════════════════════════════════════════════════════════
 
 describe('Mobile tab bar: position, size, visibility', () => {

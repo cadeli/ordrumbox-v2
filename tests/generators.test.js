@@ -130,8 +130,8 @@ describe('Generators', () => {
         it('unknown variantName falls back to basic', () => {
             const track = makeTrack('KICK', [], { beatCount: 4, stepsPerBeat: 4 })
             new KickGenerator().generateNewKick(track, 'doesNotExist')
-            const hasBar0 = track.notes.some((n) => n.beat === 0 && n.beatStep === 0)
-            expect(hasBar0).toBe(true)
+            const hasBeat0 = track.notes.some((n) => n.beat === 0 && n.beatStep === 0)
+            expect(hasBeat0).toBe(true)
         })
 
         it('getRndVariantName excludes break variant', () => {
@@ -510,12 +510,12 @@ describe('Generators', () => {
             }
         })
 
-        it('generatePercFillVariant places notes at startBar', () => {
+        it('generatePercFillVariant places notes at startMeasure', () => {
             const track = makeTrack('PERC', [], { beatCount: 4 })
             const gen = new PercGenerator()
             const config = {
                 loopAtStep: 4 * 4,
-                startBarOffset: 1,
+                startMeasureOffset: 1,
                 steps: [0, 1, 2],
                 velocity: {
                     base: 0.6,

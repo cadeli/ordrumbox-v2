@@ -3,7 +3,7 @@ import AudioEngine from '../audio/engine.js'
 import AudioStallDetector from '../audio/stall_detector.js'
 import Transport from './transport/transport.js'
 import { TICK } from '../core/constants.js'
-import { barToTick, songPatterns, songTempo } from './song_playback.js'
+import { measureToTick, songPatterns, songTempo } from './song_playback.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
@@ -20,7 +20,7 @@ export default class Sequencer {
     #starting
     #pendingStop
     /** Measure the arrangement cursor is on; the song ruler sets it. */
-    #songCursorBar = 0
+    #songCursorMeasure = 0
 
     constructor(options = {}) {
         this.serviceRegistry = options.serviceRegistry ?? serviceRegistry
@@ -40,8 +40,8 @@ export default class Sequencer {
         return this.serviceRegistry.transport?.tick ?? 0
     }
     /** @returns {number} measure the arrangement cursor is on */
-    get songCursorBar() {
-        return this.#songCursorBar
+    get songCursorMeasure() {
+        return this.#songCursorMeasure
     }
 
     ensureTransport = () => {
@@ -62,7 +62,6 @@ export default class Sequencer {
             sounds: this.soundRegistry.sounds,
             generatedSounds: this.soundRegistry.generatedSounds,
             patterns: this.appState.patterns,
-            selectedPatternIdx: this.appState.selectedPatternIdx,
             getSelectedPatternIdx: () => this.appState.selectedPatternIdx,
             getCurrentView: () => this.appState.currentView,
             getSongs: () => this.appState.songs ?? [],
@@ -173,7 +172,7 @@ export default class Sequencer {
         const autoAssign = await getAutoAssignService()
         // A song sounds every pattern its clips reference, not only the selected
         // one. In pattern mode the selected pattern is the one that gets its
-        // tracks assigned; here the others would keep soundId 'NOT_DEFINED'
+        // tracks assigned; here the others would keep sampleId 'NOT_DEFINED'
         // and play nothing at all.
         for (const pattern of this.patternsToPlay(selectedPattern)) {
             await autoAssign.autoAssignSounds(pattern)
@@ -181,13 +180,13 @@ export default class Sequencer {
         this.serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
 
         this.ensureAudioEngine()
-        // Flat notes cache each track's soundId, so a pattern auto-assign has
+        // Flat notes cache each track's sampleId, so a pattern auto-assign has
         // just re-pointed must not keep its pre-assignment map.
         this.serviceRegistry.audioEngine.invalidateCache()
         await this.serviceRegistry.audioEngine.start(selectedPattern)
         this.serviceRegistry.transport.start()
         // An arrangement plays from the cursor the user aimed with the ruler. A
-        // pattern view has no bars, so it always starts from its own zero: a
+        // pattern view has no measures, so it always starts from its own zero: a
         // song measure would land mid-pattern.
         if (this.appState.currentView === 'song') this.#applySongCursor()
         this.#stallDetector = new AudioStallDetector({
@@ -242,10 +241,10 @@ export default class Sequencer {
      * The cursor is what the next play starts from; while the transport already
      * runs it is also jumped to at once, so playback follows the click.
      *
-     * @param {number} bar 0-based measure
+     * @param {number} measure 0-based measure
      */
-    setSongCursor = (bar) => {
-        this.#songCursorBar = Math.max(0, Math.floor(Number(bar) || 0))
+    setSongCursor = (measure) => {
+        this.#songCursorMeasure = Math.max(0, Math.floor(Number(measure) || 0))
         this.#applySongCursor()
     }
 
@@ -259,7 +258,7 @@ export default class Sequencer {
     #applySongCursor = () => {
         const transport = this.serviceRegistry.transport
         if (!transport?.isRunning) return false
-        transport.tick = barToTick(this.#songCursorBar, TICK)
+        transport.tick = measureToTick(this.#songCursorMeasure, TICK)
         transport.nextStepTime = this.serviceRegistry.audioCtx?.currentTime ?? 0
         this.serviceRegistry.audioEngine?.invalidateCache()
         return true
@@ -339,7 +338,7 @@ export default class Sequencer {
         const tracks = getTracksArray(pat)
         const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat.tracks?.[indexTrack]
         if (!track) return
-        if ((track.soundId === 'NOT_DEFINED' || !track.soundId) && !track.useSoftSynth) {
+        if ((track.sampleId === 'NOT_DEFINED' || !track.sampleId) && !track.useSoftSynth) {
             try {
                 await this.serviceRegistry.resourcesLoader.ensureResourcesLoaded()
             } catch (e) {

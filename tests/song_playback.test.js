@@ -2,16 +2,16 @@ import { describe, it, expect } from 'vitest'
 import {
     PLAYBACK_MODE,
     resolveSongSources,
-    songBarAtTick,
+    songMeasureAtTick,
     songPatterns,
-    tickToSongBars,
-    barToTick,
+    tickToSongMeasures,
+    measureToTick,
     songTempo,
 } from '../src/logic/song_playback.js'
 import { TICK } from '../src/core/constants.js'
-import { BEATS_PER_BAR } from '../src/model/song_schema.js'
+import { BEATS_PER_MEASURE } from '../src/model/song_schema.js'
 
-const BAR = TICK * BEATS_PER_BAR // one bar in ticks
+const MEASURE = TICK * BEATS_PER_MEASURE // one measure in ticks
 
 const patterns = new Map([
     ['rock', { id: 'rock', name: 'Rock', beatCount: 4, bpm: 120 }],
@@ -32,113 +32,119 @@ describe('resolveSongSources', () => {
     it('is empty without a song or with a zero tick', () => {
         expect(resolveSongSources(null, patterns, 0, TICK)).toEqual([])
         expect(resolveSongSources(song([]), patterns, 0, TICK)).toEqual([])
-        expect(resolveSongSources(song([{ pattern: 'rock', startBar: 0, bars: 1 }]), patterns, NaN, TICK)).toEqual([])
+        expect(
+            resolveSongSources(song([{ pattern: 'rock', startMeasure: 0, measureCount: 1 }]), patterns, NaN, TICK),
+        ).toEqual([])
     })
 
-    it('sounds the clip covering the current bar', () => {
+    it('sounds the clip covering the current measure', () => {
         const s = song([
-            { pattern: 'rock', startBar: 0, bars: 2 },
-            { pattern: 'lead', startBar: 4, bars: 2 },
+            { pattern: 'rock', startMeasure: 0, measureCount: 2 },
+            { pattern: 'lead', startMeasure: 4, measureCount: 2 },
         ])
         expect(resolveSongSources(s, patterns, 0, TICK).map((x) => x.pattern.id)).toEqual(['rock'])
-        expect(resolveSongSources(s, patterns, 4 * BAR, TICK).map((x) => x.pattern.id)).toEqual(['lead'])
+        expect(resolveSongSources(s, patterns, 4 * MEASURE, TICK).map((x) => x.pattern.id)).toEqual(['lead'])
     })
 
     it('is silent in a gap', () => {
-        // explicit loopBars, otherwise a 1-bar song wraps and bar 3 is bar 0
-        const s = song([{ pattern: 'rock', startBar: 0, bars: 1 }], { loopBars: 8 })
-        expect(resolveSongSources(s, patterns, 3 * BAR, TICK)).toEqual([])
+        // explicit loopMeasureCount, otherwise a 1-measure song wraps and measure 3 is measure 0
+        const s = song([{ pattern: 'rock', startMeasure: 0, measureCount: 1 }], { loopMeasureCount: 8 })
+        expect(resolveSongSources(s, patterns, 3 * MEASURE, TICK)).toEqual([])
     })
 
     // The whole point of the feature: overlapping clips sound together.
-    it('returns every clip covering the bar, layered', () => {
+    it('returns every clip covering the measure, layered', () => {
         const s = song([
-            { pattern: 'rock', startBar: 0, bars: 2 },
-            { pattern: 'bass', startBar: 0, bars: 2 },
-            { pattern: 'lead', startBar: 1, bars: 1 },
+            { pattern: 'rock', startMeasure: 0, measureCount: 2 },
+            { pattern: 'bass', startMeasure: 0, measureCount: 2 },
+            { pattern: 'lead', startMeasure: 1, measureCount: 1 },
         ])
         expect(resolveSongSources(s, patterns, 0, TICK).map((x) => x.pattern.id)).toEqual(['rock', 'bass'])
-        expect(resolveSongSources(s, patterns, BAR, TICK).map((x) => x.pattern.id)).toEqual(['rock', 'bass', 'lead'])
+        expect(resolveSongSources(s, patterns, MEASURE, TICK).map((x) => x.pattern.id)).toEqual([
+            'rock',
+            'bass',
+            'lead',
+        ])
     })
 
     it('keeps each clip in phase with itself, not with the transport', () => {
-        // bass is 8 beats (2 bars) and starts at bar 2; at bar 5 it must be at
-        // its own local step 3 bars in, not at 1 bar in as tick % would say.
-        const s = song([{ pattern: 'bass', startBar: 2, bars: 4 }], { loopBars: 8 })
-        const atBar5 = resolveSongSources(s, patterns, 5 * BAR, TICK)[0]
-        // 3 bars elapsed from its own start, on a 2-bar pattern: second pass,
-        // one bar in. `tick % patternTicks` would have said bar 1 of the song.
-        expect(atBar5.patternTicks).toBe(8 * TICK)
-        expect(atBar5.loop).toBe(1)
-        expect(atBar5.localStep).toBe(1 * BAR)
-        expect(atBar5.localStep).toBeLessThan(atBar5.patternTicks)
+        // bass is 8 beats (2 measures) and starts at measure 2; at measure 5 it must be at
+        // its own local step 3 measures in, not at 1 measure in as tick % would say.
+        const s = song([{ pattern: 'bass', startMeasure: 2, measureCount: 4 }], { loopMeasureCount: 8 })
+        const atMeasure5 = resolveSongSources(s, patterns, 5 * MEASURE, TICK)[0]
+        // 3 measures elapsed from its own start, on a 2-measure pattern: second pass,
+        // one measure in. `tick % patternTicks` would have said measure 1 of the song.
+        expect(atMeasure5.patternTicks).toBe(8 * TICK)
+        expect(atMeasure5.loop).toBe(1)
+        expect(atMeasure5.localStep).toBe(1 * MEASURE)
+        expect(atMeasure5.localStep).toBeLessThan(atMeasure5.patternTicks)
     })
 
     it('reports the loop counter so variation and every vary per cycle', () => {
-        const s = song([{ pattern: 'rock', startBar: 0, bars: 8 }]) // rock = 1 bar
+        const s = song([{ pattern: 'rock', startMeasure: 0, measureCount: 8 }]) // rock = 1 measure
         expect(resolveSongSources(s, patterns, 0, TICK)[0].loop).toBe(0)
-        expect(resolveSongSources(s, patterns, 1 * BAR, TICK)[0].loop).toBe(1)
-        expect(resolveSongSources(s, patterns, 4 * BAR, TICK)[0].loop).toBe(4)
+        expect(resolveSongSources(s, patterns, 1 * MEASURE, TICK)[0].loop).toBe(1)
+        expect(resolveSongSources(s, patterns, 4 * MEASURE, TICK)[0].loop).toBe(4)
     })
 
-    it('wraps at loopBars and keeps counting', () => {
-        const s = song([{ pattern: 'rock', startBar: 0, bars: 2 }], { loopBars: 4 })
+    it('wraps at loopMeasureCount and keeps counting', () => {
+        const s = song([{ pattern: 'rock', startMeasure: 0, measureCount: 2 }], { loopMeasureCount: 4 })
         expect(resolveSongSources(s, patterns, 0, TICK).map((x) => x.pattern.id)).toEqual(['rock'])
-        // bars 2 and 3 are the gap before the wrap
-        expect(resolveSongSources(s, patterns, 2 * BAR, TICK)).toEqual([])
-        expect(resolveSongSources(s, patterns, 3 * BAR, TICK)).toEqual([])
-        expect(resolveSongSources(s, patterns, 4 * BAR, TICK).map((x) => x.pattern.id)).toEqual(['rock'])
+        // measures 2 and 3 are the gap before the wrap
+        expect(resolveSongSources(s, patterns, 2 * MEASURE, TICK)).toEqual([])
+        expect(resolveSongSources(s, patterns, 3 * MEASURE, TICK)).toEqual([])
+        expect(resolveSongSources(s, patterns, 4 * MEASURE, TICK).map((x) => x.pattern.id)).toEqual(['rock'])
         // and the loop counter keeps growing rather than resetting
-        expect(resolveSongSources(s, patterns, 8 * BAR, TICK)[0].loop).toBe(8)
+        expect(resolveSongSources(s, patterns, 8 * MEASURE, TICK)[0].loop).toBe(8)
     })
 
-    it('falls back to the clip extent when loopBars is absent', () => {
-        // no loopBars: the song loops over its own length (2 bars here)
-        const s = song([{ pattern: 'rock', startBar: 0, bars: 2 }])
-        expect(resolveSongSources(s, patterns, BAR, TICK).map((x) => x.pattern.id)).toEqual(['rock'])
-        expect(resolveSongSources(s, patterns, 2 * BAR, TICK).map((x) => x.pattern.id)).toEqual(['rock'])
+    it('falls back to the clip extent when loopMeasureCount is absent', () => {
+        // no loopMeasureCount: the song loops over its own length (2 measures here)
+        const s = song([{ pattern: 'rock', startMeasure: 0, measureCount: 2 }])
+        expect(resolveSongSources(s, patterns, MEASURE, TICK).map((x) => x.pattern.id)).toEqual(['rock'])
+        expect(resolveSongSources(s, patterns, 2 * MEASURE, TICK).map((x) => x.pattern.id)).toEqual(['rock'])
     })
 
     it('skips a clip whose pattern is not in the library', () => {
         const s = song([
-            { pattern: 'ghost', startBar: 0, bars: 2 },
-            { pattern: 'rock', startBar: 0, bars: 2 },
+            { pattern: 'ghost', startMeasure: 0, measureCount: 2 },
+            { pattern: 'rock', startMeasure: 0, measureCount: 2 },
         ])
         expect(resolveSongSources(s, patterns, 0, TICK).map((x) => x.pattern.id)).toEqual(['rock'])
     })
 
     it('accepts a plain object of patterns', () => {
         const asObject = { rock: patterns.get('rock') }
-        const s = song([{ pattern: 'rock', startBar: 0, bars: 1 }])
+        const s = song([{ pattern: 'rock', startMeasure: 0, measureCount: 1 }])
         expect(resolveSongSources(s, asObject, 0, TICK)).toHaveLength(1)
     })
 
-    // A 3-beat pattern is 0.75 bar; it must still sound during the bar it starts in.
-    it('plays a sub-bar clip for the whole bar it starts in', () => {
+    // A 3-beat pattern is 0.75 measure; it must still sound during the measure it starts in.
+    it('plays a sub-measure clip for the whole measure it starts in', () => {
         const lib = new Map([['odd', { id: 'odd', beatCount: 3 }]])
-        const s = song([{ pattern: 'odd', startBar: 2, bars: 0.75 }])
-        expect(resolveSongSources(s, lib, 2 * BAR, TICK)).toHaveLength(1)
-        expect(resolveSongSources(s, lib, 2 * BAR + 0.9 * BAR, TICK)).toEqual([])
-        expect(resolveSongSources(s, lib, 3 * BAR, TICK)).toEqual([])
+        const s = song([{ pattern: 'odd', startMeasure: 2, measureCount: 0.75 }])
+        expect(resolveSongSources(s, lib, 2 * MEASURE, TICK)).toHaveLength(1)
+        expect(resolveSongSources(s, lib, 2 * MEASURE + 0.9 * MEASURE, TICK)).toEqual([])
+        expect(resolveSongSources(s, lib, 3 * MEASURE, TICK)).toEqual([])
     })
 
     it('defaults a missing beatCount to 4 beats', () => {
         const lib = new Map([['x', { id: 'x' }]])
-        const s = song([{ pattern: 'x', startBar: 0, bars: 1 }])
+        const s = song([{ pattern: 'x', startMeasure: 0, measureCount: 1 }])
         expect(resolveSongSources(s, lib, 0, TICK)[0].patternTicks).toBe(4 * TICK)
     })
 })
 
-describe('tick and bar conversion', () => {
-    it('converts a tick to fractional bars', () => {
-        expect(tickToSongBars(0, BAR)).toBe(0)
-        expect(tickToSongBars(BAR / 2, BAR)).toBe(0.5)
-        expect(tickToSongBars(BAR, BAR)).toBe(1)
+describe('tick and measure conversion', () => {
+    it('converts a tick to fractional measures', () => {
+        expect(tickToSongMeasures(0, MEASURE)).toBe(0)
+        expect(tickToSongMeasures(MEASURE / 2, MEASURE)).toBe(0.5)
+        expect(tickToSongMeasures(MEASURE, MEASURE)).toBe(1)
     })
 
-    it('converts a bar back to a tick', () => {
-        expect(barToTick(0, TICK)).toBe(0)
-        expect(barToTick(4, TICK)).toBe(4 * BAR)
+    it('converts a measure back to a tick', () => {
+        expect(measureToTick(0, TICK)).toBe(0)
+        expect(measureToTick(4, TICK)).toBe(4 * MEASURE)
     })
 })
 
@@ -148,7 +154,7 @@ describe('songTempo', () => {
     })
 
     it('falls back to the first clip pattern bpm when the song has none', () => {
-        const s = { id: 'x', clips: [{ pattern: 'bass', startBar: 0, bars: 1 }] }
+        const s = { id: 'x', clips: [{ pattern: 'bass', startMeasure: 0, measureCount: 1 }] }
         expect(songTempo(s, patterns)).toBe(90)
     })
 
@@ -167,9 +173,9 @@ describe('songPatterns', () => {
 
     it('lists every pattern the arrangement plays, in clip order', () => {
         const s = song([
-            { pattern: 'bass', startBar: 0, bars: 2 },
-            { pattern: 'rock', startBar: 0, bars: 2 },
-            { pattern: 'lead', startBar: 4, bars: 4 },
+            { pattern: 'bass', startMeasure: 0, measureCount: 2 },
+            { pattern: 'rock', startMeasure: 0, measureCount: 2 },
+            { pattern: 'lead', startMeasure: 4, measureCount: 4 },
         ])
         expect(songPatterns(s, library).map((p) => p.id)).toEqual(['bass', 'rock', 'lead'])
     })
@@ -177,17 +183,17 @@ describe('songPatterns', () => {
     // The engine has to prepare each of them once, not once per clip.
     it('never lists the same pattern twice', () => {
         const s = song([
-            { pattern: 'rock', startBar: 0, bars: 4 },
-            { pattern: 'rock', startBar: 4, bars: 4 },
-            { pattern: 'rock', startBar: 8, bars: 4 },
+            { pattern: 'rock', startMeasure: 0, measureCount: 4 },
+            { pattern: 'rock', startMeasure: 4, measureCount: 4 },
+            { pattern: 'rock', startMeasure: 8, measureCount: 4 },
         ])
         expect(songPatterns(s, library).map((p) => p.id)).toEqual(['rock'])
     })
 
     it('skips clips pointing at a pattern that is not in the library', () => {
         const s = song([
-            { pattern: 'ghost', startBar: 0, bars: 1 },
-            { pattern: 'rock', startBar: 0, bars: 1 },
+            { pattern: 'ghost', startMeasure: 0, measureCount: 1 },
+            { pattern: 'rock', startMeasure: 0, measureCount: 1 },
         ])
         expect(songPatterns(s, library).map((p) => p.id)).toEqual(['rock'])
     })
@@ -198,46 +204,46 @@ describe('songPatterns', () => {
     })
 
     it('does not pick up patterns the arrangement never references', () => {
-        expect(songPatterns(song([{ pattern: 'lead', startBar: 0, bars: 1 }]), library).map((p) => p.id)).toEqual([
-            'lead',
-        ])
+        expect(
+            songPatterns(song([{ pattern: 'lead', startMeasure: 0, measureCount: 1 }]), library).map((p) => p.id),
+        ).toEqual(['lead'])
     })
 })
 
-describe('songBarAtTick', () => {
-    const s8 = song([{ pattern: 'rock', startBar: 0, bars: 8 }], { loopBars: 8 })
+describe('songMeasureAtTick', () => {
+    const s8 = song([{ pattern: 'rock', startMeasure: 0, measureCount: 8 }], { loopMeasureCount: 8 })
 
-    it('turns a tick into fractional bars', () => {
-        expect(songBarAtTick(s8, 0)).toBe(0)
-        expect(songBarAtTick(s8, BAR / 2)).toBe(0.5)
-        expect(songBarAtTick(s8, BAR)).toBe(1)
-        expect(songBarAtTick(s8, 3 * BAR + 64)).toBeCloseTo(3.5, 6)
+    it('turns a tick into fractional measures', () => {
+        expect(songMeasureAtTick(s8, 0)).toBe(0)
+        expect(songMeasureAtTick(s8, MEASURE / 2)).toBe(0.5)
+        expect(songMeasureAtTick(s8, MEASURE)).toBe(1)
+        expect(songMeasureAtTick(s8, 3 * MEASURE + 64)).toBeCloseTo(3.5, 6)
     })
 
     // The transport keeps counting after the arrangement wraps, so the position
-    // the menus name must stay a bar that exists.
-    it('wraps on the loop length instead of running past the last bar', () => {
-        expect(songBarAtTick(s8, 9 * BAR)).toBe(1)
-        expect(songBarAtTick(s8, 100 * BAR + 32)).toBeCloseTo(4.25, 6)
+    // the menus name must stay a measure that exists.
+    it('wraps on the loop length instead of running past the last measure', () => {
+        expect(songMeasureAtTick(s8, 9 * MEASURE)).toBe(1)
+        expect(songMeasureAtTick(s8, 100 * MEASURE + 32)).toBeCloseTo(4.25, 6)
     })
 
     it('falls back to the arrangement length when the song has no loop', () => {
-        const noLoop = song([{ pattern: 'rock', startBar: 0, bars: 8 }])
-        expect(songBarAtTick(noLoop, 8 * BAR)).toBe(0)
-        expect(songBarAtTick(noLoop, 3 * BAR)).toBe(3)
+        const noLoop = song([{ pattern: 'rock', startMeasure: 0, measureCount: 8 }])
+        expect(songMeasureAtTick(noLoop, 8 * MEASURE)).toBe(0)
+        expect(songMeasureAtTick(noLoop, 3 * MEASURE)).toBe(3)
     })
 
-    // wrapping a negative tick would land on the LAST bar, which is not where a
+    // wrapping a negative tick would land on the LAST measure, which is not where a
     // stopped transport is
     it('is never negative, and survives a missing song or tick', () => {
-        expect(songBarAtTick(s8, -BAR)).toBe(0)
-        expect(songBarAtTick(s8, -100 * BAR)).toBe(0)
-        expect(songBarAtTick(null, 3 * BAR)).toBe(3)
-        expect(songBarAtTick(undefined, 0)).toBe(0)
-        expect(songBarAtTick(song([]), 0)).toBe(0)
+        expect(songMeasureAtTick(s8, -MEASURE)).toBe(0)
+        expect(songMeasureAtTick(s8, -100 * MEASURE)).toBe(0)
+        expect(songMeasureAtTick(null, 3 * MEASURE)).toBe(3)
+        expect(songMeasureAtTick(undefined, 0)).toBe(0)
+        expect(songMeasureAtTick(song([]), 0)).toBe(0)
     })
 
     it('follows the ticks-per-beat of the engine', () => {
-        expect(songBarAtTick(s8, 8, 8)).toBe(0.25) // 8 ticks per beat = half a bar
+        expect(songMeasureAtTick(s8, 8, 8)).toBe(0.25) // 8 ticks per beat = half a measure
     })
 })

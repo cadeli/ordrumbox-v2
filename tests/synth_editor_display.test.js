@@ -92,7 +92,7 @@ describe('Soft Synth Editor display', () => {
             useAutoAssignSound: false,
             useSoftSynth: true,
             synthSoundKey: 'BASS1',
-            soundId: '',
+            sampleId: '',
             velocity: 0.8,
             pan: 0,
             pitch: 0,

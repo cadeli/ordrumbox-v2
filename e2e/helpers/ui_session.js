@@ -215,11 +215,11 @@ export async function waitForPatternSoundsLoaded(page, patternIdx) {
                     const pattern = appState.patterns[idx]
                     const missing = []
                     for (const track of Object.values(pattern?.tracks ?? {})) {
-                        const soundId = track?.soundId
-                        if (!soundId || soundId === 'NOT_DEFINED') continue
-                        if (soundRegistry.sounds?.[soundId]?.buffer) continue
-                        if (soundRegistry.generatedSounds?.[soundId]) continue
-                        missing.push(soundId)
+                        const sampleId = track?.sampleId
+                        if (!sampleId || sampleId === 'NOT_DEFINED') continue
+                        if (soundRegistry.sounds?.[sampleId]?.buffer) continue
+                        if (soundRegistry.generatedSounds?.[sampleId]) continue
+                        missing.push(sampleId)
                     }
                     return missing
                 }, patternIdx),
@@ -233,7 +233,7 @@ export async function waitForPatternSoundsLoaded(page, patternIdx) {
  * moments, for two documented reasons:
  *
  *  1. track.pan is rewritten from PAN_MAP on every load (patterns/fixer.js)
- *     and track.soundId of an auto track is discarded on load
+ *     and track.sampleId of an auto track is discarded on load
  *     (loader/resources_loader.js) then re-derived by the boot auto-assign;
  *  2. _arpScale/_arpType are per-note editor overrides. They ARE in
  *     NOTE_KEY_ORDER (core/note_schema.js), so they survive the compact
@@ -249,7 +249,7 @@ export function stripForComparison(data) {
     const tracks = Array.isArray(clone.tracks) ? clone.tracks : Object.values(clone.tracks ?? {})
     for (const track of tracks) {
         delete track.pan
-        delete track.soundId
+        delete track.sampleId
         const keys = Array.isArray(track.noteKeys) ? track.noteKeys : null
         const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? {})
         track.notes = notes.map((note) => {

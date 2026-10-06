@@ -102,9 +102,9 @@ _"Add a lowpass filter to the KICK and some reverb to the SNARE."_
 ### 6. Arrange the song
 
 - `listArrangements({})` → see the arrangements and their clips
-- `createArrangement({ name: "My song", bpm: 128, clips: [{ "patternName": "Verse", "startBar": 0 }] })`
-- `addPatternToArrangement({ patternName: "Chorus", startBar: 2 })`
-- `removePatternFromArrangement({ startBar: 0 })`
+- `createArrangement({ name: "My song", bpm: 128, clips: [{ "patternName": "Verse", "startMeasure": 0 }] })`
+- `addPatternToArrangement({ patternName: "Chorus", startMeasure: 2 })`
+- `removePatternFromArrangement({ startMeasure: 0 })`
 
 ---
 
@@ -127,8 +127,8 @@ _"Add a lowpass filter to the KICK and some reverb to the SNARE."_
 | `analyzeSamples`               | Analyse audio characteristics                                  |
 | `listArrangements`             | List arrangements (songs) with their clips                     |
 | `createArrangement`            | Create an arrangement, optionally filled with clips            |
-| `addPatternToArrangement`      | Place a pattern at a bar in an arrangement                     |
-| `removePatternFromArrangement` | Remove clips by bar and/or by pattern                          |
+| `addPatternToArrangement`      | Place a pattern at a measure in an arrangement                 |
+| `removePatternFromArrangement` | Remove clips by measure and/or by pattern                      |
 
 See `MCP_TOOLS.md` for full parameter details.
 

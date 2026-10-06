@@ -1,9 +1,10 @@
 import { logger } from './logger.js'
 import { ensurePatternId } from './ids.js'
 import { migrateLegacyPatternKeys } from './note_schema.js'
+import { migrateLegacySongKeys } from './legacy_keys.js'
 
 const DB_NAME = 'ordrumbox'
-const DB_VERSION = 7
+const DB_VERSION = 8
 
 const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples', 'generated_sounds']
 
@@ -88,9 +89,28 @@ function migrateStoredNoteKeys(value) {
 }
 
 /**
+ * Rewrite every legacy key of a stored record: the note and track keys through
+ * migrateLegacyPatternKeys(), plus — on a raw song — `loopBars` and the clip
+ * keys, through migrateLegacySongKeys(). The same three shapes as
+ * migrateStoredNoteKeys() (raw song / bare pattern / `{data}` envelope).
+ * @param {any} value
+ * @returns {boolean} whether anything changed
+ */
+function migrateStoredLegacyKeys(value) {
+    if (!value || typeof value !== 'object') return false
+    if (value.data && typeof value.data === 'object') return migrateStoredLegacyKeys(value.data)
+    let changed = false
+    if (Array.isArray(value.patterns)) {
+        for (const pattern of value.patterns) changed = migrateLegacyPatternKeys(pattern) || changed
+        return migrateLegacySongKeys(value) || changed
+    }
+    return migrateLegacyPatternKeys(value)
+}
+
+/**
  * Schema migrations keyed by the DB_VERSION they ship with:
- *     7: (db, tx) => { ... }
- * They run inside `onupgradeneeded` when upgrading from a version < 7, so add
+ *     8: (db, tx) => { ... }
+ * They run inside `onupgradeneeded` when upgrading from a version < 8, so add
  * an entry here (and bump DB_VERSION) whenever persisted data changes shape.
  */
 export const MIGRATIONS = {
@@ -168,6 +188,33 @@ export const MIGRATIONS = {
                 const cursor = request.result
                 if (!cursor) return
                 if (migrateStoredNoteKeys(cursor.value)) cursor.update(cursor.value)
+                cursor.continue()
+            }
+        }
+    },
+
+    /**
+     * v8: the measure rename of persisted keys — `track.soundId` → `sampleId`
+     * (both in cached patterns and in a song's embedded patterns) and the
+     * arrangement keys `startBar`/`bars` → `startMeasure`/`measureCount`,
+     * `loopBars` → `loopMeasureCount`.
+     *
+     * Same request-chained walk as v5/v7: see the note there. Files outside the
+     * DB (.odbox, built-in assets, imported JSON) are mapped on read instead:
+     * migrateLegacyPatternKeys() for patterns, normalizeSong() for songs.
+     * @param {IDBDatabase} db
+     * @param {IDBTransaction|null} tx
+     */
+    8: (db, tx) => {
+        if (!tx) return
+        for (const storeName of ['songs', 'patterns']) {
+            if (!db.objectStoreNames.contains(storeName)) continue
+            const store = tx.objectStore(storeName)
+            const request = store.openCursor()
+            request.onsuccess = () => {
+                const cursor = request.result
+                if (!cursor) return
+                if (migrateStoredLegacyKeys(cursor.value)) cursor.update(cursor.value)
                 cursor.continue()
             }
         }

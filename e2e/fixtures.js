@@ -25,24 +25,24 @@ export function audioContextState(page) {
  * cover it, then asks the Song view to re-render.
  *
  * The demo arrangement stacks nothing — every one of its clips starts on its own
- * measure — so a test that needs several patterns on the same bar (layered
+ * measure — so a test that needs several patterns on the same measure (layered
  * playback, one row per pattern) has to place the extra one itself. Without a
  * song loaded this is a no-op, so the caller asserts what it needs afterwards.
  *
  * @param {import('@playwright/test').Page} page
- * @param {number} [bar] 0-based measure
+ * @param {number} [measure] 0-based measure
  * @returns {Promise<string|null>} the pattern id placed, null when nothing was
  */
-export async function stackClipOnBar(page, bar = 0) {
-    return page.evaluate((startBar) => {
+export async function stackClipOnMeasure(page, measure = 0) {
+    return page.evaluate((startMeasure) => {
         const { appState, playbackEvents } = window.__e2e
         const song = appState.songs?.[0]
         if (!song) return null
         // a pattern the arrangement does not place yet: its row appears with the clip
         const free = appState.patterns.find((p) => !song.clips.some((c) => c.pattern === p.id))
         if (!free) return null
-        song.clips.push({ pattern: free.id, startBar, bars: 1 })
+        song.clips.push({ pattern: free.id, startMeasure, measureCount: 1 })
         playbackEvents.emit('patternStructureChange')
         return free.id
-    }, bar)
+    }, measure)
 }

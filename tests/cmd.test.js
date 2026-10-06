@@ -161,7 +161,7 @@ describe('Functional: Commander operations', () => {
         it('copies all known properties via updateTrack', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             const source = {
-                soundId: 'snd_1',
+                sampleId: 'snd_1',
                 beatCount: 8,
                 stepsPerBeat: 8,
                 loopAtStep: 32,
@@ -189,7 +189,7 @@ describe('Functional: Commander operations', () => {
             }
             cmd.updateTrack(track, source)
 
-            expect(track.soundId).toBe('snd_1')
+            expect(track.sampleId).toBe('snd_1')
             expect(track.beatCount).toBe(8)
             expect(track.stepsPerBeat).toBe(8)
             expect(track.loopAtStep).toBe(32)
@@ -307,7 +307,7 @@ describe('Functional: Commander operations', () => {
         })
     })
 
-    describe('Bar quantize cycle', () => {
+    describe('Steps-per-beat quantize cycle', () => {
         it('incrStepsPerBeat changes stepsPerBeat', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             const note = cmd.addNote(track, 0, 2)
@@ -512,11 +512,11 @@ describe('Functional: Commander operations', () => {
     })
 
     describe('changeTrackSound', () => {
-        it('updates soundId and flags', () => {
+        it('updates sampleId and flags', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             cmd.changeTrackSound(track, 'snd_42')
 
-            expect(track.soundId).toBe('snd_42')
+            expect(track.sampleId).toBe('snd_42')
             expect(track.useAutoAssignSound).toBe(false)
             expect(track.useSoftSynth).toBe(false)
         })
@@ -551,20 +551,20 @@ describe('Functional: Commander operations', () => {
         })
     })
 
-    describe('getSoundIdFromUrl', () => {
-        it('finds soundId by url', () => {
+    describe('getSampleIdFromUrl', () => {
+        it('finds sampleId by url', () => {
             soundRegistry.sounds = {
                 snd_1: { url: 'kits/real/kick.wav' },
                 snd_2: { url: 'kits/real/snare.wav' },
             }
 
-            expect(cmd.getSoundIdFromUrl('kits/real/kick.wav')).toBe('snd_1')
-            expect(cmd.getSoundIdFromUrl('kits/real/snare.wav')).toBe('snd_2')
+            expect(cmd.getSampleIdFromUrl('kits/real/kick.wav')).toBe('snd_1')
+            expect(cmd.getSampleIdFromUrl('kits/real/snare.wav')).toBe('snd_2')
         })
 
         it('returns NOT_FOUND when no match', () => {
             soundRegistry.sounds = { snd_1: { url: 'a.wav' } }
-            expect(cmd.getSoundIdFromUrl('b.wav')).toBe('NOT_FOUND')
+            expect(cmd.getSampleIdFromUrl('b.wav')).toBe('NOT_FOUND')
         })
     })
 
@@ -629,19 +629,19 @@ describe('Functional: Commander operations', () => {
 
         it('addSongClip places a clip on the selected song', () => {
             song([])
-            expect(cmd.addSongClip({ pattern: 'rock', startBar: 4, bars: 2 })).toBe(true)
-            expect(appState.songs[0].clips).toEqual([{ pattern: 'rock', startBar: 4, bars: 2 }])
+            expect(cmd.addSongClip({ pattern: 'rock', startMeasure: 4, measureCount: 2 })).toBe(true)
+            expect(appState.songs[0].clips).toEqual([{ pattern: 'rock', startMeasure: 4, measureCount: 2 }])
         })
 
         it('addSongClip coerces a bogus position and duration', () => {
             song([])
-            cmd.addSongClip({ pattern: 'rock', startBar: -3, bars: 0 })
-            expect(appState.songs[0].clips[0]).toEqual({ pattern: 'rock', startBar: 0, bars: 1 })
+            cmd.addSongClip({ pattern: 'rock', startMeasure: -3, measureCount: 0 })
+            expect(appState.songs[0].clips[0]).toEqual({ pattern: 'rock', startMeasure: 0, measureCount: 1 })
         })
 
         it('addSongClip does nothing without a song or a pattern', () => {
             appState.songs = []
-            expect(cmd.addSongClip({ pattern: 'rock', startBar: 0, bars: 1 })).toBe(false)
+            expect(cmd.addSongClip({ pattern: 'rock', startMeasure: 0, measureCount: 1 })).toBe(false)
             song([])
             expect(cmd.addSongClip(null)).toBe(false)
             expect(appState.songs[0].clips).toHaveLength(0)
@@ -649,7 +649,7 @@ describe('Functional: Commander operations', () => {
 
         it('addSongClip is undoable and redoable', () => {
             song([])
-            cmd.addSongClip({ pattern: 'rock', startBar: 0, bars: 1 })
+            cmd.addSongClip({ pattern: 'rock', startMeasure: 0, measureCount: 1 })
             history.undo()
             expect(appState.songs[0].clips).toHaveLength(0)
             history.redo()
@@ -658,9 +658,9 @@ describe('Functional: Commander operations', () => {
 
         it('removeSongClips removes the given indices in one undo step', () => {
             song([
-                { pattern: 'a', startBar: 0, bars: 1 },
-                { pattern: 'b', startBar: 1, bars: 1 },
-                { pattern: 'c', startBar: 2, bars: 1 },
+                { pattern: 'a', startMeasure: 0, measureCount: 1 },
+                { pattern: 'b', startMeasure: 1, measureCount: 1 },
+                { pattern: 'c', startMeasure: 2, measureCount: 1 },
             ])
             expect(cmd.removeSongClips([0, 2])).toBe(true)
             expect(appState.songs[0].clips.map((c) => c.pattern)).toEqual(['b'])
@@ -671,9 +671,9 @@ describe('Functional: Commander operations', () => {
 
         it('removeSongClips restores the original order on undo', () => {
             song([
-                { pattern: 'a', startBar: 0, bars: 1 },
-                { pattern: 'b', startBar: 1, bars: 1 },
-                { pattern: 'c', startBar: 2, bars: 1 },
+                { pattern: 'a', startMeasure: 0, measureCount: 1 },
+                { pattern: 'b', startMeasure: 1, measureCount: 1 },
+                { pattern: 'c', startMeasure: 2, measureCount: 1 },
             ])
             cmd.removeSongClips([1])
             history.undo()
@@ -681,7 +681,7 @@ describe('Functional: Commander operations', () => {
         })
 
         it('removeSongClips ignores out-of-range indices', () => {
-            song([{ pattern: 'a', startBar: 0, bars: 1 }])
+            song([{ pattern: 'a', startMeasure: 0, measureCount: 1 }])
             expect(cmd.removeSongClips([5, -1, 1.5])).toBe(false)
             expect(appState.songs[0].clips).toHaveLength(1)
         })
@@ -703,16 +703,18 @@ describe('Functional: Commander operations', () => {
             appState.patterns = [makePattern({ name: 'Rock', id: 'rock', beatCount: 4 })]
         })
 
-        const song = (clips, loopBars) => {
-            appState.songs = [{ id: 'demo', name: 'Demo', bpm: 120, clips, ...(loopBars ? { loopBars } : {}) }]
+        const song = (clips, loopMeasureCount) => {
+            appState.songs = [
+                { id: 'demo', name: 'Demo', bpm: 120, clips, ...(loopMeasureCount ? { loopMeasureCount } : {}) },
+            ]
             appState.selectedSongIdx = 0
             return appState.songs[0]
         }
-        const loop = () => appState.songs[0].loopBars
+        const loop = () => appState.songs[0].loopMeasureCount
 
         it('grows to cover a clip added past the old loop', () => {
-            song([{ pattern: 'rock', startBar: 0, bars: 1 }], 4)
-            expect(cmd.addPatternAtBar('rock', 20)).not.toBeNull()
+            song([{ pattern: 'rock', startMeasure: 0, measureCount: 1 }], 4)
+            expect(cmd.addPatternAtMeasure('rock', 20)).not.toBeNull()
             // otherwise the clip would be placed where nothing ever plays
             expect(loop()).toBe(21)
         })
@@ -720,40 +722,40 @@ describe('Functional: Commander operations', () => {
         // A length declared by a song file is honoured on load, but it is not a promise:
         // the first edit snaps the loop onto what is actually placed.
         it('snaps a declared length onto the content on the first edit', () => {
-            song([{ pattern: 'rock', startBar: 0, bars: 1 }], 32)
-            cmd.addPatternAtBar('rock', 4)
+            song([{ pattern: 'rock', startMeasure: 0, measureCount: 1 }], 32)
+            cmd.addPatternAtMeasure('rock', 4)
             expect(loop()).toBe(5)
         })
 
         it('shrinks when the last clip is removed', () => {
             const s = song([
-                { pattern: 'rock', startBar: 0, bars: 2 },
-                { pattern: 'rock', startBar: 10, bars: 4 },
+                { pattern: 'rock', startMeasure: 0, measureCount: 2 },
+                { pattern: 'rock', startMeasure: 10, measureCount: 4 },
             ])
-            s.loopBars = 14
+            s.loopMeasureCount = 14
             cmd.removeSongClips([1])
             expect(loop()).toBe(2)
         })
 
         it('takes the furthest end, not the last one in the list', () => {
             song([
-                { pattern: 'rock', startBar: 0, bars: 2 },
-                { pattern: 'rock', startBar: 10, bars: 4 },
-                { pattern: 'rock', startBar: 4, bars: 1 },
+                { pattern: 'rock', startMeasure: 0, measureCount: 2 },
+                { pattern: 'rock', startMeasure: 10, measureCount: 4 },
+                { pattern: 'rock', startMeasure: 4, measureCount: 1 },
             ])
-            cmd.addPatternAtBar('rock', 0)
+            cmd.addPatternAtMeasure('rock', 0)
             expect(loop()).toBe(14)
         })
 
         it('drops the loop when the last clip goes', () => {
-            song([{ pattern: 'rock', startBar: 0, bars: 2 }])
+            song([{ pattern: 'rock', startMeasure: 0, measureCount: 2 }])
             cmd.removeSongClips([0])
             expect(appState.songs[0].clips).toHaveLength(0)
             expect(loop()).toBeUndefined()
         })
 
         it('undo puts the previous loop length back', () => {
-            song([{ pattern: 'rock', startBar: 0, bars: 1 }], 8)
+            song([{ pattern: 'rock', startMeasure: 0, measureCount: 1 }], 8)
             cmd.removeSongClips([0])
             expect(loop()).toBeUndefined()
 
@@ -761,15 +763,15 @@ describe('Functional: Commander operations', () => {
             expect(loop()).toBe(8)
 
             // and the loop it shrinks to is itself undone
-            cmd.addPatternAtBar('rock', 30)
+            cmd.addPatternAtMeasure('rock', 30)
             expect(loop()).toBe(31)
             history.undo()
             expect(loop()).toBe(8)
         })
 
         it('redo replays the loop change too', () => {
-            song([{ pattern: 'rock', startBar: 0, bars: 1 }])
-            cmd.addPatternAtBar('rock', 6)
+            song([{ pattern: 'rock', startMeasure: 0, measureCount: 1 }])
+            cmd.addPatternAtMeasure('rock', 6)
             expect(loop()).toBe(7)
 
             history.undo()
@@ -805,94 +807,102 @@ describe('Functional: Commander operations', () => {
             vi.restoreAllMocks()
         })
 
-        it('addPatternAtBar resolves a pattern by name and derives its length', () => {
-            const clip = cmd.addPatternAtBar('Verse', 2)
-            expect(clip).toEqual({ pattern: 'verse', startBar: 2, bars: 2 })
+        it('addPatternAtMeasure resolves a pattern by name and derives its length', () => {
+            const clip = cmd.addPatternAtMeasure('Verse', 2)
+            expect(clip).toEqual({ pattern: 'verse', startMeasure: 2, measureCount: 2 })
         })
 
-        it('addPatternAtBar accepts an id, any case, and surrounding blanks', () => {
-            expect(cmd.addPatternAtBar('  cHoRuS ', 0)).toEqual({ pattern: 'chorus', startBar: 0, bars: 3 })
+        it('addPatternAtMeasure accepts an id, any case, and surrounding blanks', () => {
+            expect(cmd.addPatternAtMeasure('  cHoRuS ', 0)).toEqual({
+                pattern: 'chorus',
+                startMeasure: 0,
+                measureCount: 3,
+            })
             expect(appState.songs[0].clips).toHaveLength(1)
         })
 
-        it('addPatternAtBar honours an explicit duration', () => {
-            expect(cmd.addPatternAtBar('verse', 0, { bars: 4 })).toEqual({ pattern: 'verse', startBar: 0, bars: 4 })
+        it('addPatternAtMeasure honours an explicit duration', () => {
+            expect(cmd.addPatternAtMeasure('verse', 0, { measureCount: 4 })).toEqual({
+                pattern: 'verse',
+                startMeasure: 0,
+                measureCount: 4,
+            })
         })
 
-        it('addPatternAtBar targets the requested song', () => {
+        it('addPatternAtMeasure targets the requested song', () => {
             appState.songs.push({ id: 'other', name: 'Other', bpm: 120, clips: [] })
-            cmd.addPatternAtBar('Verse', 1, { songIdx: 1 })
+            cmd.addPatternAtMeasure('Verse', 1, { songIdx: 1 })
             expect(appState.songs[1].clips).toHaveLength(1)
             expect(appState.songs[0].clips).toHaveLength(0)
         })
 
-        it('addPatternAtBar repairs an id-less pattern instead of writing a dangling clip', () => {
+        it('addPatternAtMeasure repairs an id-less pattern instead of writing a dangling clip', () => {
             const anonymous = makePattern({ name: 'Loop' })
             delete anonymous.id
             appState.patterns.push(anonymous)
 
-            const clip = cmd.addPatternAtBar('Loop', 0)
+            const clip = cmd.addPatternAtMeasure('Loop', 0)
             expect(clip.pattern).toBe('loop')
             expect(appState.patterns.find((p) => p.name === 'Loop').id).toBe('loop')
         })
 
-        it('addPatternAtBar refuses an unknown pattern and does nothing', () => {
-            expect(cmd.addPatternAtBar('Nope', 0)).toBeNull()
+        it('addPatternAtMeasure refuses an unknown pattern and does nothing', () => {
+            expect(cmd.addPatternAtMeasure('Nope', 0)).toBeNull()
             expect(appState.songs[0].clips).toHaveLength(0)
             expect(console.warn).toHaveBeenCalled()
         })
 
-        it('addPatternAtBar does nothing without a song', () => {
+        it('addPatternAtMeasure does nothing without a song', () => {
             appState.songs = []
-            expect(cmd.addPatternAtBar('Verse', 0)).toBeNull()
+            expect(cmd.addPatternAtMeasure('Verse', 0)).toBeNull()
             expect(console.warn).toHaveBeenCalled()
         })
 
-        it('addPatternAtBar is undoable and redoable', () => {
-            cmd.addPatternAtBar('Verse', 0)
+        it('addPatternAtMeasure is undoable and redoable', () => {
+            cmd.addPatternAtMeasure('Verse', 0)
             history.undo()
             expect(appState.songs[0].clips).toHaveLength(0)
             history.redo()
             expect(appState.songs[0].clips).toHaveLength(1)
         })
 
-        it('repeatPatternAtBar repeats the clip starting at that bar, same length', () => {
-            cmd.addPatternAtBar('Verse', 0)
-            const repeated = cmd.repeatPatternAtBar(0)
-            expect(repeated).toEqual({ pattern: 'verse', startBar: 2, bars: 2 })
+        it('repeatPatternAtMeasure repeats the clip starting at that measure, same length', () => {
+            cmd.addPatternAtMeasure('Verse', 0)
+            const repeated = cmd.repeatPatternAtMeasure(0)
+            expect(repeated).toEqual({ pattern: 'verse', startMeasure: 2, measureCount: 2 })
             expect(appState.songs[0].clips).toHaveLength(2)
         })
 
-        it('repeatPatternAtBar does nothing when the bar is empty', () => {
-            expect(cmd.repeatPatternAtBar(4)).toBeNull()
+        it('repeatPatternAtMeasure does nothing when the measure is empty', () => {
+            expect(cmd.repeatPatternAtMeasure(4)).toBeNull()
             expect(appState.songs[0].clips).toHaveLength(0)
             expect(console.warn).toHaveBeenCalled()
         })
 
-        it('removePatternAtBar removes every clip starting at that bar', () => {
-            cmd.addPatternAtBar('Verse', 0)
-            cmd.addPatternAtBar('Chorus', 0)
-            cmd.addPatternAtBar('Verse', 2)
+        it('removePatternAtMeasure removes every clip starting at that measure', () => {
+            cmd.addPatternAtMeasure('Verse', 0)
+            cmd.addPatternAtMeasure('Chorus', 0)
+            cmd.addPatternAtMeasure('Verse', 2)
 
-            const removed = cmd.removePatternAtBar(0)
+            const removed = cmd.removePatternAtMeasure(0)
             expect(removed.map((c) => c.pattern)).toEqual(['verse', 'chorus'])
-            expect(appState.songs[0].clips.map((c) => c.startBar)).toEqual([2])
+            expect(appState.songs[0].clips.map((c) => c.startMeasure)).toEqual([2])
 
             history.undo()
             expect(appState.songs[0].clips).toHaveLength(3)
         })
 
-        it('removePatternAtBar leaves the other bars alone and reports an empty one', () => {
-            cmd.addPatternAtBar('Verse', 0)
-            expect(cmd.removePatternAtBar(7)).toEqual([])
+        it('removePatternAtMeasure leaves the other measures alone and reports an empty one', () => {
+            cmd.addPatternAtMeasure('Verse', 0)
+            expect(cmd.removePatternAtMeasure(7)).toEqual([])
             expect(appState.songs[0].clips).toHaveLength(1)
             expect(console.warn).toHaveBeenCalled()
         })
 
         it('removePatternClips removes the whole row in one undo step', () => {
-            cmd.addPatternAtBar('Verse', 0)
-            cmd.addPatternAtBar('Chorus', 1)
-            cmd.addPatternAtBar('Verse', 3)
+            cmd.addPatternAtMeasure('Verse', 0)
+            cmd.addPatternAtMeasure('Chorus', 1)
+            cmd.addPatternAtMeasure('Verse', 3)
 
             expect(cmd.removePatternClips('Verse')).toHaveLength(2)
             expect(appState.songs[0].clips.map((c) => c.pattern)).toEqual(['chorus'])
@@ -902,21 +912,21 @@ describe('Functional: Commander operations', () => {
         })
 
         it('removePatternClips cleans up a clip whose pattern left the library', () => {
-            cmd.addPatternAtBar('Verse', 0)
+            cmd.addPatternAtMeasure('Verse', 0)
             appState.patterns.length = 0
             expect(cmd.removePatternClips('verse')).toHaveLength(1)
             expect(appState.songs[0].clips).toHaveLength(0)
         })
 
         it('removePatternClips without a reference changes nothing', () => {
-            cmd.addPatternAtBar('Verse', 0)
+            cmd.addPatternAtMeasure('Verse', 0)
             expect(cmd.removePatternClips('  ')).toEqual([])
             expect(appState.songs[0].clips).toHaveLength(1)
             expect(console.warn).toHaveBeenCalled()
         })
 
         it('removePatternClips is a no-op when the pattern is not in the arrangement', () => {
-            cmd.addPatternAtBar('Verse', 0)
+            cmd.addPatternAtMeasure('Verse', 0)
             expect(cmd.removePatternClips('Chorus')).toEqual([])
             expect(appState.songs[0].clips).toHaveLength(1)
         })
@@ -982,7 +992,7 @@ describe('Functional: Commander operations', () => {
 
         it('a clip placed after creation can be undone on its own', () => {
             cmd.addSong({ name: 'With clips' })
-            cmd.addPatternAtBar('Verse', 0)
+            cmd.addPatternAtMeasure('Verse', 0)
             expect(appState.songs[0].clips).toHaveLength(1)
 
             history.undo()

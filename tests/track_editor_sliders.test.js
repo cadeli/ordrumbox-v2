@@ -35,7 +35,7 @@ function makeTrack(overrides = {}) {
         useAutoAssignSound: false,
         useSoftSynth: false,
         synthSoundKey: null,
-        soundId: '',
+        sampleId: '',
         beatCount: 4,
         stepsPerBeat: 4,
         loopAtStep: 16,

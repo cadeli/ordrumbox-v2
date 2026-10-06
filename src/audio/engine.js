@@ -12,6 +12,7 @@ import { showToast } from '../core/notify.js'
 import { pushStepLfo } from './step_lfo.js'
 import { createMidiMappingResolver, sendMidiNotes, sendTriggerMidi } from './midi_out.js'
 import { exportOffline as renderOffline } from './offline_export.js'
+import { resolveSelectedPatternIdxGetter } from './selected_pattern_idx.js'
 import { EVENTS } from '../core/events.js'
 
 export default class AudioEngine {
@@ -31,9 +32,9 @@ export default class AudioEngine {
         this.sounds = config.sounds
         this.generatedSounds = valueOrFallback(config.generatedSounds, {}, 'AudioEngine', 'generatedSounds fallback')
         this.patterns = config.patterns
-        this.getSelectedPatternIdx = config.getSelectedPatternIdx ?? (() => config.selectedPatternIdx ?? 0)
-        // Injected like the pattern index: the audio layer reads appState only
-        // through resolvers, which keeps it testable without the store.
+        // The audio layer reads appState only through injected resolvers, which
+        // keeps it testable without the store.
+        this.getSelectedPatternIdx = resolveSelectedPatternIdxGetter(config)
         this.getCurrentView = config.getCurrentView ?? (() => 'edit')
         this.getSongs = config.getSongs ?? (() => [])
         this.getSelectedSongIdx = config.getSelectedSongIdx ?? (() => 0)

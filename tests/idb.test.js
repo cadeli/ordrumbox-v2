@@ -625,6 +625,109 @@ describe('IndexedDB helpers', () => {
             })
         })
 
+        // ─── MIGRATIONS[8]: soundId → sampleId, startBar/bars → measure keys ─────────
+
+        const runMigration8 = (stores) => runMigrationN(8, stores)
+
+        describe('MIGRATIONS[8] renames the measure-era keys', () => {
+            it('rewrites track soundId and the clip keys of a raw song', () => {
+                const songs = [
+                    {
+                        key: 'my song',
+                        value: {
+                            name: 'my song',
+                            loopBars: 8,
+                            clips: [
+                                { pattern: 'verse', startBar: 0, bars: 2 },
+                                { pattern: 'chorus', startBar: 2, bars: 4 },
+                            ],
+                            patterns: [
+                                { name: 'A', tracks: [{ name: 'KICK', soundId: 'kick01' }] },
+                                { name: 'B', tracks: [{ name: 'SNARE', soundId: 'snare01' }] },
+                            ],
+                        },
+                    },
+                ]
+
+                runMigration8({ songs })
+
+                const song = songs[0].value
+                expect(song.patterns[0].tracks[0].sampleId).toBe('kick01')
+                expect(song.patterns[1].tracks[0].sampleId).toBe('snare01')
+                expect(song.loopMeasureCount).toBe(8)
+                expect(song.clips).toEqual([
+                    { pattern: 'verse', startMeasure: 0, measureCount: 2 },
+                    { pattern: 'chorus', startMeasure: 2, measureCount: 4 },
+                ])
+                expect(JSON.stringify(song)).not.toContain('soundId')
+                expect(JSON.stringify(song)).not.toContain('startBar')
+                expect(JSON.stringify(song)).not.toContain('loopBars')
+            })
+
+            it('rewrites the {data} envelope used by the patterns cache', () => {
+                const patterns = [
+                    {
+                        key: 'song.json',
+                        value: {
+                            data: { tracks: [{ name: 'BASS', soundId: 'bass01' }] },
+                            savedAt: 1700000000000,
+                        },
+                    },
+                ]
+
+                runMigration8({ patterns })
+
+                const entry = patterns[0].value
+                expect(entry.data.tracks[0].sampleId).toBe('bass01')
+                // The cache TTL must not be refreshed by the migration.
+                expect(entry.savedAt).toBe(1700000000000)
+            })
+
+            it('leaves already-migrated data alone', () => {
+                const songs = [
+                    {
+                        key: 'ok',
+                        value: {
+                            loopMeasureCount: 4,
+                            clips: [{ pattern: 'a', startMeasure: 0, measureCount: 1 }],
+                            patterns: [{ tracks: [{ sampleId: 'kick01' }] }],
+                        },
+                    },
+                ]
+
+                runMigration8({ songs })
+
+                const song = songs[0].value
+                expect(song.clips[0]).toEqual({ pattern: 'a', startMeasure: 0, measureCount: 1 })
+                expect(song.patterns[0].tracks[0].sampleId).toBe('kick01')
+                expect(song.loopMeasureCount).toBe(4)
+            })
+
+            it('keeps the current key when a record carries both spellings', () => {
+                const songs = [
+                    {
+                        key: 'both',
+                        value: {
+                            patterns: [{ tracks: [{ soundId: 'old', sampleId: 'new' }] }],
+                            clips: [{ pattern: 'a', startBar: 3, startMeasure: 1, bars: 2, measureCount: 5 }],
+                        },
+                    },
+                ]
+
+                runMigration8({ songs })
+
+                const song = songs[0].value
+                expect(song.patterns[0].tracks[0].sampleId).toBe('new')
+                expect(song.clips[0].startMeasure).toBe(1)
+                expect(song.clips[0].measureCount).toBe(5)
+            })
+
+            it('is a no-op without a transaction', () => {
+                const db = { objectStoreNames: { contains: () => true } }
+                expect(() => idbModule.MIGRATIONS[8](db, null)).not.toThrow()
+            })
+        })
+
         it('is a no-op when there is no transaction', () => {
             const db = { objectStoreNames: { contains: () => true } }
             expect(() => idbModule.MIGRATIONS[5](db, null)).not.toThrow()

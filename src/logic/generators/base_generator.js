@@ -241,7 +241,7 @@ export default class BaseGenerator {
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const cachedPitches = opts.cachedPitches ?? null
         const allowStacking = opts.allowStacking ?? false
-        const occupiedByBar = new Map()
+        const occupiedByMeasure = new Map()
 
         // A phrase may declare its own `chance` (0-1): the per-degree density that
         // `density` cannot express, since it thins EVERY phrase of the skeleton the
@@ -254,8 +254,8 @@ export default class BaseGenerator {
             let step
             if (phrase.step === 'random') {
                 const beat = phrase.beat
-                if (!occupiedByBar.has(beat)) occupiedByBar.set(beat, new Set())
-                const occupied = occupiedByBar.get(beat)
+                if (!occupiedByMeasure.has(beat)) occupiedByMeasure.set(beat, new Set())
+                const occupied = occupiedByMeasure.get(beat)
                 const freeSteps = []
                 for (let s = 0; s < stepsPerBeat; s++) {
                     if (!occupied.has(s)) freeSteps.push(s)
@@ -286,8 +286,8 @@ export default class BaseGenerator {
             if (cachedPitches) cachedPitches.push(pitch)
 
             if (!allowStacking) {
-                if (!occupiedByBar.has(phrase.beat)) occupiedByBar.set(phrase.beat, new Set())
-                occupiedByBar.get(phrase.beat).add(step)
+                if (!occupiedByMeasure.has(phrase.beat)) occupiedByMeasure.set(phrase.beat, new Set())
+                occupiedByMeasure.get(phrase.beat).add(step)
             }
         })
     }

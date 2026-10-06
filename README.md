@@ -99,7 +99,7 @@ Each track has adjustable parameters accessible through the track control panel.
 The toolbar also includes:
 
 - **BPM**: Set the tempo of the pattern (20 to 250 beats per minute).
-- **Pattern Length**: Adjust how many bars the pattern plays before looping.
+- **Pattern Length**: Adjust how many beats the pattern plays before looping.
 
 You can also access additional controls by clicking the TOOLS button, which provides options for exporting audio (WAV), clearing the pattern, and more.
 

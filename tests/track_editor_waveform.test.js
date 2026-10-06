@@ -48,7 +48,7 @@ function instrumentContext() {
 function makeEditor({ decay = 100, duration = 0.5 } = {}) {
     const editor = new TrackEditor()
     editor.init()
-    editor.track = { soundId: 'real/kick.wav', useSoftSynth: false }
+    editor.track = { sampleId: 'real/kick.wav', useSoftSynth: false }
     soundRegistry.sounds = { 'real/kick.wav': { buffer: { duration }, decay } }
     vi.spyOn(editor.synthEditor, 'getGeneratedSoundKeys').mockReturnValue([])
     editor.sync()

@@ -371,9 +371,9 @@ export default class ResourcesLoader {
             fixedPatterns.forEach((pattern) => {
                 if (pattern?.tracks) {
                     getTracksArray(pattern).forEach((trk) => {
-                        if (trk?.soundId && trk.soundId !== 'NOT_DEFINED') {
+                        if (trk?.sampleId && trk.sampleId !== 'NOT_DEFINED') {
                             if (trk.useAutoAssignSound !== false) {
-                                trk.soundId = 'NOT_DEFINED'
+                                trk.sampleId = 'NOT_DEFINED'
                             }
                         }
                     })
@@ -417,9 +417,9 @@ export default class ResourcesLoader {
         for (const pattern of patternList) {
             const tracks = /** @type {{tracks?: object}} */ (pattern)?.tracks
             for (const track of Object.values(tracks ?? {})) {
-                const soundId = track?.soundId
-                if (soundId && soundId !== 'NOT_DEFINED' && !soundRegistry.sounds[soundId]?.buffer) {
-                    wanted.add(soundId)
+                const sampleId = track?.sampleId
+                if (sampleId && sampleId !== 'NOT_DEFINED' && !soundRegistry.sounds[sampleId]?.buffer) {
+                    wanted.add(sampleId)
                 }
             }
         }

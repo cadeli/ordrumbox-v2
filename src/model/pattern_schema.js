@@ -7,7 +7,7 @@
  *                                     regenerated: song arrangements reference patterns
  *                                     by id (see song_schema.js). A rename must not
  *                                     change it. Default: ""
- * @property {number}  beatCount     - Beats in the pattern (a bar is 4). Default: 4
+ * @property {number}  beatCount     - Beats in the pattern (a measure is 4). Default: 4
  * @property {number}  bpm           - Tempo. Default: 120
  * @property {string}  description   - Free-text description. Default: ""
  * @property {Array}   tags          - Free-text tags. Default: []

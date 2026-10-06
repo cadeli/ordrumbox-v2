@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import {
-    BEATS_PER_BAR,
+    BEATS_PER_MEASURE,
     SONG_MIN_BPM,
     SONG_MAX_BPM,
     SONG_DEFAULTS,
     slugify,
     uniqueId,
     ensurePatternId,
-    barsForPattern,
-    songContentBars,
-    songLengthBars,
+    measuresForPattern,
+    songContentMeasures,
+    songLengthMeasures,
     songBpm,
     normalizeSong,
     normalizeSongs,
@@ -84,82 +84,82 @@ describe('ensurePatternId', () => {
     })
 })
 
-describe('barsForPattern', () => {
-    it('converts beats to bars', () => {
-        expect(BEATS_PER_BAR).toBe(4)
-        expect(barsForPattern({ beatCount: 4 })).toBe(1)
-        expect(barsForPattern({ beatCount: 8 })).toBe(2)
-        expect(barsForPattern({ beatCount: 16 })).toBe(4)
+describe('measuresForPattern', () => {
+    it('converts beats to measures', () => {
+        expect(BEATS_PER_MEASURE).toBe(4)
+        expect(measuresForPattern({ beatCount: 4 })).toBe(1)
+        expect(measuresForPattern({ beatCount: 8 })).toBe(2)
+        expect(measuresForPattern({ beatCount: 16 })).toBe(4)
     })
 
     // beatCount is authored in beats and may be any value in 1..MAX_BEATS
-    it('keeps sub-bar patterns', () => {
-        expect(barsForPattern({ beatCount: 3 })).toBe(0.75)
-        expect(barsForPattern({ beatCount: 1 })).toBe(0.25)
+    it('keeps sub-measure patterns', () => {
+        expect(measuresForPattern({ beatCount: 3 })).toBe(0.75)
+        expect(measuresForPattern({ beatCount: 1 })).toBe(0.25)
     })
 
-    it('never returns less than one bar', () => {
-        expect(barsForPattern({ beatCount: 0 })).toBe(1)
-        expect(barsForPattern({})).toBe(1)
-        expect(barsForPattern(null)).toBe(1)
-        expect(barsForPattern({ beatCount: NaN })).toBe(1)
+    it('never returns less than one measure', () => {
+        expect(measuresForPattern({ beatCount: 0 })).toBe(1)
+        expect(measuresForPattern({})).toBe(1)
+        expect(measuresForPattern(null)).toBe(1)
+        expect(measuresForPattern({ beatCount: NaN })).toBe(1)
     })
 })
 
-describe('songLengthBars', () => {
-    const song = (clips, loopBars) => ({ clips, ...(loopBars ? { loopBars } : {}) })
+describe('songLengthMeasures', () => {
+    const song = (clips, loopMeasureCount) => ({ clips, ...(loopMeasureCount ? { loopMeasureCount } : {}) })
 
     it('is the furthest clip end', () => {
         expect(
-            songLengthBars(
+            songLengthMeasures(
                 song([
-                    { startBar: 0, bars: 2 },
-                    { startBar: 16, bars: 8 },
+                    { startMeasure: 0, measureCount: 2 },
+                    { startMeasure: 16, measureCount: 8 },
                 ]),
             ),
         ).toBe(24)
     })
 
     it('honours an explicit loop length', () => {
-        expect(songLengthBars(song([{ startBar: 0, bars: 2 }], 64))).toBe(64)
+        expect(songLengthMeasures(song([{ startMeasure: 0, measureCount: 2 }], 64))).toBe(64)
     })
 
     it('is 0 with no clip', () => {
-        expect(songLengthBars(song([]))).toBe(0)
-        expect(songLengthBars(null)).toBe(0)
+        expect(songLengthMeasures(song([]))).toBe(0)
+        expect(songLengthMeasures(null)).toBe(0)
     })
 })
 
 // What the arrangement actually occupies: the grid width and the loop both
-// follow it, so a declared loopBars can never disagree with it unnoticed.
-describe('songContentBars', () => {
+// follow it, so a declared loopMeasureCount can never disagree with it unnoticed.
+describe('songContentMeasures', () => {
     it('is the measure after the last one occupied', () => {
         expect(
-            songContentBars({
+            songContentMeasures({
                 clips: [
-                    { startBar: 0, bars: 2 },
-                    { startBar: 8, bars: 4 },
-                    { startBar: 16, bars: 8 },
+                    { startMeasure: 0, measureCount: 2 },
+                    { startMeasure: 8, measureCount: 4 },
+                    { startMeasure: 16, measureCount: 8 },
                 ],
             }),
         ).toBe(24)
     })
 
-    // A clip may last a fraction of a bar, so the extent can be fractional.
-    it('keeps a sub-bar clip fractional', () => {
-        expect(songContentBars({ clips: [{ startBar: 20, bars: 0.75 }] })).toBe(20.75)
+    // A clip may last a fraction of a measure, so the extent can be fractional.
+    it('keeps a sub-measure clip fractional', () => {
+        expect(songContentMeasures({ clips: [{ startMeasure: 20, measureCount: 0.75 }] })).toBe(20.75)
     })
 
-    // The content does not care what loopBars says — that is the whole point of
+    // The content does not care what loopMeasureCount says — that is the whole point of
     // keeping the two apart.
     it('ignores a declared loop length', () => {
-        expect(songContentBars({ clips: [{ startBar: 0, bars: 2 }], loopBars: 64 })).toBe(2)
+        expect(songContentMeasures({ clips: [{ startMeasure: 0, measureCount: 2 }], loopMeasureCount: 64 })).toBe(2)
     })
 
     it('is 0 with no song or no clip', () => {
-        expect(songContentBars({ clips: [] })).toBe(0)
-        expect(songContentBars(null)).toBe(0)
-        expect(songContentBars({})).toBe(0)
+        expect(songContentMeasures({ clips: [] })).toBe(0)
+        expect(songContentMeasures(null)).toBe(0)
+        expect(songContentMeasures({})).toBe(0)
     })
 })
 
@@ -207,22 +207,22 @@ describe('normalizeSong', () => {
             {
                 id: 'demo',
                 clips: [
-                    { pattern: 'rock', startBar: 0, bars: 2 },
-                    { pattern: 'bassA', startBar: 0, bars: 2 },
+                    { pattern: 'rock', startMeasure: 0, measureCount: 2 },
+                    { pattern: 'bassA', startMeasure: 0, measureCount: 2 },
                 ],
             },
             ids,
         )
         expect(r.song.clips).toHaveLength(2)
-        expect(r.song.clips.map((c) => c.startBar)).toEqual([0, 0])
+        expect(r.song.clips.map((c) => c.startMeasure)).toEqual([0, 0])
     })
 
-    it('keeps two clips of the same pattern at different bars', () => {
+    it('keeps two clips of the same pattern at different measures', () => {
         const r = normalizeSong(
             {
                 clips: [
-                    { pattern: 'rock', startBar: 0, bars: 1 },
-                    { pattern: 'rock', startBar: 4, bars: 1 },
+                    { pattern: 'rock', startMeasure: 0, measureCount: 1 },
+                    { pattern: 'rock', startMeasure: 4, measureCount: 1 },
                 ],
             },
             ids,
@@ -235,19 +235,19 @@ describe('normalizeSong', () => {
         const r = normalizeSong(
             {
                 clips: [
-                    { pattern: 'gone', startBar: 0, bars: 1 },
-                    { pattern: 'rock', startBar: 4, bars: 2 },
+                    { pattern: 'gone', startMeasure: 0, measureCount: 1 },
+                    { pattern: 'rock', startMeasure: 4, measureCount: 2 },
                 ],
             },
             ids,
         )
         expect(r.ok).toBe(true)
-        expect(r.song.clips).toEqual([{ pattern: 'rock', startBar: 4, bars: 2 }])
+        expect(r.song.clips).toEqual([{ pattern: 'rock', startMeasure: 4, measureCount: 2 }])
         expect(r.dropped).toEqual([{ pattern: 'gone', reason: 'unknown pattern id' }])
     })
 
     it('reports malformed clips', () => {
-        const r = normalizeSong({ clips: [null, 5, { startBar: 0 }] }, ids)
+        const r = normalizeSong({ clips: [null, 5, { startMeasure: 0 }] }, ids)
         expect(r.song.clips).toEqual([])
         expect(r.dropped).toHaveLength(3)
         expect(r.dropped[0].reason).toBe('clip is not an object')
@@ -262,27 +262,27 @@ describe('normalizeSong', () => {
         })
     })
 
-    it('clamps a negative or fractional start bar to whole bars', () => {
+    it('clamps a negative or fractional start measure to whole measures', () => {
         const r = normalizeSong(
             {
                 clips: [
-                    { pattern: 'rock', startBar: -4 },
-                    { pattern: 'bassA', startBar: 2.7 },
+                    { pattern: 'rock', startMeasure: -4 },
+                    { pattern: 'bassA', startMeasure: 2.7 },
                 ],
             },
             ids,
         )
-        expect(r.song.clips.map((c) => c.startBar)).toEqual([0, 2])
+        expect(r.song.clips.map((c) => c.startMeasure)).toEqual([0, 2])
     })
 
     it('keeps a fractional duration', () => {
-        const r = normalizeSong({ clips: [{ pattern: 'rock', bars: 0.75 }] }, ids)
-        expect(r.song.clips[0].bars).toBe(0.75)
+        const r = normalizeSong({ clips: [{ pattern: 'rock', measureCount: 0.75 }] }, ids)
+        expect(r.song.clips[0].measureCount).toBe(0.75)
     })
 
-    it('defaults a missing duration to one bar', () => {
-        const r = normalizeSong({ clips: [{ pattern: 'rock', startBar: 3 }] }, ids)
-        expect(r.song.clips[0].bars).toBe(1)
+    it('defaults a missing duration to one measure', () => {
+        const r = normalizeSong({ clips: [{ pattern: 'rock', startMeasure: 3 }] }, ids)
+        expect(r.song.clips[0].measureCount).toBe(1)
     })
 
     it('accepts a Map of patterns as the library', () => {
@@ -295,6 +295,27 @@ describe('normalizeSong', () => {
         expect(normalizeSong(null, ids).ok).toBe(false)
         expect(normalizeSong([], ids).ok).toBe(false)
         expect(normalizeSong('x', ids).ok).toBe(false)
+    })
+
+    it('maps a song written before the measure rename', () => {
+        const raw = { name: 'Old', loopBars: 8, clips: [{ pattern: 'rock', startBar: 4, bars: 2 }] }
+        const r = normalizeSong(raw, ids)
+        expect(r.ok).toBe(true)
+        expect(r.song.clips).toEqual([{ pattern: 'rock', startMeasure: 4, measureCount: 2 }])
+        expect(r.song.loopMeasureCount).toBe(8)
+        expect(JSON.stringify(r.song)).not.toContain('startBar')
+    })
+
+    it('keeps the current keys when a song carries both spellings', () => {
+        const raw = {
+            name: 'Both',
+            loopBars: 99,
+            loopMeasureCount: 8,
+            clips: [{ pattern: 'rock', bars: 9, measureCount: 2 }],
+        }
+        const r = normalizeSong(raw, ids)
+        expect(r.song.clips).toEqual([{ pattern: 'rock', startMeasure: 0, measureCount: 2 }])
+        expect(r.song.loopMeasureCount).toBe(8)
     })
 })
 
@@ -332,7 +353,7 @@ describe('normalizeSongs', () => {
 
 describe('pruneSongClips', () => {
     it('drops clips whose pattern disappeared', () => {
-        const song = { id: 's', clips: [{ pattern: 'rock', startBar: 0, bars: 2 }] }
+        const song = { id: 's', clips: [{ pattern: 'rock', startMeasure: 0, measureCount: 2 }] }
         expect(pruneSongClips(song, new Set(['bass']))).toBeNull()
         expect(pruneSongClips(song, new Set(['rock'])).clips).toHaveLength(1)
     })

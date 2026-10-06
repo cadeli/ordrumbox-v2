@@ -75,8 +75,8 @@ export function getPreferredSampleForInstrument(editor, instrumentId) {
  */
 export function getCurrentSoundUrl(editor) {
     const track = editor.track
-    const soundId = track.soundId ?? ''
-    return editor.soundRegistry.sounds[soundId]?.url ?? soundId
+    const sampleId = track.sampleId ?? ''
+    return editor.soundRegistry.sounds[sampleId]?.url ?? sampleId
 }
 
 /**

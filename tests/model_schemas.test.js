@@ -92,7 +92,7 @@ describe('track_schema', () => {
         expect(TRACK_DEFAULTS.loopAtStep).toBeNull()
         expect(TRACK_DEFAULTS.velocity).toBe(1)
         expect(TRACK_DEFAULTS.pan).toBe(0)
-        expect(TRACK_DEFAULTS.soundId).toBe('NOT_DEFINED')
+        expect(TRACK_DEFAULTS.sampleId).toBe('NOT_DEFINED')
         expect(TRACK_DEFAULTS.useAutoAssignSound).toBe(true)
         expect(TRACK_DEFAULTS.synthSoundKey).toBeNull()
         expect(TRACK_DEFAULTS.notes).toEqual([])

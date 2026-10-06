@@ -123,7 +123,7 @@ function buildComplexProject() {
                 tracks: [
                     {
                         name: 'KICK',
-                        soundId: 'acoustic/kick_01.wav',
+                        sampleId: 'acoustic/kick_01.wav',
                         useAutoAssignSound: true,
                         useSoftSynth: false,
                         beatCount: 4,
@@ -146,7 +146,7 @@ function buildComplexProject() {
                     },
                     {
                         name: 'SNARE',
-                        soundId: 'acoustic/snare_01.wav',
+                        sampleId: 'acoustic/snare_01.wav',
                         useAutoAssignSound: true,
                         useSoftSynth: false,
                         beatCount: 4,
@@ -167,7 +167,7 @@ function buildComplexProject() {
                     },
                     {
                         name: 'BASS_SYNTH',
-                        soundId: '',
+                        sampleId: '',
                         useAutoAssignSound: false,
                         useSoftSynth: true,
                         synthSoundKey: 'SUB_BASS_V1',
@@ -199,7 +199,7 @@ function buildComplexProject() {
                 tracks: [
                     {
                         name: 'KICK_MAIN',
-                        soundId: 'electronic/kick_909.wav',
+                        sampleId: 'electronic/kick_909.wav',
                         useAutoAssignSound: true,
                         useSoftSynth: false,
                         beatCount: 8,
@@ -223,7 +223,7 @@ function buildComplexProject() {
                     },
                     {
                         name: 'PERC_TRIPLET',
-                        soundId: 'electronic/conga.wav',
+                        sampleId: 'electronic/conga.wav',
                         useAutoAssignSound: false,
                         useSoftSynth: false,
                         beatCount: 8,
@@ -249,7 +249,7 @@ function buildComplexProject() {
                 tracks: [
                     {
                         name: 'PAD',
-                        soundId: '',
+                        sampleId: '',
                         useAutoAssignSound: false,
                         useSoftSynth: true,
                         synthSoundKey: 'WARM_PAD',
@@ -348,7 +348,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             // Track 0 (KICK): sample track
             const kick = p0.tracks[0]
             expect(kick.name).toBe('KICK')
-            expect(kick.soundId).toBe('acoustic/kick_01.wav')
+            expect(kick.sampleId).toBe('acoustic/kick_01.wav')
             expect(kick.useAutoAssignSound).toBe(true)
             expect(kick.useSoftSynth).toBe(false)
             expect(kick.velocity).toBe(0.95)

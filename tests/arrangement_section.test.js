@@ -8,12 +8,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import ArrangementSection from '../src/ui/song_panel/arrangement_section.js'
-import { BAR_WIDTH, CLIP_INSET, HEADER_HEIGHT, LABEL_WIDTH, ROW_HEIGHT } from '../src/ui/song_panel/layout.js'
-import { BEATS_PER_BAR } from '../src/model/song_schema.js'
+import { MEASURE_WIDTH, CLIP_INSET, HEADER_HEIGHT, LABEL_WIDTH, ROW_HEIGHT } from '../src/ui/song_panel/layout.js'
+import { BEATS_PER_MEASURE } from '../src/model/song_schema.js'
 import { TICK } from '../src/core/constants.js'
 
 /** ticks in one measure — the grid's X axis */
-const BAR_TICKS = TICK * BEATS_PER_BAR
+const MEASURE_TICKS = TICK * BEATS_PER_MEASURE
 
 // Classes, not ids: jsdom resolves a `#id` selector through a per-document id
 // cache, so a second element reusing an id (which the real app never does —
@@ -36,12 +36,12 @@ const clips = () => [...build2.list.querySelectorAll('.sa-clip')]
 /** Fires the delegated grid click the way the host panel binds it. */
 const clickOn = (el) => build2.handlers.get('click')({ target: el })
 /** Clicks the ruler cell of a 0-based measure. */
-const clickBar = (bar) => clickOn(build2.list.querySelector(`.sa-bar-head[data-bar="${bar}"]`))
+const clickMeasure = (measure) => clickOn(build2.list.querySelector(`.sa-measure-head[data-measure="${measure}"]`))
 const cursorPx = () => {
     const el = build2.list.querySelector('.sa-cursor')
     return Number(/translateX\((-?[\d.]+)px\)/.exec(el?.style.transform ?? '')?.[1])
 }
-const markedBar = () => build2.list.querySelector('.sa-bar-head.sa-bar-current')?.dataset.bar
+const markedMeasure = () => build2.list.querySelector('.sa-measure-head.sa-measure-current')?.dataset.measure
 
 let build2
 beforeEach(() => {
@@ -54,9 +54,9 @@ beforeEach(() => {
         get tick() {
             return serviceRegistry.transport?.tick ?? 0
         },
-        songCursorBar: 0,
-        setSongCursor: vi.fn(function (bar) {
-            this.songCursorBar = bar
+        songCursorMeasure: 0,
+        setSongCursor: vi.fn(function (measure) {
+            this.songCursorMeasure = measure
         }),
     }
     appState.patterns = [
@@ -70,9 +70,9 @@ beforeEach(() => {
             name: 'Demo',
             bpm: 120,
             clips: [
-                { pattern: 'rock', startBar: 0, bars: 2 },
-                { pattern: 'bass', startBar: 0, bars: 1 },
-                { pattern: 'rock', startBar: 8, bars: 4 },
+                { pattern: 'rock', startMeasure: 0, measureCount: 2 },
+                { pattern: 'bass', startMeasure: 0, measureCount: 1 },
+                { pattern: 'rock', startMeasure: 8, measureCount: 4 },
             ],
         },
     ]
@@ -95,11 +95,11 @@ describe('ArrangementSection', () => {
     // The first column holds the names; the ruler starts after it.
     it('numbers the measures along X, after the name column', () => {
         build2.section.sync()
-        const heads = [...build2.list.querySelectorAll('.sa-bar-head')]
+        const heads = [...build2.list.querySelectorAll('.sa-measure-head')]
         const left = (el) => Number(el.style.left.replace('px', ''))
         expect(heads).toHaveLength(12)
         expect(left(heads[0])).toBe(LABEL_WIDTH)
-        expect(left(heads[1])).toBe(LABEL_WIDTH + BAR_WIDTH)
+        expect(left(heads[1])).toBe(LABEL_WIDTH + MEASURE_WIDTH)
         expect(heads[0].textContent).toBe('1')
     })
 
@@ -119,14 +119,14 @@ describe('ArrangementSection', () => {
         expect(top(second)).toBe(ROW_HEIGHT + CLIP_INSET / 2)
     })
 
-    // X is time: a clip's left is its start bar.
-    it('offsets the clip along X by its start bar', () => {
+    // X is time: a clip's left is its start measure.
+    it('offsets the clip along X by its start measure', () => {
         build2.section.sync()
-        const atBar0 = clips()[0]
-        const atBar8 = clips()[2]
+        const atMeasure0 = clips()[0]
+        const atMeasure8 = clips()[2]
         const left = (el) => Number(el.style.left.replace('px', ''))
-        expect(left(atBar0)).toBe(0)
-        expect(left(atBar8)).toBe(8 * BAR_WIDTH)
+        expect(left(atMeasure0)).toBe(0)
+        expect(left(atMeasure8)).toBe(8 * MEASURE_WIDTH)
     })
 
     it('places the body right of the name column and under the ruler', () => {
@@ -136,29 +136,29 @@ describe('ArrangementSection', () => {
         expect(body.style.top).toBe(`${HEADER_HEIGHT}px`)
     })
 
-    // The width is what tells a 4-bar clip from a 1-bar one.
+    // The width is what tells a 4-measure clip from a 1-measure one.
     it('makes the width equal the duration', () => {
         build2.section.sync()
-        const [twoBars, oneBar, fourBars] = clips()
+        const [twoMeasures, oneMeasure, fourMeasures] = clips()
         const width = (el) => Number(el.style.width.replace('px', ''))
-        expect(width(twoBars)).toBe(2 * BAR_WIDTH - CLIP_INSET)
-        expect(width(oneBar)).toBe(BAR_WIDTH - CLIP_INSET)
-        expect(width(fourBars)).toBe(4 * BAR_WIDTH - CLIP_INSET)
+        expect(width(twoMeasures)).toBe(2 * MEASURE_WIDTH - CLIP_INSET)
+        expect(width(oneMeasure)).toBe(MEASURE_WIDTH - CLIP_INSET)
+        expect(width(fourMeasures)).toBe(4 * MEASURE_WIDTH - CLIP_INSET)
     })
 
-    it('keeps a sub-bar clip narrower than a full cell but visible', () => {
-        appState.songs[0].clips = [{ pattern: 'rock', startBar: 0, bars: 0.75 }]
+    it('keeps a sub-measure clip narrower than a full cell but visible', () => {
+        appState.songs[0].clips = [{ pattern: 'rock', startMeasure: 0, measureCount: 0.75 }]
         build2.section.sync()
         expect(Number(clips()[0].style.width.replace('px', ''))).toBeGreaterThan(4)
-        expect(Number(clips()[0].style.width.replace('px', ''))).toBeLessThan(BAR_WIDTH)
+        expect(Number(clips()[0].style.width.replace('px', ''))).toBeLessThan(MEASURE_WIDTH)
     })
 
     it('exposes the clip data for assertions', () => {
         build2.section.sync()
         expect(build2.section.clipRects()).toEqual([
-            { pattern: 'rock', row: 0, startBar: 0, bars: 2 },
-            { pattern: 'bass', row: 1, startBar: 0, bars: 1 },
-            { pattern: 'rock', row: 0, startBar: 8, bars: 4 },
+            { pattern: 'rock', row: 0, startMeasure: 0, measureCount: 2 },
+            { pattern: 'bass', row: 1, startMeasure: 0, measureCount: 1 },
+            { pattern: 'rock', row: 0, startMeasure: 8, measureCount: 4 },
         ])
     })
 
@@ -175,15 +175,15 @@ describe('ArrangementSection', () => {
         expect(build2.list.dataset.bpm).toBe('120')
     })
 
-    it('reports the total length in bars', () => {
+    it('reports the total length in measures', () => {
         build2.section.sync()
-        expect(build2.list.dataset.totalBars).toBe('12')
+        expect(build2.list.dataset.totalMeasures).toBe('12')
     })
 
     // A clip pointing at a pattern that is not in the library must stay visible
     // instead of silently shrinking the grid.
     it('keeps a column for a clip whose pattern is missing', () => {
-        appState.songs[0].clips = [{ pattern: 'ghost', startBar: 0, bars: 1 }]
+        appState.songs[0].clips = [{ pattern: 'ghost', startMeasure: 0, measureCount: 1 }]
         build2.section.sync()
         expect(clips()).toHaveLength(1)
         expect(build2.list.querySelector('.sa-orphan')).not.toBeNull()
@@ -191,7 +191,7 @@ describe('ArrangementSection', () => {
 
     it('escapes pattern names', () => {
         appState.patterns[0].name = '<img src=x onerror=alert(1)>'
-        appState.songs[0].clips = [{ pattern: 'rock', startBar: 0, bars: 1 }]
+        appState.songs[0].clips = [{ pattern: 'rock', startMeasure: 0, measureCount: 1 }]
         build2.section.sync()
         expect(build2.list.querySelector('img')).toBeNull()
     })
@@ -205,33 +205,33 @@ describe('ArrangementSection', () => {
 describe('ArrangementSection — ruler cursor', () => {
     it('numbers every ruler cell with the measure it stands for', () => {
         build2.section.sync()
-        const heads = [...build2.list.querySelectorAll('.sa-bar-head')]
-        expect(heads.map((h) => h.dataset.bar)).toEqual(heads.map((_, i) => String(i)))
+        const heads = [...build2.list.querySelectorAll('.sa-measure-head')]
+        expect(heads.map((h) => h.dataset.measure)).toEqual(heads.map((_, i) => String(i)))
         expect(heads[5].textContent).toBe('6')
     })
 
     it('rests on the first measure until the user aims it somewhere', () => {
         build2.section.sync()
         expect(cursorPx()).toBe(0)
-        expect(markedBar()).toBe('0')
+        expect(markedMeasure()).toBe('0')
         expect(build2.list.querySelector('.sa-cursor').classList.contains('sa-cursor-idle')).toBe(true)
     })
 
     it('clicking a measure aims the cursor there', () => {
         build2.section.sync()
-        clickBar(5)
+        clickMeasure(5)
         expect(serviceRegistry.seq.setSongCursor).toHaveBeenCalledWith(5)
-        expect(cursorPx()).toBe(5 * BAR_WIDTH)
-        expect(markedBar()).toBe('5')
+        expect(cursorPx()).toBe(5 * MEASURE_WIDTH)
+        expect(markedMeasure()).toBe('5')
     })
 
     // The highlighted measure must follow the cursor, not accumulate.
     it('marks a single measure at a time', () => {
         build2.section.sync()
-        clickBar(5)
-        clickBar(2)
-        expect(build2.list.querySelectorAll('.sa-bar-head.sa-bar-current')).toHaveLength(1)
-        expect(markedBar()).toBe('2')
+        clickMeasure(5)
+        clickMeasure(2)
+        expect(build2.list.querySelectorAll('.sa-measure-head.sa-measure-current')).toHaveLength(1)
+        expect(markedMeasure()).toBe('2')
     })
 
     // Clips are edited from the right-click menu; a left click must not move the
@@ -247,36 +247,36 @@ describe('ArrangementSection — ruler cursor', () => {
     // A re-render rebuilds the whole grid, the cursor has to come back with it.
     it('survives a re-render', () => {
         build2.section.sync()
-        clickBar(3)
+        clickMeasure(3)
         build2.section.sync()
-        expect(cursorPx()).toBe(3 * BAR_WIDTH)
-        expect(markedBar()).toBe('3')
+        expect(cursorPx()).toBe(3 * MEASURE_WIDTH)
+        expect(markedMeasure()).toBe('3')
     })
 
     // Another arrangement can be shorter than the mark the cursor was left on.
     it('keeps a cursor aimed on a longer song inside the grid', () => {
-        serviceRegistry.seq.songCursorBar = 40
+        serviceRegistry.seq.songCursorMeasure = 40
         build2.section.sync()
-        expect(cursorPx()).toBe(11 * BAR_WIDTH)
-        expect(markedBar()).toBe('11')
+        expect(cursorPx()).toBe(11 * MEASURE_WIDTH)
+        expect(markedMeasure()).toBe('11')
     })
 
     it('follows the transport while it runs, and drops the idle look', async () => {
         build2.section.sync()
-        clickBar(3)
-        serviceRegistry.transport = { isRunning: true, tick: 5 * BAR_TICKS }
+        clickMeasure(3)
+        serviceRegistry.transport = { isRunning: true, tick: 5 * MEASURE_TICKS }
         build2.section.startCursorLoop()
         await new Promise((resolve) => requestAnimationFrame(resolve))
 
-        expect(cursorPx()).toBe(5 * BAR_WIDTH)
-        expect(markedBar()).toBe('5')
+        expect(cursorPx()).toBe(5 * MEASURE_WIDTH)
+        expect(markedMeasure()).toBe('5')
         expect(build2.list.querySelector('.sa-cursor').classList.contains('sa-cursor-idle')).toBe(false)
 
         // stopping falls back on the marker the user aimed, not on where the
         // playback happened to be
-        serviceRegistry.transport = { isRunning: false, tick: 9 * BAR_TICKS }
+        serviceRegistry.transport = { isRunning: false, tick: 9 * MEASURE_TICKS }
         build2.section.stopCursorLoop()
-        expect(cursorPx()).toBe(3 * BAR_WIDTH)
+        expect(cursorPx()).toBe(3 * MEASURE_WIDTH)
         expect(build2.list.querySelector('.sa-cursor').classList.contains('sa-cursor-idle')).toBe(true)
     })
 })

@@ -493,7 +493,7 @@ export default class TrackEditor extends BasePanel {
                 container: this.container,
                 configs: KNOB_PROPS.map((def) => {
                     const isDecay = def.key === 'decay'
-                    const sound = isDecay ? this.#soundRegistry.sounds[this.#track?.soundId] : null
+                    const sound = isDecay ? this.#soundRegistry.sounds[this.#track?.sampleId] : null
                     return {
                         key: def.key,
                         label: def.label,
@@ -532,8 +532,8 @@ export default class TrackEditor extends BasePanel {
     #renderSampleBar() {
         const track = this.#track
         if (track.useSoftSynth) return ''
-        const soundId = track.soundId ?? ''
-        const sound = this.#soundRegistry.sounds[soundId]
+        const sampleId = track.sampleId ?? ''
+        const sound = this.#soundRegistry.sounds[sampleId]
         if (!sound?.buffer) return ''
         const analysis = analyzeSample(sound.buffer)
         const pitchStr = analysis?.noteInfo ? `${analysis.noteInfo.note}${analysis.noteInfo.octave}` : '—'
@@ -561,7 +561,7 @@ export default class TrackEditor extends BasePanel {
     #drawSampleWaveform() {
         const canvas = /** @type {HTMLCanvasElement | null} */ (this.container?.querySelector('.te-waveform'))
         if (!canvas) return
-        const sound = this.#soundRegistry.sounds[this.#track?.soundId]
+        const sound = this.#soundRegistry.sounds[this.#track?.sampleId]
         if (!sound?.buffer) return
         const analysis = analyzeSample(sound.buffer)
         if (!analysis?.envelope?.length) return
@@ -607,17 +607,17 @@ export default class TrackEditor extends BasePanel {
         try {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = await ctx.decodeAudioData(arrayBuffer)
-            const soundId = this.#track.soundId ?? ''
-            const oldSound = this.#soundRegistry.sounds[soundId]
+            const sampleId = this.#track.sampleId ?? ''
+            const oldSound = this.#soundRegistry.sounds[sampleId]
             if (oldSound) {
                 clearAnalysisCache(oldSound.buffer)
                 oldSound.buffer = buffer
                 oldSound.display_name = file.name
                 oldSound.duration = Math.floor(buffer.duration * 1000)
             } else {
-                this.#soundRegistry.sounds[soundId] = {
-                    url: soundId,
-                    key: soundId,
+                this.#soundRegistry.sounds[sampleId] = {
+                    url: sampleId,
+                    key: sampleId,
                     display_name: file.name,
                     buffer,
                     duration: Math.floor(buffer.duration * 1000),
@@ -853,7 +853,7 @@ export default class TrackEditor extends BasePanel {
         if (key === 'stepsPerBeat') {
             cmd?.setStepsPerBeat(this.#track, val, { coalesce: true })
         } else if (key === 'loopAtStep') {
-            // The end step can never pass the bar length.
+            // The end step can never pass the track's beat length.
             const maxSteps = (this.#track.beatCount ?? 4) * (this.#track.stepsPerBeat ?? 4)
             cmd?.updateTrack(this.#track, { loopAtStep: Math.min(val, maxSteps) }, opts)
         } else {

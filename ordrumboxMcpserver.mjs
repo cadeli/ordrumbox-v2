@@ -15,8 +15,14 @@ import { WAVE_TYPES } from './src/audio/fx_values.js'
 
 import { getTracksArray } from './src/core/tracks.js'
 import { normalizeTrack, TRACK_VALUE_RANGES } from './src/model/track_schema.js'
-import { canonicalNoteKeys, compactArrayToNote, migrateLegacyNoteKeys, normalizeNote } from './src/core/note_schema.js'
-import { songLengthBars } from './src/model/song_schema.js'
+import {
+    canonicalNoteKeys,
+    compactArrayToNote,
+    migrateLegacyNoteKeys,
+    migrateLegacyPatternKeys,
+    normalizeNote,
+} from './src/core/note_schema.js'
+import { songLengthMeasures } from './src/model/song_schema.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -134,6 +140,9 @@ async function savePatternToDisk(pattern) {
 }
 
 export function normalizePattern(source) {
+    // A file written before a key rename still carries the old spelling
+    // (soundId, retriggerNum): map it first, exactly like the app does.
+    migrateLegacyPatternKeys(source)
     const pattern = { ...source }
     delete pattern.loopPointBeat
     delete pattern.loopPointStep
@@ -247,13 +256,13 @@ function arrangementToJson(song, index) {
         name: song.name,
         description: song.description ?? '',
         bpm: song.bpm,
-        loopBars: song.loopBars ?? null,
-        bars: songLengthBars(song),
+        loopMeasureCount: song.loopMeasureCount ?? null,
+        measureCount: songLengthMeasures(song),
         clips: (song.clips ?? []).map((clip) => ({
             pattern: clip.pattern,
             patternName: nameById.get(clip.pattern) ?? null,
-            startBar: clip.startBar,
-            bars: clip.bars,
+            startMeasure: clip.startMeasure,
+            measureCount: clip.measureCount,
         })),
     }
 }
@@ -491,7 +500,7 @@ export const tools = [
                         useSoftSynth: bool('Use software synthesis instead of samples'),
                         mono: bool('Mono mode (cut previous note on same track)'),
                         useAutoAssignSound: bool('Auto-assign the sound matching the track name'),
-                        soundId: { type: 'string', description: 'Assigned sound URL/id' },
+                        sampleId: { type: 'string', description: 'Assigned sound URL/id' },
                         synthSoundKey: {
                             type: ['string', 'null'],
                             description: 'Synth preset key (e.g. "BASS1"); null unlinks',
@@ -705,17 +714,17 @@ export const tools = [
     {
         name: 'createArrangement',
         description:
-            'Creates an arrangement (song) and optionally fills it with clips. Bars are 0-based measures; a clip lasts as long as its pattern unless "bars" says otherwise.',
+            'Creates an arrangement (song) and optionally fills it with clips. Bars are 0-based measures; a clip lasts as long as its pattern unless "measureCount" says otherwise.',
         inputSchema: {
             type: 'object',
             properties: {
                 name: { type: 'string', minLength: 1, description: 'Arrangement name' },
                 description: { type: 'string', description: 'Free text description' },
                 bpm: { type: 'number', minimum: 20, maximum: 300, description: 'Tempo of the whole arrangement' },
-                loopBars: {
+                loopMeasureCount: {
                     type: 'integer',
                     minimum: 0,
-                    description: 'Loop length in bars (0 = the whole arrangement loops)',
+                    description: 'Loop length in measures (0 = the whole arrangement loops)',
                 },
                 clips: {
                     type: 'array',
@@ -724,8 +733,8 @@ export const tools = [
                         type: 'object',
                         properties: {
                             patternName: { type: 'string', description: 'Pattern name (or id) to place' },
-                            startBar: { type: 'integer', minimum: 0, description: '0-based measure (default 0)' },
-                            bars: { type: 'number', minimum: 0, description: 'Clip length in bars' },
+                            startMeasure: { type: 'integer', minimum: 0, description: '0-based measure (default 0)' },
+                            measureCount: { type: 'number', minimum: 0, description: 'Clip length in measures' },
                         },
                         required: ['patternName'],
                     },
@@ -737,13 +746,13 @@ export const tools = [
     {
         name: 'addPatternToArrangement',
         description:
-            'Places a pattern in an arrangement at a given bar. Clips may overlap, and the same pattern can be placed several times.',
+            'Places a pattern in an arrangement at a given measure. Clips may overlap, and the same pattern can be placed several times.',
         inputSchema: {
             type: 'object',
             properties: {
                 patternName: { type: 'string', description: 'Pattern name (or id) to place' },
-                startBar: { type: 'integer', minimum: 0, description: '0-based measure (default 0)' },
-                bars: { type: 'number', minimum: 0, description: 'Clip length (default: the pattern length)' },
+                startMeasure: { type: 'integer', minimum: 0, description: '0-based measure (default 0)' },
+                measureCount: { type: 'number', minimum: 0, description: 'Clip length (default: the pattern length)' },
                 arrangement: {
                     type: ['string', 'integer'],
                     description: 'Arrangement name or index (default: the selected one)',
@@ -755,11 +764,15 @@ export const tools = [
     {
         name: 'removePatternFromArrangement',
         description:
-            'Removes clips from an arrangement: every clip starting at "startBar", every clip of "patternName", or both.',
+            'Removes clips from an arrangement: every clip starting at "startMeasure", every clip of "patternName", or both.',
         inputSchema: {
             type: 'object',
             properties: {
-                startBar: { type: 'integer', minimum: 0, description: 'Remove every clip starting at this bar' },
+                startMeasure: {
+                    type: 'integer',
+                    minimum: 0,
+                    description: 'Remove every clip starting at this measure',
+                },
                 patternName: { type: 'string', description: 'Remove every clip using this pattern (name or id)' },
                 arrangement: {
                     type: ['string', 'integer'],
@@ -1143,7 +1156,7 @@ export async function handleToolCall(toolName, args, onError) {
         }
 
         if (toolName === 'createArrangement') {
-            const { name, description, bpm, loopBars, clips } = args
+            const { name, description, bpm, loopMeasureCount, clips } = args
             if (!name) throw new Error('name is required')
 
             await ensureLibraryLoaded()
@@ -1151,15 +1164,17 @@ export async function handleToolCall(toolName, args, onError) {
             appState.songs = structuredClone(songs)
 
             const cmd = new Commander()
-            const song = cmd.addSong({ name, description, bpm, loopBars })
+            const song = cmd.addSong({ name, description, bpm, loopMeasureCount })
             if (!song) throw new Error(`Could not create arrangement "${name}"`)
 
             const placed = []
             const skipped = []
             for (const clip of Array.isArray(clips) ? clips : []) {
-                const added = cmd.addPatternAtBar(clip?.patternName, clip?.startBar ?? 0, { bars: clip?.bars })
+                const added = cmd.addPatternAtMeasure(clip?.patternName, clip?.startMeasure ?? 0, {
+                    measureCount: clip?.measureCount,
+                })
                 if (added) placed.push(added)
-                else skipped.push({ patternName: clip?.patternName, startBar: clip?.startBar ?? 0 })
+                else skipped.push({ patternName: clip?.patternName, startMeasure: clip?.startMeasure ?? 0 })
             }
 
             await saveSongIndex(appState.songs, libraryIdsRepaired ? appState.patterns : undefined)
@@ -1180,7 +1195,7 @@ export async function handleToolCall(toolName, args, onError) {
         }
 
         if (toolName === 'addPatternToArrangement') {
-            const { patternName, startBar = 0, bars, arrangement } = args
+            const { patternName, startMeasure = 0, measureCount, arrangement } = args
             if (!patternName) throw new Error('patternName is required')
 
             const index = await selectArrangement(arrangement)
@@ -1189,7 +1204,7 @@ export async function handleToolCall(toolName, args, onError) {
             }
 
             const cmd = new Commander()
-            const clip = cmd.addPatternAtBar(patternName, startBar, { bars, songIdx: index })
+            const clip = cmd.addPatternAtMeasure(patternName, startMeasure, { measureCount, songIdx: index })
             if (!clip) throw new Error(`Could not place "${patternName}" — is that pattern name known?`)
 
             await saveSongIndex(appState.songs, libraryIdsRepaired ? appState.patterns : undefined)
@@ -1209,9 +1224,9 @@ export async function handleToolCall(toolName, args, onError) {
         }
 
         if (toolName === 'removePatternFromArrangement') {
-            const { startBar, patternName, arrangement } = args
-            if (startBar === undefined && !patternName) {
-                throw new Error('Provide "startBar", "patternName", or both')
+            const { startMeasure, patternName, arrangement } = args
+            if (startMeasure === undefined && !patternName) {
+                throw new Error('Provide "startMeasure", "patternName", or both')
             }
 
             const index = await selectArrangement(arrangement)
@@ -1221,8 +1236,8 @@ export async function handleToolCall(toolName, args, onError) {
 
             const cmd = new Commander()
             let removed = []
-            if (startBar !== undefined) {
-                removed = removed.concat(cmd.removePatternAtBar(startBar, { songIdx: index }))
+            if (startMeasure !== undefined) {
+                removed = removed.concat(cmd.removePatternAtMeasure(startMeasure, { songIdx: index }))
             }
             if (patternName) {
                 removed = removed.concat(cmd.removePatternClips(patternName, { songIdx: index }))
