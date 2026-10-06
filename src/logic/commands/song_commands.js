@@ -1,13 +1,13 @@
-import { appState } from '../../../state/app_state.js'
-import { reportUserError } from '../../../core/notify.js'
+import { appState } from '../../state/app_state.js'
+import { reportUserError } from '../../core/notify.js'
 import {
     measuresForPattern,
     ensurePatternId,
     normalizeSong,
     songContentMeasures,
     uniqueId,
-} from '../../../model/song_schema.js'
-import { clamp } from '../../../core/numbers.js'
+} from '../../model/song_schema.js'
+import { clamp } from '../../core/numbers.js'
 
 /**
  * @typedef {object} SongClipOptions
@@ -25,7 +25,7 @@ import { clamp } from '../../../core/numbers.js'
  */
 
 /**
- * Song commands — sub-module of the Commander (see CommanderHost in ../cmd.js).
+ * Song commands — sub-module of the Commander (see CommanderHost in ./commander.js).
  *
  * A song (an arrangement) is an ordered list of clips placing patterns on the measure timeline
  * (see src/model/song_schema.js for the persisted format).
@@ -53,7 +53,7 @@ import { clamp } from '../../../core/numbers.js'
 export default class SongCommands {
     #host
 
-    /** @param {import('../commander.js').CommanderHost} host */
+    /** @param {import('./commander.js').CommanderHost} host */
     constructor(host) {
         this.#host = host
     }
@@ -112,7 +112,7 @@ export default class SongCommands {
      * loop onto the content: a `loopMeasureCount` written by a song file is honoured when
      * it loads, but it stops being a promise once the arrangement is edited.
      *
-     * @param {import('../../../model/song_schema.js').Song} song
+     * @param {import('../../model/song_schema.js').Song} song
      * @returns {number} the loop length now in force, 0 when nothing is placed
      */
     #followContent(song) {
@@ -124,7 +124,7 @@ export default class SongCommands {
     /**
      * Set the loop length, or drop the field when there is none: an arrangement
      * with no clip has no loop, and a stored 0 would be meaningless.
-     * @param {import('../../../model/song_schema.js').Song} song
+     * @param {import('../../model/song_schema.js').Song} song
      * @param {number|null|undefined} measures
      */
     #setLoop(song, measures) {
@@ -227,7 +227,7 @@ export default class SongCommands {
      * @param {any} patternRef pattern id or name
      * @param {number} [startMeasure] 0-based measure (default 0)
      * @param {SongClipOptions} [options]
-     * @returns {import('../../../model/song_schema.js').SongClip|null} the clip added
+     * @returns {import('../../model/song_schema.js').SongClip|null} the clip added
      */
     addPatternAtMeasure(patternRef, startMeasure = 0, { measureCount, songIdx } = {}) {
         const found = this.#requireSong(songIdx)
@@ -257,7 +257,7 @@ export default class SongCommands {
      *
      * @param {number} startMeasure measure of the clip to repeat
      * @param {SongClipOptions} [options]
-     * @returns {import('../../../model/song_schema.js').SongClip|null} the new clip
+     * @returns {import('../../model/song_schema.js').SongClip|null} the new clip
      */
     repeatPatternAtMeasure(startMeasure, { songIdx } = {}) {
         const found = this.#song(songIdx)
@@ -290,7 +290,7 @@ export default class SongCommands {
      * @param {number} startMeasure 0-based measure
      * @param {object} [options]
      * @param {number} [options.songIdx]
-     * @returns {import('../../../model/song_schema.js').SongClip[]} the clips removed (empty when there was nothing to remove)
+     * @returns {import('../../model/song_schema.js').SongClip[]} the clips removed (empty when there was nothing to remove)
      */
     removePatternAtMeasure(startMeasure, { songIdx } = {}) {
         const found = this.#requireSong(songIdx)
@@ -324,7 +324,7 @@ export default class SongCommands {
      * @param {any} patternRef pattern id or name
      * @param {object} [options]
      * @param {number} [options.songIdx]
-     * @returns {import('../../../model/song_schema.js').SongClip[]} the clips removed (empty when there was nothing to remove)
+     * @returns {import('../../model/song_schema.js').SongClip[]} the clips removed (empty when there was nothing to remove)
      */
     removePatternClips(patternRef, { songIdx } = {}) {
         const found = this.#requireSong(songIdx)
@@ -354,7 +354,7 @@ export default class SongCommands {
      * addPatternAtMeasure() right after. One undo step.
      *
      * @param {SongSpec} [spec]
-     * @returns {import('../../../model/song_schema.js').Song|null} the new arrangement
+     * @returns {import('../../model/song_schema.js').Song|null} the new arrangement
      */
     addSong(spec = {}) {
         const name = String(spec.name ?? '').trim() || 'Untitled'

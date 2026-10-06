@@ -1,22 +1,22 @@
-import { clamp } from '../../../core/numbers.js'
-import { getPanFromTrackName } from '../../../core/drum_taxonomy.js'
-import { addLoopToTrackIfPossible, getTracksArray } from '../../../core/tracks.js'
-import { NOT_FOUND } from '../../../core/constants.js'
-import { clampStepsPerBeat, normalizeTrack, TRACK_VALUE_RANGES } from '../../../model/track_schema.js'
-import { reportUserError } from '../../../core/notify.js'
-import { soundRegistry } from '../../../state/sound_registry.js'
-import RandomGenerator from '../../generators/random_generator.js'
+import { clamp } from '../../core/numbers.js'
+import { getPanFromTrackName } from '../../core/drum_taxonomy.js'
+import { addLoopToTrackIfPossible, getTracksArray } from '../../core/tracks.js'
+import { NOT_FOUND } from '../../core/constants.js'
+import { clampStepsPerBeat, normalizeTrack, TRACK_VALUE_RANGES } from '../../model/track_schema.js'
+import { reportUserError } from '../../core/notify.js'
+import { soundRegistry } from '../../state/sound_registry.js'
+import RandomGenerator from '../generators/random_generator.js'
 
 const TRACK_STATE_KEYS = ['notes', 'loopAtStep']
 
 /**
- * Track commands — sub-module of the Commander (see CommanderHost in ../cmd.js).
+ * Track commands — sub-module of the Commander (see CommanderHost in ./commander.js).
  */
 export default class TrackCommands {
     #host
     #randomGen = new RandomGenerator()
 
-    /** @param {import('../commander.js').CommanderHost} host */
+    /** @param {import('./commander.js').CommanderHost} host */
     constructor(host) {
         this.#host = host
     }

@@ -43,7 +43,7 @@ vi.mock('../src/core/logger.js', () => ({
 import Commander from '../src/logic/commands/commander.js'
 import { EVENTS } from '../src/core/events.js'
 
-describe('cmd/selection_commands', () => {
+describe('commands/selection_commands', () => {
     let cmd
 
     beforeEach(() => {

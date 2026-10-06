@@ -1,20 +1,20 @@
-import { NOTE_DEFAULTS } from '../../../core/note_schema.js'
-import { getTracksArray } from '../../../core/tracks.js'
-import { appState } from '../../../state/app_state.js'
-import { clampStepsPerBeat } from '../../../model/track_schema.js'
-import { reportUserError } from '../../../core/notify.js'
+import { NOTE_DEFAULTS } from '../../core/note_schema.js'
+import { getTracksArray } from '../../core/tracks.js'
+import { appState } from '../../state/app_state.js'
+import { clampStepsPerBeat } from '../../model/track_schema.js'
+import { reportUserError } from '../../core/notify.js'
 
 function findPatternForTrack(track) {
     return appState.patterns.find((p) => getTracksArray(p).includes(track))
 }
 
 /**
- * Note commands — sub-module of the Commander (see CommanderHost in ../cmd.js).
+ * Note commands — sub-module of the Commander (see CommanderHost in ./commander.js).
  */
 export default class NoteCommands {
     #host
 
-    /** @param {import('../commander.js').CommanderHost} host */
+    /** @param {import('./commander.js').CommanderHost} host */
     constructor(host) {
         this.#host = host
     }

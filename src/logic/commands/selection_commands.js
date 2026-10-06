@@ -1,11 +1,11 @@
-import { appState } from '../../../state/app_state.js'
-import { serviceRegistry } from '../../../state/service_registry.js'
-import { soundRegistry } from '../../../state/sound_registry.js'
-import { playbackEvents } from '../../../state/event_bus.js'
-import { getAutoAssignService } from '../../../state/service_loader.js'
-import { logger } from '../../../core/logger.js'
-import { showToast } from '../../../core/notify.js'
-import { EVENTS } from '../../../core/events.js'
+import { appState } from '../../state/app_state.js'
+import { serviceRegistry } from '../../state/service_registry.js'
+import { soundRegistry } from '../../state/sound_registry.js'
+import { playbackEvents } from '../../state/event_bus.js'
+import { getAutoAssignService } from '../../state/service_loader.js'
+import { logger } from '../../core/logger.js'
+import { showToast } from '../../core/notify.js'
+import { EVENTS } from '../../core/events.js'
 
 /**
  * Selection & state commands — stateless, drives appState/events directly.

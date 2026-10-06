@@ -9,7 +9,7 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import NoteDrag from '../components/note_drag.js'
 import { applyNoteEdit, emitNotePicked } from '../components/note_edit.js'
 
-export default class DragSection {
+export default class PianoRollDrag {
     #editor
     #drag
 

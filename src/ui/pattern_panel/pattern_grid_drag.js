@@ -11,7 +11,7 @@ import { emitNotesChanged } from '../../state/event_bus.js'
 import NoteDrag from '../components/note_drag.js'
 import { applyNoteEdit, emitNotePicked } from '../components/note_edit.js'
 
-export default class DragSection {
+export default class PatternGridDrag {
     #editor
     #drag
     #trackIdx = -1

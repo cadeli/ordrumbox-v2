@@ -15,7 +15,7 @@ import ViewportSection from './piano_roll/viewport_section.js'
 import RenderSection from './piano_roll/render_section.js'
 import MenuSection from './piano_roll/menu_section.js'
 import PlaybackSection from './piano_roll/playback_section.js'
-import DragSection from './piano_roll/piano_roll_drag.js'
+import PianoRollDrag from './piano_roll/piano_roll_drag.js'
 import NoteParams from '../patterns/note_params.js'
 import { EVENTS } from '../core/events.js'
 import { BEATS_PER_PAGE } from '../core/constants.js'
@@ -64,7 +64,7 @@ export default class PianoRollPanel extends BasePanel {
                 return idx < 0 ? null : this.container?.querySelector(`.pp-pr-note[data-note="${idx}"]`)
             },
         })
-        this.#drag = new DragSection(this)
+        this.#drag = new PianoRollDrag(this)
     }
 
     createDOM() {

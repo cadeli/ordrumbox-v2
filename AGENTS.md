@@ -195,7 +195,7 @@ src/
                     (step math + note signatures), tracks.js (track array/loop
                     helpers), drum_taxonomy.js (name -> type -> pan)
   loader/          — asset/resource loading
-  logic/           — seq, LFO, history, commands, generators, MIDI, services
+  logic/           — sequencer, LFO, history, commands, generators, MIDI, services
   model/           — data models (flat_note, instrument, track/pattern schema)
   patterns/        — pattern engine, flat notes, defaults, variation
   state/           — app state, service registry/loader, sound registry

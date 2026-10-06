@@ -1,19 +1,19 @@
-import { appState } from '../../../state/app_state.js'
-import Defaults from '../../../patterns/defaults.js'
-import { importPatternFromJson } from '../pattern_import.js'
-import { logger } from '../../../core/logger.js'
-import { MAX_BEATS } from '../../../core/constants.js'
-import { getTracksArray } from '../../../core/tracks.js'
-import { PATTERN_DEFAULTS } from '../../../model/pattern_schema.js'
-import { ensurePatternId } from '../../../model/song_schema.js'
+import { appState } from '../../state/app_state.js'
+import Defaults from '../../patterns/defaults.js'
+import { importPatternFromJson } from './pattern_import.js'
+import { logger } from '../../core/logger.js'
+import { MAX_BEATS } from '../../core/constants.js'
+import { getTracksArray } from '../../core/tracks.js'
+import { PATTERN_DEFAULTS } from '../../model/pattern_schema.js'
+import { ensurePatternId } from '../../model/song_schema.js'
 
 /**
- * Pattern commands — sub-module of the Commander (see CommanderHost in ../cmd.js).
+ * Pattern commands — sub-module of the Commander (see CommanderHost in ./commander.js).
  */
 export default class PatternCommands {
     #host
 
-    /** @param {import('../commander.js').CommanderHost} host */
+    /** @param {import('./commander.js').CommanderHost} host */
     constructor(host) {
         this.#host = host
     }

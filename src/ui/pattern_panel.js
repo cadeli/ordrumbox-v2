@@ -21,7 +21,7 @@ import KeyboardSection from './pattern_panel/keyboard_section.js'
 import ContextMenuSection from './pattern_panel/context_menu_section.js'
 import ActionsSection from './pattern_panel/actions_section.js'
 import PointerSection from './pattern_panel/pointer_section.js'
-import DragSection from './pattern_panel/pattern_grid_drag.js'
+import PatternGridDrag from './pattern_panel/pattern_grid_drag.js'
 import NoteGauge from './components/note_gauge.js'
 
 const TRIGGER_FLASH_MS = 120
@@ -104,7 +104,7 @@ export default class PatternPanel extends BasePanel {
         this.#menuSection = new ContextMenuSection(this)
         this.#actions = new ActionsSection(this)
         this.#pointer = new PointerSection(this)
-        this.#drag = new DragSection(this)
+        this.#drag = new PatternGridDrag(this)
         this.#gauge = new NoteGauge(() => this.container, {
             // The grid's hover tooltip describes the same note: it must not
             // compete with the gauge.

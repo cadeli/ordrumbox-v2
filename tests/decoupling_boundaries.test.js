@@ -64,12 +64,12 @@ describe('Decoupling boundaries', () => {
     })
 
     it('note_commands.js imports appState only for pattern lookup in desc', () => {
-        const src = readSrc('logic/commands/cmd/note_commands.js')
+        const src = readSrc('logic/commands/note_commands.js')
         expect(src).toMatch(/import.*app_state/)
     })
 
     it('track_commands.js does not import serviceRegistry', () => {
-        const src = readSrc('logic/commands/cmd/track_commands.js')
+        const src = readSrc('logic/commands/track_commands.js')
         expect(src).not.toMatch(/import.*service_registry/)
     })
 

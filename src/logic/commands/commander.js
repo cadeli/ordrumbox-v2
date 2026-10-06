@@ -5,14 +5,14 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
 import { reportUserError } from '../../core/notify.js'
 import { TRACK_DEFAULTS, TRACK_VALUE_RANGES } from '../../model/track_schema.js'
-import NoteCommands from './cmd/note_commands.js'
-import TrackCommands from './cmd/track_commands.js'
-import PatternCommands from './cmd/pattern_commands.js'
-import SongCommands from './cmd/song_commands.js'
-import SelectionCommands from './cmd/selection_commands.js'
+import NoteCommands from './note_commands.js'
+import TrackCommands from './track_commands.js'
+import PatternCommands from './pattern_commands.js'
+import SongCommands from './song_commands.js'
+import SelectionCommands from './selection_commands.js'
 
 /**
- * Host contract consumed by the command sub-modules in ./cmd/*.js.
+ * Host contract consumed by the command sub-modules in ./*_commands.js.
  * Each sub-module class receives the Commander instance as `host` and may
  * only reach the outside world through these members.
  *
@@ -32,7 +32,7 @@ export default class Commander {
     static TRACK_VALUE_RANGES = TRACK_VALUE_RANGES
 
     /**
-     * Names of the 45 methods supplied by the ./cmd/*.js sub-modules.
+     * Names of the 45 methods supplied by the ./*_commands.js sub-modules.
      * Guarded by tests/cmd_mixin_contract.test.js: every entry must stay an
      * own, spread-safe function property of each Commander instance.
      */
