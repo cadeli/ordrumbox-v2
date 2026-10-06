@@ -228,7 +228,7 @@ describe('Undo Roundtrip & State Inversion', () => {
 
             cmd.beginGenerationUndo(pattern)
 
-            // Simulate what auto_generate really mutates.
+            // Simulate what auto_generator really mutates.
             kick.swingAmount = 0.33
             kick.swingResolution = 3
             kick.velocity = 0.4

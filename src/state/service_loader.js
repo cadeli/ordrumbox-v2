@@ -1,7 +1,7 @@
 import { serviceRegistry } from './service_registry.js'
 
 const LAZY_SERVICES = Object.freeze({
-    autoGenerate: () => import('../logic/generators/auto_generate.js'),
+    autoGenerator: () => import('../logic/generators/auto_generator.js'),
     autoAssign: () => import('../logic/services/auto_assign.js'),
     midiManager: () => import('../logic/midi/midi.js'),
     history: () => import('../logic/history_manager.js'),
@@ -41,7 +41,7 @@ async function lazyService(key) {
 
 export const getService = (key) => lazyService(key)
 
-export const getAutoGenerateService = () => lazyService('autoGenerate')
+export const getAutoGeneratorService = () => lazyService('autoGenerator')
 
 export const getAutoAssignService = () => lazyService('autoAssign')
 

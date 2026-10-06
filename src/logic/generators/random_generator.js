@@ -1,7 +1,7 @@
 import BaseGenerator from './base_generator.js'
 import { NOTE_DEFAULTS } from '../../core/note_schema.js'
 
-export default class RandomGenerate extends BaseGenerator {
+export default class RandomGenerator extends BaseGenerator {
     static RANDOM_CONFIG = Object.freeze({
         densityMin: 0.15,
         densitySpread: 0.2,
@@ -16,7 +16,7 @@ export default class RandomGenerate extends BaseGenerator {
     }
 
     generateRandom = (track, pattern = null) => {
-        const config = RandomGenerate.RANDOM_CONFIG
+        const config = RandomGenerator.RANDOM_CONFIG
 
         this.clearTrackNotes(track)
         this.applyLoopPoint(track, {

@@ -130,7 +130,7 @@ export async function renderSynthBatch(page, configs, opts = {}) {
                     patterns: [pattern],
                     selectedPatternIdx: 0,
                     getSelectedPatternIdx: () => 0,
-                    getAutoGenerate: () => false,
+                    getAutoGenerator: () => false,
                     uiState: {},
                     TICK,
                     secondsPerTick: 60 / bpm,

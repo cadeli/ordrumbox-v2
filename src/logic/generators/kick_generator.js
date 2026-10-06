@@ -1,6 +1,6 @@
 import BaseGenerator from './base_generator.js'
 
-export default class KickGenerate extends BaseGenerator {
+export default class KickGenerator extends BaseGenerator {
     static KICK_GENERATION_CONFIGS = Object.freeze({
         basic: {
             mode: 'phrases',
@@ -63,7 +63,7 @@ export default class KickGenerate extends BaseGenerator {
     })
 
     constructor() {
-        super('KICK', KickGenerate.KICK_GENERATION_CONFIGS)
+        super('KICK', KickGenerator.KICK_GENERATION_CONFIGS)
     }
 
     generateNewKick = (kickTrack, variantName = null, density = 1) => {

@@ -94,7 +94,7 @@ test.describe('Live vs Export equivalence', () => {
                 patterns: [pattern],
                 selectedPatternIdx: 0,
                 getSelectedPatternIdx: () => 0,
-                getAutoGenerate: () => null,
+                getAutoGenerator: () => null,
                 uiState: {},
                 TICK,
                 secondsPerTick: TICK_TIME * 4,

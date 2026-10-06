@@ -5,7 +5,7 @@ import { NOT_FOUND } from '../../../core/constants.js'
 import { clampStepsPerBeat, normalizeTrack, TRACK_VALUE_RANGES } from '../../../model/track_schema.js'
 import { reportUserError } from '../../../core/notify.js'
 import { soundRegistry } from '../../../state/sound_registry.js'
-import RandomGenerate from '../../generators/random_generate.js'
+import RandomGenerator from '../../generators/random_generator.js'
 
 const TRACK_STATE_KEYS = ['notes', 'loopAtStep']
 
@@ -14,7 +14,7 @@ const TRACK_STATE_KEYS = ['notes', 'loopAtStep']
  */
 export default class TrackCommands {
     #host
-    #randomGen = new RandomGenerate()
+    #randomGen = new RandomGenerator()
 
     /** @param {import('../cmd.js').CommanderHost} host */
     constructor(host) {

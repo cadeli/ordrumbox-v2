@@ -245,8 +245,8 @@ export default class PatternSettingsPanel {
                 if (DRUM_TYPES.has(detectTrackType(track.name))) track.auto = false
             }
         } else {
-            const { getAutoGenerateService } = await import('../state/service_loader.js')
-            const autoGen = await getAutoGenerateService()
+            const { getAutoGeneratorService } = await import('../state/service_loader.js')
+            const autoGen = await getAutoGeneratorService()
             if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
             try {
                 await autoGen.generatePattern()
@@ -281,8 +281,8 @@ export default class PatternSettingsPanel {
             }
         } else {
             let track = pattern.tracks?.find((t) => detectTrackType(t.name) === trackType)
-            const { getAutoGenerateService } = await import('../state/service_loader.js')
-            const autoGen = await getAutoGenerateService()
+            const { getAutoGeneratorService } = await import('../state/service_loader.js')
+            const autoGen = await getAutoGeneratorService()
             if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
             try {
                 if (!track) {

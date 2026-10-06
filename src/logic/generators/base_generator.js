@@ -24,7 +24,7 @@ import { clamp } from '../../core/numbers.js'
 
 /**
  * Uniform pick over a list. Module-local so a generator can choose between
- * skeletons without importing StructureSong (which owns the genre tables).
+ * skeletons without importing SongStructure (which owns the genre tables).
  * @template T
  * @param {T[]} list
  * @returns {T|undefined}

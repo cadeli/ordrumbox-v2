@@ -7,7 +7,7 @@ import { barToTick, songPatterns, songTempo } from './song_playback.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { getAutoAssignService, getAutoGenerateService } from '../state/service_loader.js'
+import { getAutoAssignService, getAutoGeneratorService } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
@@ -67,7 +67,7 @@ export default class Sequencer {
             getCurrentView: () => this.appState.currentView,
             getSongs: () => this.appState.songs ?? [],
             getSelectedSongIdx: () => this.appState.selectedSongIdx ?? 0,
-            getAutoGenerate: getAutoGenerateService,
+            getAutoGenerator: getAutoGeneratorService,
             uiState: {}, // UI state removed
             TICK,
             secondsPerTick: this.appState.secondsPerTick,

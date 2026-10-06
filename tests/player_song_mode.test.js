@@ -72,7 +72,7 @@ function makePlayer({ patterns, song, view = 'song' }) {
         played.push(flatNote)
         return Promise.resolve()
     }
-    player.getAutoGenerate = () => Promise.resolve({ changeTrack: () => Promise.resolve() })
+    player.getAutoGenerator = () => Promise.resolve({ changeTrack: () => Promise.resolve() })
     return { player, played, emitted, events: emitted }
 }
 

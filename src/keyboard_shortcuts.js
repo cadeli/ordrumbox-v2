@@ -1,6 +1,6 @@
 import { appState } from './state/app_state.js'
 import { serviceRegistry } from './state/service_registry.js'
-import { getAutoAssignService, getAutoGenerateService } from './state/service_loader.js'
+import { getAutoAssignService, getAutoGeneratorService } from './state/service_loader.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/playback_events.js'
 import { detectTrackType } from './core/drum_taxonomy.js'
@@ -56,7 +56,7 @@ async function generatePattern() {
     cmd.resetPage?.()
     emitPatternStructureChange()
 
-    const autoGen = await getAutoGenerateService()
+    const autoGen = await getAutoGeneratorService()
     const generated = await autoGen.generatePattern()
 
     if (!generated) {

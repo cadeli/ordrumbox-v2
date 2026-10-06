@@ -74,7 +74,7 @@ describe('Sequencer', () => {
             autoAssignSounds: vi.fn().mockResolvedValue(undefined),
             autoAssignTrackSounds: vi.fn(),
         }
-        serviceRegistry.autoGenerate = null
+        serviceRegistry.autoGenerator = null
         appState.patterns = [makePattern()]
         appState.selectedPatternIdx = 0
 

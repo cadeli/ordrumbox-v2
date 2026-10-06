@@ -45,13 +45,13 @@ vi.mock('../src/core/tracks.js', () => ({
 }))
 
 vi.mock('../src/state/service_loader.js', () => ({
-    getAutoGenerateService: vi.fn(),
+    getAutoGeneratorService: vi.fn(),
 }))
 
 import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { appState } from '../src/state/app_state.js'
-import { getAutoGenerateService } from '../src/state/service_loader.js'
+import { getAutoGeneratorService } from '../src/state/service_loader.js'
 import { DRUM_TYPES } from '../src/core/drum_taxonomy.js'
 
 function makeMockToolbar() {
@@ -256,11 +256,11 @@ describe('ViewSwitch', () => {
             appState.selectedPatternIdx = 0
             const generateFn = vi.fn()
             const mockAutoGen = { structureGen: {} }
-            getAutoGenerateService.mockResolvedValue(mockAutoGen)
+            getAutoGeneratorService.mockResolvedValue(mockAutoGen)
 
             await vs.toggleAutoGen(DRUM_TYPES, generateFn)
 
-            expect(getAutoGenerateService).toHaveBeenCalled()
+            expect(getAutoGeneratorService).toHaveBeenCalled()
             expect(generateFn).toHaveBeenCalledWith(appState.patterns[0], mockAutoGen)
         })
 
@@ -269,7 +269,7 @@ describe('ViewSwitch', () => {
             appState.selectedPatternIdx = 0
             const generateFn = vi.fn()
             const mockAutoGen = {}
-            getAutoGenerateService.mockResolvedValue(mockAutoGen)
+            getAutoGeneratorService.mockResolvedValue(mockAutoGen)
 
             await vs.toggleAutoGen('BASS', generateFn)
 
@@ -281,7 +281,7 @@ describe('ViewSwitch', () => {
             appState.selectedPatternIdx = 0
             const generateFn = vi.fn()
             const mockAutoGen = {}
-            getAutoGenerateService.mockResolvedValue(mockAutoGen)
+            getAutoGeneratorService.mockResolvedValue(mockAutoGen)
 
             await vs.toggleAutoGen(['BASS', 'PIANO'], generateFn)
 

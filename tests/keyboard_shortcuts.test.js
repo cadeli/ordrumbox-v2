@@ -8,7 +8,7 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 import { initKeyboardShortcuts } from '../src/keyboard_shortcuts.js'
 import { EVENTS } from '../src/core/events.js'
 import { showToast } from '../src/core/notify.js'
-import { getAutoGenerateService, getAutoAssignService } from '../src/state/service_loader.js'
+import { getAutoGeneratorService, getAutoAssignService } from '../src/state/service_loader.js'
 import { logger } from '../src/core/logger.js'
 import { downloadBlob } from '../src/core/download.js'
 
@@ -22,7 +22,7 @@ vi.mock('../src/core/download.js', () => ({
 
 vi.mock('../src/state/service_loader.js', () => ({
     getService: vi.fn(),
-    getAutoGenerateService: vi.fn(async () => ({ generatePattern: vi.fn() })),
+    getAutoGeneratorService: vi.fn(async () => ({ generatePattern: vi.fn() })),
     getAutoAssignService: vi.fn(async () => ({ autoAssignSounds: vi.fn() })),
     getMidiManagerService: vi.fn(),
     getHistoryService: vi.fn(),
@@ -332,7 +332,7 @@ describe('Keyboard shortcuts', () => {
         const mockGen = {
             generatePattern: vi.fn(async () => appState.patterns[appState.patterns.length - 1]),
         }
-        getAutoGenerateService.mockImplementation(async () => mockGen)
+        getAutoGeneratorService.mockImplementation(async () => mockGen)
 
         fireKeydown('KeyB')
         await flushAsyncShortcut()
@@ -356,7 +356,7 @@ describe('Keyboard shortcuts', () => {
         const mockGen = {
             generatePattern: vi.fn(async () => appState.patterns[appState.patterns.length - 1]),
         }
-        getAutoGenerateService.mockImplementation(async () => mockGen)
+        getAutoGeneratorService.mockImplementation(async () => mockGen)
 
         fireKeydown('KeyB')
         await flushAsyncShortcut()
@@ -367,7 +367,7 @@ describe('Keyboard shortcuts', () => {
     })
 
     it('KeyB removes the new pattern when generation fails', async () => {
-        getAutoGenerateService.mockImplementation(async () => ({ generatePattern: vi.fn(async () => null) }))
+        getAutoGeneratorService.mockImplementation(async () => ({ generatePattern: vi.fn(async () => null) }))
 
         fireKeydown('KeyB')
         await flushAsyncShortcut()

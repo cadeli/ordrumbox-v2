@@ -1,7 +1,7 @@
 import Sound from './sound.js'
 import FlatNote from '../model/flatnote.js'
 import NoteParams from '../patterns/note_params.js'
-import { getAutoGenerateService } from '../state/service_loader.js'
+import { getAutoGeneratorService } from '../state/service_loader.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { logger, valueOrFallback } from '../core/logger.js'
 import { isMelodicTrack } from '../core/drum_taxonomy.js'
@@ -46,7 +46,7 @@ export default class Player {
         this.patterns = config.patterns
         this.getSelectedPatternIdx = config.getSelectedPatternIdx ?? (() => config.selectedPatternIdx ?? 0)
         this.computeFlatNotes = config.computeFlatNotes
-        this.getAutoGenerate = config.getAutoGenerate
+        this.getAutoGenerator = config.getAutoGenerator
         this.getFlatNotes = config.getFlatNotes
         this.getFlatNotesForPattern = config.getFlatNotesForPattern ?? null
         this.getPlaybackMode = config.getPlaybackMode ?? (() => PLAYBACK_MODE.PATTERN)
@@ -66,7 +66,7 @@ export default class Player {
         const trackKeys = Object.keys(tracks)
 
         if (selectedPattern.autoGen) {
-            const autoGen = await getAutoGenerateService()
+            const autoGen = await getAutoGeneratorService()
             const element = autoGen.structureGen.getElement(loop)
             const isSectionStart = element.loopInElement === 0
             const isSectionEnd = element.isLastLoopBeforeChange
@@ -94,7 +94,7 @@ export default class Player {
                 if (track.auto === true) {
                     promises.push(
                         (async () => {
-                            const autoGen = await this.getAutoGenerate()
+                            const autoGen = await this.getAutoGenerator()
                             return autoGen.changeTrack(loop, selectedPattern, track)
                         })(),
                     )

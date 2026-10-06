@@ -249,8 +249,8 @@ export default class ViewSwitch {
                 }
             }
         } else {
-            const { getAutoGenerateService } = await import('../../state/service_loader.js')
-            const autoGen = await getAutoGenerateService()
+            const { getAutoGeneratorService } = await import('../../state/service_loader.js')
+            const autoGen = await getAutoGeneratorService()
             try {
                 await generateFn(pattern, autoGen)
             } catch (err) {

@@ -2,7 +2,7 @@ import AudioEngine from '../engine.js'
 import { TICK } from '../../core/constants.js'
 import { bufferToWav } from './wav_encoder.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import { getAutoGenerateService } from '../../state/service_loader.js'
+import { getAutoGeneratorService } from '../../state/service_loader.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { valueOrFallback, logger } from '../../core/logger.js'
 import { downloadBlob } from '../../core/download.js'
@@ -150,7 +150,7 @@ export default class WavExporter {
                 patterns: [pattern],
                 selectedPatternIdx: 0,
                 getSelectedPatternIdx: () => 0,
-                getAutoGenerate: getAutoGenerateService,
+                getAutoGenerator: getAutoGeneratorService,
                 uiState: {},
                 TICK,
                 secondsPerTick: secondsPerTick, // one sequencer tick, for swing
@@ -219,7 +219,7 @@ export default class WavExporter {
                 patterns,
                 selectedPatternIdx: 0,
                 getSelectedPatternIdx: () => 0,
-                getAutoGenerate: getAutoGenerateService,
+                getAutoGenerator: getAutoGeneratorService,
                 // Song mode: the engine derives its playback mode from the view
                 // (AudioEngine.getPlaybackMode), so getCurrentView is the switch
                 // that puts it in arrangement mode.

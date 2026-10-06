@@ -17,7 +17,7 @@ describe('ServiceRegistry', () => {
         expect(reg.midiManager).toBeNull()
         expect(reg.resourcesLoader).toBeNull()
         expect(reg.seq).toBeNull()
-        expect(reg.autoGenerate).toBeNull()
+        expect(reg.autoGenerator).toBeNull()
         expect(reg.autoAssign).toBeNull()
         expect(reg.wavExporter).toBeNull()
         expect(reg.audioCtx).toBeNull()
@@ -40,7 +40,7 @@ describe('ServiceRegistry', () => {
         expect(keys).toContain('midiManager')
         expect(keys).toContain('resourcesLoader')
         expect(keys).toContain('seq')
-        expect(keys).toContain('autoGenerate')
+        expect(keys).toContain('autoGenerator')
         expect(keys).toContain('autoAssign')
         expect(keys).toContain('wavExporter')
         expect(keys).toContain('audioCtx')
@@ -81,11 +81,11 @@ describe('lazyService', () => {
         expect(serviceRegistry.autoAssign).toBe(s1)
     })
 
-    it('getAutoGenerateService creates instance once', async () => {
-        const { getAutoGenerateService } = await import('../src/state/service_loader.js')
-        const s1 = await getAutoGenerateService()
+    it('getAutoGeneratorService creates instance once', async () => {
+        const { getAutoGeneratorService } = await import('../src/state/service_loader.js')
+        const s1 = await getAutoGeneratorService()
         expect(s1).toBeDefined()
-        expect(serviceRegistry.autoGenerate).toBe(s1)
+        expect(serviceRegistry.autoGenerator).toBe(s1)
     })
 
     it('lazyService reuses existing instance', async () => {
@@ -119,9 +119,9 @@ describe('lazyService', () => {
     })
 
     it('getService returns the same instance as the dedicated getter', async () => {
-        const { getService, getAutoGenerateService } = await import('../src/state/service_loader.js')
-        const viaGetter = await getAutoGenerateService()
-        const viaGeneric = await getService('autoGenerate')
+        const { getService, getAutoGeneratorService } = await import('../src/state/service_loader.js')
+        const viaGetter = await getAutoGeneratorService()
+        const viaGeneric = await getService('autoGenerator')
         expect(viaGeneric).toBe(viaGetter)
     })
 })

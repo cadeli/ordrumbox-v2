@@ -3,7 +3,7 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import ResourcesLoader from '../../loader/resources_loader.js'
 import { logger } from '../../core/logger.js'
 
-export default class BassGenerate extends BaseGenerator {
+export default class BassGenerator extends BaseGenerator {
     static BASS_GENERATION_CONFIGS = Object.freeze({
         basic: {
             mode: 'phrases',
@@ -227,7 +227,7 @@ export default class BassGenerate extends BaseGenerator {
     })
 
     constructor() {
-        super('BASS', BassGenerate.BASS_GENERATION_CONFIGS)
+        super('BASS', BassGenerator.BASS_GENERATION_CONFIGS)
         this.setToneThreshold(5)
         this.isScalesLoading = false
     }
@@ -243,7 +243,7 @@ export default class BassGenerate extends BaseGenerator {
         this.isScalesLoading = false
     }
 
-    static TAG = 'BassGenerate'
+    static TAG = 'BassGenerator'
 
     generateNewBass = (bassTrack, variantName = null, density = 1, harmony = { root: 0, scale: null }) => {
         const resolvedVariantName = this.resolveVariantName(variantName)
@@ -253,7 +253,7 @@ export default class BassGenerate extends BaseGenerator {
         const rootNote = (config.rootNote ?? 0) + (harmony.root ?? 0)
 
         logger.info(
-            BassGenerate.TAG,
+            BassGenerator.TAG,
             `generateNewBass: variant=${resolvedVariantName}, mode=${config.mode}, density=${density}, rootNote=${rootNote} (harmony=${JSON.stringify(harmony)})`,
         )
 

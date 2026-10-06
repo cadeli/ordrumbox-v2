@@ -37,7 +37,7 @@ export default class AudioEngine {
         this.getCurrentView = config.getCurrentView ?? (() => 'edit')
         this.getSongs = config.getSongs ?? (() => [])
         this.getSelectedSongIdx = config.getSelectedSongIdx ?? (() => 0)
-        this.getAutoGenerate = config.getAutoGenerate
+        this.getAutoGenerator = config.getAutoGenerator
         this.TICK = config.TICK
         this.secondsPerTick = config.secondsPerTick
         this.instrumentsManager = instrumentsManager
@@ -67,7 +67,7 @@ export default class AudioEngine {
                     patterns: this.patterns,
                     getSelectedPatternIdx: this.getSelectedPatternIdx,
                     computeFlatNotes: this.computeFlatNotes.bind(this),
-                    getAutoGenerate: this.getAutoGenerate,
+                    getAutoGenerator: this.getAutoGenerator,
                     getFlatNotes: (loop) => this.getFlatNotesForCurrentPattern(loop),
                     getFlatNotesForPattern: (pattern, loop) => this.getFlatNotesForPattern(pattern, loop),
                     getPlaybackMode: this.getPlaybackMode,

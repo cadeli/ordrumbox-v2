@@ -5,7 +5,7 @@ export class ServiceRegistry {
         midiManager: null,
         resourcesLoader: null,
         seq: null,
-        autoGenerate: null,
+        autoGenerator: null,
         autoAssign: null,
         wavExporter: null,
         audioCtx: null,
@@ -27,7 +27,7 @@ export class ServiceRegistry {
     /** @type {any} */
     seq
     /** @type {any} */
-    autoGenerate
+    autoGenerator
     /** @type {any} */
     autoAssign
     /** @type {any} */

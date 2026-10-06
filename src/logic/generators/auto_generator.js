@@ -2,15 +2,15 @@ import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { clamp } from '../../core/numbers.js'
 import { detectTrackType } from '../../core/drum_taxonomy.js'
-import CowbellGenerate from './cowbell_generate.js'
-import BassGenerate from './bass_generate.js'
-import ClapGenerate from './clap_generate.js'
-import HatGenerate from './hat_generate.js'
-import KickGenerate from './kick_generate.js'
-import MelodyGenerate from './melody_generate.js'
-import PercGenerate from './perc_generate.js'
-import SnareGenerate from './snare_generate.js'
-import StructureSong from './structure_song.js'
+import CowbellGenerator from './cowbell_generator.js'
+import BassGenerator from './bass_generator.js'
+import ClapGenerator from './clap_generator.js'
+import HatGenerator from './hat_generator.js'
+import KickGenerator from './kick_generator.js'
+import MelodyGenerator from './melody_generator.js'
+import PercGenerator from './perc_generator.js'
+import SnareGenerator from './snare_generator.js'
+import SongStructure from './song_structure.js'
 import { logger } from '../../core/logger.js'
 import AutoAssign from '../services/auto_assign.js'
 
@@ -23,22 +23,22 @@ const SECTION_DENSITY = Object.freeze({
     outro: 0.3,
 })
 
-export default class AutoGenerate {
-    static TAG = 'AutoGenerate'
+export default class AutoGenerator {
+    static TAG = 'AutoGenerator'
 
     #cachedGenre
     #cachedStructure
 
     constructor() {
-        this.kickGen = new KickGenerate()
-        this.snareGen = new SnareGenerate()
-        this.hatGen = new HatGenerate()
-        this.clapGen = new ClapGenerate()
-        this.percGen = new PercGenerate()
-        this.cowbellGen = new CowbellGenerate()
-        this.bassGen = new BassGenerate()
-        this.melodyGen = new MelodyGenerate()
-        this.structureGen = new StructureSong()
+        this.kickGen = new KickGenerator()
+        this.snareGen = new SnareGenerator()
+        this.hatGen = new HatGenerator()
+        this.clapGen = new ClapGenerator()
+        this.percGen = new PercGenerator()
+        this.cowbellGen = new CowbellGenerator()
+        this.bassGen = new BassGenerator()
+        this.melodyGen = new MelodyGenerator()
+        this.structureGen = new SongStructure()
     }
 
     /**
@@ -92,34 +92,34 @@ export default class AutoGenerate {
             }
 
             const genre =
-                options.genre ?? StructureSong.resolveGenreFromTags(pattern.tags) ?? this.structureGen.getRandomGenre()
+                options.genre ?? SongStructure.resolveGenreFromTags(pattern.tags) ?? this.structureGen.getRandomGenre()
             const structure =
-                options.structure ?? StructureSong.randomizeStructure(this.structureGen.generateStructure(genre))
+                options.structure ?? SongStructure.randomizeStructure(this.structureGen.generateStructure(genre))
 
             pattern._autoGenGenre = genre
             pattern._autoGenKeyOffset =
-                options.keyOffset ?? pattern._autoGenKeyOffset ?? StructureSong.randomKeyOffset()
-            pattern._autoGenScale = options.scale ?? pattern._autoGenScale ?? StructureSong.randomScale()
+                options.keyOffset ?? pattern._autoGenKeyOffset ?? SongStructure.randomKeyOffset()
+            pattern._autoGenScale = options.scale ?? pattern._autoGenScale ?? SongStructure.randomScale()
 
             const firstElement = this.structureGen.getElement(0)
             const harmony = this.#resolveHarmony(pattern, genre, firstElement.name, firstElement.loopInElement)
 
             logger.info(
-                AutoGenerate.TAG,
+                AutoGenerator.TAG,
                 `generatePattern: genre=${genre}, key=${pattern._autoGenKeyOffset}, scale=${pattern._autoGenScale}, harmony=${JSON.stringify(harmony)}, tracks=${Object.keys(structure).join(',')}`,
             )
 
             if (!pattern.tracks || pattern.tracks.length === 0) {
                 for (const [trackName, config] of Object.entries(structure)) {
                     const track = serviceRegistry.cmd.addTrack(pattern, trackName)
-                    logger.info(AutoGenerate.TAG, `  track=${trackName}, variant=${config}`)
+                    logger.info(AutoGenerator.TAG, `  track=${trackName}, variant=${config}`)
                     await this.generateTrack(track, config, this.#randomDensity(track), pattern, harmony)
                 }
             } else {
                 for (const track of pattern.tracks) {
                     const config = this.#findTrackConfig(structure, track)
                     if (config) {
-                        logger.info(AutoGenerate.TAG, `  track=${track.name}, variant=${config}`)
+                        logger.info(AutoGenerator.TAG, `  track=${track.name}, variant=${config}`)
                         await this.generateTrack(track, config, this.#randomDensity(track), pattern, harmony)
                     }
                 }
@@ -138,14 +138,14 @@ export default class AutoGenerate {
             await serviceRegistry.autoAssign.autoAssignSounds(pattern)
             serviceRegistry.flatNotes.applyFlatNotes(pattern)
 
-            logger.info(AutoGenerate.TAG, `generatePattern: done (${pattern.tracks.length} tracks)`)
+            logger.info(AutoGenerator.TAG, `generatePattern: done (${pattern.tracks.length} tracks)`)
             return pattern
         } catch (err) {
             // Both callers ignore the return value and continue as if the
             // pattern were complete, so swallow-and-return-null surfaced a
             // half-built pattern with no error at all. Rethrow: the callers
             // already run inside a try/catch that shows a toast.
-            logger.warn(AutoGenerate.TAG, 'generatePattern failed', err)
+            logger.warn(AutoGenerator.TAG, 'generatePattern failed', err)
             throw err instanceof Error ? err : new Error(String(err))
         }
     }
@@ -158,10 +158,10 @@ export default class AutoGenerate {
         // nullish, so it also overrides a track.auto_variant the user (or a
         // previous loop) had set. That is deliberate — a hand-picked bass
         // variant would otherwise never survive an auto-generate.
-        const variant = type === 'BASS' ? StructureSong.randomBassVariant(pattern?._autoGenGenre) : config
+        const variant = type === 'BASS' ? SongStructure.randomBassVariant(pattern?._autoGenGenre) : config
         if (variant !== config) {
             logger.info(
-                AutoGenerate.TAG,
+                AutoGenerator.TAG,
                 `  ${track.name}: bass variant ${config} → ${variant} (random for ${pattern?._autoGenGenre})`,
             )
         }
@@ -192,7 +192,7 @@ export default class AutoGenerate {
                 await this.bassGen.generateNewBass(track, variant, density, harmony)
                 break
             default:
-                logger.warn(AutoGenerate.TAG, `generateTrack: unknown type=${type} for track=${track.name}`)
+                logger.warn(AutoGenerator.TAG, `generateTrack: unknown type=${type} for track=${track.name}`)
         }
     }
 
@@ -245,7 +245,7 @@ export default class AutoGenerate {
             const harmony = this.#resolveHarmony(pattern, genre, element.name, element.loopInElement)
 
             logger.info(
-                AutoGenerate.TAG,
+                AutoGenerator.TAG,
                 `changeTrack: loop=${loop}, section=${element.name}#${element.number}, track=${track.name}, harmony=${JSON.stringify(harmony)}, sectionEnd=${isSectionEnd}, break=${isBreak}, density=${density}`,
             )
 
@@ -260,12 +260,12 @@ export default class AutoGenerate {
 
             if (config) {
                 if (isBreak && type === 'SNARE') {
-                    logger.info(AutoGenerate.TAG, `  -> breakCrescendo mode`)
+                    logger.info(AutoGenerator.TAG, `  -> breakCrescendo mode`)
                     await this.snareGen.generateNewSnare(track, 'breakCrescendo', density)
                 } else if (isSectionEnd) {
                     const sectionEndVariant = this.#resolveSectionEndVariant(track, type)
                     const mergeVariant = sectionEndVariant ?? config
-                    logger.info(AutoGenerate.TAG, `  -> section-end merge (variant=${mergeVariant})`)
+                    logger.info(AutoGenerator.TAG, `  -> section-end merge (variant=${mergeVariant})`)
                     const savedNotes = [...track.notes]
                     await this.generateTrack(track, mergeVariant, density, pattern, harmony)
                     const seen = new Set(savedNotes.map((n) => `${n.beat}:${n.beatStep}`))
@@ -277,16 +277,16 @@ export default class AutoGenerate {
                     }
                     track.notes = savedNotes
                 } else {
-                    logger.info(AutoGenerate.TAG, `  -> full regenerate (variant=${config})`)
+                    logger.info(AutoGenerator.TAG, `  -> full regenerate (variant=${config})`)
                     track.notes = []
                     await this.generateTrack(track, config, density, pattern, harmony)
                 }
                 serviceRegistry.flatNotes.applyFlatNotes(pattern)
             } else {
-                logger.warn(AutoGenerate.TAG, `  -> no config found for type=${type}`)
+                logger.warn(AutoGenerator.TAG, `  -> no config found for type=${type}`)
             }
         } catch (err) {
-            logger.warn(AutoGenerate.TAG, 'changeTrack failed', err)
+            logger.warn(AutoGenerator.TAG, 'changeTrack failed', err)
         }
     }
 
@@ -298,7 +298,7 @@ export default class AutoGenerate {
             case 'PERC':
                 return 'fill'
             default:
-                logger.warn(AutoGenerate.TAG, `Unknown percussion type: ${type}`)
+                logger.warn(AutoGenerator.TAG, `Unknown percussion type: ${type}`)
                 return null
         }
     }
