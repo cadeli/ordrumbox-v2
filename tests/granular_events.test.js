@@ -3,10 +3,10 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
 import PatternPanel from '../src/ui/pattern_panel.js'
 import TrackEditor from '../src/ui/track_editor.js'

@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import PatternPanel from '../src/ui/pattern_panel.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { EVENTS } from '../src/core/events.js'
 import { showToast } from '../src/core/notify.js'
 

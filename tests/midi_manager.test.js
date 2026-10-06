@@ -11,7 +11,7 @@ vi.mock('../src/logic/midi/midi_parser.js', () => ({
     isMidiSupported: vi.fn(() => true),
 }))
 
-vi.mock('../src/logic/services/instrument_manager/index.js', () => ({
+vi.mock('../src/logic/services/instruments_manager/index.js', () => ({
     instrumentsManager: {
         findTrackIndexFromMidi: vi.fn(() => 0),
     },
@@ -24,7 +24,7 @@ describe('MidiManager', () => {
         appState.reset()
         serviceRegistry.reset()
         soundRegistry.reset()
-        const mod = await import('../src/logic/midi/midi.js')
+        const mod = await import('../src/logic/midi/midi_manager.js')
         MidiManager = mod.default
     })
 

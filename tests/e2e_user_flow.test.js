@@ -13,7 +13,7 @@
  * tests/undo_roundtrip.test.js.
  *
  * This verifies that all layers (Commander, PatternEngine, MidiExporter,
- * PatternExporter, Transport, HistoryManager, AppState) work together
+ * Exporter, Transport, HistoryManager, AppState) work together
  * as a coherent system — not just in isolation.
  */
 
@@ -21,10 +21,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
-import { PatternExporter } from '../src/patterns/exporter.js'
+import Commander from '../src/logic/commands/commander.js'
+import { Exporter } from '../src/patterns/exporter.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
-import { recomputeFlatNotes, isTriggered, normalizeArp } from '../src/patterns/engine.js'
+import { recomputeFlatNotes, isTriggered, normalizeArp } from '../src/patterns/pattern_engine.js'
 import { applyFlatNotes as managerApplyFlat } from '../src/patterns/flat_notes.js'
 import { TICK } from '../src/core/constants.js'
 import { parseMidi, findAllNotes } from './helpers/midi_reader.js'
@@ -520,7 +520,7 @@ describe('E2E Flow 6 — Export to JSON and roundtrip', () => {
         cmd.addNote(kick, 0, 0, 0)
         cmd.addNote(kick, 2, 0, 0)
 
-        const exported = PatternExporter.export(pat)
+        const exported = Exporter.export(pat)
         expect(exported).toHaveProperty('application', 'online-ordrumbox')
         expect(exported).toHaveProperty('name', 'JSON Export')
         expect(exported.tracks.length).toBe(1)
@@ -537,7 +537,7 @@ describe('E2E Flow 6 — Export to JSON and roundtrip', () => {
         cmd.addNote(snare, 1, 0, 0)
         cmd.addNote(snare, 3, 0, 0)
 
-        const exported = PatternExporter.export(pat)
+        const exported = Exporter.export(pat)
         const imported = cmd.importPatternFromJson(exported)
 
         expect(imported.name).toBe('Roundtrip')
@@ -554,7 +554,7 @@ describe('E2E Flow 6 — Export to JSON and roundtrip', () => {
         note.velocity = 0.6
         note.arp = [0, 7, 12]
 
-        const exported = PatternExporter.export(pat)
+        const exported = Exporter.export(pat)
         const imported = cmd.importPatternFromJson(exported)
         const importedBass = getTrackFromType(imported, 'BASS')
 
@@ -596,7 +596,7 @@ describe('E2E Flow 6 — Export to JSON and roundtrip', () => {
         const pat = cmd.addPattern('BPM RT')
         cmd.setPatternBpm(pat, 140)
 
-        const exported = PatternExporter.export(pat)
+        const exported = Exporter.export(pat)
         const imported = cmd.importPatternFromJson(exported)
         expect(imported.bpm).toBe(140)
     })
@@ -851,7 +851,7 @@ describe('E2E Flow 8 — Full user session simulation', () => {
         expect(findAllNotes(parsed).length).toBe(7) // 5 kick + 2 snare
 
         // Export to JSON
-        const jsonExport = PatternExporter.export(imported)
+        const jsonExport = Exporter.export(imported)
         expect(jsonExport.name).toBe('Imported Beat')
         expect(jsonExport.tracks.length).toBe(2)
     })

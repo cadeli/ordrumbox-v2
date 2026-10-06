@@ -3,7 +3,7 @@ import { serviceRegistry } from './service_registry.js'
 const LAZY_SERVICES = Object.freeze({
     autoGenerator: () => import('../logic/generators/auto_generator.js'),
     autoAssign: () => import('../logic/services/auto_assign.js'),
-    midiManager: () => import('../logic/midi/midi.js'),
+    midiManager: () => import('../logic/midi/midi_manager.js'),
     history: () => import('../logic/history_manager.js'),
 })
 

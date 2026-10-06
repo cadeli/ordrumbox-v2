@@ -1,11 +1,11 @@
 import { getTracksArray } from '../core/tracks.js'
-import AudioEngine from '../audio/engine.js'
-import AudioStallDetector from '../audio/stall_detector.js'
+import Engine from '../audio/engine.js'
+import StallDetector from '../audio/stall_detector.js'
 import Transport from './transport/transport.js'
 import { TICK } from '../core/constants.js'
 import { measureToTick, songPatterns, songTempo } from './song_playback.js'
 import { appState } from '../state/app_state.js'
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { getAutoAssignService, getAutoGeneratorService } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
@@ -57,7 +57,7 @@ export default class Sequencer {
 
     ensureAudioEngine = () => {
         if (this.serviceRegistry.audioEngine) return
-        this.serviceRegistry.audioEngine = new AudioEngine({
+        this.serviceRegistry.audioEngine = new Engine({
             audioCtx: this.serviceRegistry.audioCtx,
             sounds: this.soundRegistry.sounds,
             generatedSounds: this.soundRegistry.generatedSounds,
@@ -189,7 +189,7 @@ export default class Sequencer {
         // pattern view has no measures, so it always starts from its own zero: a
         // song measure would land mid-pattern.
         if (this.appState.currentView === 'song') this.#applySongCursor()
-        this.#stallDetector = new AudioStallDetector({
+        this.#stallDetector = new StallDetector({
             audioCtx: this.serviceRegistry.audioCtx,
             transport: this.serviceRegistry.transport,
         })
@@ -309,7 +309,7 @@ export default class Sequencer {
         }
     }
 
-    simpleBeep = async (indexTrack, note = null) => {
+    simpleBeep = async (trackIdx, note = null) => {
         if (!this.serviceRegistry.audioCtx) {
             this.serviceRegistry.audioCtx = this.serviceRegistry.resourcesLoader?.audioCtx ?? null
         }
@@ -336,7 +336,7 @@ export default class Sequencer {
         const pat = this.appState.selectedPattern
         if (!pat) return
         const tracks = getTracksArray(pat)
-        const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat.tracks?.[indexTrack]
+        const track = typeof trackIdx === 'number' ? tracks[trackIdx] : pat.tracks?.[trackIdx]
         if (!track) return
         if ((track.sampleId === 'NOT_DEFINED' || !track.sampleId) && !track.useSoftSynth) {
             try {
@@ -349,7 +349,7 @@ export default class Sequencer {
             autoAssign.autoAssignTrackSounds(track)
         }
         if (this.serviceRegistry.audioEngine?.mixer) {
-            await this.serviceRegistry.audioEngine.simpleBeep(indexTrack, note)
+            await this.serviceRegistry.audioEngine.simpleBeep(trackIdx, note)
         }
     }
 }

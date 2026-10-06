@@ -1,9 +1,9 @@
 import Sound from './sound.js'
 import { resolveSelectedPatternIdxGetter } from './selected_pattern_idx.js'
-import FlatNote from '../model/flatnote.js'
+import FlatNote from '../model/flat_note.js'
 import NoteParams from '../patterns/note_params.js'
 import { getAutoGeneratorService } from '../state/service_loader.js'
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { logger, valueOrFallback } from '../core/logger.js'
 import { isMelodicTrack } from '../core/drum_taxonomy.js'
 import { getTracksArray, hasAnySolo, shouldTrackPlay } from '../core/tracks.js'
@@ -25,7 +25,7 @@ export default class Player {
     #songMeasure = 0
 
     /**
-     * Drop every playback-derived cache. Called by AudioEngine.invalidateCache()
+     * Drop every playback-derived cache. Called by Engine.invalidateCache()
      * after state mutations (pattern switch, track add/remove/paste, history
      * undo/redo) so the next tick recomputes from fresh state.
      */
@@ -307,19 +307,19 @@ export default class Player {
         return this.#lastFlatNotesMap
     }
 
-    simpleBeep = async (indexTrack, note = null) => {
+    simpleBeep = async (trackIdx, note = null) => {
         if (this.audioCtx == null) return
         const pat = this.patterns[this.getSelectedPatternIdx()]
         if (!pat) return
         const tracks = getTracksArray(pat)
-        const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat.tracks?.[indexTrack]
+        const track = typeof trackIdx === 'number' ? tracks[trackIdx] : pat.tracks?.[trackIdx]
         if (!track) return
 
         const previewNote = {
-            name: 'N_' + (track.name ?? indexTrack) + '_preview',
+            name: 'N_' + (track.name ?? trackIdx) + '_preview',
             sampleId: track.sampleId,
             beatStep: note?.beatStep ?? 0,
-            steppc: 0,
+            stepPercent: 0,
             beat: note?.beat ?? 0,
             velocity: note?.velocity ?? track.velocity ?? 0.8,
             pan: note?.pan ?? track.pan ?? 0,
@@ -343,7 +343,7 @@ export default class Player {
         )
     }
 
-    /** Replaces the reference (no merge) — see AudioEngine.setGeneratedSounds. */
+    /** Replaces the reference (no merge) — see Engine.setGeneratedSounds. */
     setGeneratedSounds = (generatedSounds) => {
         this.generatedSounds = generatedSounds
         this.sound.generatedSounds = generatedSounds

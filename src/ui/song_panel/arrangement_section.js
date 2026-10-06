@@ -17,7 +17,7 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { showToast } from '../../core/notify.js'
 import { TICK } from '../../core/constants.js'
 import { songMeasureAtTick } from '../../logic/song_playback.js'
-import { playbackEvents } from '../../state/playback_events.js'
+import { playbackEvents } from '../../state/event_bus.js'
 import { EVENTS } from '../../core/events.js'
 import { reportUserError } from '../../core/notify.js'
 

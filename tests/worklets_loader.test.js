@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { logger } from '../src/core/logger.js'
-import WorkletLoader from '../src/audio/worklets/loader.js'
+import WorkletLoader from '../src/audio/worklets/worklet_loader.js'
 
 describe('WorkletLoader', () => {
     beforeEach(() => {

@@ -1,4 +1,4 @@
-import AudioEngine from '../engine.js'
+import Engine from '../engine.js'
 import { TICK } from '../../core/constants.js'
 import { bufferToWav } from './wav_encoder.js'
 import { serviceRegistry } from '../../state/service_registry.js'
@@ -97,7 +97,7 @@ export default class WavExporter {
      *
      * A soft-synth note is triggered by `port.postMessage` (see
      * WorkletSynthVoice.start), and offline there is no synth node pool
-     * (`Sound`: `isOffline ? null : new SynthVoiceNodePool(...)`), so every note
+     * (`Sound`: `isOffline ? null : new SynthVoicePool(...)`), so every note
      * builds its own AudioWorkletNode. An OfflineAudioContext starts rendering
      * eagerly and can render past the note's time before those messages reach the
      * processor, which yields a perfectly valid but entirely silent export — one
@@ -143,7 +143,7 @@ export default class WavExporter {
         const schedule = async () => {
             const offlineCtx = new OfflineAudioContext(2, Math.floor(sampleRate * duration), sampleRate)
 
-            const exporterAudioEngine = new AudioEngine({
+            const exporterAudioEngine = new Engine({
                 audioCtx: offlineCtx,
                 sounds: soundRegistry.sounds,
                 generatedSounds: soundRegistry.generatedSounds,
@@ -210,7 +210,7 @@ export default class WavExporter {
         const schedule = async () => {
             const offlineCtx = new OfflineAudioContext(2, Math.ceil(sampleRate * duration), sampleRate)
 
-            const exporterAudioEngine = new AudioEngine({
+            const exporterAudioEngine = new Engine({
                 audioCtx: offlineCtx,
                 sounds: soundRegistry.sounds,
                 generatedSounds: soundRegistry.generatedSounds,
@@ -219,7 +219,7 @@ export default class WavExporter {
                 getSelectedPatternIdx: () => 0,
                 getAutoGenerator: getAutoGeneratorService,
                 // Song mode: the engine derives its playback mode from the view
-                // (AudioEngine.getPlaybackMode), so getCurrentView is the switch
+                // (Engine.getPlaybackMode), so getCurrentView is the switch
                 // that puts it in arrangement mode.
                 getCurrentView: () => 'song',
                 getSongs: () => [song],

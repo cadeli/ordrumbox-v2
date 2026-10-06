@@ -1,8 +1,8 @@
 import Instrument from '../../../model/instrument.js'
 import { logger } from '../../../core/logger.js'
-import { GM_DRUM_KEY_BY_NAME, GM_PROGRAM_NUM_BY_NAME, GM_PROGRAM_NAMES } from './gm_names.js'
-import { INSTRUMENTS_DATA } from './instruments_data.js'
-import { countCommonWords } from './fuzzy_match.js'
+import { GM_DRUM_KEY_BY_NAME, GM_PROGRAM_NUM_BY_NAME, GM_PROGRAM_NAMES } from '../instruments_manager/gm_names.js'
+import { INSTRUMENTS_DATA } from '../instruments_manager/instruments_data.js'
+import { countCommonWords } from '../instruments_manager/fuzzy_match.js'
 
 export default class InstrumentsManager {
     static DATA = INSTRUMENTS_DATA

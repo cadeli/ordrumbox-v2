@@ -1,4 +1,4 @@
-// src/ui/pattern_panel/drag_section.js
+// src/ui/pattern_panel/pattern_grid_drag.js
 // Dragging a filled cell in the pattern grid edits the note under the pointer:
 // up/down is the velocity (the slice opacity follows it), left/right is the
 // pitch — which the grid cannot show at all, hence the gauge bubble. The
@@ -7,7 +7,7 @@
 // in-place repaint of that one cell.
 
 import { notesAtStep } from '../../core/notes.js'
-import { emitNotesChanged } from '../../state/playback_events.js'
+import { emitNotesChanged } from '../../state/event_bus.js'
 import NoteDrag from '../components/note_drag.js'
 import { applyNoteEdit, emitNotePicked } from '../components/note_edit.js'
 

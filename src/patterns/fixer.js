@@ -46,7 +46,7 @@ export function normalizeNoteGridPosition(track, note) {
         note.beatStep %= track.stepsPerBeat
         note.beat = Math.floor(pStep / track.stepsPerBeat)
     }
-    note.steppc = Math.round((note.beatStep * 100) / track.stepsPerBeat)
+    note.stepPercent = Math.round((note.beatStep * 100) / track.stepsPerBeat)
     return note
 }
 

@@ -3,9 +3,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { BEATS_PER_PAGE, TICK } from '../src/core/constants.js'
 import { EVENTS } from '../src/core/events.js'
 

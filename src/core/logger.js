@@ -38,7 +38,7 @@ export const logger = {
  * @template T
  * @param {T | null | undefined} value
  * @param {T} fallback
- * @param {string} tag   - logger tag (e.g. 'AudioEngine')
+ * @param {string} tag   - logger tag (e.g. 'Engine')
  * @param {string} msg   - warning message
  * @returns {T}
  */

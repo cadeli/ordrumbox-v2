@@ -1,6 +1,6 @@
 import { NOTE_DEFAULTS } from '../core/note_schema.js'
 import { stepToBeat, stepToTick } from '../core/notes.js'
-import FlatNote from '../model/flatnote.js'
+import FlatNote from '../model/flat_note.js'
 import { soundRegistry } from '../state/sound_registry.js'
 
 const COST_DELETE = 3

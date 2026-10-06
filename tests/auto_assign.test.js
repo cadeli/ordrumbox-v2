@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { logger } from '../src/core/logger.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import AutoAssign from '../src/logic/services/auto_assign.js'
 
 describe('Functional: Auto-assign sounds', () => {

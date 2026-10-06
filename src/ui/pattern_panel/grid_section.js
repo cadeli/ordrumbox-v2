@@ -136,14 +136,14 @@ export default class GridSection {
         const totalStepsFor = (track) => (track.beatCount ?? 4) * (track.stepsPerBeat ?? 4)
 
         let html = '<div class="pp-tracks">'
-        tracks.forEach((track, tIdx) => {
+        tracks.forEach((track, trackIdx) => {
             if (!track) return
             const stepsPerBeat = track.stepsPerBeat ?? 4
 
-            let cached = opts.trackDataCache.get(tIdx)
+            let cached = opts.trackDataCache.get(trackIdx)
             if (!cached) {
                 cached = this.buildTrackData(track, startBeat, endBeatPage, pattern)
-                opts.trackDataCache.set(tIdx, cached)
+                opts.trackDataCache.set(trackIdx, cached)
             }
 
             let beatsHtml = '<div class="pp-beats">'
@@ -178,7 +178,7 @@ export default class GridSection {
                         const ghostsAtStep = cached.ghostMap.get(absPos) ?? []
                         const innerHtml = this.renderCellContent(notesAtStep, ghostsAtStep)
 
-                        const cellHtml = `<div class="${cls.join(' ')}" data-track="${tIdx}" data-beat="${b}" data-step="${s}" data-pos="${absPos}">${innerHtml}</div>`
+                        const cellHtml = `<div class="${cls.join(' ')}" data-track="${trackIdx}" data-beat="${b}" data-step="${s}" data-pos="${absPos}">${innerHtml}</div>`
                         cellsHtml += cellHtml
                     }
                 }
@@ -186,7 +186,7 @@ export default class GridSection {
             }
             beatsHtml += '</div>'
 
-            const isSelected = effectiveTrackIdx === tIdx
+            const isSelected = effectiveTrackIdx === trackIdx
             const isMuted = track.mute === true
             const isSolo = track.solo === true
             const sampleUrl =
@@ -195,16 +195,16 @@ export default class GridSection {
                     : ''
             html += `
                 <div class="pp-track ${isMuted ? 'pp-muted' : ''} ${isSelected ? 'pp-selected' : ''}">
-                    <div class="pp-vu ${isSelected ? 'selected' : ''}" data-track="${tIdx}"><div class="pp-vu-fill"></div></div>
+                    <div class="pp-vu ${isSelected ? 'selected' : ''}" data-track="${trackIdx}"><div class="pp-vu-fill"></div></div>
                     <div class="pp-track-left">
                         <div class="pp-track-top">
-                            <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${editor.esc(valueOrFallback(track.name, 'Track', 'PatternPanel', 'track name fallback'))}</span>
-                            <input type="range" class="pp-volume" min="0" max="1" step="0.01" value="${track.velocity ?? 1}" data-track="${tIdx}">
+                            <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${trackIdx}">${editor.esc(valueOrFallback(track.name, 'Track', 'PatternPanel', 'track name fallback'))}</span>
+                            <input type="range" class="pp-volume" min="0" max="1" step="0.01" value="${track.velocity ?? 1}" data-track="${trackIdx}">
                         </div>
                         ${track.useSoftSynth && track.synthSoundKey ? `<div class="pp-track-url">SYNTH: ${editor.esc(track.synthSoundKey)}</div>` : sampleUrl ? `<div class="pp-track-url" title="${editor.esc(sampleUrl)}">${editor.esc(sampleUrl)}</div>` : ''}
                     </div>
-                    <div class="pp-divider ${isMuted ? 'muted' : ''}" data-track="${tIdx}" role="button" tabindex="0" title="Mute"></div>
-                    <div class="pp-solo ${isSolo ? 'active' : ''}" data-track="${tIdx}" role="button" tabindex="0" title="Solo"></div>
+                    <div class="pp-divider ${isMuted ? 'muted' : ''}" data-track="${trackIdx}" role="button" tabindex="0" title="Mute"></div>
+                    <div class="pp-solo ${isSolo ? 'active' : ''}" data-track="${trackIdx}" role="button" tabindex="0" title="Solo"></div>
                     ${beatsHtml}
                 </div>`
         })

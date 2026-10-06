@@ -722,6 +722,21 @@ describe('IndexedDB helpers', () => {
                 expect(song.clips[0].measureCount).toBe(5)
             })
 
+            it('renames the legacy note keys of a walked track as well', () => {
+                const songs = [
+                    {
+                        key: 'notes',
+                        value: { patterns: [{ tracks: [{ notes: [{ beat: 0, beatStep: 2, steppc: 50 }] }] }] },
+                    },
+                ]
+
+                runMigration8({ songs })
+
+                const note = songs[0].value.patterns[0].tracks[0].notes[0]
+                expect(note.stepPercent).toBe(50)
+                expect(note).not.toHaveProperty('steppc')
+            })
+
             it('is a no-op without a transaction', () => {
                 const db = { objectStoreNames: { contains: () => true } }
                 expect(() => idbModule.MIGRATIONS[8](db, null)).not.toThrow()

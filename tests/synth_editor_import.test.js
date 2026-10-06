@@ -6,7 +6,7 @@ import SynthEditor from '../src/ui/synth_editor.js'
 import PresetSection from '../src/ui/synth_editor/preset_section.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 
 const makeGeneratedSound = () => ({
     masterVolume: 0.8,

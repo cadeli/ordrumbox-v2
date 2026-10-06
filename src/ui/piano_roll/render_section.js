@@ -5,7 +5,15 @@ import { getNoteAbsoluteStep } from '../../core/notes.js'
 import { createStepResolver } from '../../patterns/step_resolver.js'
 import { getNoteSubPositions } from '../../patterns/note_positions.js'
 import { formatNoteTooltip } from '../components/ui_utils.js'
-import { BLACK_KEY_INDICES, GRID_HEIGHT, MIDI_MIN, MIDDLE_C, NOTE_HEIGHT, TOTAL_KEYS, midiName } from './constants.js'
+import {
+    BLACK_KEY_INDICES,
+    GRID_HEIGHT,
+    MIDI_MIN,
+    MIDDLE_C,
+    NOTE_HEIGHT,
+    TOTAL_KEYS,
+    midiName,
+} from './piano_roll_constants.js'
 
 export default class RenderSection {
     #editor

@@ -3,7 +3,7 @@ import { getDelayTimeInSeconds } from './fx_values.js'
 import Defaults from '../patterns/defaults.js'
 import { RAMP_TIME } from '../core/constants.js'
 import { reportUserError } from '../core/notify.js'
-import WorkletLoader from './worklets/loader.js'
+import WorkletLoader from './worklets/worklet_loader.js'
 import STRIP_SOURCE from './worklets/processors/strip_source.js'
 
 WorkletLoader.register('strip', STRIP_SOURCE)

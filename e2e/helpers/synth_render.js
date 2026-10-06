@@ -1,6 +1,6 @@
 // e2e/helpers/synth_render.js
 //
-// Renders synth notes via the real AudioEngine (src/audio/engine.js) inside an
+// Renders synth notes via the real Engine (src/audio/engine.js) inside an
 // OfflineAudioContext — exactly like wav_exporter.js does for WAV export.
 //
 // CRITICAL 1 — one context per batch: Chromium's AudioWorklet only produces
@@ -41,7 +41,7 @@ export async function renderSynthBatch(page, configs, opts = {}) {
 
     return page.evaluate(
         async ({ configs, durationPerNote, gapSec, pitch, bpm, preferredBaseKey }) => {
-            const { default: AudioEngine } = await import('/src/audio/engine.js')
+            const { default: Engine } = await import('/src/audio/engine.js')
 
             function deepMerge(target, src) {
                 for (const k of Object.keys(src)) {
@@ -123,7 +123,7 @@ export async function renderSynthBatch(page, configs, opts = {}) {
             for (let attempt = 0; attempt < flushMs.length; attempt++) {
                 // A fresh context per attempt: startRendering() is one-shot.
                 const offlineCtx = new OfflineAudioContext(2, Math.floor(sampleRate * totalDuration), sampleRate)
-                const engine = new AudioEngine({
+                const engine = new Engine({
                     audioCtx: offlineCtx,
                     sounds: {},
                     generatedSounds: { [TEST_KEY]: structuredClone(baseSound) },

@@ -5,11 +5,11 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
 import { reportUserError } from '../../core/notify.js'
 import { TRACK_DEFAULTS, TRACK_VALUE_RANGES } from '../../model/track_schema.js'
-import NoteCommands from './cmd/cmd_notes.js'
-import TrackCommands from './cmd/cmd_tracks.js'
-import PatternCommands from './cmd/cmd_patterns.js'
-import SongCommands from './cmd/cmd_song.js'
-import SelectionCommands from './cmd/cmd_selection.js'
+import NoteCommands from './cmd/note_commands.js'
+import TrackCommands from './cmd/track_commands.js'
+import PatternCommands from './cmd/pattern_commands.js'
+import SongCommands from './cmd/song_commands.js'
+import SelectionCommands from './cmd/selection_commands.js'
 
 /**
  * Host contract consumed by the command sub-modules in ./cmd/*.js.

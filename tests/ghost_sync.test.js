@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import PatternPanel from '../src/ui/pattern_panel.js'
 import PianoRollPanel from '../src/ui/piano_roll_panel.js'
-import { recomputeFlatNotes } from '../src/patterns/engine.js'
+import { recomputeFlatNotes } from '../src/patterns/pattern_engine.js'
 import { TICK } from '../src/core/constants.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'

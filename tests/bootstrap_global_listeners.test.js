@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { EVENTS } from '../src/core/events.js'
 import { showToast } from '../src/core/notify.js'
 

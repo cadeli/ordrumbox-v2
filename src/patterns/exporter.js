@@ -27,7 +27,7 @@ const PATTERN_RUNTIME_KEYS = new Set(['_revision'])
  */
 const PATTERN_ALWAYS_KEEP = new Set(['id'])
 
-export class PatternExporter {
+export class Exporter {
     static isDefaultValue(value, defaultVal) {
         if (value === defaultVal) return true
         if (value === null && defaultVal === null) return true

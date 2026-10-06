@@ -1,7 +1,7 @@
 // src/ui/synth_editor/WaveformSection.js
 // Waveform canvas drawing: oscillators + ADSR envelope preview.
 
-import { WAVE_BUFFER } from './constants.js'
+import { WAVE_BUFFER } from './synth_editor_constants.js'
 import { color, rgba } from '../theme.js'
 import { clamp } from '../../core/numbers.js'
 import { getLfoWaveformValue } from '../../audio/math.js'

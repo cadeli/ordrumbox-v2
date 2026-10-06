@@ -9,7 +9,7 @@ import {
     getUnloadedSamplesFromDrumkits,
 } from '../src/patterns/fixer.js'
 import { normalizeNote } from '../src/core/note_schema.js'
-import { computeTickCountForLoop } from '../src/patterns/engine.js'
+import { computeTickCountForLoop } from '../src/patterns/pattern_engine.js'
 
 describe('patternFixer - fixTrackPanning', () => {
     // PAN_MAP is indexed by drum type, so the pan follows the TYPE. It used to be
@@ -44,7 +44,7 @@ describe('patternFixer - normalizeNoteGridPosition', () => {
         normalizeNoteGridPosition(track, note)
         expect(note.beatStep).toBe(2)
         expect(note.beat).toBe(1)
-        expect(note.steppc).toBe(50)
+        expect(note.stepPercent).toBe(50)
     })
 
     it('leaves beatStep undefined when missing', () => {
@@ -52,7 +52,7 @@ describe('patternFixer - normalizeNoteGridPosition', () => {
         const note = {}
         normalizeNoteGridPosition(track, note)
         expect(note.beatStep).toBeUndefined()
-        expect(note.steppc).toBeNaN()
+        expect(note.stepPercent).toBeNaN()
     })
 })
 
@@ -357,5 +357,13 @@ describe('patternFixer - legacy note keys', () => {
     it('does not re-export the legacy key', () => {
         const [track] = fixPattern({ name: 'P', tracks: [makeTrack({ retriggerNum: 3 })] }).tracks
         expect(Object.keys(track.notes[0])).not.toContain('retriggerNum')
+    })
+
+    it('renames a legacy steppc to stepPercent', () => {
+        const [track] = fixPattern({ name: 'P', tracks: [makeTrack({ steppc: 50 })] }).tracks
+        expect(track.notes[0]).not.toHaveProperty('steppc')
+        // the value is recalculated from the grid right after the rename, so only
+        // the spelling has to survive — never the stored number
+        expect(track.notes[0].stepPercent).toBe(0)
     })
 })

@@ -21,7 +21,7 @@ beforeEach(async () => {
     }
     globalThis.requestAnimationFrame = vi.fn()
     globalThis.cancelAnimationFrame = vi.fn()
-    playbackEvents = (await import('../src/state/playback_events.js')).playbackEvents
+    playbackEvents = (await import('../src/state/event_bus.js')).playbackEvents
     PlaybackOverlaySection = (await import('../src/ui/pattern_panel/playback_overlay_section.js')).default
 })
 

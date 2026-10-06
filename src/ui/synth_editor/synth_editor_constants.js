@@ -1,4 +1,4 @@
-// src/ui/synth_editor/constants.js
+// src/ui/synth_editor/synth_editor_constants.js
 // Shared constants for the SynthEditor sub-modules.
 
 export const WAVE_ICONS = {

@@ -3,16 +3,16 @@
  * the correct time positions for a given BPM.
  *
  * Uses node-web-audio-api for real OfflineAudioContext rendering,
- * then analyzes the output buffer with AudioAnalyzer + onset detection.
+ * then analyzes the output buffer with Analyzer + onset detection.
  */
 import { describe, it, expect } from 'vitest'
 import nodeWaa from 'node-web-audio-api'
-import AudioAnalyzer from '../src/audio/analyze.js'
+import Analyzer from '../src/audio/analyzer.js'
 import { detectOnsets, matchOnsets } from './helpers/onset_detector.js'
 
 const { OfflineAudioContext, AudioWorkletNode } = nodeWaa
 const SAMPLE_RATE = 44100
-const analyzer = new AudioAnalyzer()
+const analyzer = new Analyzer()
 
 // Set globals that orDrumbox engine expects
 globalThis.OfflineAudioContext = OfflineAudioContext

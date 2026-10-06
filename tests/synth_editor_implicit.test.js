@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import SynthEditor from '../src/ui/synth_editor.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 
 const makeSound = (overrides = {}) => ({
     masterVolume: 0.8,

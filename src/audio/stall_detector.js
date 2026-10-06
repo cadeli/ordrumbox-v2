@@ -1,4 +1,4 @@
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { logger } from '../core/logger.js'
 import { EVENTS } from '../core/events.js'
 
@@ -11,7 +11,7 @@ import { EVENTS } from '../core/events.js'
  *
  * Fires playbackEvents.onStall / onStallResume when state changes.
  */
-export default class AudioStallDetector {
+export default class StallDetector {
     #audioCtx
     #transport
     #checkIntervalMs

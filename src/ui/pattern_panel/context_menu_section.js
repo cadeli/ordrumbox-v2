@@ -7,7 +7,7 @@ import { getTracksArray } from '../../core/tracks.js'
 import { showToast } from '../../core/notify.js'
 import { EVENTS } from '../../core/events.js'
 import { beatLabel, notesLabel } from './labels.js'
-import { emitNotesChanged } from '../../state/playback_events.js'
+import { emitNotesChanged } from '../../state/event_bus.js'
 
 export default class ContextMenuSection {
     #editor

@@ -21,7 +21,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import WavExporter from '../src/audio/export/wav_exporter.js'
 import MidiExporter, { C3_MIDI_NOTE } from '../src/logic/midi/midi_exporter.js'
-import InstrumentsManager from '../src/logic/services/instrument_manager/index.js'
+import InstrumentsManager from '../src/logic/services/instruments_manager/index.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import * as flatNotesService from '../src/patterns/flat_notes.js'
@@ -31,10 +31,10 @@ import {
     midiVelocityToNormalized,
     extractProgramChanges,
 } from '../src/logic/midi/midi_parser.js'
-import { recomputeFlatNotes } from '../src/patterns/engine.js'
+import { recomputeFlatNotes } from '../src/patterns/pattern_engine.js'
 import { TICK } from '../src/core/constants.js'
 import { getTracksArray } from '../src/core/tracks.js'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import { PARAM_SETS } from './helpers/make_pattern.js'
 
 /**

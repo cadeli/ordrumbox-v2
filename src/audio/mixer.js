@@ -1,5 +1,5 @@
 import Strip from './strip.js'
-import WorkletLoader from './worklets/loader.js'
+import WorkletLoader from './worklets/worklet_loader.js'
 import MASTER_BUS_SOURCE from './worklets/processors/master_bus_source.js'
 import { logger } from '../core/logger.js'
 import { soundRegistry } from '../state/sound_registry.js'

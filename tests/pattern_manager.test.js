@@ -1,7 +1,7 @@
 import { makeAppStateMock } from './helpers/app_state_mock.js'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import * as flatNotesService from '../src/patterns/flat_notes.js'
-import { hasArp, getArpNoteCount, generateSubNotes, createArpFlatNote } from '../src/patterns/engine.js'
+import { hasArp, getArpNoteCount, generateSubNotes, createArpFlatNote } from '../src/patterns/pattern_engine.js'
 import { makeNote, makeTrack, PARAM_SETS } from './helpers/make_pattern.js'
 import * as stepResolver from '../src/patterns/step_resolver.js'
 import { EVENTS } from '../src/core/events.js'
@@ -11,7 +11,7 @@ vi.mock('../src/state/app_state.js', () => ({
     __esModule: true,
 }))
 
-vi.mock('../src/state/playback_events.js', () => {
+vi.mock('../src/state/event_bus.js', () => {
     const callbacks = []
     let batchDepth = 0
     const pending = []
@@ -78,7 +78,7 @@ describe('PatternManager', () => {
         })
 
         it('fires PATTERN_CHANGE callbacks on playbackEvents', async () => {
-            const { playbackEvents } = await import('../src/state/playback_events.js')
+            const { playbackEvents } = await import('../src/state/event_bus.js')
             const cb = vi.fn()
             playbackEvents.on(EVENTS.PATTERN_CHANGE, cb)
 

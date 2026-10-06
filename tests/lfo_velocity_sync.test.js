@@ -3,14 +3,14 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { computeLfoValue } from '../src/audio/math.js'
-import InstrumentsManager from '../src/logic/services/instrument_manager/index.js'
+import InstrumentsManager from '../src/logic/services/instruments_manager/index.js'
 
 import TrackEditor from '../src/ui/track_editor.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import WorkletLoader from '../src/audio/worklets/loader.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import WorkletLoader from '../src/audio/worklets/worklet_loader.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { EVENTS } from '../src/core/events.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
 import { parseMidi, findAllNotes } from './helpers/midi_reader.js'

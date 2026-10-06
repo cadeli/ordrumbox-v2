@@ -78,7 +78,7 @@ describe('Sequencer', () => {
         appState.patterns = [makePattern()]
         appState.selectedPatternIdx = 0
 
-        Sequencer = (await import('../src/logic/seq.js')).default
+        Sequencer = (await import('../src/logic/sequencer.js')).default
     })
 
     it('constructor creates transport if none exists', () => {
@@ -96,12 +96,12 @@ describe('Sequencer', () => {
     describe('PATTERN_CHANGE payload contract', () => {
         async function bus() {
             return {
-                playbackEvents: (await import('../src/state/playback_events.js')).playbackEvents,
+                playbackEvents: (await import('../src/state/event_bus.js')).playbackEvents,
                 EVENTS: (await import('../src/core/events.js')).EVENTS,
             }
         }
 
-        // the Sequencer constructor builds its own AudioEngine and puts it in the
+        // the Sequencer constructor builds its own Engine and puts it in the
         // registry, so the mock has to BE the spy
         async function engineSpies() {
             const engine = {
@@ -109,8 +109,8 @@ describe('Sequencer', () => {
                 syncTrack: vi.fn(),
                 syncAllTracks: vi.fn(),
             }
-            const { default: AudioEngine } = await import('../src/audio/engine.js')
-            AudioEngine.mockImplementation(function () {
+            const { default: Engine } = await import('../src/audio/engine.js')
+            Engine.mockImplementation(function () {
                 return engine
             })
             return engine

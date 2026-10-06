@@ -112,7 +112,7 @@ describe('Keyboard shortcuts', () => {
     })
 
     it('Digit1 emits trackParamChange and patternChange to refresh mute UI', async () => {
-        const { playbackEvents } = await import('../src/state/playback_events.js')
+        const { playbackEvents } = await import('../src/state/event_bus.js')
         const trackParamSpy = vi.fn()
         const patternChangeSpy = vi.fn()
         playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, trackParamSpy)

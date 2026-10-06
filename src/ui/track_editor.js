@@ -5,7 +5,7 @@
 // module-level singletons.
 
 import { appState } from '../state/app_state.js'
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { reportUserError, showToast } from '../core/notify.js'
@@ -31,7 +31,7 @@ import ModulationSection from './track_editor/modulation_section.js'
 import LoopSection from './track_editor/loop_section.js'
 
 // ── Constants ────────────────────────────────────────────────────────
-import { FX_DEFS, TAB_DEFS, ALL_TRACK_PROPS, KNOB_PROPS } from './track_editor/constants.js'
+import { FX_DEFS, TAB_DEFS, ALL_TRACK_PROPS, KNOB_PROPS } from './track_editor/track_editor_constants.js'
 import { EVENTS } from '../core/events.js'
 
 export default class TrackEditor extends BasePanel {

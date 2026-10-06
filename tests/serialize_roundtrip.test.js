@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
-import { PatternExporter } from '../src/patterns/exporter.js'
+import Commander from '../src/logic/commands/commander.js'
+import { Exporter } from '../src/patterns/exporter.js'
 import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
 
 describe('Functional: Pattern serialization round-trip', () => {
@@ -42,7 +42,7 @@ describe('Functional: Pattern serialization round-trip', () => {
         sourcePattern.tags = ['techno', 'dark']
 
         const imported = cmd.importPatternFromJson(sourcePattern)
-        const exported = PatternExporter.export(imported)
+        const exported = Exporter.export(imported)
         const reimported = cmd.importPatternFromJson(exported)
 
         expect(reimported.name).toBe(sourcePattern.name)
@@ -75,7 +75,7 @@ describe('Functional: Pattern serialization round-trip', () => {
 
     it('export includes metadata', () => {
         const pattern = cmd.addPattern('Test')
-        const exported = PatternExporter.export(pattern)
+        const exported = Exporter.export(pattern)
 
         expect(exported.application).toBe('online-ordrumbox')
         expect(exported.url).toBe('https://www.ordrumbox.com')
@@ -91,7 +91,7 @@ describe('Functional: Pattern serialization round-trip', () => {
         })
 
         const imported = cmd.importPatternFromJson(sourcePattern)
-        const exported = PatternExporter.export(imported)
+        const exported = Exporter.export(imported)
         const reimported = cmd.importPatternFromJson(exported)
 
         expect(reimported.name).toBe('Empty')
@@ -134,9 +134,9 @@ describe('Functional: Pattern serialization round-trip', () => {
         source.description = 'Double export'
 
         const once = cmd.importPatternFromJson(source)
-        const exportedOnce = PatternExporter.export(once)
+        const exportedOnce = Exporter.export(once)
         const twice = cmd.importPatternFromJson(exportedOnce)
-        const exportedTwice = PatternExporter.export(twice)
+        const exportedTwice = Exporter.export(twice)
 
         expect(exportedTwice.name).toBe(exportedOnce.name)
         expect(exportedTwice.bpm).toBe(exportedOnce.bpm)
@@ -164,7 +164,7 @@ describe('Functional: Pattern serialization round-trip', () => {
             ],
         })
         const imported = cmd.importPatternFromJson(source)
-        const exported = PatternExporter.export(imported)
+        const exported = Exporter.export(imported)
         const reimported = cmd.importPatternFromJson(exported)
         const track = reimported.tracks[0]
 
@@ -189,7 +189,7 @@ describe('Functional: Pattern serialization round-trip', () => {
             ],
         })
         const imported = cmd.importPatternFromJson(source)
-        const exported = PatternExporter.export(imported)
+        const exported = Exporter.export(imported)
         const reimported = cmd.importPatternFromJson(exported)
         const note = reimported.tracks[0].notes[0]
 
@@ -213,7 +213,7 @@ describe('Functional: Pattern serialization round-trip', () => {
         expect(imported.application).toBe('test-app')
         expect(imported.url).toBe('https://test.com')
 
-        const exported = PatternExporter.export(imported)
+        const exported = Exporter.export(imported)
         expect(exported.application).toBe('test-app')
         expect(exported.url).toBe('https://test.com')
 
@@ -230,7 +230,7 @@ describe('Functional: Pattern serialization round-trip', () => {
             tracks: [makeTrack('KICK', [], { beatCount: 4, stepsPerBeat: 4 })],
         })
         const imported = cmd.importPatternFromJson(source)
-        const exported = PatternExporter.export(imported)
+        const exported = Exporter.export(imported)
         const reimported = cmd.importPatternFromJson(exported)
 
         expect(reimported.tracks).toHaveLength(1)
@@ -242,7 +242,7 @@ describe('Functional: Pattern serialization round-trip', () => {
         const track = cmd.addTrack(pattern, 'KICK')
         cmd.addNote(track, 0, 0, 0)
 
-        const exported = PatternExporter.export(pattern)
+        const exported = Exporter.export(pattern)
         expect(exported.application).toBe('online-ordrumbox')
         expect(exported.url).toBe('https://www.ordrumbox.com')
         expect(exported.name).toBe('DefaultTrack')
@@ -272,7 +272,7 @@ describe('Functional: Pattern serialization round-trip', () => {
             ],
         })
         const imported = cmd.importPatternFromJson(source)
-        const exported = PatternExporter.export(imported)
+        const exported = Exporter.export(imported)
         const reimported = cmd.importPatternFromJson(exported)
         const track = reimported.tracks[0]
 
@@ -303,7 +303,7 @@ describe('Functional: Pattern serialization round-trip', () => {
                 ],
             })
             const imported = cmd.importPatternFromJson(source)
-            const exported = PatternExporter.export(imported)
+            const exported = Exporter.export(imported)
             const reimported = cmd.importPatternFromJson(exported)
 
             expect(reimported.name).toBe(source.name)
@@ -321,9 +321,9 @@ describe('Functional: Pattern serialization round-trip', () => {
                 tracks: [makeTrack('KICK', [makeNote(0, 0, { velocity: 0.8, pitch: 3 })], { stepsPerBeat, beatCount })],
             })
             const once = cmd.importPatternFromJson(source)
-            const exportedOnce = PatternExporter.export(once)
+            const exportedOnce = Exporter.export(once)
             const twice = cmd.importPatternFromJson(exportedOnce)
-            const exportedTwice = PatternExporter.export(twice)
+            const exportedTwice = Exporter.export(twice)
 
             expect(exportedTwice.tracks).toEqual(exportedOnce.tracks)
         })

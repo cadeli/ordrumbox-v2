@@ -65,8 +65,8 @@ export default class ActionsSection {
                 break
             }
             case 'save': {
-                const { PatternExporter } = await import('../../patterns/exporter.js')
-                const data = PatternExporter.export(pattern)
+                const { Exporter } = await import('../../patterns/exporter.js')
+                const data = Exporter.export(pattern)
                 downloadJson(data, `ordrumbox-${pattern.name ?? 'pattern'}.json`)
                 break
             }

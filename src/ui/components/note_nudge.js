@@ -9,7 +9,7 @@
 import { toFiniteNumber } from '../../core/numbers.js'
 import { NOTE_DEFAULTS } from '../../core/note_schema.js'
 import { applyNoteEdit, AXIS_PITCH, AXIS_VELOCITY } from './note_edit.js'
-import { MIDI_MAX, MIDI_MIN, MIDDLE_C } from '../piano_roll/constants.js'
+import { MIDI_MAX, MIDI_MIN, MIDDLE_C } from '../piano_roll/piano_roll_constants.js'
 
 /** Velocity increment per Shift+ArrowUp / Shift+ArrowDown. */
 export const VELOCITY_STEP = 0.05

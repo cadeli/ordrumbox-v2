@@ -18,7 +18,7 @@ import {
     computeTickCountForLoop,
     expandLoopOccurrences,
     computeTickForNote,
-} from '../src/patterns/engine.js'
+} from '../src/patterns/pattern_engine.js'
 import { createStepResolver } from '../src/patterns/step_resolver.js'
 import { getNoteAbsoluteStep, stepToTick } from '../src/core/notes.js'
 

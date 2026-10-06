@@ -10,7 +10,7 @@
 import { clamp, toFiniteNumber } from '../../core/numbers.js'
 import { NOTE_DEFAULTS } from '../../core/note_schema.js'
 import { AXIS_PITCH } from './note_edit.js'
-import { MIDI_MAX, MIDI_MIN, MIDDLE_C } from '../piano_roll/constants.js'
+import { MIDI_MAX, MIDI_MIN, MIDDLE_C } from '../piano_roll/piano_roll_constants.js'
 import { fmt, pitchToMidi, pitchToNoteName } from './ui_utils.js'
 
 /** How long the bubble stays fully visible after the last edit. */

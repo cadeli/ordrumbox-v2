@@ -1,6 +1,6 @@
 import { appState } from '../state/app_state.js'
-import { playbackEvents } from '../state/playback_events.js'
-import { recomputeFlatNotes } from './engine.js'
+import { playbackEvents } from '../state/event_bus.js'
+import { recomputeFlatNotes } from './pattern_engine.js'
 import { TICK } from '../core/constants.js'
 import { EVENTS } from '../core/events.js'
 

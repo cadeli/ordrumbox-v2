@@ -18,15 +18,15 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { importPatternFromJson } from '../src/logic/commands/pattern_import.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
 import { C3_MIDI_NOTE } from '../src/logic/midi/midi_exporter.js'
-import InstrumentsManager from '../src/logic/services/instrument_manager/index.js'
+import InstrumentsManager from '../src/logic/services/instruments_manager/index.js'
 import { parseMidi, findAllNotes, extractProgramChanges } from '../src/logic/midi/midi_parser.js'
 import { TICK } from '../src/core/constants.js'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import * as flatNotesService from '../src/patterns/flat_notes.js'
-import { recomputeFlatNotes } from '../src/patterns/engine.js'
+import { recomputeFlatNotes } from '../src/patterns/pattern_engine.js'
 
 const SIMPLE_JSON = {
     application: 'online-ordrumbox',

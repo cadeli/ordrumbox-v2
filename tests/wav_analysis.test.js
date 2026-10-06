@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import AudioAnalyzer from '../src/audio/analyze.js'
+import Analyzer from '../src/audio/analyzer.js'
 import { buildWav, buildWavFromTicks } from './helpers/wav_builder.js'
 import { detectOnsetsFromWav, findNearestOnset, matchOnsets } from './helpers/onset_detector.js'
 
 const SAMPLE_RATE = 44100
-const analyzer = new AudioAnalyzer()
+const analyzer = new Analyzer()
 
 const DETECT_OPTIONS = { threshold: 0.0001, minOnsetGap: 0.08 }
 
@@ -340,9 +340,9 @@ describe('wav analysis pipeline integration', () => {
     })
 })
 
-// ─── AudioAnalyzer Unit Tests with Synthetic WAV ─────────────────────────────
+// ─── Analyzer Unit Tests with Synthetic WAV ─────────────────────────────
 
-describe('AudioAnalyzer with synthetic WAV', () => {
+describe('Analyzer with synthetic WAV', () => {
     it('decodes WAV and extracts correct metadata', async () => {
         const wav = await buildWav({ sampleRate: 48000, duration: 0.5, channels: 1 })
         const decoded = analyzer.decodeWavBuffer(wav)

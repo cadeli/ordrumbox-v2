@@ -1,4 +1,4 @@
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { APP_VERSION } from '../core/constants.js'
 import { bindCloseButton, bindTabToggles } from './components/ui_utils.js'
 import BasePanel from './base_panel.js'

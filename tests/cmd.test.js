@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import { getPanFromTrackName } from '../src/core/drum_taxonomy.js'
 import { isNoteAt, kitIsLoaded, getTrackFromType, getAllSoundsForType } from './helpers/cmd_test_helpers.js'
 import { makePattern } from './helpers/make_pattern.js'
@@ -107,7 +107,7 @@ describe('Functional: Commander operations', () => {
             expect(note.beatStep).toBe(2)
             expect(note.pitch).toBe(5)
             expect(note.velocity).toBe(0.8)
-            expect(note.steppc).toBe(50)
+            expect(note.stepPercent).toBe(50)
             expect(note.every).toBe(1)
             expect(note.pos).toBe(0)
             expect(note.retriggerCount).toBe(1)
@@ -239,12 +239,12 @@ describe('Functional: Commander operations', () => {
             expect(track.loopAtStep).toBe(20)
         })
 
-        it('caps stepsPerBeat at 8 when steppc exceeds 100', () => {
+        it('caps stepsPerBeat at 8 when stepPercent exceeds 100', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             track.stepsPerBeat = 9
             const note = cmd.addNote(track, 0, 5)
             expect(track.stepsPerBeat).toBe(8)
-            expect(note.steppc).toBe(63)
+            expect(note.stepPercent).toBe(63)
         })
     })
 
@@ -311,7 +311,7 @@ describe('Functional: Commander operations', () => {
         it('incrStepsPerBeat changes stepsPerBeat', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             const note = cmd.addNote(track, 0, 2)
-            note.steppc = 50
+            note.stepPercent = 50
 
             const original = track.stepsPerBeat
             cmd.incrStepsPerBeat(track)
@@ -330,7 +330,7 @@ describe('Functional: Commander operations', () => {
 
             track.stepsPerBeat = 4
             track.notes.forEach((note) => {
-                note.beatStep = Math.min(Math.round((note.steppc / 100) * 4), 3)
+                note.beatStep = Math.min(Math.round((note.stepPercent / 100) * 4), 3)
             })
 
             expect(track.notes.map((n) => n.beatStep)).toEqual([0, 2, 1, 3])
@@ -340,7 +340,7 @@ describe('Functional: Commander operations', () => {
 
             track.stepsPerBeat = 8
             track.notes.forEach((note) => {
-                note.beatStep = Math.min(Math.round((note.steppc / 100) * 8), 7)
+                note.beatStep = Math.min(Math.round((note.stepPercent / 100) * 8), 7)
             })
 
             track.notes.forEach((note, i) => {
@@ -349,7 +349,7 @@ describe('Functional: Commander operations', () => {
             })
         })
 
-        it('roundtrips notes through 8→1→8 stepsPerBeat changes via steppc', () => {
+        it('roundtrips notes through 8→1→8 stepsPerBeat changes via stepPercent', () => {
             const track = cmd.createTrack(4, 'KICK', 8)
             cmd.addNote(track, 0, 0)
             cmd.addNote(track, 0, 3)
@@ -361,12 +361,12 @@ describe('Functional: Commander operations', () => {
 
             track.stepsPerBeat = 1
             track.notes.forEach((note) => {
-                note.beatStep = Math.min(Math.round((note.steppc / 100) * 1), 0)
+                note.beatStep = Math.min(Math.round((note.stepPercent / 100) * 1), 0)
             })
 
             track.stepsPerBeat = 8
             track.notes.forEach((note) => {
-                note.beatStep = Math.min(Math.round((note.steppc / 100) * 8), 7)
+                note.beatStep = Math.min(Math.round((note.stepPercent / 100) * 8), 7)
             })
 
             track.notes.forEach((note, i) => {
@@ -375,7 +375,7 @@ describe('Functional: Commander operations', () => {
             })
         })
 
-        it('roundtrips notes through 6→2→6 stepsPerBeat changes via steppc', () => {
+        it('roundtrips notes through 6→2→6 stepsPerBeat changes via stepPercent', () => {
             const track = cmd.createTrack(4, 'KICK', 6)
             cmd.addNote(track, 0, 0)
             cmd.addNote(track, 0, 1)
@@ -391,12 +391,12 @@ describe('Functional: Commander operations', () => {
 
             track.stepsPerBeat = 2
             track.notes.forEach((note) => {
-                note.beatStep = Math.min(Math.round((note.steppc / 100) * 2), 1)
+                note.beatStep = Math.min(Math.round((note.stepPercent / 100) * 2), 1)
             })
 
             track.stepsPerBeat = 6
             track.notes.forEach((note) => {
-                note.beatStep = Math.min(Math.round((note.steppc / 100) * 6), 5)
+                note.beatStep = Math.min(Math.round((note.stepPercent / 100) * 6), 5)
             })
 
             track.notes.forEach((note, i) => {
@@ -405,20 +405,20 @@ describe('Functional: Commander operations', () => {
             })
         })
 
-        it('maps note to correct step on downsample via steppc (8→4)', () => {
+        it('maps note to correct step on downsample via stepPercent (8→4)', () => {
             const track = cmd.createTrack(4, 'KICK', 8)
             cmd.addNote(track, 0, 7)
 
             track.stepsPerBeat = 4
             track.notes.forEach((note) => {
-                note.beatStep = Math.min(Math.round((note.steppc / 100) * 4), 3)
+                note.beatStep = Math.min(Math.round((note.stepPercent / 100) * 4), 3)
             })
 
             expect(track.notes[0].beat).toBe(0)
             expect(track.notes[0].beatStep).toBe(3)
         })
 
-        it('preserves all notes through 4→1→4 via steppc', () => {
+        it('preserves all notes through 4→1→4 via stepPercent', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             cmd.addNote(track, 0, 0)
             cmd.addNote(track, 0, 1)
@@ -429,12 +429,12 @@ describe('Functional: Commander operations', () => {
 
             track.stepsPerBeat = 1
             track.notes.forEach((note) => {
-                note.beatStep = Math.min(Math.round((note.steppc / 100) * 1), 0)
+                note.beatStep = Math.min(Math.round((note.stepPercent / 100) * 1), 0)
             })
 
             track.stepsPerBeat = 4
             track.notes.forEach((note) => {
-                note.beatStep = Math.min(Math.round((note.steppc / 100) * 4), 3)
+                note.beatStep = Math.min(Math.round((note.stepPercent / 100) * 4), 3)
             })
 
             track.notes.forEach((note, i) => {

@@ -4,8 +4,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import GenerationSection from '../src/ui/track_editor/generation_section.js'
 
-vi.mock('../src/ui/track_editor/constants.js', async () => {
-    const mod = await vi.importActual('../src/ui/track_editor/constants.js')
+vi.mock('../src/ui/track_editor/track_editor_constants.js', async () => {
+    const mod = await vi.importActual('../src/ui/track_editor/track_editor_constants.js')
     return {
         ...mod,
         GROUPS: [

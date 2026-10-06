@@ -100,12 +100,12 @@ export default class SelectionSection {
         if (!info) return
         for (const [key, cell] of this.#editor.cellMap) {
             const parts = key.split(':')
-            const tIdx = Number(parts[0])
+            const trackIdx = Number(parts[0])
             const beat = Number(parts[1])
             const step = Number(parts[2])
-            const track = tracks[tIdx]
+            const track = tracks[trackIdx]
             if (!track) continue
-            if (this.#cellInInfoRange(tIdx, beat, step, track, info)) cell.classList.add('pp-range')
+            if (this.#cellInInfoRange(trackIdx, beat, step, track, info)) cell.classList.add('pp-range')
         }
     }
 

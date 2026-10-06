@@ -56,7 +56,7 @@ test.describe('Numeric synth controls (SYNTH_PARAM_META)', () => {
 
     test('each parameter has an audible effect between min and max', async ({ page }) => {
         const { SYNTH_PARAM_META } = await page.evaluate(() =>
-            import('/src/ui/synth_editor/constants.js').then((m) => ({
+            import('/src/ui/synth_editor/synth_editor_constants.js').then((m) => ({
                 SYNTH_PARAM_META: m.SYNTH_PARAM_META,
             })),
         )
@@ -96,7 +96,7 @@ test.describe('Synth listboxes', () => {
 
     test('each VCO1 waveform produces a distinct timbre', async ({ page }) => {
         const { WAVE_ICONS } = await page.evaluate(() =>
-            import('/src/ui/synth_editor/constants.js').then((m) => ({ WAVE_ICONS: m.WAVE_ICONS })),
+            import('/src/ui/synth_editor/synth_editor_constants.js').then((m) => ({ WAVE_ICONS: m.WAVE_ICONS })),
         )
         const waves = Object.keys(WAVE_ICONS)
 
@@ -153,7 +153,7 @@ test.describe('Synth listboxes', () => {
 
     test('each filter type has a distinct effect on a rich signal', async ({ page }) => {
         const { FILTER_ICONS } = await page.evaluate(() =>
-            import('/src/ui/synth_editor/constants.js').then((m) => ({ FILTER_ICONS: m.FILTER_ICONS })),
+            import('/src/ui/synth_editor/synth_editor_constants.js').then((m) => ({ FILTER_ICONS: m.FILTER_ICONS })),
         )
         const types = Object.keys(FILTER_ICONS)
         const base = { vco1: { wave: 'sawtooth', gain: 1 }, filter: { freq: 800, Q: 4 } }

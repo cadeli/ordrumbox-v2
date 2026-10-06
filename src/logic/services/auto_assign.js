@@ -1,6 +1,6 @@
 import { appState as _appState } from '../../state/app_state.js'
 import { soundRegistry as soundRegistrySingleton } from '../../state/sound_registry.js'
-import InstrumentsManager, { instrumentsManager } from './instrument_manager/index.js'
+import InstrumentsManager, { instrumentsManager } from './instruments_manager/index.js'
 import { getRandomKey } from '../../core/notes.js'
 import { getTracksArray } from '../../core/tracks.js'
 import { NOT_FOUND } from '../../core/constants.js'

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
 import { OrKnob } from '../src/ui/components/or_knob.js'
-import { KNOB_PROPS } from '../src/ui/track_editor/constants.js'
+import { KNOB_PROPS } from '../src/ui/track_editor/track_editor_constants.js'
 
 const DECAY = KNOB_PROPS.find((p) => p.key === 'decay')
 

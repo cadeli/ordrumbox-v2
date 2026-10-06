@@ -144,11 +144,11 @@
             import { serviceRegistry } from '../src/state/service_registry.js'
             import { soundRegistry } from '../src/state/sound_registry.js'
             import { appState } from '../src/state/app_state.js'
-            import { playbackEvents } from '../src/state/playback_events.js'
-            import Commander from '../src/logic/commands/cmd.js'
-            import Sequencer from '../src/logic/seq.js'
+            import { playbackEvents } from '../src/state/event_bus.js'
+            import Commander from '../src/logic/commands/commander.js'
+            import Sequencer from '../src/logic/sequencer.js'
             import ResourcesLoader from '../src/loader/resources_loader.js'
-            import AudioEngine from '../src/audio/engine.js'
+            import Engine from '../src/audio/engine.js'
             import WavExporter from '../src/audio/export/wav_exporter.js'
             import { bufferToWav } from '../src/audio/export/wav_encoder.js'
             import { TICK } from '../src/core/constants.js'
@@ -192,7 +192,7 @@
                     beat,
                     beatStep: 0,
                     pitch,
-                    steppc: beat * 25,
+                    stepPercent: beat * 25,
                     every: 1,
                     prob: 1,
                     rate: 1,
@@ -713,7 +713,7 @@
                     }
                     serviceRegistry.transport = liveTransport
 
-                    liveEngine = new AudioEngine({
+                    liveEngine = new Engine({
                         audioCtx: liveAudioCtx,
                         sounds: soundRegistry.sounds,
                         generatedSounds: soundRegistry.generatedSounds,

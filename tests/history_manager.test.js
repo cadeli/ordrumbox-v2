@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-vi.mock('../src/state/playback_events.js', async () => {
+vi.mock('../src/state/event_bus.js', async () => {
     const { EventEmitter } = await import('events')
     const emitter = new EventEmitter()
     let batchDepth = 0
@@ -37,7 +37,7 @@ vi.mock('../src/state/playback_events.js', async () => {
 
 import HistoryManager from '../src/logic/history_manager.js'
 import { logger } from '../src/core/logger.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { EVENTS } from '../src/core/events.js'
 import { showToast } from '../src/core/notify.js'
 

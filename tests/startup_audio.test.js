@@ -107,7 +107,7 @@ describe('toggleStartStop — audioCtx creation', () => {
         const fakeCtx = makeFakeAudioCtx()
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
 
-        const { default: Sequencer } = await import('../src/logic/seq.js')
+        const { default: Sequencer } = await import('../src/logic/sequencer.js')
         const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: null,
@@ -126,7 +126,7 @@ describe('toggleStartStop — audioCtx creation', () => {
         const fakeCtx = makeFakeAudioCtx({ state: 'suspended' })
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
 
-        const { default: Sequencer } = await import('../src/logic/seq.js')
+        const { default: Sequencer } = await import('../src/logic/sequencer.js')
         const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: fakeCtx,
@@ -145,7 +145,7 @@ describe('toggleStartStop — audioCtx creation', () => {
         const fakeCtx = makeFakeAudioCtx({ state: 'running' })
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
 
-        const { default: Sequencer } = await import('../src/logic/seq.js')
+        const { default: Sequencer } = await import('../src/logic/sequencer.js')
         const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: fakeCtx,
@@ -169,7 +169,7 @@ describe('toggleStartStop — audioCtx creation', () => {
             ensureResourcesLoaded: vi.fn(),
         }
 
-        const { default: Sequencer } = await import('../src/logic/seq.js')
+        const { default: Sequencer } = await import('../src/logic/sequencer.js')
         const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: null,
@@ -196,7 +196,7 @@ describe('toggleStartStop — start guard', () => {
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
         const fakeTransport = makeFakeTransport()
 
-        const { default: Sequencer } = await import('../src/logic/seq.js')
+        const { default: Sequencer } = await import('../src/logic/sequencer.js')
         const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: fakeCtx,
@@ -249,7 +249,7 @@ describe('mixer.start() — no duplicate connections', () => {
         }
 
         const { default: Mixer } = await import('../src/audio/mixer.js')
-        const { default: WorkletLoader } = await import('../src/audio/worklets/loader.js')
+        const { default: WorkletLoader } = await import('../src/audio/worklets/worklet_loader.js')
 
         // Mock WorkletLoader to avoid real worklet loading
         vi.spyOn(WorkletLoader, 'isSupported').mockReturnValue(true)

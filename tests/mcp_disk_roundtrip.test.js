@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
-import { PatternExporter } from '../src/patterns/exporter.js'
+import Commander from '../src/logic/commands/commander.js'
+import { Exporter } from '../src/patterns/exporter.js'
 import { mkdir, writeFile, readFile, unlink } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
@@ -54,7 +54,7 @@ describe('Functional: MCP generate → disk save → import', () => {
         bass.notes[1].velocity = 0.6
         bass.notes[2].velocity = 0.7
 
-        const exported = PatternExporter.export(pattern)
+        const exported = Exporter.export(pattern)
         const filePath = resolve(TMP_DIR, 'mcptest.json')
         await writeFile(filePath, JSON.stringify(exported, null, 2) + '\n', 'utf8')
 
@@ -111,7 +111,7 @@ describe('Functional: MCP generate → disk save → import', () => {
         const filePath = resolve(TMP_DIR, 'cycletest.json')
 
         const save = async (p) => {
-            const exported = PatternExporter.export(p)
+            const exported = Exporter.export(p)
             await writeFile(filePath, JSON.stringify(exported, null, 2) + '\n', 'utf8')
         }
 
@@ -153,7 +153,7 @@ describe('Functional: MCP generate → disk save → import', () => {
         pattern.beatCount = 8
         cmd.addTrack(pattern, 'KICK')
 
-        const exported = PatternExporter.export(pattern)
+        const exported = Exporter.export(pattern)
         const filePath = resolve(TMP_DIR, 'emptytest.json')
         await writeFile(filePath, JSON.stringify(exported, null, 2) + '\n', 'utf8')
 
@@ -184,7 +184,7 @@ describe('Functional: MCP generate → disk save → import', () => {
         const filePath = resolve(TMP_DIR, 'validjson.json')
 
         const saveAndVerify = async (p, _label) => {
-            const exported = PatternExporter.export(p)
+            const exported = Exporter.export(p)
             const json = JSON.stringify(exported, null, 2) + '\n'
             await writeFile(filePath, json, 'utf8')
             const raw = await readFile(filePath, 'utf-8')

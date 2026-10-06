@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import Player from '../src/audio/player.js'
 import { PLAYBACK_MODE } from '../src/logic/song_playback.js'
-import FlatNote from '../src/model/flatnote.js'
+import FlatNote from '../src/model/flat_note.js'
 import { TICK } from '../src/core/constants.js'
 import { BEATS_PER_MEASURE } from '../src/model/song_schema.js'
 

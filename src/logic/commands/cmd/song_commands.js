@@ -53,7 +53,7 @@ import { clamp } from '../../../core/numbers.js'
 export default class SongCommands {
     #host
 
-    /** @param {import('../cmd.js').CommanderHost} host */
+    /** @param {import('../commander.js').CommanderHost} host */
     constructor(host) {
         this.#host = host
     }

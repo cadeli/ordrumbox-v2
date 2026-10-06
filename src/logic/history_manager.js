@@ -1,7 +1,7 @@
 // src/logic/history_manager.js
 // Undo/Redo history manager
 
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'

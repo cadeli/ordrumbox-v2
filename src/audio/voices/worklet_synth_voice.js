@@ -1,5 +1,5 @@
 import BaseVoice from './base_voice.js'
-import WorkletLoader from '../worklets/loader.js'
+import WorkletLoader from '../worklets/worklet_loader.js'
 import SYNTH_VOICE_SOURCE from '../worklets/processors/synth_voice_source.js'
 import { computeOscFrequency, computeNoteRatio, computeAccent, syncToHz } from '../math.js'
 import { WAVE_TO_INT, FILTER_TO_INT } from '../fx_values.js'

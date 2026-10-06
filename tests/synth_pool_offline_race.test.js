@@ -1,13 +1,13 @@
 /**
  * Regression test for the synth-voice pool / offline-export timing race.
  *
- * SynthVoiceNodePool.release() is scheduled from WorkletSynthVoice via a
+ * SynthVoicePool.release() is scheduled from WorkletSynthVoice via a
  * plain JS setTimeout keyed to wall-clock time (see worklet_synth_voice.js
  * start()/cleanup()). That's safe for real-time playback, where wall-clock
  * time tracks AudioContext time closely enough that a note's cleanup fires
  * roughly when its audio has actually finished.
  *
- * It is NOT safe for offline export: wav_exporter.js / AudioEngine.export-
+ * It is NOT safe for offline export: wav_exporter.js / Engine.export-
  * Offline schedule every note in the whole pattern synchronously, in a
  * tight loop, *before* ever calling offlineCtx.startRendering(). During
  * that loop, AudioContext.currentTime sits at (or near) 0 for the entire
@@ -23,9 +23,9 @@
  * fresh AudioWorkletNode, independent of setTimeout timing.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import WorkletLoader from '../src/audio/worklets/loader.js'
+import WorkletLoader from '../src/audio/worklets/worklet_loader.js'
 import WorkletSynthVoice from '../src/audio/voices/worklet_synth_voice.js'
-import SynthVoiceNodePool from '../src/audio/voices/synth_voice_pool.js'
+import SynthVoicePool from '../src/audio/voices/synth_voice_pool.js'
 import Sound from '../src/audio/sound.js'
 import { makeParam, makeNode } from './helpers/worklet_mocks.js'
 import { RELEASE_TIME } from '../src/core/constants.js'
@@ -115,7 +115,7 @@ describe('synth-voice pool vs. offline export scheduling race', () => {
     it.fails('pool: an early note and a much-later note must not share the same node (known bug)', async () => {
         const ctx = createMockAudioCtx()
         const strip = createMockStrip()
-        const pool = new SynthVoiceNodePool(ctx)
+        const pool = new SynthVoicePool(ctx)
 
         // Note A: scheduled at the very start of the song.
         const voiceA = new WorkletSynthVoice(ctx, strip, makeGeneratedSound(), 'A', null, pool)
@@ -184,7 +184,7 @@ describe('synth-voice pool vs. offline export scheduling race', () => {
 
     it('online (real-time) playback still legitimately reuses a released node — reuse itself is not the bug', async () => {
         const ctx = createMockAudioCtx()
-        const pool = new SynthVoiceNodePool(ctx)
+        const pool = new SynthVoicePool(ctx)
         const strip = createMockStrip()
 
         const voiceA = new WorkletSynthVoice(ctx, strip, makeGeneratedSound(), 'A', null, pool)

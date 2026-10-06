@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import Strip from '../src/audio/strip.js'
-import WorkletLoader from '../src/audio/worklets/loader.js'
+import WorkletLoader from '../src/audio/worklets/worklet_loader.js'
 import { makeParam, makeNode, installWorkletMocks } from './helpers/worklet_mocks.js'
 import * as notify from '../src/core/notify.js'
 

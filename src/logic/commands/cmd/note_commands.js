@@ -14,7 +14,7 @@ function findPatternForTrack(track) {
 export default class NoteCommands {
     #host
 
-    /** @param {import('../cmd.js').CommanderHost} host */
+    /** @param {import('../commander.js').CommanderHost} host */
     constructor(host) {
         this.#host = host
     }
@@ -66,11 +66,11 @@ export default class NoteCommands {
         if (clampStepsPerBeat(track)) {
             reportUserError('Note.stepsPerBeat', `"${track.name}" uses ${track.stepsPerBeat} steps per beat`)
         }
-        const steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
+        const stepPercent = Math.round((beatStep * 100) / track.stepsPerBeat)
         const note = {
             ...NOTE_DEFAULTS,
             beatStep,
-            steppc,
+            stepPercent,
             beat,
             pitch,
         }
@@ -160,7 +160,7 @@ export default class NoteCommands {
             ...src,
             beat,
             beatStep,
-            steppc: Math.round((beatStep * 100) / spb),
+            stepPercent: Math.round((beatStep * 100) / spb),
         }))
         track.notes.push(...added)
 

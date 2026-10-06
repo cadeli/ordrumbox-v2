@@ -2,7 +2,7 @@
 
 import { hasAnySolo, shouldTrackPlay } from '../core/tracks.js'
 import { logger, valueOrFallback } from '../core/logger.js'
-import InstrumentsManager from '../logic/services/instrument_manager/index.js'
+import InstrumentsManager from '../logic/services/instruments_manager/index.js'
 import { serviceRegistry } from '../state/service_registry.js'
 
 /**
@@ -75,7 +75,7 @@ export function sendMidiNotes(deps, tick, atTime) {
                 const startTime = midiTime + flatNote.swingTime * 1000
 
                 midi.sendNoteOn(channel, note, vel, startTime)
-                const durationMs = valueOrFallback(flatNote.duration, 100, 'AudioEngine', 'duration fallback')
+                const durationMs = valueOrFallback(flatNote.duration, 100, 'Engine', 'duration fallback')
                 midi.sendNoteOff(channel, note, startTime + durationMs)
             }
         }

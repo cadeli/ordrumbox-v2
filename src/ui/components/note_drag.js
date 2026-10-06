@@ -8,7 +8,7 @@
 import { clamp, toFiniteNumber } from '../../core/numbers.js'
 import { NOTE_DEFAULTS } from '../../core/note_schema.js'
 import { AXIS_PITCH, AXIS_VELOCITY } from './note_edit.js'
-import { MIDI_MAX, MIDI_MIN, MIDDLE_C } from '../piano_roll/constants.js'
+import { MIDI_MAX, MIDI_MIN, MIDDLE_C } from '../piano_roll/piano_roll_constants.js'
 
 /** Movement in px before the gesture claims an axis. */
 export const AXIS_LOCK_PX = 3

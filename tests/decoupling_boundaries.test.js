@@ -63,13 +63,13 @@ describe('Decoupling boundaries', () => {
         expect(src).not.toMatch(/import.*core\/idb/)
     })
 
-    it('cmd_notes.js imports appState only for pattern lookup in desc', () => {
-        const src = readSrc('logic/commands/cmd/cmd_notes.js')
+    it('note_commands.js imports appState only for pattern lookup in desc', () => {
+        const src = readSrc('logic/commands/cmd/note_commands.js')
         expect(src).toMatch(/import.*app_state/)
     })
 
-    it('cmd_tracks.js does not import serviceRegistry', () => {
-        const src = readSrc('logic/commands/cmd/cmd_tracks.js')
+    it('track_commands.js does not import serviceRegistry', () => {
+        const src = readSrc('logic/commands/cmd/track_commands.js')
         expect(src).not.toMatch(/import.*service_registry/)
     })
 

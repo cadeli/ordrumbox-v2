@@ -1,7 +1,7 @@
 // e2e/live-vs-export.spec.js
 //
 // Verifies that the WavExporter offline rendering pipeline produces audio
-// equivalent to a direct AudioEngine + OfflineAudioContext render of the
+// equivalent to a direct Engine + OfflineAudioContext render of the
 // same pattern. Both paths use the same engine code, so they should produce
 // identical AudioBuffers — any divergence indicates a scheduling or wiring
 // bug in the export pipeline.
@@ -53,7 +53,7 @@ test.describe('Live vs Export equivalence', () => {
     test('WavExporter and direct engine render produce equivalent audio for the loaded pattern', async ({ page }) => {
         const result = await page.evaluate(async () => {
             const { default: WavExporter } = await import('/src/audio/export/wav_exporter.js')
-            const { default: AudioEngine } = await import('/src/audio/engine.js')
+            const { default: Engine } = await import('/src/audio/engine.js')
             const { appState, serviceRegistry, soundRegistry } = window.__e2e
             const { TICK } = await import('/src/core/constants.js')
 
@@ -87,7 +87,7 @@ test.describe('Live vs Export equivalence', () => {
             const sampleRate = 44100
             const offlineCtx = new OfflineAudioContext(2, Math.floor(sampleRate * duration), sampleRate)
 
-            const engine = new AudioEngine({
+            const engine = new Engine({
                 audioCtx: offlineCtx,
                 sounds: soundRegistry.sounds,
                 generatedSounds: soundRegistry.generatedSounds,

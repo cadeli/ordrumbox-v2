@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
-import { PatternExporter } from '../src/patterns/exporter.js'
-import { recomputeFlatNotes, computeTickCountForPattern } from '../src/patterns/engine.js'
+import Commander from '../src/logic/commands/commander.js'
+import { Exporter } from '../src/patterns/exporter.js'
+import { recomputeFlatNotes, computeTickCountForPattern } from '../src/patterns/pattern_engine.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
-import InstrumentsManager from '../src/logic/services/instrument_manager/index.js'
+import InstrumentsManager from '../src/logic/services/instruments_manager/index.js'
 import { TICK } from '../src/core/constants.js'
 import { parseMidi, findAllNotes } from './helpers/midi_reader.js'
 import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
@@ -126,7 +126,7 @@ describe('Multiple notes at the same step', () => {
             })
 
             const imported = cmd.importPatternFromJson(source)
-            const exported = PatternExporter.export(imported)
+            const exported = Exporter.export(imported)
             const reimported = cmd.importPatternFromJson(exported)
             const track = reimported.tracks[0]
 
@@ -155,9 +155,9 @@ describe('Multiple notes at the same step', () => {
             })
 
             const once = cmd.importPatternFromJson(source)
-            const exportedOnce = PatternExporter.export(once)
+            const exportedOnce = Exporter.export(once)
             const twice = cmd.importPatternFromJson(exportedOnce)
-            const exportedTwice = PatternExporter.export(twice)
+            const exportedTwice = Exporter.export(twice)
 
             expect(exportedTwice.tracks).toEqual(exportedOnce.tracks)
         })
@@ -347,7 +347,7 @@ describe('Multiple notes at the same step', () => {
             })
 
             const imported = cmd.importPatternFromJson(source)
-            const exported = PatternExporter.export(imported)
+            const exported = Exporter.export(imported)
             const reimported = cmd.importPatternFromJson(exported)
             const track = reimported.tracks[0]
 
@@ -373,9 +373,9 @@ describe('Multiple notes at the same step', () => {
             })
 
             const once = cmd.importPatternFromJson(source)
-            const exportedOnce = PatternExporter.export(once)
+            const exportedOnce = Exporter.export(once)
             const twice = cmd.importPatternFromJson(exportedOnce)
-            const exportedTwice = PatternExporter.export(twice)
+            const exportedTwice = Exporter.export(twice)
 
             expect(exportedTwice.tracks).toEqual(exportedOnce.tracks)
         })

@@ -1,7 +1,7 @@
 // src/ui/tools_panel/pattern_section.js — Tools "Pattern" tab (Compact / Rnd).
 
 import { appState } from '../../state/app_state.js'
-import { playbackEvents } from '../../state/playback_events.js'
+import { playbackEvents } from '../../state/event_bus.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { getTracksArray } from '../../core/tracks.js'
 import { EVENTS } from '../../core/events.js'

@@ -16,7 +16,7 @@ export default class TrackCommands {
     #host
     #randomGen = new RandomGenerator()
 
-    /** @param {import('../cmd.js').CommanderHost} host */
+    /** @param {import('../commander.js').CommanderHost} host */
     constructor(host) {
         this.#host = host
     }
@@ -82,7 +82,7 @@ export default class TrackCommands {
     addTrack(pattern, type, stepsPerBeat = 4) {
         const track = this.createTrack(pattern.beatCount, type, stepsPerBeat)
         // Clamp here rather than at first note: an out-of-grid track must be
-        // corrected before any steppc/beatStep is derived from it.
+        // corrected before any stepPercent/beatStep is derived from it.
         if (clampStepsPerBeat(track)) {
             reportUserError('Track.stepsPerBeat', `"${track.name}" uses ${track.stepsPerBeat} steps per beat`)
         }
@@ -185,7 +185,7 @@ export default class TrackCommands {
     /**
      * Set stepsPerBeat to an absolute value (clamped 1..8) and migrate the
      * notes / loop point proportionally:
-     * - notes: steppc (absolute position) is preserved → beatStep rescaled
+     * - notes: stepPercent (absolute position) is preserved → beatStep rescaled
      * - loopAtStep is clamped to the new beat length
      * @param {any} track
      * @param {number} value - target steps per beat
@@ -208,8 +208,9 @@ export default class TrackCommands {
 
                 if (track.notes) {
                     for (const note of track.notes) {
-                        const steppc = note.steppc ?? Math.round((note.beatStep * 100) / (oldStepsPerBeat ?? 4))
-                        note.beatStep = Math.min(Math.round((steppc / 100) * target), target - 1)
+                        const stepPercent =
+                            note.stepPercent ?? Math.round((note.beatStep * 100) / (oldStepsPerBeat ?? 4))
+                        note.beatStep = Math.min(Math.round((stepPercent / 100) * target), target - 1)
                     }
                 }
 

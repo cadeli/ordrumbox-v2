@@ -2,9 +2,9 @@
 // Sound tab — instrument/sample/synth selects, mono toggle, auto-assign.
 
 import { renderOptions } from '../components/ui_utils.js'
-import InstrumentsManager from '../../logic/services/instrument_manager/index.js'
+import InstrumentsManager from '../../logic/services/instruments_manager/index.js'
 import AutoAssign from '../../logic/services/auto_assign.js'
-import { emitTrackChanged } from '../../state/playback_events.js'
+import { emitTrackChanged } from '../../state/event_bus.js'
 import {
     getCurrentInstrumentId,
     getCurrentSoundUrl,

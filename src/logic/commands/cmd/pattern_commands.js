@@ -13,7 +13,7 @@ import { ensurePatternId } from '../../../model/song_schema.js'
 export default class PatternCommands {
     #host
 
-    /** @param {import('../cmd.js').CommanderHost} host */
+    /** @param {import('../commander.js').CommanderHost} host */
     constructor(host) {
         this.#host = host
     }

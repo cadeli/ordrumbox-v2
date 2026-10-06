@@ -3,7 +3,7 @@
 
 import { escapeHtml, renderOptions } from '../components/ui_utils.js'
 import { reportUserError, showToast } from '../../core/notify.js'
-import { SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META } from './constants.js'
+import { SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META } from './synth_editor_constants.js'
 import { cacheGeneratedSounds } from '../../cache/idb_cache.js'
 
 export default class PresetSection {

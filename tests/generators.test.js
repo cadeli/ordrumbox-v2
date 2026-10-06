@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import AutoGenerator from '../src/logic/generators/auto_generator.js'
 import SongStructure from '../src/logic/generators/song_structure.js'
 import KickGenerator from '../src/logic/generators/kick_generator.js'

@@ -83,7 +83,7 @@ export async function exportOffline(deps, pattern, loopCount, OfflineAudioContex
         const blob = bufferToWavFn(renderedBuffer)
         return { blob, fileName: `ordrumbox-${pattern.name.replace(/\s+/g, '_')}-${totalLoops}loops.wav` }
     } catch (err) {
-        logger.warn('AudioEngine', 'exportOffline failed', err)
+        logger.warn('Engine', 'exportOffline failed', err)
         return { blob: null, fileName: '' }
     }
 }

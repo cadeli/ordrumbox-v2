@@ -102,17 +102,17 @@ These are present on tracks when the auto-generation system is used:
 
 These are recalculated on the fly from other properties:
 
-| Property          | Derivation                                           |
-| ----------------- | ---------------------------------------------------- |
-| `loopPointBeat`   | `Math.floor(loopAtStep / stepsPerBeat)`              |
-| `loopPointStep`   | `loopAtStep % stepsPerBeat`                          |
-| `pan` (on import) | Recalculated from track index by `fixTrackPanning()` |
+| Property          | Derivation                                                   |
+| ----------------- | ------------------------------------------------------------ |
+| `loopPointBeat`   | `Math.floor(loopAtStep / stepsPerBeat)`                      |
+| `loopPointStep`   | `loopAtStep % stepsPerBeat`                                  |
+| `pan` (on import) | Recalculated from the track drum type by `fixTrackPanning()` |
 
 ### Implicit rules
 
 - **Compact format**: tracks are serialized with only non-default values. Missing properties are restored from `TRACK_DEFAULTS` on import.
 - If `useSoftSynth` is `true`, `useAutoAssignSound` is forced to `false`.
-- `pan` is overwritten by `fixTrackPanning(track, indexTrack)` on import based on the track's position in the pattern. The serialized `pan` value is **ignored** — it is a derived property.
+- `pan` is overwritten by `fixTrackPanning(track)` on import from the track drum type. The serialized `pan` value is **ignored** — it is a derived property.
 - Values are rounded to 2 decimals on export for: `velocity`, `pan`, `reverbAmount`, `delayDepth`, `delayTime`, `saturationAmount`, `swingAmount`, `filterFreq`, `filterQ`.
 
 ---
@@ -152,10 +152,9 @@ When `null`, the LFO is disabled.
 
 ### Properties never serialized
 
-| Property      | Description                                                                 |
-| ------------- | --------------------------------------------------------------------------- |
-| `steppc`      | Step percent — recalculated as `Math.round(beatStep * 100 / stepsPerBeat)`. |
-| `stepPercent` | Alias for `steppc`.                                                         |
+| Property      | Description                                                                                                                 |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `stepPercent` | Step percent — recalculated as `Math.round(beatStep * 100 / stepsPerBeat)`. The legacy `steppc` spelling is mapped on read. |
 
 ### Implicit rules
 
@@ -374,7 +373,7 @@ Applied by `updateTrack()` and MCP tools. Out-of-range values are clamped:
 
 ## Export flow
 
-1. `PatternExporter.export(pattern)` — stamps `application` and `url`.
+1. `Exporter.export(pattern)` — stamps `application` and `url`.
 2. `cleanPattern()` — strips default top-level properties.
 3. `cleanTrack()` — strips default track properties, strips recalculated properties (`loopPointBeat`, `loopPointStep`), strips `noteKeys`.
 4. `encodeNotes()` — if notes exist, detects used keys via `detectUsedKeys()`, encodes each note as a compact array, attaches `noteKeys` to the track.

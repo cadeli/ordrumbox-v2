@@ -1,4 +1,4 @@
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { fmt, pitchToNoteName, knobFormat, renderOptions } from './components/ui_utils.js'
 import { OrSlider } from './components/or_slider.js'

@@ -39,7 +39,7 @@ test.describe('Static coherence of modulation targets', () => {
 
     test('all UI targets have an entry in LFO_TARGET_SCALE (displayed curve)', async ({ page }) => {
         const { targets, scaleKeys } = await page.evaluate(async () => {
-            const constants = await import('/src/ui/synth_editor/constants.js')
+            const constants = await import('/src/ui/synth_editor/synth_editor_constants.js')
             const editorModule = await import('/src/ui/synth_editor.js')
             if (!editorModule.LFO_TARGET_SCALE) throw new Error('LFO_TARGET_SCALE must be exported')
             const scaleKeys = Object.keys(editorModule.LFO_TARGET_SCALE)
@@ -90,7 +90,7 @@ test.describe('Real modulator effect on sound (per target)', () => {
         // the render alone outlasts the 30 s default timeout.
         test.setTimeout(120_000)
         const { SYNTH_LFO_TARGETS } = await page.evaluate(() =>
-            import('/src/ui/synth_editor/constants.js').then((m) => ({
+            import('/src/ui/synth_editor/synth_editor_constants.js').then((m) => ({
                 SYNTH_LFO_TARGETS: m.SYNTH_LFO_TARGETS,
             })),
         )
@@ -156,7 +156,7 @@ test.describe('Real modulator effect on sound (per target)', () => {
         // the render alone outlasts the 30 s default timeout.
         test.setTimeout(120_000)
         const { SYNTH_LFO_TARGETS } = await page.evaluate(() =>
-            import('/src/ui/synth_editor/constants.js').then((m) => ({
+            import('/src/ui/synth_editor/synth_editor_constants.js').then((m) => ({
                 SYNTH_LFO_TARGETS: m.SYNTH_LFO_TARGETS,
             })),
         )

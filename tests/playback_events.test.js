@@ -4,7 +4,7 @@
  * and one broken panel listener would freeze every other panel on the same event.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { EVENTS } from '../src/core/events.js'
 import { resetUserErrorReports } from '../src/core/notify.js'
 

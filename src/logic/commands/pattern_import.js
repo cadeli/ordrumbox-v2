@@ -117,7 +117,7 @@ function copyNoteProps(note, sourceNote, track) {
         'rate',
         'euclideanFill',
         'euclideanRotation',
-        'steppc',
+        'stepPercent',
     ]
 
     for (const prop of props) {
@@ -128,8 +128,8 @@ function copyNoteProps(note, sourceNote, track) {
 
     if (sourceNote.beatStep !== undefined) note.beatStep = sourceNote.beatStep
 
-    if (sourceNote.steppc === undefined) {
-        note.steppc = Math.round((note.beatStep * 100) / track.stepsPerBeat)
+    if (sourceNote.stepPercent === undefined) {
+        note.stepPercent = Math.round((note.beatStep * 100) / track.stepsPerBeat)
     }
 
     return note

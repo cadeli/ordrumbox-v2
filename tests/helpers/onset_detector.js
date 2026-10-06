@@ -2,13 +2,13 @@
  * Onset detector for WAV audio analysis.
  *
  * Detects note onsets in WAV audio using energy-based onset detection
- * on the amplitude envelope. Works with the AudioAnalyzer class.
+ * on the amplitude envelope. Works with the Analyzer class.
  *
  * Usage:
  *   import { detectOnsets, detectOnsetsFromWav } from './helpers/onset_detector.js'
- *   import AudioAnalyzer from '../src/audio/analyze.js'
+ *   import Analyzer from '../src/audio/analyzer.js'
  *
- *   const analyzer = new AudioAnalyzer()
+ *   const analyzer = new Analyzer()
  *   const onsets = detectOnsetsFromWav(analyzer, wavBytes, { sampleRate: 44100 })
  *   // → [{ sample: 44100, time: 1.0, energy: 0.8 }]
  */
@@ -74,9 +74,9 @@ export function detectOnsets(samples, sampleRate, options = {}) {
 }
 
 /**
- * Detect onsets from a WAV file (Uint8Array) using AudioAnalyzer for decoding.
+ * Detect onsets from a WAV file (Uint8Array) using Analyzer for decoding.
  *
- * @param {AudioAnalyzer} analyzer - Instance of AudioAnalyzer
+ * @param {Analyzer} analyzer - Instance of Analyzer
  * @param {Uint8Array} wavBytes - Complete WAV file as bytes
  * @param {Object} [options]
  * @param {number} [options.windowSize=1024] - Analysis window size

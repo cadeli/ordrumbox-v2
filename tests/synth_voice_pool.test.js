@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import SynthVoiceNodePool from '../src/audio/voices/synth_voice_pool.js'
-import WorkletLoader from '../src/audio/worklets/loader.js'
+import SynthVoicePool from '../src/audio/voices/synth_voice_pool.js'
+import WorkletLoader from '../src/audio/worklets/worklet_loader.js'
 
 function makeWorkletNodeMock() {
     return {
@@ -30,13 +30,13 @@ function createMockAudioCtx() {
     }
 }
 
-describe('SynthVoiceNodePool', () => {
+describe('SynthVoicePool', () => {
     let audioCtx
     let pool
 
     beforeEach(() => {
         audioCtx = createMockAudioCtx()
-        pool = new SynthVoiceNodePool(audioCtx, 4)
+        pool = new SynthVoicePool(audioCtx, 4)
         WorkletLoader.createNode.mockClear()
     })
 

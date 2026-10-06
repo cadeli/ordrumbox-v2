@@ -1,4 +1,4 @@
-// src/ui/piano_roll/constants.js
+// src/ui/piano_roll/piano_roll_constants.js
 // Shared geometry and note-naming constants for the piano roll panel.
 
 export const NOTE_HEIGHT = 14

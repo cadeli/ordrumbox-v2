@@ -1,13 +1,13 @@
-import AudioAnalyzer from './analyze.js'
+import Analyzer from './analyzer.js'
 import { hzToNote } from '../core/hz_to_note.js'
 
-const analyzer = new AudioAnalyzer()
+const analyzer = new Analyzer()
 /** @type {Map<AudioBuffer, SampleAnalysis>} */
 const cache = new Map()
 
 /**
- * Sample analysis: what AudioAnalyzer returns, plus noteInfo.
- * @typedef {import('./analyze.js').AudioAnalysis & {
+ * Sample analysis: what Analyzer returns, plus noteInfo.
+ * @typedef {import('./analyzer.js').AudioAnalysis & {
  *     noteInfo: {note: string, octave: number, cents: number}|null,
  * }} SampleAnalysis
  */

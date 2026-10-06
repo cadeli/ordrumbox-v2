@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import AudioStallDetector from '../src/audio/stall_detector.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import StallDetector from '../src/audio/stall_detector.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 
 function makeTransport(tick = 0, isRunning = false) {
     return { tick, isRunning }
@@ -26,7 +26,7 @@ function makeAudioCtx(state = 'running') {
     }
 }
 
-describe('AudioStallDetector', () => {
+describe('StallDetector', () => {
     beforeEach(() => {
         vi.useFakeTimers()
         vi.spyOn(playbackEvents, 'emit')
@@ -38,7 +38,7 @@ describe('AudioStallDetector', () => {
     })
 
     it('constructor sets default state', () => {
-        const detector = new AudioStallDetector({
+        const detector = new StallDetector({
             audioCtx: makeAudioCtx(),
             transport: makeTransport(),
         })
@@ -49,7 +49,7 @@ describe('AudioStallDetector', () => {
         it('start sets up interval and event listener', () => {
             const audioCtx = makeAudioCtx()
             const transport = makeTransport()
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
 
@@ -60,7 +60,7 @@ describe('AudioStallDetector', () => {
         it('stop clears interval and removes event listener', () => {
             const audioCtx = makeAudioCtx()
             const transport = makeTransport()
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
             detector.stop()
@@ -72,7 +72,7 @@ describe('AudioStallDetector', () => {
         it('stop emits stallResume if was stalled', () => {
             const audioCtx = makeAudioCtx('suspended')
             const transport = makeTransport(0, true)
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
 
@@ -90,7 +90,7 @@ describe('AudioStallDetector', () => {
         it('start is idempotent (does nothing if already started)', () => {
             const audioCtx = makeAudioCtx()
             const transport = makeTransport()
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
             detector.start()
@@ -103,7 +103,7 @@ describe('AudioStallDetector', () => {
         it('detects stall when tick stops advancing', () => {
             const audioCtx = makeAudioCtx()
             const transport = makeTransport(5, true)
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
             vi.advanceTimersByTime(100)
@@ -115,7 +115,7 @@ describe('AudioStallDetector', () => {
         it('resumes when tick starts advancing again', () => {
             const audioCtx = makeAudioCtx()
             const transport = makeTransport(5, true)
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
             vi.advanceTimersByTime(100)
@@ -130,7 +130,7 @@ describe('AudioStallDetector', () => {
         it('does not stall when transport is not running', () => {
             const audioCtx = makeAudioCtx()
             const transport = makeTransport(5, false)
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
             vi.advanceTimersByTime(200)
@@ -141,7 +141,7 @@ describe('AudioStallDetector', () => {
         it('does not re-emit stall on consecutive checks while stalled', () => {
             const audioCtx = makeAudioCtx()
             const transport = makeTransport(5, true)
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
             vi.advanceTimersByTime(100)
@@ -157,7 +157,7 @@ describe('AudioStallDetector', () => {
         it('detects suspension during playback', () => {
             const audioCtx = makeAudioCtx('running')
             const transport = makeTransport(0, true)
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
             audioCtx.state = 'suspended'
@@ -170,7 +170,7 @@ describe('AudioStallDetector', () => {
         it('does not stall on suspension when transport is not running', () => {
             const audioCtx = makeAudioCtx('running')
             const transport = makeTransport(0, false)
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
             audioCtx.state = 'suspended'
@@ -182,7 +182,7 @@ describe('AudioStallDetector', () => {
         it('resumes when context returns to running', () => {
             const audioCtx = makeAudioCtx('running')
             const transport = makeTransport(0, true)
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
             audioCtx.state = 'suspended'
@@ -198,7 +198,7 @@ describe('AudioStallDetector', () => {
         it('attempts audioCtx.resume() on suspension', () => {
             const audioCtx = makeAudioCtx('running')
             const transport = makeTransport(0, true)
-            const detector = new AudioStallDetector({ audioCtx, transport, checkIntervalMs: 100 })
+            const detector = new StallDetector({ audioCtx, transport, checkIntervalMs: 100 })
 
             detector.start()
             audioCtx.state = 'suspended'

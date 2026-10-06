@@ -1,4 +1,4 @@
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { setViewMode, setPatternPanelHidden } from './components/ui_utils.js'

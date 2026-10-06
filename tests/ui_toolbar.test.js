@@ -6,8 +6,8 @@ import Toolbar from '../src/ui/toolbar.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import Commander from '../src/logic/commands/commander.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 
 describe('Toolbar UI Layout', () => {
     let toolbar

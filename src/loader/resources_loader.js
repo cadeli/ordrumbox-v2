@@ -1,7 +1,7 @@
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { fixPatterns, fixSongs, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.js'
 import { idbGet, idbPut } from '../core/idb.js'
 import {
@@ -370,10 +370,10 @@ export default class ResourcesLoader {
         serviceRegistry.cmd.withSuppressedRecord(() => {
             fixedPatterns.forEach((pattern) => {
                 if (pattern?.tracks) {
-                    getTracksArray(pattern).forEach((trk) => {
-                        if (trk?.sampleId && trk.sampleId !== 'NOT_DEFINED') {
-                            if (trk.useAutoAssignSound !== false) {
-                                trk.sampleId = 'NOT_DEFINED'
+                    getTracksArray(pattern).forEach((track) => {
+                        if (track?.sampleId && track.sampleId !== 'NOT_DEFINED') {
+                            if (track.useAutoAssignSound !== false) {
+                                track.sampleId = 'NOT_DEFINED'
                             }
                         }
                     })

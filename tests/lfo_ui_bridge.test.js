@@ -6,7 +6,7 @@ const mockEnsureLoaded = vi.fn()
 const mockIsSupported = vi.fn()
 const mockRegister = vi.fn()
 
-vi.mock('../src/audio/worklets/loader.js', () => ({
+vi.mock('../src/audio/worklets/worklet_loader.js', () => ({
     default: {
         register: mockRegister,
         isSupported: mockIsSupported,

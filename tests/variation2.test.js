@@ -3,9 +3,9 @@ import { TRACK_DEFAULTS, TRACK_VALUE_RANGES } from '../src/model/track_schema.js
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
-import TrackVariation from '../src/patterns/variation.js'
-import FlatNote from '../src/model/flatnote.js'
+import Commander from '../src/logic/commands/commander.js'
+import TrackVariation from '../src/patterns/track_variation.js'
+import FlatNote from '../src/model/flat_note.js'
 
 describe('Track variation2', () => {
     let cmd

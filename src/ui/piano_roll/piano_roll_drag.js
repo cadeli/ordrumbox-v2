@@ -1,10 +1,10 @@
-// src/ui/piano_roll/drag_section.js
+// src/ui/piano_roll/piano_roll_drag.js
 // Dragging a note in the piano roll edits it: the gesture math (velocity /
 // pitch, axis lock) lives in the shared NoteDrag and the write path in
 // note_edit.js. What stays here is the piano roll's own plumbing: finding the
 // note under the pointer, keeping the cursor on it, repainting.
 
-import { playbackEvents, emitNotesChanged } from '../../state/playback_events.js'
+import { playbackEvents, emitNotesChanged } from '../../state/event_bus.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import NoteDrag from '../components/note_drag.js'
 import { applyNoteEdit, emitNotePicked } from '../components/note_edit.js'

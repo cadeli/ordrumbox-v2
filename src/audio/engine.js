@@ -1,10 +1,10 @@
 import Player from './player.js'
 import Mixer from './mixer.js'
-import { recomputeFlatNotes } from '../patterns/engine.js'
+import { recomputeFlatNotes } from '../patterns/pattern_engine.js'
 import { PLAYBACK_MODE, songPatterns } from '../logic/song_playback.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { playbackEvents } from '../state/playback_events.js'
-import { instrumentsManager } from '../logic/services/instrument_manager/index.js'
+import { playbackEvents } from '../state/event_bus.js'
+import { instrumentsManager } from '../logic/services/instruments_manager/index.js'
 import { getTracksArray } from '../core/tracks.js'
 import { applyTrackParamsToStrip } from './strip_sync.js'
 import { logger, valueOrFallback } from '../core/logger.js'
@@ -15,7 +15,7 @@ import { exportOffline as renderOffline } from './offline_export.js'
 import { resolveSelectedPatternIdxGetter } from './selected_pattern_idx.js'
 import { EVENTS } from '../core/events.js'
 
-export default class AudioEngine {
+export default class Engine {
     static TAG = 'AUDIOENGINE'
 
     #cachedPatternRef
@@ -30,7 +30,7 @@ export default class AudioEngine {
     constructor(config) {
         this.audioCtx = config.audioCtx
         this.sounds = config.sounds
-        this.generatedSounds = valueOrFallback(config.generatedSounds, {}, 'AudioEngine', 'generatedSounds fallback')
+        this.generatedSounds = valueOrFallback(config.generatedSounds, {}, 'Engine', 'generatedSounds fallback')
         this.patterns = config.patterns
         // The audio layer reads appState only through injected resolvers, which
         // keeps it testable without the store.
@@ -81,7 +81,7 @@ export default class AudioEngine {
 
                 playbackEvents.emit(EVENTS.WORKLET_STATUS_CHANGE, 'active')
             } catch (err) {
-                logger.warn('AudioEngine: worklet init failed, audio unavailable', err)
+                logger.warn('Engine: worklet init failed, audio unavailable', err)
                 playbackEvents.emit(EVENTS.WORKLET_STATUS_CHANGE, 'unavailable')
             }
         })()
@@ -214,7 +214,7 @@ export default class AudioEngine {
                 await this.syncAllTracks(songPattern)
             }
         } catch (err) {
-            logger.warn('AudioEngine', 'start failed', err)
+            logger.warn('Engine', 'start failed', err)
             showToast('Playback start failed', 'error')
             // Only abort callers when the engine cannot play at all (player never built).
             // Mixer/worklet degradation is non-fatal — playback/export continues degraded.
@@ -256,7 +256,7 @@ export default class AudioEngine {
         )
     }
 
-    simpleBeep = async (indexTrack, note = null) => {
+    simpleBeep = async (trackIdx, note = null) => {
         // Wait for the worklet mixer and player to be ready before triggering.
         await this.#workletReady
         if (!this.player) return
@@ -264,13 +264,13 @@ export default class AudioEngine {
             await this.audioCtx.resume()
         }
 
-        await this.player.simpleBeep(indexTrack, note)
+        await this.player.simpleBeep(trackIdx, note)
 
         const midi = serviceRegistry.midiManager
         if (midi && midi.isReady && midi.selectedOutputId) {
             const pat = this.patterns[this.getSelectedPatternIdx()]
             const tracks = getTracksArray(pat)
-            const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat?.tracks?.[indexTrack]
+            const track = typeof trackIdx === 'number' ? tracks[trackIdx] : pat?.tracks?.[trackIdx]
             sendTriggerMidi({ track, note, resolveMapping: this.#resolveMidiMapping })
         }
     }

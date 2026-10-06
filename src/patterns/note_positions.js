@@ -4,7 +4,7 @@
 
 import { getNoteAbsoluteStep, getStepSpacing } from '../core/notes.js'
 import { computeEuclideanFillPositions } from '../core/euclidean.js'
-import { getArpNoteCount, normalizeArp } from './engine.js'
+import { getArpNoteCount, normalizeArp } from './pattern_engine.js'
 import { createStepResolver } from './step_resolver.js'
 
 /**

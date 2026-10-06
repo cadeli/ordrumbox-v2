@@ -4,7 +4,7 @@
 import { OrSlider } from '../components/or_slider.js'
 import { OrTab } from '../components/or_tab.js'
 import { renderOptions } from '../components/ui_utils.js'
-import { GROUPS, GEN_SUBTAB_DEFS, GEN_GROOVE_PROPS, GEN_ENGINE_PROPS, fmtVal } from './constants.js'
+import { GROUPS, GEN_SUBTAB_DEFS, GEN_GROOVE_PROPS, GEN_ENGINE_PROPS, fmtVal } from './track_editor_constants.js'
 import { EVENTS } from '../../core/events.js'
 
 export default class GenerationSection {

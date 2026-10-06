@@ -3,12 +3,12 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import PianoRollPanel from '../src/ui/piano_roll_panel.js'
 import { EVENTS } from '../src/core/events.js'
-import { MIDDLE_C, MIDI_MAX, MIDI_MIN, NOTE_HEIGHT, TOTAL_KEYS } from '../src/ui/piano_roll/constants.js'
+import { MIDDLE_C, MIDI_MAX, MIDI_MIN, NOTE_HEIGHT, TOTAL_KEYS } from '../src/ui/piano_roll/piano_roll_constants.js'
 import { showToast } from '../src/core/notify.js'
 
 vi.mock('../src/core/notify.js', () => ({

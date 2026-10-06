@@ -1,6 +1,6 @@
 import VoiceFactory from './voices/voice_factory.js'
 import NodePool from './node_pool.js'
-import SynthVoiceNodePool from './voices/synth_voice_pool.js'
+import SynthVoicePool from './voices/synth_voice_pool.js'
 import { applyTrackToStrip } from './strip_sync.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import ResourcesLoader from '../loader/resources_loader.js'
@@ -38,7 +38,7 @@ export default class Sound {
         // rendering must not use the pool; it falls back to one fresh
         // (non-pooled) AudioWorkletNode per note, same as before pooling
         // was introduced.
-        this.synthNodePool = isOffline ? null : new SynthVoiceNodePool(audioCtx)
+        this.synthNodePool = isOffline ? null : new SynthVoicePool(audioCtx)
         this.voiceFactory = new VoiceFactory(
             audioCtx,
             mixer,

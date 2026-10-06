@@ -95,7 +95,7 @@ const TRACK_KEYS = [
     'delayOn',
 ]
 
-// Note keys that must survive a reload (steppc is recalculated,
+// Note keys that must survive a reload (stepPercent is recalculated,
 // _arpScale/_arpType survive a raw reload but not a JSON round-trip; the arp
 // range is arp.intervals.length, there is no separate field).
 // prob/rate/retriggerCount/euclideanFill are excluded: track.variation2 > 0
@@ -902,7 +902,7 @@ test.describe.serial('Full session lifecycle', () => {
         const reference = await page.evaluate(
             async ({ patternIdx, ratio }) => {
                 const { appState } = window.__e2e
-                const { recomputeFlatNotes } = await import('/src/patterns/engine.js')
+                const { recomputeFlatNotes } = await import('/src/patterns/pattern_engine.js')
                 // imported IN the page: page.evaluate runs in the browser realm,
                 // the Node-side import at the top of this file is not in scope
                 const { hasAnySolo, shouldTrackPlay } = await import('/src/core/tracks.js')

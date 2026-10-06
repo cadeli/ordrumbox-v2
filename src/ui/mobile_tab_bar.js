@@ -1,4 +1,4 @@
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { logger } from '../core/logger.js'
 import { EVENTS } from '../core/events.js'
 

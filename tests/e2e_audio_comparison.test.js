@@ -26,11 +26,11 @@ import nodeWaa from 'node-web-audio-api'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import WavExporter from '../src/audio/export/wav_exporter.js'
-import AudioAnalyzer from '../src/audio/analyze.js'
+import Analyzer from '../src/audio/analyzer.js'
 import { bufferToWav } from '../src/audio/export/wav_encoder.js'
-import { recomputeFlatNotes } from '../src/patterns/engine.js'
+import { recomputeFlatNotes } from '../src/patterns/pattern_engine.js'
 import * as flatNotesService from '../src/patterns/flat_notes.js'
 
 const { OfflineAudioContext, AudioWorkletNode } = nodeWaa
@@ -46,7 +46,7 @@ globalThis.AudioWorkletNode = AudioWorkletNode
 const exporter = () => new WavExporter({ expectAudio: false })
 
 const SAMPLE_RATE = 44100
-const analyzer = new AudioAnalyzer()
+const analyzer = new Analyzer()
 
 // Suppress worklet mixer errors in node environment (AudioWorklet not available)
 let _origError

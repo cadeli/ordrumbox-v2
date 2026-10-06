@@ -5,12 +5,12 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { PatternExporter } from './src/patterns/exporter.js'
+import { Exporter } from './src/patterns/exporter.js'
 
-import Commander from './src/logic/commands/cmd.js'
+import Commander from './src/logic/commands/commander.js'
 import { appState } from './src/state/app_state.js'
-import AudioAnalyzer from './src/audio/analyze.js'
-import InstrumentsManager from './src/logic/services/instrument_manager/index.js'
+import Analyzer from './src/audio/analyzer.js'
+import InstrumentsManager from './src/logic/services/instruments_manager/index.js'
 import { WAVE_TYPES } from './src/audio/fx_values.js'
 
 import { getTracksArray } from './src/core/tracks.js'
@@ -132,7 +132,7 @@ async function listSampleFiles(dirPath, baseDir = dirPath) {
 }
 
 async function savePatternToDisk(pattern) {
-    const exportedPattern = PatternExporter.export(pattern)
+    const exportedPattern = Exporter.export(pattern)
     const filePath = getPatternFilePath(pattern.name)
     await mkdir(patternsOutputDir(), { recursive: true })
     await writeFile(filePath, `${JSON.stringify(exportedPattern, null, 2)}\n`, 'utf8')
@@ -1024,7 +1024,7 @@ export async function handleToolCall(toolName, args, onError) {
 
         if (toolName === 'analyzeSamples') {
             const { samples } = args
-            const analyzer = new AudioAnalyzer()
+            const analyzer = new Analyzer()
             const results = []
             for (const s of samples) {
                 try {

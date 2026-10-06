@@ -16,10 +16,10 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import { isNoteAt } from './helpers/cmd_test_helpers.js'
 import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
 import { TICK } from '../src/core/constants.js'
@@ -114,12 +114,12 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
 
         const json = {
             name: pat.name + '_copy',
-            tracks: pat.tracks.map((trk) => ({
-                name: trk.name,
-                beatCount: trk.beatCount,
-                stepsPerBeat: trk.stepsPerBeat,
-                loopAtStep: trk.loopAtStep,
-                notes: trk.notes.map((n) => ({ ...n })),
+            tracks: pat.tracks.map((track) => ({
+                name: track.name,
+                beatCount: track.beatCount,
+                stepsPerBeat: track.stepsPerBeat,
+                loopAtStep: track.loopAtStep,
+                notes: track.notes.map((n) => ({ ...n })),
             })),
             bpm: pat.bpm,
             beatCount: pat.beatCount,

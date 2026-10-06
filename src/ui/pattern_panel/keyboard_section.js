@@ -6,7 +6,7 @@
 import { getTracksArray } from '../../core/tracks.js'
 import { BEATS_PER_PAGE } from '../../core/constants.js'
 import { EVENTS } from '../../core/events.js'
-import { emitNotesChanged } from '../../state/playback_events.js'
+import { emitNotesChanged } from '../../state/event_bus.js'
 import { applyNoteNudge } from '../components/note_nudge.js'
 
 export default class KeyboardSection {

@@ -19,7 +19,7 @@ import {
     LFO_RE,
     LFO_SYNC_OPTIONS,
     MOD_ENV_TARGETS,
-} from './constants.js'
+} from './synth_editor_constants.js'
 
 const TAB_DEFS = [
     { id: 'osc', label: 'OSC' },

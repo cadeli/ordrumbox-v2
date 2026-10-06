@@ -1,4 +1,4 @@
-// src/ui/track_editor/constants.js
+// src/ui/track_editor/track_editor_constants.js
 // Shared constants for TrackEditor sections — extracted from the monolith.
 
 import { toFiniteNumber } from '../../core/numbers.js'

@@ -1,6 +1,6 @@
 import { logger } from '../core/logger.js'
 import { reportUserError } from '../core/notify.js'
-import WorkletLoader from '../audio/worklets/loader.js'
+import WorkletLoader from '../audio/worklets/worklet_loader.js'
 import LFO_UI_SOURCE from '../audio/worklets/processors/lfo_ui_source.js'
 import { LFO_MAP } from './lfo_engine.js'
 import { computeLfoValue } from '../audio/math.js'

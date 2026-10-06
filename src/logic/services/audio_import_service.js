@@ -1,9 +1,9 @@
 import { logger } from '../../core/logger.js'
 import { appState } from '../../state/app_state.js'
-import { playbackEvents } from '../../state/playback_events.js'
+import { playbackEvents } from '../../state/event_bus.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
-import { instrumentsManager } from './instrument_manager/index.js'
+import { instrumentsManager } from './instruments_manager/index.js'
 import { cacheSample, cacheDrumkits } from '../../cache/idb_cache.js'
 import { EVENTS } from '../../core/events.js'
 

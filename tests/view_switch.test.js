@@ -4,7 +4,7 @@ import { makeAppStateMock } from './helpers/app_state_mock.js'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ViewSwitch from '../src/ui/toolbar/view_switch.js'
 
-vi.mock('../src/state/playback_events.js', () => ({
+vi.mock('../src/state/event_bus.js', () => ({
     playbackEvents: {
         emit: vi.fn(),
         batch: vi.fn((fn) => fn()),
@@ -48,7 +48,7 @@ vi.mock('../src/state/service_loader.js', () => ({
     getAutoGeneratorService: vi.fn(),
 }))
 
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { appState } from '../src/state/app_state.js'
 import { getAutoGeneratorService } from '../src/state/service_loader.js'

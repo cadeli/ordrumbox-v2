@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MIDI_MAX, MIDI_MIN, MIDDLE_C } from '../src/ui/piano_roll/constants.js'
+import { MIDI_MAX, MIDI_MIN, MIDDLE_C } from '../src/ui/piano_roll/piano_roll_constants.js'
 import { PITCH_STEP, VELOCITY_STEP, nudgePitch, nudgeVelocity } from '../src/ui/components/note_nudge.js'
 
 describe('nudgeVelocity', () => {

@@ -1,7 +1,7 @@
 import { logger } from '../core/logger.js'
 import { clamp } from '../core/numbers.js'
 /**
- * Metriques produites par AudioAnalyzer.
+ * Metriques produites par Analyzer.
  * @typedef {object} AudioAnalysis
  * @property {number[]} envelope
  * @property {number} durationSec  length in SECONDS (multiply by 1000 for ms)
@@ -17,8 +17,8 @@ import { clamp } from '../core/numbers.js'
  * @property {number} pitchConfidence
  */
 
-export default class AudioAnalyzer {
-    static TAG = 'AudioAnalyzer'
+export default class Analyzer {
+    static TAG = 'Analyzer'
     static DEFAULTS = Object.freeze({
         envelopePoints: 128,
         fftSize: 1024,
@@ -58,7 +58,7 @@ export default class AudioAnalyzer {
             throw new TypeError('sampleRate must be a positive number')
         }
 
-        const config = { ...AudioAnalyzer.DEFAULTS, ...options }
+        const config = { ...Analyzer.DEFAULTS, ...options }
         const samples = channelData instanceof Float32Array ? channelData : Float32Array.from(channelData)
 
         if (samples.length === 0) {

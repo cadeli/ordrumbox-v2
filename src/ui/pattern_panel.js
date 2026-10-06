@@ -5,7 +5,7 @@
 // module-level singletons.
 
 import { appState } from '../state/app_state.js'
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { BEATS_PER_PAGE } from '../core/constants.js'
@@ -21,7 +21,7 @@ import KeyboardSection from './pattern_panel/keyboard_section.js'
 import ContextMenuSection from './pattern_panel/context_menu_section.js'
 import ActionsSection from './pattern_panel/actions_section.js'
 import PointerSection from './pattern_panel/pointer_section.js'
-import DragSection from './pattern_panel/drag_section.js'
+import DragSection from './pattern_panel/pattern_grid_drag.js'
 import NoteGauge from './components/note_gauge.js'
 
 const TRIGGER_FLASH_MS = 120
@@ -324,10 +324,10 @@ export default class PatternPanel extends BasePanel {
         const startBeat = this.#appState.currentPage * BEATS_PER_PAGE
         const endBeatPage = startBeat + BEATS_PER_PAGE
 
-        tracks.forEach((track, tIdx) => {
+        tracks.forEach((track, trackIdx) => {
             if (!track) return
             this.#grid.updateTrackCells(
-                tIdx,
+                trackIdx,
                 track,
                 pattern,
                 startBeat,
@@ -337,7 +337,7 @@ export default class PatternPanel extends BasePanel {
             )
 
             // Update track-level row classes and properties
-            const trackEl = this.#tracksEl?.querySelectorAll('.pp-track:not(.pp-master-track)')?.[tIdx]
+            const trackEl = this.#tracksEl?.querySelectorAll('.pp-track:not(.pp-master-track)')?.[trackIdx]
             if (trackEl) {
                 const isMuted = track.mute === true
                 const isSolo = track.solo === true
@@ -615,7 +615,7 @@ export default class PatternPanel extends BasePanel {
         return this.#pointer
     }
 
-    /** @returns {import('./pattern_panel/drag_section.js').default} */
+    /** @returns {import('./pattern_panel/pattern_grid_drag.js').default} */
     get drag() {
         return this.#drag
     }

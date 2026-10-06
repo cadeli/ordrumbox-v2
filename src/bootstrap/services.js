@@ -1,5 +1,5 @@
-import Sequencer from '../logic/seq.js'
-import Commander from '../logic/commands/cmd.js'
+import Sequencer from '../logic/sequencer.js'
+import Commander from '../logic/commands/commander.js'
 import * as flatNotesService from '../patterns/flat_notes.js'
 import ResourcesLoader from '../loader/resources_loader.js'
 import { getHistoryService } from '../state/service_loader.js'

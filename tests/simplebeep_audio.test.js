@@ -291,7 +291,7 @@ describe('simpleBeep — SampleVoice through real mixer chain', () => {
     it('SampleVoice → strip.voicesInput → mixer → destination is audible', async () => {
         const { default: Mixer } = await import('../src/audio/mixer.js')
         const { default: SampleVoice } = await import('../src/audio/voices/sample_voice.js')
-        const { default: FlatNote } = await import('../src/model/flatnote.js')
+        const { default: FlatNote } = await import('../src/model/flat_note.js')
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
         const mixer = await Mixer.create(ctx)
@@ -322,7 +322,7 @@ describe('simpleBeep — SampleVoice through real mixer chain', () => {
     it('SampleVoice → strip → mixer is audible AFTER stop + re-init', async () => {
         const { default: Mixer } = await import('../src/audio/mixer.js')
         const { default: SampleVoice } = await import('../src/audio/voices/sample_voice.js')
-        const { default: FlatNote } = await import('../src/model/flatnote.js')
+        const { default: FlatNote } = await import('../src/model/flat_note.js')
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
         const mixer = await Mixer.create(ctx)

@@ -1,6 +1,6 @@
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { injectUiCss } from './components/ui_utils.js'
 import { isMobileViewport } from '../core/constants.js'
 import { DRUM_TYPES, detectTrackType } from '../core/drum_taxonomy.js'

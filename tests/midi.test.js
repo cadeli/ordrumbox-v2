@@ -1,7 +1,7 @@
 import { makeAppStateMock } from './helpers/app_state_mock.js'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('../src/logic/services/instrument_manager/index.js', () => {
+vi.mock('../src/logic/services/instruments_manager/index.js', () => {
     const mock = { findTrackIndexFromMidi: vi.fn().mockReturnValue(-1) }
     return {
         default: class MockInstrumentsManager {
@@ -29,7 +29,7 @@ describe('MidiManager', () => {
 
     beforeEach(async () => {
         vi.restoreAllMocks()
-        const mod = await import('../src/logic/midi/midi.js')
+        const mod = await import('../src/logic/midi/midi_manager.js')
         MidiManager = mod.default
     })
 

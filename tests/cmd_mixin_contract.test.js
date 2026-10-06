@@ -1,7 +1,7 @@
 // tests/cmd_mixin_contract.test.js
 // Guard: the 45 command sub-module methods stay own, spread-safe delegates.
 import { describe, it, expect } from 'vitest'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 
 describe('Commander mixin contract', () => {
     it('declares exactly the 45 sub-module method names, unique', () => {

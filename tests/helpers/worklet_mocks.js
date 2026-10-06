@@ -6,7 +6,7 @@
  * real AudioContext.
  */
 import { vi } from 'vitest'
-import WorkletLoader from '../../src/audio/worklets/loader.js'
+import WorkletLoader from '../../src/audio/worklets/worklet_loader.js'
 
 /**
  * AudioParam-shaped mock. The worklet strips/voices drive parameters via

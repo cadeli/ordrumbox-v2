@@ -10,7 +10,7 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import HistoryManager from '../src/logic/history_manager.js'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import { clampStepsPerBeat } from '../src/model/track_schema.js'
 import { areValidNoteKeys, normalizeNote } from '../src/core/note_schema.js'
 import { reportUserError, resetUserErrorReports } from '../src/core/notify.js'
@@ -85,15 +85,15 @@ describe('P1a — silent failure guards', () => {
             const track = makeTrack({
                 stepsPerBeat: 16,
                 notes: [
-                    { beat: 0, beatStep: 8, steppc: 50 },
-                    { beat: 1, beatStep: 0, steppc: 0 },
+                    { beat: 0, beatStep: 8, stepPercent: 50 },
+                    { beat: 1, beatStep: 0, stepPercent: 0 },
                 ],
             })
 
             expect(clampStepsPerBeat(track)).toBe(true)
             expect(track.stepsPerBeat).toBe(8)
-            // steppc is preserved, beatStep rescaled into the new grid
-            expect(track.notes[0].steppc).toBe(50)
+            // stepPercent is preserved, beatStep rescaled into the new grid
+            expect(track.notes[0].stepPercent).toBe(50)
             expect(track.notes[0].beatStep).toBe(4)
             expect(track.notes[1].beatStep).toBe(0)
         })

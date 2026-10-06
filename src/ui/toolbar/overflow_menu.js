@@ -1,7 +1,7 @@
 // src/ui/toolbar/overflow_menu.js
 // Overflow menu: tools, about, settings, mobile pattern name.
 
-import { playbackEvents } from '../../state/playback_events.js'
+import { playbackEvents } from '../../state/event_bus.js'
 import { EVENTS } from '../../core/events.js'
 
 export default class OverflowMenu {

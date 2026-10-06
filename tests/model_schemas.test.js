@@ -2,7 +2,7 @@
 // Model contracts: FlatNote, Instrument, track_schema.
 
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import FlatNote from '../src/model/flatnote.js'
+import FlatNote from '../src/model/flat_note.js'
 import Instrument from '../src/model/instrument.js'
 import { logger } from '../src/core/logger.js'
 import { TRACK_DEFAULTS, normalizeTrack, TRACK_VALUE_RANGES } from '../src/model/track_schema.js'

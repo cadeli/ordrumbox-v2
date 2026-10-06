@@ -1,7 +1,7 @@
 // src/ui/piano_roll/hit_test.js
 // Shared hit-testing helpers: pointer position to grid cell, cell to note.
 
-import { MIDDLE_C, NOTE_HEIGHT, TOTAL_KEYS } from './constants.js'
+import { MIDDLE_C, NOTE_HEIGHT, TOTAL_KEYS } from './piano_roll_constants.js'
 
 /**
  * Convert a pointer event inside the grid element into a grid cell.

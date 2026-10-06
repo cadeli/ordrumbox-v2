@@ -112,7 +112,7 @@ export const NOTE_DEFAULTS = {
  * Properties that are recalculated on the fly (derived).
  * Never exported or imported in the compact format.
  */
-export const NOTE_RECALCULATED = ['steppc']
+export const NOTE_RECALCULATED = ['stepPercent']
 
 /**
  * Position keys used for step calculation.
@@ -191,10 +191,13 @@ export function detectUsedKeys(notes) {
  * Files written before a rename still carry the old spelling, in object notes
  * and in the compact `noteKeys` header, so every read path maps it back:
  * `fixPattern` (library load + .odbox via song_service), `importPatternFromJson`
- * and the one-shot `MIGRATIONS[7]` rewrite of the IndexedDB copy.
+ * and the IndexedDB migration walks (MIGRATIONS[7], MIGRATIONS[8]).
+ *
+ * `steppc` → `stepPercent` is included although the key is recalculated on
+ * import (never serialized): app-state notes carry it, so IndexedDB records do.
  * @type {Readonly<Record<string, string>>}
  */
-export const LEGACY_NOTE_KEY_ALIASES = Object.freeze({ retriggerNum: 'retriggerCount' })
+export const LEGACY_NOTE_KEY_ALIASES = Object.freeze({ retriggerNum: 'retriggerCount', steppc: 'stepPercent' })
 
 /**
  * Rewrite a note's legacy keys onto their current names, in place. The current

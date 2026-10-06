@@ -82,7 +82,7 @@ export function applyTrackToStrip(strip, track, time, opts) {
 
 /**
  * Same as {@link applyTrackToStrip} without the defaults fallback, for UI-driven
- * changes where absent fields must stay untouched (AudioEngine.updateStrip).
+ * changes where absent fields must stay untouched (Engine.updateStrip).
  *
  * It used to be a second name for "a track", which read as if there were two
  * kinds of object; it takes the very same one.

@@ -3,7 +3,7 @@
  *
  * Playback cache invalidation — observed through the public behaviour only:
  *   1. flatNotes must be fetched once per loop and served again from cache
- *      until Player.invalidateCache() / AudioEngine.invalidateCache() runs.
+ *      until Player.invalidateCache() / Engine.invalidateCache() runs.
  *   2. NOTE_TRIGGER trackIdx must stay correct when the tracks container
  *      changes: in-place splice/push (same array) and array replacement
  *      (new array, same size) must both rebuild the track -> index mapping,
@@ -11,9 +11,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import AudioEngine from '../src/audio/engine.js'
+import Engine from '../src/audio/engine.js'
 import Player from '../src/audio/player.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { EVENTS } from '../src/core/events.js'
 import { logger } from '../src/core/logger.js'
 
@@ -194,7 +194,7 @@ describe('Player cache invalidation', () => {
     })
 })
 
-describe('AudioEngine cache wiring', () => {
+describe('Engine cache wiring', () => {
     let warnSpy
     let errorSpy
     let consoleWarnSpy
@@ -217,7 +217,7 @@ describe('AudioEngine cache wiring', () => {
     })
 
     function makeEngine(patterns = []) {
-        return new AudioEngine({
+        return new Engine({
             audioCtx: { currentTime: 0, createBuffer: () => ({}) },
             sounds: {},
             patterns,

@@ -5,7 +5,7 @@
  * Only the bpm value is changed in place and restored afterwards — even when
  * the render fails.
  *
- * AudioEngine is mocked here: this file targets the transport handover only,
+ * Engine is mocked here: this file targets the transport handover only,
  * not the rendering pipeline (covered by wav_export_functional.test.js).
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'

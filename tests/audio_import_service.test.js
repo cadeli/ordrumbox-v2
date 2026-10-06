@@ -18,7 +18,7 @@ vi.mock('../src/cache/idb_cache.js', () => ({
 }))
 
 const mockPlaybackEmit = vi.fn()
-vi.mock('../src/state/playback_events.js', () => ({
+vi.mock('../src/state/event_bus.js', () => ({
     playbackEvents: {
         emit: (...a) => mockPlaybackEmit(...a),
     },

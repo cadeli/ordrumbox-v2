@@ -18,7 +18,7 @@ export const EVENTS = Object.freeze({
      * Both are legitimate, so an emit with no payload is not a missing argument:
      * it means "everything". Prefer passing the tracks when you know them —
      * PATTERN_CHANGE / NOTE_CHANGE are the only events whose payload changes
-     * behaviour (see the PATTERN_CHANGE subscriber in logic/seq.js).
+     * behaviour (see the PATTERN_CHANGE subscriber in logic/sequencer.js).
      */
     PATTERN_CHANGE: 'patternChange',
     PATTERN_STRUCTURE_CHANGE: 'patternStructureChange',

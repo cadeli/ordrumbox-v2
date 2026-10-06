@@ -26,9 +26,9 @@
  *   Ratio = 96 / 32 = 3  →  midi_tick = engine_tick * 3
  */
 
-import InstrumentsManager from '../services/instrument_manager/index.js'
+import InstrumentsManager from '../services/instruments_manager/index.js'
 import { soundRegistry } from '../../state/sound_registry.js'
-import { recomputeFlatNotes, computeTickCountForPattern } from '../../patterns/engine.js'
+import { recomputeFlatNotes, computeTickCountForPattern } from '../../patterns/pattern_engine.js'
 import { TICK } from '../../core/constants.js'
 import { computeLfoValue } from '../../audio/math.js'
 import { clamp } from '../../core/numbers.js'

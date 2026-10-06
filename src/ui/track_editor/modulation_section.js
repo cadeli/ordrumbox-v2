@@ -2,7 +2,7 @@
 // Modulation (LFO) tab — LFO target buttons + type/freq/range/phase controls.
 
 import { renderOptions } from '../components/ui_utils.js'
-import { ALL_TRACK_PROPS, KNOB_PROPS } from './constants.js'
+import { ALL_TRACK_PROPS, KNOB_PROPS } from './track_editor_constants.js'
 import { WAVE_TYPES } from '../../audio/fx_values.js'
 import { fmt } from '../components/ui_utils.js'
 

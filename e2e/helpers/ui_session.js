@@ -137,12 +137,12 @@ export async function snapshotState(page) {
     })
 }
 
-/** Runs PatternExporter.export() on patterns[idx] inside the page. */
+/** Runs Exporter.export() on patterns[idx] inside the page. */
 export async function exportPatternAt(page, idx) {
     return page.evaluate(async (patternIdx) => {
-        const { PatternExporter } = await import('/src/patterns/exporter.js')
+        const { Exporter } = await import('/src/patterns/exporter.js')
         const { appState } = window.__e2e
-        return PatternExporter.export(appState.patterns[patternIdx])
+        return Exporter.export(appState.patterns[patternIdx])
     }, idx)
 }
 

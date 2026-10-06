@@ -177,9 +177,9 @@ export const TRACK_VALUE_RANGES = {
 
 /**
  * Clamps a track's stepsPerBeat into TRACK_VALUE_RANGES and rescales what
- * depends on it (note steppc/beatStep, loop point). An out-of-grid value comes
+ * depends on it (note stepPercent/beatStep, loop point). An out-of-grid value comes
  * from imported JSON or a direct field write; deriving note positions from it
- * would produce beatStep/steppc values nothing else can read.
+ * would produce beatStep/stepPercent values nothing else can read.
  *
  * Pure (no logging) — callers surface the change with reportUserError().
  * @param {any} track
@@ -196,9 +196,9 @@ export function clampStepsPerBeat(track) {
         : TRACK_DEFAULTS.stepsPerBeat
     const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? {})
     for (const note of notes) {
-        const steppc = note.steppc ?? Math.round((note.beatStep * 100) / (current || 4))
-        note.steppc = steppc
-        note.beatStep = Math.min(Math.round((steppc / 100) * target), target - 1)
+        const stepPercent = note.stepPercent ?? Math.round((note.beatStep * 100) / (current || 4))
+        note.stepPercent = stepPercent
+        note.beatStep = Math.min(Math.round((stepPercent / 100) * target), target - 1)
     }
     track.stepsPerBeat = target
     if (typeof track.beatCount === 'number' && track.loopAtStep > track.beatCount * target) {

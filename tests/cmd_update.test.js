@@ -10,9 +10,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 import { EVENTS } from '../src/core/events.js'
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import HistoryManager from '../src/logic/history_manager.js'
 import { showToast } from '../src/core/notify.js'
 
@@ -171,7 +171,7 @@ describe('Commander — updateNote / updateTrack opts / setStepsPerBeat', () => 
     })
 
     describe('setStepsPerBeat', () => {
-        it('applies the target and migrates note beatSteps via steppc', () => {
+        it('applies the target and migrates note beatSteps via stepPercent', () => {
             const track = makeTrack({ notes: [makeNote({ beatStep: 2 })] })
 
             const changed = cmd.setStepsPerBeat(track, 8)

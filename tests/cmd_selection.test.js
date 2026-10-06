@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
+import { playbackEvents } from '../src/state/event_bus.js'
 
 const { mocks } = vi.hoisted(() => ({
     mocks: {
@@ -40,10 +40,10 @@ vi.mock('../src/core/logger.js', () => ({
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }))
 
-import Commander from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/commander.js'
 import { EVENTS } from '../src/core/events.js'
 
-describe('cmd_selection', () => {
+describe('cmd/selection_commands', () => {
     let cmd
 
     beforeEach(() => {

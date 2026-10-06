@@ -1,5 +1,5 @@
 import { appState } from '../state/app_state.js'
-import { playbackEvents } from '../state/playback_events.js'
+import { playbackEvents } from '../state/event_bus.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { showToast } from '../core/notify.js'
 import BasePanel from './base_panel.js'

@@ -7,7 +7,7 @@
 
 import { soundRegistry as _soundRegistrySingleton } from '../state/sound_registry.js'
 import { serviceRegistry as _serviceRegistrySingleton } from '../state/service_registry.js'
-import { playbackEvents as _playbackEventsSingleton } from '../state/playback_events.js'
+import { playbackEvents as _playbackEventsSingleton } from '../state/event_bus.js'
 import { logger } from '../core/logger.js'
 import { syncKnobs } from './components/sync_helpers.js'
 import { reportUserError, showToast } from '../core/notify.js'
@@ -19,7 +19,7 @@ import { WAVE_TYPES } from '../audio/fx_values.js'
 import GroupsSection from './synth_editor/groups_section.js'
 import WaveformSection from './synth_editor/waveform_section.js'
 import PresetSection from './synth_editor/preset_section.js'
-import { SYNTH_PARAM_META, SYNTH_GROUP_DEFAULTS } from './synth_editor/constants.js'
+import { SYNTH_PARAM_META, SYNTH_GROUP_DEFAULTS } from './synth_editor/synth_editor_constants.js'
 import { EVENTS } from '../core/events.js'
 
 /**

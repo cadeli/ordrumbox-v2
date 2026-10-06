@@ -106,11 +106,11 @@ export default class PlaybackOverlaySection {
         const tracks = getTracksArray(currentPattern)
         for (let i = 0; i < vuEls.length; i++) {
             const vuEl = vuEls[i]
-            let tIdx = vuEl._tIdx
-            if (tIdx === undefined) {
-                tIdx = vuEl._tIdx = parseInt(vuEl.dataset.track, 10)
+            let trackIdx = vuEl._trackIdx
+            if (trackIdx === undefined) {
+                trackIdx = vuEl._trackIdx = parseInt(vuEl.dataset.track, 10)
             }
-            const track = tracks?.[tIdx]
+            const track = tracks?.[trackIdx]
             const strip = track?.name ? strips[track.name] : null
             const level = strip?.getLevel ? strip.getLevel() : 0
 

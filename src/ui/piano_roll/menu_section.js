@@ -4,12 +4,12 @@
 import { notesAtStep } from '../../core/notes.js'
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import { playbackEvents } from '../../state/playback_events.js'
+import { playbackEvents } from '../../state/event_bus.js'
 import { EVENTS } from '../../core/events.js'
 import { showToast } from '../../core/notify.js'
 import ContextMenu from '../components/context_menu.js'
 import { getSequence, buildSequenceNotes } from '../../logic/composition.js'
-import { MIDDLE_C, MIDI_MIN, midiName } from './constants.js'
+import { MIDDLE_C, MIDI_MIN, midiName } from './piano_roll_constants.js'
 import { pointToCell, findNoteAt } from './hit_test.js'
 
 export default class MenuSection {

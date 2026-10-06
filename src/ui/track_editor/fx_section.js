@@ -3,8 +3,8 @@
 
 import { OrKnob } from '../components/or_knob.js'
 import { renderOptions, renderIconChoices } from '../components/ui_utils.js'
-import { FX_DEFS, FILTER_TYPE_ICONS, PROP_BY_KEY, fmtVal } from './constants.js'
-import { emitTrackChanged } from '../../state/playback_events.js'
+import { FX_DEFS, FILTER_TYPE_ICONS, PROP_BY_KEY, fmtVal } from './track_editor_constants.js'
+import { emitTrackChanged } from '../../state/event_bus.js'
 
 export default class FxSection {
     #editor

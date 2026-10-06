@@ -3,7 +3,7 @@
  * from inline source strings via Blob URLs.
  *
  * Usage:
- *   import WorkletLoader from './loader.js'
+ *   import WorkletLoader from './worklet_loader.js'
  *   import SATURATION_SOURCE from './processors/saturation_source.js'
  *   WorkletLoader.register('saturation', SATURATION_SOURCE)
  *   await WorkletLoader.ensureLoaded(audioCtx)

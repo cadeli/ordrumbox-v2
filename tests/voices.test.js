@@ -6,7 +6,7 @@ import WorkletSynthVoice from '../src/audio/voices/worklet_synth_voice.js'
 import VoiceFactory from '../src/audio/voices/voice_factory.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import WorkletLoader from '../src/audio/worklets/loader.js'
+import WorkletLoader from '../src/audio/worklets/worklet_loader.js'
 import { computeOscFrequency, computeNoteRatio } from '../src/audio/math.js'
 import { makeParam, makeNode } from './helpers/worklet_mocks.js'
 
