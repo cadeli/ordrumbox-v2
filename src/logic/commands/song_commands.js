@@ -85,8 +85,8 @@ export default class SongCommands {
     #patternByRef(ref) {
         const needle = String(ref ?? '').trim()
         if (!needle) return null
-        const byId = appState.patterns.find((pattern) => pattern?.id === needle)
-        if (byId) return byId
+        const patternById = appState.patterns.find((pattern) => pattern?.id === needle)
+        if (patternById) return patternById
         const upper = needle.toUpperCase()
         return (
             appState.patterns.find(

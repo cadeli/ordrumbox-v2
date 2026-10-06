@@ -34,15 +34,15 @@ export function initGlobalListeners() {
 
     if (window.orientation > 1) {
         // Vendor-prefixed variants are missing from the DOM types
-        const de = /** @type {Document['documentElement'] & Record<string, () => void>} */ (document.documentElement)
-        if (de.requestFullscreen) {
-            de.requestFullscreen()
-        } else if (de.mozRequestFullScreen) {
-            de.mozRequestFullScreen()
-        } else if (de.webkitRequestFullscreen) {
-            de.webkitRequestFullscreen()
-        } else if (de.msRequestFullscreen) {
-            de.msRequestFullscreen()
+        const docEl = /** @type {Document['documentElement'] & Record<string, () => void>} */ (document.documentElement)
+        if (docEl.requestFullscreen) {
+            docEl.requestFullscreen()
+        } else if (docEl.mozRequestFullScreen) {
+            docEl.mozRequestFullScreen()
+        } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen()
+        } else if (docEl.msRequestFullscreen) {
+            docEl.msRequestFullscreen()
         }
         screen.orientation.lock('landscape-primary')
     }

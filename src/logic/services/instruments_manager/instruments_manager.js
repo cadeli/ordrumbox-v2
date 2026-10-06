@@ -8,13 +8,13 @@ export default class InstrumentsManager {
     static DATA = INSTRUMENTS_DATA
 
     constructor() {
-        this.byId = new Map()
+        this.instrumentById = new Map()
         this.matchers = []
         this.load(InstrumentsManager.DATA)
     }
 
     load(jsonData) {
-        this.byId.clear()
+        this.instrumentById.clear()
         this.matchers = []
         if (!jsonData.instruments) return
 
@@ -38,7 +38,7 @@ export default class InstrumentsManager {
                 }
             }
 
-            this.byId.set(inst.id.toUpperCase(), inst)
+            this.instrumentById.set(inst.id.toUpperCase(), inst)
 
             if (inst.synonyms.length > 0) {
                 inst.synonyms.forEach((syn) => {
@@ -54,7 +54,7 @@ export default class InstrumentsManager {
     }
 
     findById(id) {
-        return this.byId.get(id.toUpperCase()) ?? new Instrument()
+        return this.instrumentById.get(id.toUpperCase()) ?? new Instrument()
     }
 
     /**
@@ -73,14 +73,14 @@ export default class InstrumentsManager {
 
     findInstrumentFromFileName(fileName) {
         const normFileName = fileName.trim().toUpperCase()
-        let instrument = this.byId.get(normFileName)
+        let instrument = this.instrumentById.get(normFileName)
         if (instrument) return instrument
 
-        for (const inst of this.byId.values()) {
+        for (const inst of this.instrumentById.values()) {
             if (this.countCommonWords(inst.id, fileName) > 0) return inst
         }
 
-        for (const inst of this.byId.values()) {
+        for (const inst of this.instrumentById.values()) {
             const foundMidi = inst.midi.find((m) => this.countCommonWords(m.name, fileName) > 0)
             if (foundMidi) return inst
         }
@@ -103,7 +103,7 @@ export default class InstrumentsManager {
         const normalizedChannel = String(channel)
         const normalizedKey = String(noteKey)
 
-        for (const instrument of this.byId.values()) {
+        for (const instrument of this.instrumentById.values()) {
             const midiMatch = instrument.midi.find((midi) => {
                 return String(midi.channel) === normalizedChannel && String(midi.key) === normalizedKey
             })
@@ -123,7 +123,7 @@ export default class InstrumentsManager {
         const normalizedProgram = String(program)
         logger.debug('Instrument', `findInstrumentFromMidiProgram: program=${program}`)
 
-        for (const instrument of this.byId.values()) {
+        for (const instrument of this.instrumentById.values()) {
             const midiMatch = instrument.midi.find((midi) => {
                 return midi.program != null && String(midi.program) === normalizedProgram
             })
@@ -151,7 +151,7 @@ export default class InstrumentsManager {
                 logger.debug('Instrument', `findByProgramNumber: findByName("${gmName}") → "${inst.id}"`)
                 return inst
             }
-            for (const instrument of this.byId.values()) {
+            for (const instrument of this.instrumentById.values()) {
                 if (instrument.midi.some((m) => m.name && m.name.toLowerCase() === gmName.toLowerCase())) {
                     logger.debug('Instrument', `findByProgramNumber: midi.name match "${gmName}" → "${instrument.id}"`)
                     return instrument

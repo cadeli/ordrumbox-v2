@@ -180,7 +180,7 @@ export default class MidiImportService {
         }
 
         for (const channel of skippedChannels) {
-            const allInstIds = [...im.byId.keys()].sort()
+            const allInstIds = [...im.instrumentById.keys()].sort()
             const usedIds = new Set(trackDefs.map((d) => d.trackName))
             let fallbackIdx = 0
             while (fallbackIdx < allInstIds.length && usedIds.has(allInstIds[fallbackIdx])) fallbackIdx++

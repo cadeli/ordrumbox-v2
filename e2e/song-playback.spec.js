@@ -157,11 +157,11 @@ test.describe('Song playback mode follows the visible view', () => {
 
         const broken = await page.evaluate(() => {
             const { appState, soundRegistry } = window.__e2e
-            const byId = new Map(appState.patterns.map((p) => [p.id, p]))
+            const patternsById = new Map(appState.patterns.map((p) => [p.id, p]))
             const ids = [...new Set(appState.songs[0].clips.map((c) => c.pattern))]
             return ids
                 .map((id) => {
-                    const pattern = byId.get(id)
+                    const pattern = patternsById.get(id)
                     const tracks = Object.values(pattern?.tracks ?? {})
                     const silent = tracks.filter(
                         (t) => !t.useSoftSynth && !t.synthSoundKey && !soundRegistry.sounds?.[t.sampleId]?.buffer,

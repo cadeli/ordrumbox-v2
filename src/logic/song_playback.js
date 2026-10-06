@@ -101,14 +101,14 @@ export function resolveSongSources(song, patternsById, tick, ticksPerBeat, loopM
  * @returns {Array<object>}
  */
 export function songPatterns(song, patterns) {
-    const byId = new Map()
+    const patternsById = new Map()
     for (const pattern of patterns ?? []) {
-        if (pattern?.id) byId.set(pattern.id, pattern)
+        if (pattern?.id) patternsById.set(pattern.id, pattern)
     }
     const out = []
     const seen = new Set()
     for (const clip of song?.clips ?? []) {
-        const pattern = byId.get(clip.pattern)
+        const pattern = patternsById.get(clip.pattern)
         if (!pattern || seen.has(pattern)) continue
         seen.add(pattern)
         out.push(pattern)

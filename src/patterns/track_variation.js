@@ -92,9 +92,9 @@ function applyOps(flatNotes, track, ops, budget) {
                     beat: op.target.beat,
                     beatStep: op.target.beatStep,
                 }
-                const newFn = new FlatNote(op.target.t, track, note)
+                const newFlatNote = new FlatNote(op.target.t, track, note)
                 if (!flatNotes.has(op.target.t)) flatNotes.set(op.target.t, [])
-                flatNotes.get(op.target.t).push(newFn)
+                flatNotes.get(op.target.t).push(newFlatNote)
                 remaining -= op.cost
                 break
             }
@@ -107,9 +107,9 @@ function applyOps(flatNotes, track, ops, budget) {
                     beat: op.target.beat,
                     beatStep: op.target.beatStep,
                 }
-                const newFn = new FlatNote(op.target.t, track, note)
+                const newFlatNote = new FlatNote(op.target.t, track, note)
                 if (!flatNotes.has(op.target.t)) flatNotes.set(op.target.t, [])
-                flatNotes.get(op.target.t).push(newFn)
+                flatNotes.get(op.target.t).push(newFlatNote)
                 remaining -= op.cost
                 break
             }
@@ -122,9 +122,9 @@ function applyOps(flatNotes, track, ops, budget) {
                     beat: op.target.beat,
                     beatStep: op.target.beatStep,
                 }
-                const newFn = new FlatNote(op.target.t, track, note)
+                const newFlatNote = new FlatNote(op.target.t, track, note)
                 if (!flatNotes.has(op.target.t)) flatNotes.set(op.target.t, [])
-                flatNotes.get(op.target.t).push(newFn)
+                flatNotes.get(op.target.t).push(newFlatNote)
                 remaining -= op.cost
                 break
             }

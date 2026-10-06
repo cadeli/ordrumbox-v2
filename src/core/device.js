@@ -10,28 +10,28 @@
  */
 export function detectDeviceClass() {
     if (typeof navigator === 'undefined') return 'desktop'
-    const ua = navigator.userAgent || ''
+    const userAgent = navigator.userAgent || ''
     const platform = navigator.platform || ''
 
     // iPadOS 13+ masquerades as desktop Safari (Macintosh + multi-touch)
-    if (/iPad/.test(ua) || (platform === 'MacIntel' && (navigator.maxTouchPoints ?? 0) > 1)) {
+    if (/iPad/.test(userAgent) || (platform === 'MacIntel' && (navigator.maxTouchPoints ?? 0) > 1)) {
         return 'tablet'
     }
     // Windows Phone UAs may embed an "Android" compat token → check first
-    if (/Windows Phone|IEMobile|Opera Mini|webOS|BlackBerry|BB10/i.test(ua)) {
+    if (/Windows Phone|IEMobile|Opera Mini|webOS|BlackBerry|BB10/i.test(userAgent)) {
         return 'phone'
     }
     // Android: phones carry "Mobi"/"Mobile", tablets do not
-    if (/Android/.test(ua)) {
-        return /Mobi|Mobile/i.test(ua) ? 'phone' : 'tablet'
+    if (/Android/.test(userAgent)) {
+        return /Mobi|Mobile/i.test(userAgent) ? 'phone' : 'tablet'
     }
-    if (/iPhone|iPod/i.test(ua)) {
+    if (/iPhone|iPod/i.test(userAgent)) {
         return 'phone'
     }
-    if (/Tablet|Kindle|Silk/i.test(ua)) {
+    if (/Tablet|Kindle|Silk/i.test(userAgent)) {
         return 'tablet'
     }
-    if (/Mobi|Mobile|Phone/i.test(ua)) {
+    if (/Mobi|Mobile|Phone/i.test(userAgent)) {
         return 'phone'
     }
     return 'desktop'

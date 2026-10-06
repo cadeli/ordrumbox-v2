@@ -42,9 +42,9 @@ export function fixTrackPanning(track) {
 
 export function normalizeNoteGridPosition(track, note) {
     if (note.beatStep >= track.stepsPerBeat) {
-        const pStep = note.beatStep
+        const prevBeatStep = note.beatStep
         note.beatStep %= track.stepsPerBeat
-        note.beat = Math.floor(pStep / track.stepsPerBeat)
+        note.beat = Math.floor(prevBeatStep / track.stepsPerBeat)
     }
     note.stepPercent = Math.round((note.beatStep * 100) / track.stepsPerBeat)
     return note
