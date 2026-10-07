@@ -14,6 +14,7 @@ import InstrumentsManager from './src/logic/services/instruments_manager/index.j
 import { WAVE_TYPES } from './src/audio/fx_values.js'
 
 import { getTracksArray } from './src/core/tracks.js'
+import { normalizeColorScheme } from './src/core/constants.js'
 import { normalizeTrack, TRACK_VALUE_RANGES } from './src/model/track_schema.js'
 import {
     canonicalNoteKeys,
@@ -803,6 +804,21 @@ export const tools = [
             },
         },
     },
+    {
+        name: 'setColorScheme',
+        description:
+            'Sets the UI color scheme in settings.json: 1 = phosphor (default), 2 = amber terminal, 3 = electric blue. Any value other than 1, 2 or 3 falls back to 1. Applied by the app on the next boot.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                scheme: {
+                    type: 'integer',
+                    description: 'Color scheme id: 1, 2 or 3 — anything else falls back to 1',
+                },
+            },
+            required: ['scheme'],
+        },
+    },
 ]
 
 export async function handleToolCall(toolName, args, onError) {
@@ -1318,6 +1334,48 @@ export async function handleToolCall(toolName, args, onError) {
                             bpm: pattern.bpm,
                             beatCount: pattern.beatCount,
                             tracks: getTracksArray(pattern).length,
+                        }),
+                    },
+                ],
+            }
+        }
+
+        if (toolName === 'setColorScheme') {
+            const { scheme } = args
+            if (scheme === undefined || scheme === null) throw new Error('scheme is required')
+
+            const value = normalizeColorScheme(scheme)
+            const filePath = resolve(dataDir(), 'settings.json')
+
+            let raw = null
+            try {
+                raw = await readFile(filePath, 'utf8')
+            } catch (e) {
+                if (e?.code !== 'ENOENT') throw new Error(`Cannot read ${filePath}: ${e.message}`)
+            }
+            let settings = {}
+            if (raw !== null) {
+                try {
+                    settings = JSON.parse(raw)
+                } catch (e) {
+                    throw new Error(`Invalid JSON in ${filePath}: ${e.message}`)
+                }
+                if (!settings || typeof settings !== 'object' || Array.isArray(settings)) settings = {}
+            }
+
+            const previous = normalizeColorScheme(settings.colorScheme)
+            settings.colorScheme = value
+            await writeFile(filePath, `${JSON.stringify(settings, null, 4)}\n`, 'utf8')
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            message: `Color scheme set to ${value} (applied at the next app boot)`,
+                            scheme: value,
+                            previous,
+                            filePath,
                         }),
                     },
                 ],

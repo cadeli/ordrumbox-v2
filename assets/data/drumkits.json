@@ -422,8 +422,8 @@
                 "decay": 5000
             },
             {
-                "display_name": "CRASH",
-                "key": "CRASH",
+                "display_name": "CRASH2",
+                "key": "CRASH2",
                 "url": "ropen/CRASH2.wav",
                 "peakDb": -3,
                 "rootMidi": 48,

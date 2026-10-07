@@ -33,6 +33,14 @@
     --phosphor: #b6ff2e;
     --scope-bg: #050a14;
 
+    /* ── Body atmosphere (glow gradients + gradient midpoint), so a color
+       scheme can retint the shell without touching the body rule ── */
+    --bg-mid: #0a0b26;
+    --glow-1: rgba(255, 79, 163, 0.3);
+    --glow-2: rgba(55, 224, 255, 0.26);
+    --glow-3: rgba(169, 123, 255, 0.3);
+    --glow-grid: rgba(183, 255, 60, 0.07);
+
     /* ── Semantic (candy signals) ── */
     --color-success: #4dffb2;
     --color-success-dark: #17c98a;
@@ -82,6 +90,58 @@
     --toast-shadow: rgba(0, 0, 0, 0.55);
 }
 
+/* ---- Color schemes -------------------------------------------------
+   Scheme 1 (above) is the default: no [data-scheme] override needed.
+   2 and 3 re-tint the shell (surfaces, lines, text, accent, scope, body
+   atmosphere). The toy plastics and semantic signals stay shared so a
+   track colour and an alert keep their meaning under every scheme.
+   Tagged by applyColorScheme() from settings.json — the MCP
+   `setColorScheme` tool writes that file; invalid ids fall back to 1.
+   ------------------------------------------------------------------- */
+:root[data-scheme='2'] {
+    /* Amber on warm brown — retro terminal */
+    --bg: #1c1206;
+    --bg-mid: #241705;
+    --surface: #2e1e0a;
+    --surface-2: #3d290e;
+    --line: #96631f;
+    --muted: #e0b072;
+    --text: #ffedc8;
+    --black: #120b03;
+    --accent: #ffb02e;
+    --accent-400: #ffcf6e;
+    --accent-600: #c47c00;
+    --border-subtle: #a8752e;
+    --phosphor: #ffc94d;
+    --scope-bg: #140d03;
+    --glow-1: rgba(255, 149, 0, 0.3);
+    --glow-2: rgba(255, 79, 63, 0.22);
+    --glow-3: rgba(255, 225, 77, 0.24);
+    --glow-grid: rgba(255, 176, 46, 0.07);
+}
+
+:root[data-scheme='3'] {
+    /* Electric blue on deep navy — deep sea */
+    --bg: #060f24;
+    --bg-mid: #0a1533;
+    --surface: #0d1b3d;
+    --surface-2: #142651;
+    --line: #2f5ab8;
+    --muted: #8fb2ee;
+    --text: #dbe9ff;
+    --black: #03070f;
+    --accent: #4d9fff;
+    --accent-400: #7ab8ff;
+    --accent-600: #2a6fd4;
+    --border-subtle: #3a67c4;
+    --phosphor: #66c2ff;
+    --scope-bg: #030a18;
+    --glow-1: rgba(77, 159, 255, 0.3);
+    --glow-2: rgba(55, 224, 255, 0.2);
+    --glow-3: rgba(169, 123, 255, 0.25);
+    --glow-grid: rgba(102, 194, 255, 0.07);
+}
+
 /* ---- Global ---- */
 body {
     font-family: var(--font);
@@ -89,12 +149,12 @@ body {
     color: var(--text);
     /* Neon glows + oscilloscope graticule behind the whole machine */
     background:
-        radial-gradient(1100px 700px at 6% -18%, rgba(255, 79, 163, 0.3), transparent 62%),
-        radial-gradient(1000px 760px at 102% -6%, rgba(55, 224, 255, 0.26), transparent 60%),
-        radial-gradient(900px 900px at 50% 118%, rgba(169, 123, 255, 0.3), transparent 60%),
-        repeating-linear-gradient(to right, rgba(183, 255, 60, 0.07) 0 1px, transparent 1px 48px),
-        repeating-linear-gradient(to bottom, rgba(183, 255, 60, 0.07) 0 1px, transparent 1px 48px),
-        linear-gradient(180deg, var(--bg) 0%, #0a0b26 55%, var(--bg) 100%);
+        radial-gradient(1100px 700px at 6% -18%, var(--glow-1), transparent 62%),
+        radial-gradient(1000px 760px at 102% -6%, var(--glow-2), transparent 60%),
+        radial-gradient(900px 900px at 50% 118%, var(--glow-3), transparent 60%),
+        repeating-linear-gradient(to right, var(--glow-grid) 0 1px, transparent 1px 48px),
+        repeating-linear-gradient(to bottom, var(--glow-grid) 0 1px, transparent 1px 48px),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-mid) 55%, var(--bg) 100%);
     margin: 0;
     padding: 0;
     overflow: hidden;

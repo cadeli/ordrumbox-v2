@@ -60,6 +60,22 @@ export const STOP_EXTRA_BUFFER = 0.02
 export const BEATS_PER_PAGE = 4
 export const MAX_BEATS = 16
 
+/** Number of UI color schemes (`:root[data-scheme="N"]` overrides in styles.css). */
+export const COLOR_SCHEME_COUNT = 3
+
+/**
+ * Whitelist a color scheme id: only integers 1..COLOR_SCHEME_COUNT survive,
+ * anything else falls back to 1 (the default palette). The same rule feeds
+ * loadSettings() when reading settings.json, applyColorScheme() when tagging
+ * the document and the MCP `setColorScheme` tool, so the three always agree.
+ * @param {unknown} value
+ * @returns {number}
+ */
+export function normalizeColorScheme(value) {
+    const n = Number(value)
+    return Number.isInteger(n) && n >= 1 && n <= COLOR_SCHEME_COUNT ? n : 1
+}
+
 // ── Import limits ──────────────────────────────────────────────────
 export const MAX_IMPORT_TRACKS = 64
 export const MAX_IMPORT_NOTES = 10_000

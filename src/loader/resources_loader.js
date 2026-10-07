@@ -18,7 +18,7 @@ import { getTracksArray } from '../core/tracks.js'
 import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'
-import { MASTER_BUS_DEFAULTS, SESSION_DEFAULTS } from '../core/constants.js'
+import { MASTER_BUS_DEFAULTS, SESSION_DEFAULTS, normalizeColorScheme } from '../core/constants.js'
 
 /**
  * Session snapshot persisted in soundRegistry.settings.session, filled field by
@@ -228,6 +228,7 @@ export default class ResourcesLoader {
         const defaults = {
             sampleDirs: [],
             maxSampleDirs: 10,
+            colorScheme: 1,
             master: { ...MASTER_BUS_DEFAULTS },
             session: { ...SESSION_DEFAULTS },
         }
@@ -243,6 +244,8 @@ export default class ResourcesLoader {
                 // The "nothing stored" case is covered by defaults.session below.
                 if (raw.session) raw.session = { ...raw.session }
                 Object.assign(soundRegistry.settings, defaults, raw)
+                soundRegistry.settings.colorScheme = normalizeColorScheme(soundRegistry.settings.colorScheme)
+                await this.#applyFileColorScheme()
                 return
             }
         } catch (e) {
@@ -252,8 +255,29 @@ export default class ResourcesLoader {
             const settings = await this.loadJsonResource(ResourcesLoader.SETTINGS_URL)
             if (settings.master) settings.master = { ...MASTER_BUS_DEFAULTS, ...settings.master }
             Object.assign(soundRegistry.settings, defaults, settings)
+            soundRegistry.settings.colorScheme = normalizeColorScheme(soundRegistry.settings.colorScheme)
         } catch (e) {
             logger.warn('ResourcesLoader', 'Failed to load settings from JSON, using defaults', e)
+        }
+    }
+
+    /**
+     * colorScheme is the one settings key with an external writer: the MCP
+     * `setColorScheme` tool drops it straight into settings.json (it has no
+     * browser channel), so the file wins over the stored copy on every boot —
+     * the deliberate exception to the IDB-first rule above. Offline or a file
+     * without the key: the stored value (already normalized) stands.
+     */
+    async #applyFileColorScheme() {
+        try {
+            const response = await fetch(ResourcesLoader.SETTINGS_URL)
+            if (!response.ok) return
+            const file = await response.json()
+            if (file && typeof file === 'object' && 'colorScheme' in file) {
+                soundRegistry.settings.colorScheme = normalizeColorScheme(file.colorScheme)
+            }
+        } catch (e) {
+            logger.debug('ResourcesLoader', 'No colorScheme override in settings.json', e)
         }
     }
 

@@ -35,6 +35,7 @@ class SoundRegistry {
             loaded: false,
             sampleDirs: [],
             maxSampleDirs: 10,
+            colorScheme: 1,
             master: MASTER_BUS_DEFAULTS,
             session: SESSION_DEFAULTS,
         },

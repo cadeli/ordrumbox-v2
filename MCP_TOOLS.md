@@ -133,6 +133,28 @@ Saves the current pattern to an individual JSON file under `assets/data/patterns
 
 ---
 
+### selectPattern
+
+Selects the current pattern of the MCP session (in-memory). Later pattern tools that target "the current pattern" act on this selection.
+
+**Input:** `patternName` (case-insensitive) and/or `index` — with neither, returns the current selection.
+
+**Output:**
+
+```json
+{
+    "index": 1,
+    "name": "Beta",
+    "bpm": 140,
+    "beatCount": 8,
+    "tracks": 1
+}
+```
+
+Unknown names or out-of-range indexes are rejected (`Pattern not found: …` / `Invalid pattern index: …`).
+
+---
+
 ## 2. Notes & Tracks
 
 ### addNotesToPattern
@@ -667,7 +689,33 @@ Each arrangement write rewrites the `songs` array of `song.json` and leaves the 
 
 ---
 
-## 7. Concepts
+## 7. App Settings
+
+### setColorScheme
+
+Sets the UI color scheme of the app. The value is written to `settings.json` — the one settings key MCP owns, re-read by the app on every boot and applied to `<html data-scheme>`.
+
+**Input:**
+
+```json
+{ "scheme": 2 }
+```
+
+| Value | Scheme                                |
+| ----- | ------------------------------------- |
+| `1`   | Phosphor (default, green on indigo)   |
+| `2`   | Amber terminal (gold on warm brown)   |
+| `3`   | Electric blue (blue on deep navy)     |
+
+Any other value (out of range, not an integer) falls back to `1`. Existing `settings.json` keys are preserved; a missing file is created, an unparsable one is refused rather than overwritten.
+
+**Output:** `{ "message", "scheme", "previous", "filePath" }`
+
+The scheme is applied at the **next app boot** — the MCP server has no live channel to the browser.
+
+---
+
+## 8. Concepts
 
 ### Step and Beat Numbering
 
@@ -798,7 +846,7 @@ Plays a sequence of pitches on a single step.
 
 ---
 
-## 8. Best Practices
+## 9. Best Practices
 
 1. **Use instrument IDs** (max 12 chars) from `listAllInstrumentsNames` - not arbitrary names
 2. **Use loop points** (`loopAtStep`) instead of repeating notes across beats

@@ -54,6 +54,7 @@ const TOKENS = {
 }
 
 import { logger } from '../core/logger.js'
+import { normalizeColorScheme } from '../core/constants.js'
 
 function cssVar(name) {
     try {
@@ -91,6 +92,25 @@ export function color(key) {
 export function rgba(key, alpha) {
     const t = resolve()[key]
     return t ? `rgba(${t.r},${t.g},${t.b},${alpha})` : `rgba(0,0,0,${alpha})`
+}
+
+/**
+ * Puts the document on the given color scheme (1..COLOR_SCHEME_COUNT, else 1)
+ * and drops the token cache so the next color()/rgba() re-reads the new :root
+ * values. Scheme 1 is the default palette (styles.css `:root`); 2 and 3 are
+ * `:root[data-scheme]` overrides. Called at boot from main.js — ui/theme is
+ * imported all over the app, but bootstrap/loader layers must not import ui/,
+ * so the application point lives in the orchestrator.
+ * @param {unknown} value
+ * @returns {number} the scheme actually applied
+ */
+export function applyColorScheme(value) {
+    const scheme = normalizeColorScheme(value)
+    if (typeof document !== 'undefined') {
+        document.documentElement.dataset.scheme = String(scheme)
+    }
+    cache = null
+    return scheme
 }
 
 /**

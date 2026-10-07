@@ -503,6 +503,62 @@ describe('ResourcesLoader', () => {
         })
     })
 
+    // colorScheme is the one settings key with an external writer: the MCP
+    // setColorScheme tool drops it into settings.json, which wins over the
+    // stored copy on every boot — anything unreadable or invalid falls back
+    // to the default scheme 1.
+    describe('colorScheme', () => {
+        const putStored = async (settings) => {
+            const { idbPut } = await import('../src/core/idb.js')
+            await idbPut('settings', ResourcesLoader.SETTINGS_KEY, settings)
+        }
+
+        it('takes the scheme from settings.json over the stored copy', async () => {
+            await putStored({ colorScheme: 1 })
+            fetchSpy.mockResolvedValue(makeJsonResponse({ colorScheme: 2 }))
+
+            await loader.loadSettings(true)
+
+            expect(soundRegistry.settings.colorScheme).toBe(2)
+        })
+
+        it('keeps the stored scheme when settings.json is unreachable', async () => {
+            await putStored({ colorScheme: 3 })
+            fetchSpy.mockRejectedValue(new Error('offline'))
+
+            await loader.loadSettings(true)
+
+            expect(soundRegistry.settings.colorScheme).toBe(3)
+        })
+
+        it('normalizes an invalid scheme coming from settings.json', async () => {
+            await putStored({ colorScheme: 1 })
+            fetchSpy.mockResolvedValue(makeJsonResponse({ colorScheme: 'rainbow' }))
+
+            await loader.loadSettings(true)
+
+            expect(soundRegistry.settings.colorScheme).toBe(1)
+        })
+
+        it('normalizes an invalid stored scheme when the file has no override', async () => {
+            await putStored({ colorScheme: 42 })
+            fetchSpy.mockResolvedValue(makeJsonResponse({ version: 1 }))
+
+            await loader.loadSettings(true)
+
+            expect(soundRegistry.settings.colorScheme).toBe(1)
+        })
+
+        it('defaults to 1 when neither store carries a scheme', async () => {
+            await putStored({ version: 1 })
+            fetchSpy.mockResolvedValue(makeJsonResponse({ version: 1 }))
+
+            await loader.loadSettings(true)
+
+            expect(soundRegistry.settings.colorScheme).toBe(1)
+        })
+    })
+
     describe('audioCtx', () => {
         it('creates AudioContext if not provided', () => {
             const mockCtx = { createGain: vi.fn() }
