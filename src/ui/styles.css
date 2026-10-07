@@ -3154,6 +3154,12 @@ body {
     white-space: normal;
     overflow: auto;
 }
+/* The arrangement chooser sits above the button group: the global select
+   section (below) owns the look, this only makes it fill the row. */
+.sg-arrangement-select {
+    flex: 1 1 auto;
+    min-width: 0;
+}
 .sg-btn-group {
     display: flex;
     gap: 4px;

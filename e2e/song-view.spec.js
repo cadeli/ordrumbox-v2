@@ -24,6 +24,7 @@ test('la vue Song est atteignable et affiche tous ses elements', async ({ page }
         '#sg-song-name',
         '#sg-song-date',
         '#sg-song-desc',
+        '#sg-arrangement-select',
         '#sg-save',
         '#sg-load',
         '#sg-export',
@@ -73,6 +74,29 @@ test('la vue Song est atteignable et affiche tous ses elements', async ({ page }
     await page.locator('.tb-view-btn[data-view="edit"]').click()
     await expect(song).toBeHidden()
     await expect(page.locator('#pattern-panel')).toBeVisible()
+})
+
+test('the arrangement listbox switches the selected arrangement', async ({ page }) => {
+    await bootApp(page)
+    await page.locator('.tb-view-btn[data-view="song"]').click()
+
+    const sel = page.locator('#sg-arrangement-select')
+    await expect(sel).toBeVisible()
+    const optionCount = await sel.locator('option').count()
+    expect(optionCount, 'the library ships at least one arrangement').toBeGreaterThanOrEqual(1)
+
+    // The shipped song.json carries a second arrangement — switch to it, then back.
+    if (optionCount >= 2) {
+        const names = await page.evaluate(() => window.__e2e.appState.songs.map((s) => s.name))
+
+        await sel.selectOption('1')
+        expect(await page.evaluate(() => window.__e2e.appState.selectedSongIdx)).toBe(1)
+        await expect(page.locator('#sa-title')).toHaveText(names[1])
+
+        await sel.selectOption('0')
+        expect(await page.evaluate(() => window.__e2e.appState.selectedSongIdx)).toBe(0)
+        await expect(page.locator('#sa-title')).toHaveText(names[0])
+    }
 })
 
 /**

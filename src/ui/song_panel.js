@@ -27,6 +27,7 @@ export default class SongPanel extends BasePanel {
     #songNameEl
     #songDateEl
     #songDescEl
+    #arrangementSelect
     #arrangement
 
     constructor() {
@@ -68,6 +69,10 @@ export default class SongPanel extends BasePanel {
                             </div>
                         </div>
                         <div class="sg-song-desc" id="sg-song-desc" contenteditable="true" spellcheck="false" title="Double-click to edit description"></div>
+                        <div class="sg-song-row">
+                            <span class="sg-song-label">Arrangement</span>
+                            <select class="sg-arrangement-select" id="sg-arrangement-select" aria-label="Arrangement" title="Choose the arrangement shown in the grid"></select>
+                        </div>
                         <div class="sg-btn-group">
                             <button class="ne-btn" id="sg-save" title="Save song to IndexedDB">Save</button>
                             <button class="ne-btn" id="sg-load" title="Load song from IndexedDB">Load</button>
@@ -83,6 +88,7 @@ export default class SongPanel extends BasePanel {
         this.#songNameEl = this.container.querySelector('#sg-song-name')
         this.#songDateEl = this.container.querySelector('#sg-song-date')
         this.#songDescEl = this.container.querySelector('#sg-song-desc')
+        this.#arrangementSelect = this.container.querySelector('#sg-arrangement-select')
 
         this.#arrangement = new ArrangementSection(
             this,
@@ -110,6 +116,7 @@ export default class SongPanel extends BasePanel {
         this.listen(this.container.querySelector('#sg-load'), 'click', () => this.#loadSong())
         this.listen(this.container.querySelector('#sg-export'), 'click', () => this.#exportSong())
         this.listen(this.container.querySelector('#sg-import'), 'click', () => this.#importSong())
+        this.listen(this.#arrangementSelect, 'change', () => this.#onArrangementChange())
     }
 
     /**
@@ -146,8 +153,45 @@ export default class SongPanel extends BasePanel {
         if (this.#songDescEl.textContent.trim() !== desc) {
             this.#songDescEl.textContent = desc
         }
+        this.#syncArrangementSelect()
         this.#renderList()
         this.#arrangement?.sync()
+    }
+
+    /**
+     * Rebuilds the arrangement <select> from appState.songs and marks the
+     * selected one. The options cannot be built once at createDOM time: a song
+     * load or import replaces the whole array (and resets the selection to 0).
+     */
+    #syncArrangementSelect() {
+        const select = this.#arrangementSelect
+        const songs = appState.songs ?? []
+        select.innerHTML = ''
+        if (!songs.length) {
+            const option = document.createElement('option')
+            option.value = ''
+            option.textContent = 'No arrangement'
+            select.appendChild(option)
+            select.disabled = true
+            return
+        }
+        select.disabled = false
+        songs.forEach((song, i) => {
+            const option = document.createElement('option')
+            option.value = String(i)
+            option.textContent = song?.name ?? `Arrangement ${i + 1}`
+            select.appendChild(option)
+        })
+        const selected = Math.min(Math.max(0, appState.selectedSongIdx ?? 0), songs.length - 1)
+        select.value = String(selected)
+    }
+
+    /** The grid, the transport and the export panel all read selectedSongIdx live. */
+    #onArrangementChange() {
+        const value = this.#arrangementSelect.value
+        if (value === '') return
+        serviceRegistry.cmd.setSelectedSongIdx(Number(value))
+        this.sync()
     }
 
     /**
