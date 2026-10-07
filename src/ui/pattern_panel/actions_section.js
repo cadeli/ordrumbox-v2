@@ -86,6 +86,7 @@ export default class ActionsSection {
                             return
                         }
                         cmd.recordTransaction('Import pattern', () => cmd.importPatternFromJson(data))
+                        await cmd.setSelectedPatternIdx(editor.appState.patterns.length - 1)
                         editor.emitStructureChange()
                     } catch (err) {
                         logger.error('PatternPanel', 'Import failed', err)

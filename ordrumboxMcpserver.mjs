@@ -23,6 +23,7 @@ import {
     normalizeNote,
 } from './src/core/note_schema.js'
 import { songLengthMeasures } from './src/model/song_schema.js'
+import { PlaybackController } from './ordrumboxMcpPlayback.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -175,6 +176,16 @@ function findPatternByName(patternName) {
 let libraryLoaded = false
 /** Set when importing gave an id-less pattern one, so the file must be patched. */
 let libraryIdsRepaired = false
+
+/**
+ * Reset the library cache so the next tool call re-imports song.json.
+ * Tests point ORDRUMBOX_MCP_DATA_DIR at a fresh temp dir per case, so the
+ * flags from a previous run must not leak into the next one.
+ */
+export function resetLibraryCache() {
+    libraryLoaded = false
+    libraryIdsRepaired = false
+}
 
 /**
  * Import the whole pattern library of song.json into appState.
@@ -781,7 +792,52 @@ export const tools = [
             },
         },
     },
+    {
+        name: 'selectPattern',
+        description:
+            'Selects the current pattern of the MCP session (in-memory). Give a patternName (case-insensitive) or an index; with neither, returns the current selection.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                patternName: { type: 'string', description: 'Pattern name to select (case-insensitive)' },
+                index: { type: 'integer', minimum: 0, description: 'Pattern index to select' },
+            },
+        },
+    },
+    {
+        name: 'playPattern',
+        description:
+            'Plays a pattern for real: boots the app in headless Chromium against the dev server (starting it when needed), selects the pattern, starts the transport and reports the playback state including how many notes were triggered. Without patternName it plays the pattern selected by selectPattern().',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                patternName: { type: 'string', description: 'Pattern to play (default: the selected one)' },
+                seconds: {
+                    type: 'number',
+                    minimum: 0,
+                    maximum: 60,
+                    description: 'How long to listen before reporting (default 2, 0 = start and return)',
+                },
+            },
+        },
+    },
+    {
+        name: 'stopPlayback',
+        description: 'Stops the transport of the running playback session and reports the final state.',
+        inputSchema: { type: 'object', properties: {} },
+    },
 ]
+
+/**
+ * One headless browser session for the whole server process: `playPattern`
+ * starts it, `stopPlayback` reaches the same transport through it.
+ * Created on first use so importing the server never launches anything.
+ */
+let playbackController = null
+function playback() {
+    playbackController ??= new PlaybackController()
+    return playbackController
+}
 
 export async function handleToolCall(toolName, args, onError) {
     try {
@@ -1258,6 +1314,62 @@ export async function handleToolCall(toolName, args, onError) {
                     },
                 ],
             }
+        }
+
+        if (toolName === 'selectPattern') {
+            const { patternName, index } = args
+            await ensureLibraryLoaded()
+            const count = appState.patterns.length
+
+            let target
+            if (patternName !== undefined && patternName !== null && patternName !== '') {
+                target = appState.patterns.findIndex(
+                    (pattern) => pattern?.name?.toUpperCase() === String(patternName).trim().toUpperCase(),
+                )
+                if (target < 0) throw new Error(`Pattern not found: ${patternName}`)
+            } else if (index !== undefined && index !== null) {
+                target = Number(index)
+                if (!Number.isInteger(target) || target < 0 || target >= count) {
+                    throw new Error(`Invalid pattern index: ${index}`)
+                }
+            } else {
+                target = appState.selectedPatternIdx
+            }
+
+            // Direct write, not Commander.setSelectedPatternIdx: that command drives
+            // seq/flatNotes/auto-assign, which do not exist behind this read-only
+            // library shadow — it would fail and roll the switch back.
+            appState.selectedPatternIdx = target
+            const pattern = appState.selectedPattern
+            if (!pattern) throw new Error('No pattern selected')
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            index: target,
+                            name: pattern.name,
+                            bpm: pattern.bpm,
+                            beatCount: pattern.beatCount,
+                            tracks: getTracksArray(pattern).length,
+                        }),
+                    },
+                ],
+            }
+        }
+
+        if (toolName === 'playPattern') {
+            const { patternName, seconds } = args
+            await ensureLibraryLoaded()
+            const name = patternName ?? appState.selectedPattern?.name
+            if (!name) throw new Error('No pattern selected')
+            const status = await playback().play({ patternName: name, seconds: seconds ?? 2 })
+            return { content: [{ type: 'text', text: JSON.stringify(status) }] }
+        }
+
+        if (toolName === 'stopPlayback') {
+            const status = await playback().stop()
+            return { content: [{ type: 'text', text: JSON.stringify(status) }] }
         }
 
         throw new Error(`Unknown tool: ${toolName}`)

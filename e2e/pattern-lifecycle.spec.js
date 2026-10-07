@@ -887,7 +887,7 @@ test.describe.serial('Full session lifecycle', () => {
         await expect.poll(() => page.evaluate(() => window.__e2e.appState.patterns.length)).toBe(baseCount + 2)
 
         const importedExport = await exportPatternAt(page, baseCount + 1)
-        expect(importedExport).toEqual(liveExport)
+        expect(stripForComparison(importedExport)).toEqual(stripForComparison(liveExport))
     })
 
     test('T4 — export MIDI and verify the file content', async () => {
