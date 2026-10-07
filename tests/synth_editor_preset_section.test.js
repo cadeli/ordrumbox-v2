@@ -94,17 +94,17 @@ describe('PresetSection', () => {
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
 
-            const result = editor.presets.loadPreset('BASS1')
+            const result = editor.model.loadPreset('BASS1')
             expect(result).toBe(true)
-            expect(editor.editKey).toBe('BASS1')
-            expect(editor.draft).toBeDefined()
-            expect(editor.original).toBeDefined()
+            expect(editor.model.editKey).toBe('BASS1')
+            expect(editor.model.draft).toBeDefined()
+            expect(editor.model.original).toBeDefined()
         })
 
         it('returns false for non-existent preset', () => {
             soundRegistry.generatedSounds = {}
             const { editor } = setupEditor(makeTrack())
-            const result = editor.presets.loadPreset('DOES_NOT_EXIST')
+            const result = editor.model.loadPreset('DOES_NOT_EXIST')
             expect(result).toBe(false)
         })
     })
@@ -116,7 +116,7 @@ describe('PresetSection', () => {
             const { editor } = setupEditor(makeTrack())
 
             const sound = makeGeneratedSound()
-            editor.presets.commitSound('NEW_PRESET', sound)
+            editor.model.commitSound('NEW_PRESET', sound)
 
             expect(soundRegistry.generatedSounds['NEW_PRESET']).toBeDefined()
             expect(serviceRegistry.audioEngine.setGeneratedSounds).toHaveBeenCalled()
@@ -132,9 +132,9 @@ describe('PresetSection', () => {
 
             editor.presets.newPreset()
 
-            expect(editor.editKey).toBe('new_preset')
+            expect(editor.model.editKey).toBe('new_preset')
             expect(soundRegistry.generatedSounds['new_preset']).toBeDefined()
-            expect(editor.draft).toBeDefined()
+            expect(editor.model.draft).toBeDefined()
         })
 
         it('increments name if new_preset already exists', () => {
@@ -148,7 +148,7 @@ describe('PresetSection', () => {
 
             editor.presets.newPreset()
 
-            expect(editor.editKey).toBe('new_preset_1')
+            expect(editor.model.editKey).toBe('new_preset_1')
         })
     })
 
@@ -158,19 +158,19 @@ describe('PresetSection', () => {
             serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('BASS1')
+            editor.model.loadPreset('BASS1')
 
             editor.presets.duplicatePreset()
 
-            expect(editor.editKey).toBe('BASS1_copy')
+            expect(editor.model.editKey).toBe('BASS1_copy')
             expect(soundRegistry.generatedSounds['BASS1_copy']).toBeDefined()
         })
 
         it('does nothing when no preset is loaded', () => {
             soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
             const { editor } = setupEditor(makeTrack())
-            editor.draft = null
-            editor.editKey = null
+            editor.model.draft = null
+            editor.model.editKey = null
             expect(() => editor.presets.duplicatePreset()).not.toThrow()
         })
     })
@@ -184,7 +184,7 @@ describe('PresetSection', () => {
             serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('BASS1')
+            editor.model.loadPreset('BASS1')
 
             editor.presets.deletePreset()
 
@@ -196,7 +196,7 @@ describe('PresetSection', () => {
             serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('BASS1')
+            editor.model.loadPreset('BASS1')
 
             editor.presets.deletePreset()
 
@@ -212,12 +212,12 @@ describe('PresetSection', () => {
             serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('B')
+            editor.model.loadPreset('B')
 
             editor.presets.deletePreset()
 
-            expect(editor.editKey).not.toBe('B')
-            expect(editor.editKey).not.toBeNull()
+            expect(editor.model.editKey).not.toBe('B')
+            expect(editor.model.editKey).not.toBeNull()
         })
     })
 
@@ -229,35 +229,35 @@ describe('PresetSection', () => {
             }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('BASS1')
+            editor.model.loadPreset('BASS1')
 
             editor.presets.selectPreset('SYNTH1')
 
-            expect(editor.editKey).toBe('SYNTH1')
+            expect(editor.model.editKey).toBe('SYNTH1')
         })
 
         it('ignores selection of same preset', () => {
             soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('BASS1')
-            const draftBefore = editor.draft
+            editor.model.loadPreset('BASS1')
+            const draftBefore = editor.model.draft
 
             editor.presets.selectPreset('BASS1')
 
-            expect(editor.draft).toBe(draftBefore)
+            expect(editor.model.draft).toBe(draftBefore)
         })
 
         it('ignores empty key', () => {
             soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('BASS1')
-            const draftBefore = editor.draft
+            editor.model.loadPreset('BASS1')
+            const draftBefore = editor.model.draft
 
             editor.presets.selectPreset('')
 
-            expect(editor.draft).toBe(draftBefore)
+            expect(editor.model.draft).toBe(draftBefore)
         })
     })
 
@@ -270,11 +270,11 @@ describe('PresetSection', () => {
             }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('A')
+            editor.model.loadPreset('A')
 
             editor.presets.navigatePreset(1)
 
-            expect(editor.editKey).toBe('B')
+            expect(editor.model.editKey).toBe('B')
         })
 
         it('navigates to previous preset', () => {
@@ -285,11 +285,11 @@ describe('PresetSection', () => {
             }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('B')
+            editor.model.loadPreset('B')
 
             editor.presets.navigatePreset(-1)
 
-            expect(editor.editKey).toBe('A')
+            expect(editor.model.editKey).toBe('A')
         })
 
         it('wraps around from last to first', () => {
@@ -299,11 +299,11 @@ describe('PresetSection', () => {
             }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('B')
+            editor.model.loadPreset('B')
 
             editor.presets.navigatePreset(1)
 
-            expect(editor.editKey).toBe('A')
+            expect(editor.model.editKey).toBe('A')
         })
 
         it('wraps around from first to last', () => {
@@ -313,11 +313,11 @@ describe('PresetSection', () => {
             }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('A')
+            editor.model.loadPreset('A')
 
             editor.presets.navigatePreset(-1)
 
-            expect(editor.editKey).toBe('B')
+            expect(editor.model.editKey).toBe('B')
         })
 
         it('does nothing when no presets exist', () => {
@@ -333,18 +333,18 @@ describe('PresetSection', () => {
             serviceRegistry.audioEngine = { setGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
-            editor.presets.loadPreset('BASS1')
+            editor.model.loadPreset('BASS1')
 
-            const draftBefore = JSON.stringify(editor.draft)
+            const draftBefore = JSON.stringify(editor.model.draft)
             editor.presets.randomizePreset()
-            const draftAfter = JSON.stringify(editor.draft)
+            const draftAfter = JSON.stringify(editor.model.draft)
 
             expect(draftAfter).not.toBe(draftBefore)
         })
 
         it('does nothing when no draft is loaded', () => {
             const { editor } = setupEditor(makeTrack())
-            editor.draft = null
+            editor.model.draft = null
             expect(() => editor.presets.randomizePreset()).not.toThrow()
         })
     })

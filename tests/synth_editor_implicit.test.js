@@ -66,11 +66,11 @@ const knob = (path) => editor.knobs.find((k) => k.key === path)
 describe('implicit enable on interaction', () => {
     it('vco2: touching octave at gain 0 raises gain to 0.5 and drops _savedGain', async () => {
         await setup()
-        editor.draft.vco2._savedGain = 0.42
+        editor.model.draft.vco2._savedGain = 0.42
         knob('vco2.octave').setValue(2, true)
 
-        expect(editor.draft.vco2.gain).toBe(0.5)
-        expect(editor.draft.vco2._savedGain).toBeUndefined()
+        expect(editor.model.draft.vco2.gain).toBe(0.5)
+        expect(editor.model.draft.vco2._savedGain).toBeUndefined()
         expect(knob('vco2.gain').getValue()).toBe(0.5)
     })
 
@@ -78,14 +78,14 @@ describe('implicit enable on interaction', () => {
         await setup({ vco2: { gain: 0.7, octave: 0, detune: 0, wave: 'sine' } })
         knob('vco2.octave').setValue(2, true)
 
-        expect(editor.draft.vco2.gain).toBe(0.7)
+        expect(editor.model.draft.vco2.gain).toBe(0.7)
     })
 
     it('vco2: dragging the gain knob itself never overrides the user value', async () => {
         await setup()
         knob('vco2.gain').setValue(0.18, true)
 
-        expect(editor.draft.vco2.gain).toBe(0.18)
+        expect(editor.model.draft.vco2.gain).toBe(0.18)
     })
 
     it('fm: touching algo at amount 0 sets amount 0.3 and unbypasses', async () => {
@@ -93,9 +93,9 @@ describe('implicit enable on interaction', () => {
         const icon = editor.panel.querySelector('[data-synth-path="fm.algo"].ss-fm-icon')
         icon.click()
 
-        expect(editor.draft.fm.amount).toBe(0.3)
-        expect(editor.draft.bypassFm).toBe(false)
-        expect(editor.cardBypassed.fm).toBe(false)
+        expect(editor.model.draft.fm.amount).toBe(0.3)
+        expect(editor.model.draft.bypassFm).toBe(false)
+        expect(editor.model.cardBypassed.fm).toBe(false)
     })
 
     it('fm: touching algo with a live amount changes nothing but the algo', async () => {
@@ -103,15 +103,15 @@ describe('implicit enable on interaction', () => {
         const icon = editor.panel.querySelector('[data-synth-path="fm.algo"].ss-fm-icon')
         icon.click()
 
-        expect(editor.draft.fm.amount).toBe(0.8)
+        expect(editor.model.draft.fm.amount).toBe(0.8)
     })
 
     it('noise: touching filterFreq at mix 0 sets mix 0.15 and unbypasses', async () => {
         await setup({ bypassNoise: true })
         knob('noise.filterFreq').setValue(5000, true)
 
-        expect(editor.draft.noise.mix).toBe(0.15)
-        expect(editor.draft.bypassNoise).toBe(false)
+        expect(editor.model.draft.noise.mix).toBe(0.15)
+        expect(editor.model.draft.bypassNoise).toBe(false)
         expect(knob('noise.mix').getValue()).toBe(0.15)
     })
 
@@ -119,9 +119,9 @@ describe('implicit enable on interaction', () => {
         await setup({ bypassLfo1: true })
         knob('lfo.freq').setValue(2, true)
 
-        expect(editor.draft.lfo.target).toBe('filter.freq')
-        expect(editor.draft.bypassLfo1).toBe(false)
-        expect(editor.draft.lfo.depth).toBe(0.5)
+        expect(editor.model.draft.lfo.target).toBe('filter.freq')
+        expect(editor.model.draft.bypassLfo1).toBe(false)
+        expect(editor.model.draft.lfo.depth).toBe(0.5)
         expect(knob('lfo.depth').getValue()).toBe(0.5)
         const select = editor.panel.querySelector('select[data-synth-path="lfo.target"]')
         expect(select.value).toBe('filter.freq')
@@ -131,16 +131,16 @@ describe('implicit enable on interaction', () => {
         await setup()
         knob('lfo.depth').setValue(0.2, true)
 
-        expect(editor.draft.lfo.target).toBe('filter.freq')
-        expect(editor.draft.lfo.depth).toBe(0.2)
+        expect(editor.model.draft.lfo.target).toBe('filter.freq')
+        expect(editor.model.draft.lfo.depth).toBe(0.2)
     })
 
     it('modEnvelope: touching an ADSR at target off points to filter and unbypasses', async () => {
         await setup({ bypassModEnv: true })
         knob('modEnvelope.attack').setValue(0.1, true)
 
-        expect(editor.draft.modEnvelope.target).toBe('filter')
-        expect(editor.draft.bypassModEnv).toBe(false)
+        expect(editor.model.draft.modEnvelope.target).toBe('filter')
+        expect(editor.model.draft.bypassModEnv).toBe(false)
         const select = editor.panel.querySelector('select[data-synth-path="modEnvelope.target"]')
         expect(select.value).toBe('filter')
     })
@@ -212,15 +212,15 @@ describe('frame-coalesced preview commit', () => {
     it('flushes a pending preview before switching preset', async () => {
         await setup()
         soundRegistry.generatedSounds = { ALPHA: makeSound(), BETA: makeSound() }
-        editor.editKey = 'ALPHA'
-        editor.original = structuredClone(soundRegistry.generatedSounds.ALPHA)
-        editor.draft = structuredClone(soundRegistry.generatedSounds.ALPHA)
-        editor.hydrateDraft()
+        editor.model.editKey = 'ALPHA'
+        editor.model.original = structuredClone(soundRegistry.generatedSounds.ALPHA)
+        editor.model.draft = structuredClone(soundRegistry.generatedSounds.ALPHA)
+        editor.model.hydrate()
 
         knob('masterVolume').setValue(0.11, true)
         editor.presets.selectPreset('BETA')
 
         expect(soundRegistry.generatedSounds.ALPHA.masterVolume).toBe(0.11)
-        expect(editor.editKey).toBe('BETA')
+        expect(editor.model.editKey).toBe('BETA')
     })
 })

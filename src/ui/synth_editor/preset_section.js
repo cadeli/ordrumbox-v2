@@ -1,90 +1,65 @@
-// src/ui/synth_editor/PresetSection.js
+// src/ui/synth_editor/preset_section.js
 // Preset CRUD operations and footer rendering.
 
 import { escapeHtml, renderOptions } from '../components/ui_utils.js'
 import { reportUserError, showToast } from '../../core/notify.js'
 import { SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META } from './synth_editor_constants.js'
-import { cacheGeneratedSounds } from '../../cache/idb_cache.js'
 
 export default class PresetSection {
-    #editor
+    #model
+    #soundRegistry
+    #serviceRegistry
+    #loadFailed
+    #loadPromise
 
-    /** @param {import('../synth_editor.js').default} editor */
-    constructor(editor) {
-        this.#editor = editor
+    /**
+     * @param {import('./synth_preset_model.js').default} model edit-session state
+     * @param {{ soundRegistry: object, serviceRegistry: object }} deps
+     */
+    constructor(model, deps) {
+        this.#model = model
+        this.#soundRegistry = deps.soundRegistry
+        this.#serviceRegistry = deps.serviceRegistry
+        this.#loadFailed = false
+        this.#loadPromise = null
     }
 
     /** @returns {string[]} sorted keys of loaded synth presets. */
     getGeneratedSoundKeys() {
-        const sr = this.#editor.soundRegistry
-        return Object.keys(sr.generatedSounds ?? {}).sort((a, b) => a.localeCompare(b))
+        return this.#model.soundKeys
     }
 
     /** Loads generated sounds from disk if not already loaded. */
     async ensureGeneratedSoundsLoaded() {
-        const editor = this.#editor
-        if (editor.loadFailed) return
+        if (this.#loadFailed) return
         if (this.getGeneratedSoundKeys().length > 0) return
-        if (editor.loadPromise) return editor.loadPromise
+        if (this.#loadPromise) return this.#loadPromise
 
-        editor.loading = true
-        editor.loadPromise = (async () => {
+        this.#loadPromise = (async () => {
             try {
-                await editor.serviceRegistry.resourcesLoader?.loadGeneratedSounds(
+                await this.#serviceRegistry.resourcesLoader?.loadGeneratedSounds(
                     (await import('../../loader/resources_loader.js')).default.GENERATED_SOUNDS_URL,
                 )
-                editor.serviceRegistry.audioEngine?.setGeneratedSounds(editor.soundRegistry.generatedSounds)
+                this.#serviceRegistry.audioEngine?.setGeneratedSounds(this.#soundRegistry.generatedSounds)
             } catch (err) {
-                editor.loadFailed = true
+                this.#loadFailed = true
                 reportUserError('SynthEditor.presets', 'Synth presets could not be loaded', { cause: err })
             } finally {
-                editor.loading = false
-                editor.loadPromise = null
+                this.#loadPromise = null
             }
         })()
-        return editor.loadPromise
+        return this.#loadPromise
     }
 
-    /**
-     * Loads a preset into the draft.
-     * @returns {boolean} whether the preset was loaded
-     */
-    loadPreset(key) {
-        const editor = this.#editor
-        editor.flushPreview()
-        const sound = editor.soundRegistry.generatedSounds?.[key]
-        if (!sound) return false
-        editor.editKey = key
-        editor.original = structuredClone(sound)
-        editor.draft = structuredClone(sound)
-        editor.hydrateDraft()
-        return true
-    }
-
-    /** Commits a sound to the registry and notifies the audio engine. */
-    commitSound(key, sound) {
-        const editor = this.#editor
-        editor.soundRegistry.generatedSounds[key] = structuredClone(sound)
-        editor.serviceRegistry.audioEngine?.setGeneratedSounds(editor.soundRegistry.generatedSounds)
-        this.persist()
-    }
-
-    persist() {
-        const sr = this.#editor.soundRegistry
-        // Was `.catch?.(() => {})`: a failed write meant the user kept editing
-        // and lost every change on reload, with no hint at all.
-        Promise.resolve(cacheGeneratedSounds(structuredClone(sr.generatedSounds))).catch((err) => {
-            reportUserError('SynthEditor.presets.persist', 'Synth preset changes are not being saved', {
-                cause: err,
-            })
-        })
+    /** Clears the load state so a failed load can be retried on the next session. */
+    resetLoadState() {
+        this.#loadFailed = false
     }
 
     /** @returns {string} footer HTML with preset selector and action buttons. */
     renderFooter() {
-        const editor = this.#editor
         const keys = this.getGeneratedSoundKeys()
-        const currentKey = editor.editKey ?? ''
+        const currentKey = this.#model.editKey ?? ''
         const options = renderOptions(keys, currentKey, { escape: escapeHtml })
         return `<div class="ss-footer">
              <select class="ss-preset-select" data-action="synth-preset">
@@ -105,35 +80,31 @@ export default class PresetSection {
     // ─── Preset actions ────────────────────────────────────────────────
 
     navigatePreset(dir) {
-        const editor = this.#editor
         const keys = this.getGeneratedSoundKeys()
         if (keys.length === 0) return
-        const idx = keys.indexOf(editor.editKey)
+        const idx = keys.indexOf(this.#model.editKey)
         const next = (idx + dir + keys.length) % keys.length
-        if (!this.loadPreset(keys[next])) return
-        editor.renderEditor()
+        this.#model.loadPreset(keys[next])
     }
 
     selectPreset(key) {
-        const editor = this.#editor
-        if (!key || key === editor.editKey) return
-        if (!this.loadPreset(key)) return
-        editor.renderEditor()
+        if (!key || key === this.#model.editKey) return
+        this.#model.loadPreset(key)
     }
 
     duplicatePreset() {
-        const editor = this.#editor
-        if (!editor.draft || !editor.editKey) return
-        const newKey = `${editor.editKey}_copy`
-        this.commitSound(newKey, editor.draft)
-        editor.editKey = newKey
-        editor.original = structuredClone(editor.draft)
-        editor.renderEditor()
+        const model = this.#model
+        if (!model.draft || !model.editKey) return
+        const newKey = `${model.editKey}_copy`
+        model.commitSound(newKey, model.draft)
+        model.editKey = newKey
+        model.original = structuredClone(model.draft)
+        model.notify()
     }
 
     newPreset() {
-        const editor = this.#editor
-        editor.flushPreview()
+        const model = this.#model
+        model.flush()
         const keys = this.getGeneratedSoundKeys()
         let base = 1
         let name = 'new_preset'
@@ -141,56 +112,49 @@ export default class PresetSection {
             name = `new_preset_${base++}`
         }
         const sound = structuredClone(SYNTH_GROUP_DEFAULTS)
-        this.commitSound(name, sound)
-        editor.editKey = name
-        editor.original = structuredClone(sound)
-        editor.draft = structuredClone(sound)
-        editor.hydrateDraft()
-        editor.renderEditor()
+        model.commitSound(name, sound)
+        model.editKey = name
+        model.original = structuredClone(sound)
+        model.draft = structuredClone(sound)
+        model.hydrate()
+        model.notify()
         showToast(`Preset "${name}" created`, 'success')
     }
 
     deletePreset() {
-        const editor = this.#editor
-        if (!editor.editKey) return
-        editor.flushPreview()
+        const model = this.#model
+        if (!model.editKey) return
+        model.flush()
         const keys = this.getGeneratedSoundKeys()
         if (keys.length <= 1) {
             showToast('Cannot delete the last preset', 'warning')
             return
         }
-        const deletedName = editor.editKey
-        const idx = keys.indexOf(editor.editKey)
-        delete editor.soundRegistry.generatedSounds[editor.editKey]
-        editor.serviceRegistry.audioEngine?.setGeneratedSounds(editor.soundRegistry.generatedSounds)
-        this.persist()
+        const deletedName = model.editKey
+        const idx = keys.indexOf(model.editKey)
+        model.deleteSound(model.editKey)
         const nextIdx = idx < keys.length - 1 ? idx : idx - 1
         const nextKey = keys[nextIdx] === deletedName ? keys[(idx + 1) % keys.length] : keys[nextIdx]
-        editor.editKey = null
-        editor.original = null
-        editor.draft = null
-        this.loadPreset(nextKey)
-        editor.renderEditor()
+        model.clearSession()
+        model.loadPreset(nextKey)
         showToast(`Deleted "${deletedName}"`, 'success')
     }
 
     renamePreset() {
-        const editor = this.#editor
-        if (!editor.editKey) return
-        const newName = prompt('Rename preset:', editor.editKey)
-        if (!newName || newName === editor.editKey) return
-        this.commitSound(newName, editor.draft)
-        delete editor.soundRegistry.generatedSounds[editor.editKey]
-        editor.serviceRegistry.audioEngine?.setGeneratedSounds(editor.soundRegistry.generatedSounds)
-        this.persist()
-        editor.editKey = newName
-        editor.original = structuredClone(editor.draft)
-        editor.renderEditor()
+        const model = this.#model
+        if (!model.editKey) return
+        const newName = prompt('Rename preset:', model.editKey)
+        if (!newName || newName === model.editKey) return
+        model.commitSound(newName, model.draft)
+        model.deleteSound(model.editKey)
+        model.editKey = newName
+        model.original = structuredClone(model.draft)
+        model.notify()
     }
 
     randomizePreset() {
-        const editor = this.#editor
-        if (!editor.draft) return
+        const model = this.#model
+        if (!model.draft) return
         const randomize = (obj, prefix = '') => {
             for (const [key, val] of Object.entries(obj)) {
                 const path = prefix ? `${prefix}.${key}` : key
@@ -202,8 +166,8 @@ export default class PresetSection {
                 }
             }
         }
-        randomize(editor.draft)
-        editor.hydrateDraft()
-        editor.renderEditor()
+        randomize(model.draft)
+        model.hydrate()
+        model.notify()
     }
 }

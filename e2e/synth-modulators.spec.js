@@ -4,9 +4,10 @@
 // independent places that must stay synchronized:
 //   1. src/audio/worklets/processors/synth_voice_source.js#lfoValue()
 //      (real per-sample calculation, audio thread)
-//   2. src/ui/synth_editor.js::_computeSynthLfoMod() + LFO_TARGET_SCALE
+//   2. src/ui/synth_editor/synth_preset_model.js::computeLfoMod() + LFO_TARGET_SCALE
 //      (JS re-implementation for the curve displayed in the synth panel —
-//      the comment above LFO_TARGET_SCALE explicitly says
+//      LFO_TARGET_SCALE is re-exported by src/ui/synth_editor.js, and the
+//      comment above it explicitly says
 //      "Matches the worklet synth_voice_source.js #lfoValue() mapping",
 //      meaning it is a hand-maintained mapping, hence a natural candidate
 //      for drift)

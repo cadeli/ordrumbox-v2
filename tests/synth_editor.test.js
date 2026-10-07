@@ -111,13 +111,13 @@ describe('SynthEditor sub-panel toolbar', () => {
         const filterCard = document.querySelector('#soft-synth-panel [data-ss-card="filter"]')
         const filterBtn = filterCard.querySelector('.ss-bypass-btn')
 
-        expect(editor.draft.bypassFilter).toBeFalsy()
+        expect(editor.model.draft.bypassFilter).toBeFalsy()
         filterBtn.click()
-        expect(editor.draft.bypassFilter).toBe(true)
+        expect(editor.model.draft.bypassFilter).toBe(true)
         expect(filterCard.classList.contains('bypassed')).toBe(true)
 
         filterBtn.click()
-        expect(editor.draft.bypassFilter).toBe(false)
+        expect(editor.model.draft.bypassFilter).toBe(false)
         expect(filterCard.classList.contains('bypassed')).toBe(false)
     })
 
@@ -127,12 +127,12 @@ describe('SynthEditor sub-panel toolbar', () => {
         const envCard = document.querySelector('#soft-synth-panel [data-ss-card="envelope"]')
         const envBtn = envCard.querySelector('.ss-bypass-btn')
 
-        expect(editor.draft.bypassEnv).toBeFalsy()
+        expect(editor.model.draft.bypassEnv).toBeFalsy()
         envBtn.click()
-        expect(editor.draft.bypassEnv).toBe(true)
+        expect(editor.model.draft.bypassEnv).toBe(true)
 
         envBtn.click()
-        expect(editor.draft.bypassEnv).toBe(false)
+        expect(editor.model.draft.bypassEnv).toBe(false)
     })
 
     it('sets bypassNoise flag on draft when toggling noise bypass', async () => {
@@ -141,12 +141,12 @@ describe('SynthEditor sub-panel toolbar', () => {
         const noiseCard = document.querySelector('#soft-synth-panel [data-ss-card="noise"]')
         const noiseBtn = noiseCard.querySelector('.ss-bypass-btn')
 
-        expect(editor.draft.bypassNoise).toBeFalsy()
+        expect(editor.model.draft.bypassNoise).toBeFalsy()
         noiseBtn.click()
-        expect(editor.draft.bypassNoise).toBe(true)
+        expect(editor.model.draft.bypassNoise).toBe(true)
 
         noiseBtn.click()
-        expect(editor.draft.bypassNoise).toBe(false)
+        expect(editor.model.draft.bypassNoise).toBe(false)
     })
 
     it('sets bypassLfo1 flag on draft when toggling lfo bypass', async () => {
@@ -155,12 +155,12 @@ describe('SynthEditor sub-panel toolbar', () => {
         const lfoCard = document.querySelector('#soft-synth-panel [data-ss-card="lfo"]')
         const lfoBtn = lfoCard.querySelector('.ss-bypass-btn')
 
-        expect(editor.draft.bypassLfo1).toBeFalsy()
+        expect(editor.model.draft.bypassLfo1).toBeFalsy()
         lfoBtn.click()
-        expect(editor.draft.bypassLfo1).toBe(true)
+        expect(editor.model.draft.bypassLfo1).toBe(true)
 
         lfoBtn.click()
-        expect(editor.draft.bypassLfo1).toBe(false)
+        expect(editor.model.draft.bypassLfo1).toBe(false)
     })
 
     it('sets bypassFm flag on draft when toggling fm bypass', async () => {
@@ -169,27 +169,27 @@ describe('SynthEditor sub-panel toolbar', () => {
         const fmCard = document.querySelector('#soft-synth-panel [data-ss-card="fm"]')
         const fmBtn = fmCard.querySelector('.ss-bypass-btn')
 
-        expect(editor.draft.bypassFm).toBeFalsy()
+        expect(editor.model.draft.bypassFm).toBeFalsy()
         fmBtn.click()
-        expect(editor.draft.bypassFm).toBe(true)
+        expect(editor.model.draft.bypassFm).toBe(true)
 
         fmBtn.click()
-        expect(editor.draft.bypassFm).toBe(false)
+        expect(editor.model.draft.bypassFm).toBe(false)
     })
 
     it('VCO bypass saves/restores gain (not a bypass flag)', async () => {
         await editor.showPanel()
 
-        expect(editor.draft.vco1.gain).toBe(1)
+        expect(editor.model.draft.vco1.gain).toBe(1)
         const vco1Card = document.querySelector('#soft-synth-panel [data-ss-card="vco1"]')
         const vco1Btn = vco1Card.querySelector('.ss-bypass-btn')
 
         vco1Btn.click()
-        expect(editor.draft.vco1.gain).toBe(0)
-        expect(editor.draft.bypassVco1).toBeUndefined()
+        expect(editor.model.draft.vco1.gain).toBe(0)
+        expect(editor.model.draft.bypassVco1).toBeUndefined()
 
         vco1Btn.click()
-        expect(editor.draft.vco1.gain).toBe(1)
+        expect(editor.model.draft.vco1.gain).toBe(1)
     })
 
     it('propagates bypass flags to audioEngine via setGeneratedSounds', async () => {

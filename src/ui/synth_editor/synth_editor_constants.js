@@ -147,3 +147,52 @@ export const LFO_SYNC_OPTIONS = [
 
 /** Waveform drawing uses a fixed sample buffer, allocated once. */
 export const WAVE_BUFFER = new Float32Array(1024)
+
+/**
+ * LFO target → scale factor applied to raw waveform value.
+ * raw * scale = the modulation amount in the target's display units.
+ * Matches the worklet synth_voice_source.js #lfoValue() mapping.
+ */
+export const LFO_TARGET_SCALE = {
+    'vco1.octave': 1,
+    'vco1.detune': 100,
+    'vco1.gain': 1,
+    'vco2.octave': 1,
+    'vco2.detune': 100,
+    'vco2.gain': 1,
+    'vco3.octave': 1,
+    'vco3.detune': 100,
+    'vco3.gain': 1,
+    'filter.freq': 1000,
+    'filter.Q': 24,
+    'filter.drive': 1,
+    'filterEnv.filterEnvelopeAmount': 1,
+    masterVolume: 1,
+    'noise.mix': 1,
+    'noise.filterFreq': 10000,
+    'noise.filterQ': 24,
+    'fm.amount': 1,
+    'fm.algo': 1,
+    subGain: 1,
+    pitchPunch: 1,
+    'envelope.attack': 0.25,
+    'envelope.decay': 0.5,
+    'envelope.sustain': 0.5,
+    'envelope.release': 0.25,
+    'modEnvelope.attack': 0.25,
+    'modEnvelope.decay': 0.5,
+    'modEnvelope.sustain': 0.5,
+    'modEnvelope.release': 0.25,
+}
+
+/** Group card → draft flag holding its bypassed state. */
+export const CARD_BYPASS_FLAGS = {
+    noise: 'bypassNoise',
+    filter: 'bypassFilter',
+    filterEnv: 'bypassFilterEnv',
+    envelope: 'bypassEnv',
+    lfo: 'bypassLfo1',
+    lfo2: 'bypassLfo2',
+    fm: 'bypassFm',
+    modEnvelope: 'bypassModEnv',
+}

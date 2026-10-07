@@ -3,7 +3,7 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import SynthEditor from '../src/ui/synth_editor.js'
-import PresetSection from '../src/ui/synth_editor/preset_section.js'
+import SynthPresetModel from '../src/ui/synth_editor/synth_preset_model.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/event_bus.js'
@@ -69,7 +69,7 @@ describe('SynthEditor — import JSON calls the public persist API', () => {
             if (String(tag).toLowerCase() === 'input') fileInput = el
             return el
         })
-        const persistSpy = vi.spyOn(PresetSection.prototype, 'persist').mockImplementation(() => {})
+        const persistSpy = vi.spyOn(SynthPresetModel.prototype, 'persist').mockImplementation(() => {})
 
         importBtn.click()
 

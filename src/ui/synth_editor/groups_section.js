@@ -45,16 +45,16 @@ const GROUP_TAB = {
 }
 
 export default class GroupsSection {
-    #editor
+    #model
 
-    /** @param {import('../synth_editor.js').default} editor */
-    constructor(editor) {
-        this.#editor = editor
+    /** @param {import('./synth_preset_model.js').default} model edit-session state */
+    constructor(model) {
+        this.#model = model
     }
 
     /** Ordered group names derived from draft keys. */
     getOrderedGroupNames() {
-        const draft = this.#editor.draft
+        const draft = this.#model.draft
         if (!draft) return SYNTH_GROUP_ORDER.slice()
 
         const mergedKeys = new Set(Object.values(SYNTH_GROUP_MERGE).flat())
@@ -89,8 +89,7 @@ export default class GroupsSection {
      * @returns {string} HTML
      */
     render(knobConfigs) {
-        const editor = this.#editor
-        const draft = editor.draft
+        const draft = this.#model.draft
         if (!draft) return ''
 
         const groupNames = this.getOrderedGroupNames()
@@ -116,7 +115,7 @@ export default class GroupsSection {
             const hidden = first ? '' : ' ne-tab-panel-hidden'
             body += `<div class="ne-tab-panel${hidden}" data-tab-panel="${t.id}">`
             for (const groupName of names) {
-                body += this.#renderGroupCard(groupName, knobConfigs, draft, editor)
+                body += this.#renderGroupCard(groupName, knobConfigs, draft)
             }
             body += '</div>'
             first = false
@@ -126,10 +125,10 @@ export default class GroupsSection {
         return tabBar + body + '<div class="ss-module-trace" data-ss-module-trace></div>'
     }
 
-    #renderGroupCard(groupName, knobConfigs, draft, editor) {
+    #renderGroupCard(groupName, knobConfigs, draft) {
         const content = this.#buildGroupContent(groupName, knobConfigs)
         const label = this.getGroupLabel(groupName)
-        const isBypassed = editor.cardBypassed[groupName] ?? false
+        const isBypassed = this.#model.cardBypassed[groupName] ?? false
 
         const isVco = VCO_RE.test(groupName)
         const isLfo = LFO_RE.test(groupName)
@@ -187,8 +186,7 @@ export default class GroupsSection {
 
     /** Builds inner content for a single group. */
     #buildGroupContent(groupName, knobConfigs) {
-        const editor = this.#editor
-        const draft = editor.draft
+        const draft = this.#model.draft
         const merged = SYNTH_GROUP_MERGE[groupName]
         const groupDefaults = SYNTH_GROUP_DEFAULTS[groupName]
         const fields = merged
