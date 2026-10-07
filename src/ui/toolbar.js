@@ -130,17 +130,21 @@ export default class Toolbar {
         this.redoBtn.title = canRedo ? `Redo: ${this.#nextRedoDesc ?? ''} (Ctrl+Y)` : 'Redo (Ctrl+Y)'
 
         const tracks = pat ? getTracksArray(pat) : []
+        // Lit ⇔ PatternAutoGen would toggle OFF on click: the button reflects
+        // `auto` (the runtime truth) with `_toolbarAuto` for older saved
+        // patterns where the two flags could drift apart.
+        const isAutoOn = (/** @type {any} */ t) => Boolean(t.auto || t._toolbarAuto)
         this.drumBtn.classList.toggle(
             'active',
-            tracks.some((t) => t._toolbarAuto && DRUM_TYPES.has(detectTrackType(t.name))),
+            tracks.some((t) => isAutoOn(t) && DRUM_TYPES.has(detectTrackType(t.name))),
         )
         this.bassBtn.classList.toggle(
             'active',
-            tracks.some((t) => t._toolbarAuto && detectTrackType(t.name) === 'BASS'),
+            tracks.some((t) => isAutoOn(t) && detectTrackType(t.name) === 'BASS'),
         )
         this.chordsBtn.classList.toggle(
             'active',
-            tracks.some((t) => t._toolbarAuto && detectTrackType(t.name) === 'PIANO'),
+            tracks.some((t) => isAutoOn(t) && detectTrackType(t.name) === 'PIANO'),
         )
 
         this.#patternNav.rebuildPatternSelect()

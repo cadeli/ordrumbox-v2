@@ -23,36 +23,8 @@ vi.mock('../src/state/app_state.js', () => ({
     appState: makeAppStateMock({ patterns: [{ tracks: [] }] }),
 }))
 
-vi.mock('../src/core/drum_taxonomy.js', () => ({
-    DRUM_TYPES: new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC']),
-    detectTrackType: vi.fn((name) => {
-        const n = (name ?? '').toUpperCase()
-        if (n.includes('KICK') || n.includes('BD')) return 'KICK'
-        if (n.includes('SNARE') || n.includes('SD')) return 'SNARE'
-        if (n.includes('OHH') || n.includes('HAT') || n.includes('CHH')) return 'HAT'
-        if (n.includes('CLAP') || n.includes('CLP') || n.includes('CP')) return 'CLAP'
-        if (n.includes('BASS')) return 'BASS'
-        if (n.includes('PIANO')) return 'PIANO'
-        if (n.includes('COWBELL') || n.includes('COW')) return 'COWBELL'
-        if (n.includes('ORGAN')) return 'ORGAN'
-        if (n.includes('SYNTH')) return 'BASS'
-        return 'PERC'
-    }),
-}))
-
-vi.mock('../src/core/tracks.js', () => ({
-    filterEmptyMelodicTracks: vi.fn((tracks) => tracks),
-}))
-
-vi.mock('../src/state/service_loader.js', () => ({
-    getAutoGeneratorService: vi.fn(),
-}))
-
 import { playbackEvents } from '../src/state/event_bus.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import { appState } from '../src/state/app_state.js'
-import { getAutoGeneratorService } from '../src/state/service_loader.js'
-import { DRUM_TYPES } from '../src/core/drum_taxonomy.js'
 
 function makeMockToolbar() {
     return {
@@ -217,99 +189,32 @@ describe('ViewSwitch', () => {
         })
     })
 
-    describe('toggleAutoGen()', () => {
+    // The orchestration these buttons used to carry (undo transaction,
+    // generation, event batch) moved to logic/services/pattern_auto_gen.js
+    // and is covered by tests/pattern_auto_gen.test.js — here we only pin
+    // the wiring.
+    describe('generation buttons delegate to patternAutoGen', () => {
         beforeEach(() => {
             vs.createDOM()
             vs.bindEvents()
         })
 
-        it('toggle-off: sets auto=false and _toolbarAuto=false when _toolbarAuto tracks exist', async () => {
-            const track1 = { name: 'KICK', auto: true, _toolbarAuto: true }
-            const track2 = { name: 'SNARE', auto: true, _toolbarAuto: true }
-            const track3 = { name: 'BASS', auto: true, _toolbarAuto: true }
-            appState.patterns = [{ tracks: [track1, track2, track3] }]
-            appState.selectedPatternIdx = 0
+        it('wires ↻ Drum, ↻ Bass and ↻ Chords to the shared service', async () => {
+            const patternAutoGen = (await import('../src/logic/services/pattern_auto_gen.js')).default
+            const drums = vi.spyOn(patternAutoGen, 'toggleDrums').mockImplementation(async () => {})
+            const melodic = vi.spyOn(patternAutoGen, 'toggleMelodic').mockImplementation(async () => {})
+            try {
+                tb.drumBtn.click()
+                tb.bassBtn.click()
+                tb.chordsBtn.click()
 
-            await vs.toggleAutoGen(DRUM_TYPES, vi.fn())
-
-            expect(track1.auto).toBe(false)
-            expect(track1._toolbarAuto).toBe(false)
-            expect(track2.auto).toBe(false)
-            expect(track2._toolbarAuto).toBe(false)
-            expect(track3.auto).toBe(true)
-            expect(track3._toolbarAuto).toBe(true)
-            expect(playbackEvents.batch).toHaveBeenCalled()
-        })
-
-        it('toggle-off: handles empty tracks array', async () => {
-            appState.patterns = [{ tracks: [] }]
-            appState.selectedPatternIdx = 0
-            const generateFn = vi.fn()
-
-            await vs.toggleAutoGen(DRUM_TYPES, generateFn)
-
-            expect(generateFn).toHaveBeenCalled()
-        })
-
-        it('toggle-on: imports service_loader and calls generateFn when no _toolbarAuto tracks', async () => {
-            appState.patterns = [{ tracks: [] }]
-            appState.selectedPatternIdx = 0
-            const generateFn = vi.fn()
-            const mockAutoGen = { structureGen: {} }
-            getAutoGeneratorService.mockResolvedValue(mockAutoGen)
-
-            await vs.toggleAutoGen(DRUM_TYPES, generateFn)
-
-            expect(getAutoGeneratorService).toHaveBeenCalled()
-            expect(generateFn).toHaveBeenCalledWith(appState.patterns[0], mockAutoGen)
-        })
-
-        it('toggle-on: converts string type to Set', async () => {
-            appState.patterns = [{ tracks: [] }]
-            appState.selectedPatternIdx = 0
-            const generateFn = vi.fn()
-            const mockAutoGen = {}
-            getAutoGeneratorService.mockResolvedValue(mockAutoGen)
-
-            await vs.toggleAutoGen('BASS', generateFn)
-
-            expect(generateFn).toHaveBeenCalledWith(appState.patterns[0], mockAutoGen)
-        })
-
-        it('toggle-on: converts array type to Set', async () => {
-            appState.patterns = [{ tracks: [] }]
-            appState.selectedPatternIdx = 0
-            const generateFn = vi.fn()
-            const mockAutoGen = {}
-            getAutoGeneratorService.mockResolvedValue(mockAutoGen)
-
-            await vs.toggleAutoGen(['BASS', 'PIANO'], generateFn)
-
-            expect(generateFn).toHaveBeenCalledWith(appState.patterns[0], mockAutoGen)
-        })
-
-        it('returns early when pattern is undefined', async () => {
-            appState.patterns = []
-            appState.selectedPatternIdx = 5
-            const generateFn = vi.fn()
-
-            await vs.toggleAutoGen(DRUM_TYPES, generateFn)
-
-            expect(generateFn).not.toHaveBeenCalled()
-        })
-
-        it('toggle-off: only toggles matching type tracks when mixed types exist', async () => {
-            const drumTrack = { name: 'HAT', auto: true, _toolbarAuto: true }
-            const bassTrack = { name: 'BASS1', auto: true, _toolbarAuto: true }
-            appState.patterns = [{ tracks: [drumTrack, bassTrack] }]
-            appState.selectedPatternIdx = 0
-
-            await vs.toggleAutoGen(DRUM_TYPES, vi.fn())
-
-            expect(drumTrack.auto).toBe(false)
-            expect(drumTrack._toolbarAuto).toBe(false)
-            expect(bassTrack.auto).toBe(true)
-            expect(bassTrack._toolbarAuto).toBe(true)
+                expect(drums).toHaveBeenCalledTimes(1)
+                expect(melodic).toHaveBeenNthCalledWith(1, 'BASS')
+                expect(melodic).toHaveBeenNthCalledWith(2, 'PIANO')
+            } finally {
+                drums.mockRestore()
+                melodic.mockRestore()
+            }
         })
     })
 })

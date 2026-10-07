@@ -314,6 +314,29 @@ describe('PatternSettingsPanel', () => {
         })
     })
 
+    // The orchestration these buttons used to carry lives in
+    // logic/services/pattern_auto_gen.js (shared with the toolbar) and is
+    // covered by tests/pattern_auto_gen.test.js — here we only pin the wiring.
+    describe('generation buttons', () => {
+        it('wires ↻ Drum, ↻ Bass and ↻ Chords to the shared service', async () => {
+            const patternAutoGen = (await import('../src/logic/services/pattern_auto_gen.js')).default
+            const drums = vi.spyOn(patternAutoGen, 'toggleDrums').mockImplementation(async () => {})
+            const melodic = vi.spyOn(patternAutoGen, 'toggleMelodic').mockImplementation(async () => {})
+            try {
+                panel.container.querySelector('.ps-gen-drum').click()
+                panel.container.querySelector('.ps-gen-bass').click()
+                panel.container.querySelector('.ps-gen-chords').click()
+
+                expect(drums).toHaveBeenCalledTimes(1)
+                expect(melodic).toHaveBeenNthCalledWith(1, 'BASS')
+                expect(melodic).toHaveBeenNthCalledWith(2, 'PIANO')
+            } finally {
+                drums.mockRestore()
+                melodic.mockRestore()
+            }
+        })
+    })
+
     describe('event subscriptions', () => {
         it('syncs on patternMetaChange', () => {
             setupPattern([makeTrack({ beatCount: 6 })])

@@ -1,13 +1,10 @@
 // src/ui/toolbar/view_switch.js
 // View switch: view buttons, generation buttons, undo/redo.
 
-import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import { showToast } from '../../core/notify.js'
 import { playbackEvents } from '../../state/event_bus.js'
-import { DRUM_TYPES, detectTrackType } from '../../core/drum_taxonomy.js'
-import { filterEmptyMelodicTracks } from '../../core/tracks.js'
 import { EVENTS } from '../../core/events.js'
+import patternAutoGen from '../../logic/services/pattern_auto_gen.js'
 
 export default class ViewSwitch {
     #tb
@@ -152,116 +149,11 @@ export default class ViewSwitch {
             serviceRegistry.history?.redo()
         })
 
-        this.listen(tb.drumBtn, 'click', async () => {
-            await this.toggleAutoGen(DRUM_TYPES, async (pattern, autoGen) => {
-                if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
-                await autoGen.generatePattern()
-
-                if (pattern.tracks) {
-                    pattern.tracks = filterEmptyMelodicTracks(pattern.tracks)
-                }
-                for (const track of pattern.tracks) {
-                    if (DRUM_TYPES.has(detectTrackType(track.name))) {
-                        track.auto = true
-                        track._toolbarAuto = true
-                    }
-                }
-                serviceRegistry.cmd.commitGenerationUndo()
-            })
-        })
-
-        this.listen(tb.bassBtn, 'click', async () => {
-            await this.toggleAutoGen('BASS', async (pattern, autoGen) => {
-                let bassTrack = pattern.tracks?.find((t) => detectTrackType(t.name) === 'BASS')
-
-                if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
-                if (!bassTrack) {
-                    if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
-                    const genre = pattern._autoGenGenre
-                    const firstElement = autoGen.structureGen.getElement(0)
-                    const harmony = autoGen.structureGen.resolveHarmony(
-                        genre,
-                        firstElement.name,
-                        firstElement.loopInElement,
-                    )
-                    const structure = autoGen.structureGen.generateStructure(genre)
-                    const bassVariant = structure.BASS ?? 'basic'
-
-                    bassTrack = serviceRegistry.cmd.addTrack(pattern, 'BASS')
-                    bassTrack.useSoftSynth = true
-                    bassTrack.useAutoAssignSound = false
-                    bassTrack.synthSoundKey = 'BASS1'
-                    bassTrack.velocity = 0.8
-                    await autoGen.generateTrack(bassTrack, bassVariant, 1, pattern, harmony)
-                    serviceRegistry.flatNotes.applyFlatNotes(pattern)
-                }
-                bassTrack.auto = true
-                bassTrack._toolbarAuto = true
-                serviceRegistry.cmd.commitGenerationUndo()
-            })
-        })
-
-        this.listen(tb.chordsBtn, 'click', async () => {
-            await this.toggleAutoGen('PIANO', async (pattern, autoGen) => {
-                let pianoTrack = pattern.tracks?.find((t) => detectTrackType(t.name) === 'PIANO')
-
-                if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
-                if (!pianoTrack) {
-                    if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
-                    const genre = pattern._autoGenGenre
-                    const firstElement = autoGen.structureGen.getElement(0)
-                    const harmony = autoGen.structureGen.resolveHarmony(
-                        genre,
-                        firstElement.name,
-                        firstElement.loopInElement,
-                    )
-                    const structure = autoGen.structureGen.generateStructure(genre)
-                    const pianoVariant = structure.PIANO ?? 'chordStab'
-
-                    pianoTrack = serviceRegistry.cmd.addTrack(pattern, 'PIANO')
-                    pianoTrack.useSoftSynth = true
-                    pianoTrack.useAutoAssignSound = false
-                    pianoTrack.synthSoundKey = 'PIANO'
-                    pianoTrack.velocity = 0.8
-                    await autoGen.generateTrack(pianoTrack, pianoVariant, 1, pattern, harmony)
-                    serviceRegistry.flatNotes.applyFlatNotes(pattern)
-                }
-                pianoTrack.auto = true
-                pianoTrack._toolbarAuto = true
-                serviceRegistry.cmd.commitGenerationUndo()
-            })
-        })
-    }
-
-    async toggleAutoGen(typeOrTypes, generateFn) {
-        const pattern = appState.selectedPattern
-        if (!pattern) return
-
-        const types =
-            typeOrTypes instanceof Set ? typeOrTypes : new Set(Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes])
-        const hasAuto = (pattern.tracks ?? []).some((t) => t._toolbarAuto && types.has(detectTrackType(t.name)))
-
-        if (hasAuto) {
-            for (const track of pattern.tracks) {
-                if (types.has(detectTrackType(track.name))) {
-                    track.auto = false
-                    track._toolbarAuto = false
-                }
-            }
-        } else {
-            const { getAutoGeneratorService } = await import('../../state/service_loader.js')
-            const autoGen = await getAutoGeneratorService()
-            try {
-                await generateFn(pattern, autoGen)
-            } catch (err) {
-                serviceRegistry.cmd.cancelGenerationUndo?.()
-                showToast('Auto-generation failed: ' + err.message, 'error')
-            }
-        }
-
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        // Generation orchestration (undo transaction, track creation, event
+        // batch) lives in logic/services/pattern_auto_gen.js — shared with
+        // the pattern settings panel.
+        this.listen(tb.drumBtn, 'click', () => patternAutoGen.toggleDrums())
+        this.listen(tb.bassBtn, 'click', () => patternAutoGen.toggleMelodic('BASS'))
+        this.listen(tb.chordsBtn, 'click', () => patternAutoGen.toggleMelodic('PIANO'))
     }
 }

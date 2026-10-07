@@ -2,13 +2,11 @@ import { appState } from '../state/app_state.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/event_bus.js'
-import { DRUM_TYPES, detectTrackType } from '../core/drum_taxonomy.js'
-import { filterEmptyMelodicTracks } from '../core/tracks.js'
 import { MAX_BEATS } from '../core/constants.js'
 import { prevPage, nextPage } from './page_nav.js'
 import { maxPageFor } from './page_nav.js'
-import { showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'
+import patternAutoGen from '../logic/services/pattern_auto_gen.js'
 
 export default class PatternSettingsPanel {
     #isOpen
@@ -221,100 +219,16 @@ export default class PatternSettingsPanel {
     }
 
     // ── Generation buttons ───────────────────────────────────────────
-    // Drum toggles auto-gen on several existing percussion track types at
-    // once and never creates a track. Bass/Chords each drive a single
-    // melodic track type and create it on first use — that shared shape
-    // lives in #toggleMelodicAutoGen().
+    // Drum toggles auto-gen on the whole percussion family, Bass/Chords
+    // drive one melodic track type and create it on first use — the whole
+    // orchestration (undo transaction, genre/harmony resolution, event
+    // batch) lives in logic/services/pattern_auto_gen.js, shared with the
+    // toolbar's ViewSwitch.
 
     #bindGenerationButtons() {
-        this.listen(this.#drumBtn, 'click', () => this.#onDrumClick())
-        this.listen(this.#bassBtn, 'click', () =>
-            this.#toggleMelodicAutoGen('BASS', { synthSoundKey: 'BASS1', defaultVariant: 'basic' }),
-        )
-        this.listen(this.#chordsBtn, 'click', () =>
-            this.#toggleMelodicAutoGen('PIANO', { synthSoundKey: 'PIANO', defaultVariant: 'chordStab' }),
-        )
-    }
-
-    async #onDrumClick() {
-        const pattern = appState.selectedPattern
-        if (!pattern) return
-        const hasDrumAuto = (pattern.tracks ?? []).some((t) => t.auto && DRUM_TYPES.has(detectTrackType(t.name)))
-        if (hasDrumAuto) {
-            for (const track of pattern.tracks) {
-                if (DRUM_TYPES.has(detectTrackType(track.name))) track.auto = false
-            }
-        } else {
-            const { getAutoGeneratorService } = await import('../state/service_loader.js')
-            const autoGen = await getAutoGeneratorService()
-            if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
-            try {
-                await autoGen.generatePattern()
-                if (pattern.tracks) {
-                    pattern.tracks = filterEmptyMelodicTracks(pattern.tracks)
-                }
-                for (const track of pattern.tracks) {
-                    if (DRUM_TYPES.has(detectTrackType(track.name))) track.auto = true
-                }
-                serviceRegistry.cmd.commitGenerationUndo()
-            } catch (err) {
-                serviceRegistry.cmd.cancelGenerationUndo?.()
-                showToast('Auto-generation failed: ' + err.message, 'error')
-            }
-        }
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
-    }
-
-    // Shared toggle for single-track melodic auto-generation (Bass, Chords):
-    // turns auto off if already active, otherwise creates the track (if
-    // missing) from the current genre's structure and turns auto on.
-    async #toggleMelodicAutoGen(trackType, { synthSoundKey, defaultVariant }) {
-        const pattern = appState.selectedPattern
-        if (!pattern) return
-        const hasAuto = (pattern.tracks ?? []).some((t) => t.auto && detectTrackType(t.name) === trackType)
-        if (hasAuto) {
-            for (const track of pattern.tracks) {
-                if (detectTrackType(track.name) === trackType) track.auto = false
-            }
-        } else {
-            let track = pattern.tracks?.find((t) => detectTrackType(t.name) === trackType)
-            const { getAutoGeneratorService } = await import('../state/service_loader.js')
-            const autoGen = await getAutoGeneratorService()
-            if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
-            try {
-                if (!track) {
-                    if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
-                    const genre = pattern._autoGenGenre
-                    const firstElement = autoGen.structureGen.getElement(0)
-                    const harmony = autoGen.structureGen.resolveHarmony(
-                        genre,
-                        firstElement.name,
-                        firstElement.loopInElement,
-                    )
-                    const structure = autoGen.structureGen.generateStructure(genre)
-                    const variant = structure[trackType] ?? defaultVariant
-                    track = serviceRegistry.cmd.addTrack(pattern, trackType)
-                    track.useSoftSynth = true
-                    track.useAutoAssignSound = false
-                    track.synthSoundKey = synthSoundKey
-                    track.velocity = 0.8
-                    await autoGen.generateTrack(track, variant, 1, pattern, harmony)
-                    serviceRegistry.flatNotes.applyFlatNotes(pattern)
-                }
-                track.auto = true
-                serviceRegistry.cmd.commitGenerationUndo()
-            } catch (err) {
-                serviceRegistry.cmd.cancelGenerationUndo?.()
-                showToast('Auto-generation failed: ' + err.message, 'error')
-            }
-        }
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        this.listen(this.#drumBtn, 'click', () => patternAutoGen.toggleDrums())
+        this.listen(this.#bassBtn, 'click', () => patternAutoGen.toggleMelodic('BASS'))
+        this.listen(this.#chordsBtn, 'click', () => patternAutoGen.toggleMelodic('PIANO'))
     }
 
     #subscribeEvents() {
