@@ -1,5 +1,4 @@
 import { appState } from '../state/app_state.js'
-import { soundRegistry } from '../state/sound_registry.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/event_bus.js'
 import { MAX_BEATS } from '../core/constants.js'
@@ -7,6 +6,12 @@ import { prevPage, nextPage } from './page_nav.js'
 import { maxPageFor } from './page_nav.js'
 import { EVENTS } from '../core/events.js'
 import patternAutoGen from '../logic/services/pattern_auto_gen.js'
+import {
+    rebuildPatternSelect,
+    rebuildDrumkitSelect,
+    onPatternSelectChange,
+    onDrumkitSelectChange,
+} from './select_lists.js'
 
 export default class PatternSettingsPanel {
     #isOpen
@@ -192,30 +197,11 @@ export default class PatternSettingsPanel {
     }
 
     #bindDrumkitSelect() {
-        this.listen(this.#drumkitSelect, 'change', () => this.#onDrumkitChange())
-    }
-
-    #onDrumkitChange() {
-        const num = parseInt(this.#drumkitSelect.value, 10)
-        if (!isNaN(num)) {
-            serviceRegistry.cmd.setSelectedDrumkitIdx(num)
-        }
+        this.listen(this.#drumkitSelect, 'change', () => onDrumkitSelectChange(this.#drumkitSelect))
     }
 
     #bindPatternSelect() {
-        this.listen(this.#patternSelect, 'change', () => this.#onPatternChange())
-    }
-
-    #onPatternChange() {
-        const num = parseInt(this.#patternSelect.value, 10)
-        if (!isNaN(num)) {
-            serviceRegistry.cmd.setSelectedPatternIdx(num)
-            serviceRegistry.cmd.resetPage()
-            playbackEvents.batch(() => {
-                playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
-                playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-            })
-        }
+        this.listen(this.#patternSelect, 'change', () => onPatternSelectChange(this.#patternSelect))
     }
 
     // ── Generation buttons ───────────────────────────────────────────
@@ -255,26 +241,8 @@ export default class PatternSettingsPanel {
 
     /** Rebuilds BOTH the drumkit and the pattern <select> (it is called on DRUMKIT_CHANGE). */
     syncSelects() {
-        this.#drumkitSelect.innerHTML = ''
-        soundRegistry.drumkitList.forEach((kit, i) => {
-            const opt = document.createElement('option')
-            opt.value = String(i)
-            opt.textContent = kit.name ?? `Kit ${i}`
-            this.#drumkitSelect.appendChild(opt)
-        })
-        if (this.#drumkitSelect.options.length > 0) {
-            const idx = Math.min(appState.selectedDrumkitIdx, this.#drumkitSelect.options.length - 1)
-            this.#drumkitSelect.selectedIndex = idx
-        }
-
-        this.#patternSelect.innerHTML = ''
-        appState.patterns.forEach((pat, i) => {
-            const opt = document.createElement('option')
-            opt.value = String(i)
-            opt.textContent = pat.name ?? `Pattern ${i}`
-            this.#patternSelect.appendChild(opt)
-            if (i === appState.selectedPatternIdx) opt.selected = true
-        })
+        rebuildDrumkitSelect(this.#drumkitSelect)
+        rebuildPatternSelect(this.#patternSelect)
     }
 
     show() {

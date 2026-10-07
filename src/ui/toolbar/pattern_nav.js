@@ -1,12 +1,15 @@
 // src/ui/toolbar/pattern_nav.js
 // Pattern navigation: pattern select, page nav, drumkit select.
 
-import { appState } from '../../state/app_state.js'
-import { soundRegistry } from '../../state/sound_registry.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/event_bus.js'
 import { prevPage, nextPage } from '../page_nav.js'
 import { EVENTS } from '../../core/events.js'
+import {
+    rebuildPatternSelect,
+    rebuildDrumkitSelect,
+    onPatternSelectChange,
+    onDrumkitSelectChange,
+} from '../select_lists.js'
 
 export default class PatternNav {
     #tb
@@ -75,21 +78,9 @@ export default class PatternNav {
     bindEvents() {
         const tb = this.#tb
 
-        tb.patternSelect.addEventListener('change', () => {
-            const num = parseInt(tb.patternSelect.value, 10)
-            if (!isNaN(num)) {
-                serviceRegistry.cmd.setSelectedPatternIdx(num)
-                serviceRegistry.cmd.resetPage()
-                playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-            }
-        })
+        tb.patternSelect.addEventListener('change', () => onPatternSelectChange(tb.patternSelect))
 
-        tb.drumkitSelect.addEventListener('change', () => {
-            const num = parseInt(tb.drumkitSelect.value, 10)
-            if (!isNaN(num)) {
-                serviceRegistry.cmd.setSelectedDrumkitIdx(num)
-            }
-        })
+        tb.drumkitSelect.addEventListener('change', () => onDrumkitSelectChange(tb.drumkitSelect))
 
         tb.kitLabel.addEventListener('click', () => {
             playbackEvents.emit(EVENTS.DRUMKIT_MANAGER_TOGGLE, true)
@@ -100,32 +91,10 @@ export default class PatternNav {
     }
 
     rebuildPatternSelect() {
-        const tb = this.#tb
-        tb.patternSelect.innerHTML = ''
-        appState.patterns.forEach((pat, i) => {
-            const opt = document.createElement('option')
-            opt.value = String(i)
-            opt.textContent = pat.name ?? `Pattern ${i}`
-            tb.patternSelect.appendChild(opt)
-        })
-        if (tb.patternSelect.options.length > 0) {
-            const idx = Math.min(appState.selectedPatternIdx, tb.patternSelect.options.length - 1)
-            tb.patternSelect.selectedIndex = idx
-        }
+        rebuildPatternSelect(this.#tb.patternSelect)
     }
 
     rebuildDrumkitSelect() {
-        const tb = this.#tb
-        tb.drumkitSelect.innerHTML = ''
-        soundRegistry.drumkitList.forEach((kit, i) => {
-            const opt = document.createElement('option')
-            opt.value = String(i)
-            opt.textContent = kit.name ?? `Kit ${i}`
-            tb.drumkitSelect.appendChild(opt)
-        })
-        if (tb.drumkitSelect.options.length > 0) {
-            const idx = Math.min(appState.selectedDrumkitIdx, tb.drumkitSelect.options.length - 1)
-            tb.drumkitSelect.selectedIndex = idx
-        }
+        rebuildDrumkitSelect(this.#tb.drumkitSelect)
     }
 }
