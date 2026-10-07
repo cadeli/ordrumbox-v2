@@ -422,12 +422,12 @@
                 "decay": 5000
             },
             {
-                "display_name": "COWBELL",
-                "key": "COWBELL",
-                "url": "ropen/COWBELL.wav",
+                "display_name": "CRASH",
+                "key": "CRASH",
+                "url": "ropen/CRASH2.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 5000
+                "decay": 500
             },
             {
                 "display_name": "CRASH",

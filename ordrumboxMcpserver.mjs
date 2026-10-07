@@ -23,7 +23,6 @@ import {
     normalizeNote,
 } from './src/core/note_schema.js'
 import { songLengthMeasures } from './src/model/song_schema.js'
-import { PlaybackController } from './ordrumboxMcpPlayback.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -804,40 +803,7 @@ export const tools = [
             },
         },
     },
-    {
-        name: 'playPattern',
-        description:
-            'Plays a pattern for real: boots the app in headless Chromium against the dev server (starting it when needed), selects the pattern, starts the transport and reports the playback state including how many notes were triggered. Without patternName it plays the pattern selected by selectPattern().',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                patternName: { type: 'string', description: 'Pattern to play (default: the selected one)' },
-                seconds: {
-                    type: 'number',
-                    minimum: 0,
-                    maximum: 60,
-                    description: 'How long to listen before reporting (default 2, 0 = start and return)',
-                },
-            },
-        },
-    },
-    {
-        name: 'stopPlayback',
-        description: 'Stops the transport of the running playback session and reports the final state.',
-        inputSchema: { type: 'object', properties: {} },
-    },
 ]
-
-/**
- * One headless browser session for the whole server process: `playPattern`
- * starts it, `stopPlayback` reaches the same transport through it.
- * Created on first use so importing the server never launches anything.
- */
-let playbackController = null
-function playback() {
-    playbackController ??= new PlaybackController()
-    return playbackController
-}
 
 export async function handleToolCall(toolName, args, onError) {
     try {
@@ -1356,20 +1322,6 @@ export async function handleToolCall(toolName, args, onError) {
                     },
                 ],
             }
-        }
-
-        if (toolName === 'playPattern') {
-            const { patternName, seconds } = args
-            await ensureLibraryLoaded()
-            const name = patternName ?? appState.selectedPattern?.name
-            if (!name) throw new Error('No pattern selected')
-            const status = await playback().play({ patternName: name, seconds: seconds ?? 2 })
-            return { content: [{ type: 'text', text: JSON.stringify(status) }] }
-        }
-
-        if (toolName === 'stopPlayback') {
-            const status = await playback().stop()
-            return { content: [{ type: 'text', text: JSON.stringify(status) }] }
         }
 
         throw new Error(`Unknown tool: ${toolName}`)
