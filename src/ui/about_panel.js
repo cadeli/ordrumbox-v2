@@ -1,8 +1,6 @@
-import { playbackEvents } from '../state/event_bus.js'
 import { APP_VERSION } from '../core/constants.js'
-import { bindCloseButton, bindTabToggles } from './components/ui_utils.js'
+import { bindTabToggles } from './components/ui_utils.js'
 import BasePanel from './base_panel.js'
-import { EVENTS } from '../core/events.js'
 
 const APP_NAME = 'OrDrumbox'
 const APP_LICENSE = 'GPL-3.0-only'
@@ -84,7 +82,6 @@ export default class AboutPanel extends BasePanel {
         `
 
         if (this.container) {
-            bindCloseButton(this.container, () => playbackEvents.emit(EVENTS.ABOUT_TOGGLE, false))
             bindTabToggles(this.container)
         }
 

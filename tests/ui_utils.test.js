@@ -10,7 +10,6 @@ import {
     pitchToNoteName,
     formatNoteTooltip,
     injectUiCss,
-    bindCloseButton,
     bindTabToggles,
     setViewBtn,
     setViewMode,
@@ -200,22 +199,6 @@ describe('injectUiCss', () => {
         injectUiCss()
         injectUiCss()
         expect(document.querySelectorAll('#ui-styles')).toHaveLength(1)
-    })
-})
-
-describe('bindCloseButton', () => {
-    it('calls onClose on .ne-close click', () => {
-        const container = document.createElement('div')
-        container.innerHTML = '<button class="ne-close">x</button>'
-        const onClose = vi.fn()
-        bindCloseButton(container, onClose)
-        container.querySelector('.ne-close').click()
-        expect(onClose).toHaveBeenCalledTimes(1)
-    })
-
-    it('does not throw when .ne-close is missing', () => {
-        const container = document.createElement('div')
-        expect(() => bindCloseButton(container, vi.fn())).not.toThrow()
     })
 })
 

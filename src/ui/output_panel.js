@@ -29,7 +29,6 @@ const COMPRESSOR_PARAMS = [
 
 export default class OutputPanel extends BasePanel {
     #animId = null
-    #visible = false
     #lowcutVal = 35
     #hicutVal = 18500
     #saveTimer = null
@@ -282,14 +281,12 @@ export default class OutputPanel extends BasePanel {
 
     show() {
         super.show()
-        this.#visible = true
         this.#drawCompCurve()
         this.#startAnimation()
     }
 
     hide() {
         super.hide()
-        this.#visible = false
         this.#stopAnimation()
     }
 
@@ -298,7 +295,7 @@ export default class OutputPanel extends BasePanel {
     #startAnimation() {
         this.#stopAnimation()
         const draw = () => {
-            if (!this.#visible) return
+            if (!this.isVisible) return
             try {
                 this.#drawSpectrum()
             } catch (err) {

@@ -1922,17 +1922,6 @@ body {
     border: 1px solid var(--line);
     border-radius: 3px;
 }
-.ne-close {
-    margin-left: auto;
-    cursor: pointer;
-    color: var(--text);
-    font-size: 18px;
-    border: none;
-    background: var(--accent);
-    padding: 0 8px;
-    border-radius: 4px;
-    line-height: 24px;
-}
 
 /* ---- Dual Range Slider for LFO ---- */
 .ne-range-container {
@@ -3657,11 +3646,6 @@ select option {
     border-color: var(--black);
     color: var(--black);
     box-shadow: 0 0 12px rgba(183, 255, 60, 0.8);
-}
-.ne-close {
-    background: var(--toy-pink);
-    color: var(--black);
-    font-weight: 700;
 }
 .ne-row select,
 .ne-row .ne-input,

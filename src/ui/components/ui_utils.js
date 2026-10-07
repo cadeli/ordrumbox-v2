@@ -135,10 +135,6 @@ export function injectUiCss() {
     document.head.appendChild(link)
 }
 
-export function bindCloseButton(container, onClose) {
-    container.querySelector('.ne-close')?.addEventListener('click', onClose)
-}
-
 /**
  * Binds click handlers on `.ne-tab-btn` elements to toggle `.ne-tab-panel` visibility.
  * @param {HTMLElement} container

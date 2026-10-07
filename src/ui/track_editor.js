@@ -656,8 +656,8 @@ export default class TrackEditor extends BasePanel {
         this.#emitTrackChange()
     }
 
-    #onFxTab(btn) {
-        this.#fxSection.onFxTab(btn)
+    #onFxTab(fxTabId) {
+        this.#fxSection.onFxTab(fxTabId)
     }
 
     #onGenTab(genTabId) {
@@ -770,19 +770,13 @@ export default class TrackEditor extends BasePanel {
                 return
             }
             if (target.dataset.fxTab) {
-                this.#onFxTab({ dataset: { fxTab: target.dataset.fxTab } })
+                this.#onFxTab(target.dataset.fxTab)
                 return
             }
-            if (target.dataset.genTab) {
-                this.#onGenTab(target.dataset.genTab)
+            const genTabEl = target.closest?.('[data-gen-tab]')
+            if (genTabEl) {
+                this.#onGenTab(/** @type {HTMLElement} */ (genTabEl).dataset.genTab)
                 return
-            }
-            {
-                const genTabEl = target.closest?.('[data-gen-tab]')
-                if (genTabEl) {
-                    this.#onGenTab(/** @type {HTMLElement} */ (genTabEl).dataset.genTab)
-                    return
-                }
             }
             if (target.dataset.fxIconVal) {
                 this.#onFxIcon(target)

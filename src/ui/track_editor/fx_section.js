@@ -64,9 +64,9 @@ export default class FxSection {
     }
 
     /** Switch the active FX sub-tab. */
-    onFxTab(btn) {
+    onFxTab(fxTabId) {
         const editor = this.#editor
-        const tabIdx = parseInt(btn.dataset.fxTab, 10)
+        const tabIdx = parseInt(fxTabId, 10)
         if (Number.isNaN(tabIdx)) return
         const activeTab = String(tabIdx)
         editor.fxTab.setActive(activeTab)
