@@ -1,11 +1,14 @@
-import { fmt as _defaultFmt, escapeHtml as _escHtml, promptNumericInput } from './ui_utils.js'
+import { escapeHtml as _escHtml } from './ui_utils.js'
 import { clamp } from '../../core/numbers.js'
+import { BaseControl } from './base_control.js'
 
 /**
  * OrKnob — rotary knob component for ordrumbox-v2.
  *
  * Vertical drag to change value, keyboard arrows for precision.
  * Displays an arc indicator and a numeric value.
+ * Config, value core and the double-click / right-click gestures come from
+ * BaseControl.
  *
  * @param {Object}   cfg
  * @param {string}   cfg.key        Identifier
@@ -14,6 +17,7 @@ import { clamp } from '../../core/numbers.js'
  * @param {number}   cfg.max        Maximum value
  * @param {number}   cfg.step       Step increment
  * @param {number}   [cfg.value]    Initial value (default: min)
+ * @param {number}   [cfg.defaultValue] Value restored by double-click (default: value ?? min)
  * @param {string}   [cfg.unit]     Unit string appended to display
  * @param {Function} [cfg.format]   (val) => string display formatter
  * @param {boolean}  [cfg.hasLfo]   Adds CSS class has-lfo
@@ -21,75 +25,39 @@ import { clamp } from '../../core/numbers.js'
  * @param {Function} [cfg.onChange]  (val, key) => void callback
  * @param {string}   [cfg.scale]    'log' for logarithmic mapping (default: 'linear')
  */
-export class OrKnob {
-    #key
-    #label
-    #min
-    #max
-    #step
-    #format
-    #hasLfo
-    #extraClass
-    #onChange
-    #value
-    #defaultValue
-    #unit
-    #valSpan
+export class OrKnob extends BaseControl {
+    #useLog
+    #logMin
+    #logRange
     #knobEl
     #dragStartY
     #dragStartVal
     #boundOnKeydown
     #boundOnMousedown
-    #boundOnDblClick
-    #boundOnContextMenu
-    #useLog
-    #logMin
-    #logRange
 
     constructor(cfg) {
-        this.#key = cfg.key
-        this.#label = cfg.label
-        this.#min = cfg.min
-        this.#max = cfg.max
-        this.#step = cfg.step
-        this.#format = cfg.format ?? _defaultFmt
-        this.#hasLfo = cfg.hasLfo ?? false
-        this.#extraClass = cfg.extraClass ?? ''
-        this.#onChange = cfg.onChange ?? null
-        this.#value = cfg.value ?? cfg.min
-        this.#defaultValue = cfg.defaultValue ?? cfg.value ?? cfg.min
-        this.#unit = cfg.unit ?? ''
+        super(cfg)
         // A log scale is only defined for min > 0 (log10(0) = -Infinity, which
         // would yield a NaN arc). Fall back to linear instead of breaking.
-        this.#useLog = cfg.scale === 'log' && this.#min > 0 && this.#max > this.#min
-        this.#logMin = this.#useLog ? Math.log10(this.#min) : 0
-        this.#logRange = this.#useLog ? Math.log10(this.#max) - this.#logMin : 0
+        this.#useLog = cfg.scale === 'log' && this.min > 0 && this.max > this.min
+        this.#logMin = this.#useLog ? Math.log10(this.min) : 0
+        this.#logRange = this.#useLog ? Math.log10(this.max) - this.#logMin : 0
 
-        this.el = null
-        this.#valSpan = null
         this.#knobEl = null
         this.#dragStartY = 0
         this.#dragStartVal = 0
         this.#boundOnKeydown = this.#onKeydown.bind(this)
         this.#boundOnMousedown = this.#onMousedown.bind(this)
-        this.#boundOnDblClick = this.#onDblClick.bind(this)
-        this.#boundOnContextMenu = this.#onContextMenu.bind(this)
-    }
-
-    /** Formats the value for display, truncated to prevent CLS. */
-    #fmt(v) {
-        const raw = String(this.#format(v))
-        const s = raw.length > 8 ? raw.slice(0, 8) : raw
-        return this.#unit ? `${s} ${this.#unit}` : s
     }
 
     /** Returns 0–100 percentage of current value within range. */
     #pct() {
+        const value = this.getValue()
         if (this.#useLog) {
-            const logPos = (Math.log10(Math.max(this.#min, this.#value)) - this.#logMin) / this.#logRange
+            const logPos = (Math.log10(Math.max(this.min, value)) - this.#logMin) / this.#logRange
             return clamp(logPos * 100, 0, 100)
         }
-        return clamp(((this.#value - this.#min) / (this.#max - this.#min)) * 100, 0, 100)
+        return clamp(((value - this.min) / (this.max - this.min)) * 100, 0, 100)
     }
 
     /** Returns the CSS arc angle in degrees (0–270). */
@@ -98,17 +66,14 @@ export class OrKnob {
     }
 
     /** Clamps and rounds a raw value to the valid step. */
-    #clampStep(raw, stepSize = this.#step) {
+    #clampStep(raw, stepSize = this.step) {
         const stepped = Math.round(raw / stepSize) * stepSize
-        return clamp(stepped, this.#min, this.#max)
+        return clamp(stepped, this.min, this.max)
     }
 
     /** Row CSS classes. */
     #rowClasses() {
-        const c = ['ne-row', 'ne-row-knob']
-        if (this.#hasLfo) c.push('has-lfo')
-        if (this.#extraClass) c.push(this.#extraClass)
-        return c.join(' ')
+        return this.rowClassList('ne-row-knob').join(' ')
     }
 
     // ─── HTML generation ──────────────────────────────────────────────────
@@ -116,13 +81,13 @@ export class OrKnob {
     /** Returns the row HTML string. Call mount() after injecting into DOM. */
     toHTML() {
         const deg = this.#arcDeg()
-        return `<div class="${this.#rowClasses()}" data-or-control="${this.#key}">
-            <div class="or-knob" data-or-knob="${this.#key}" style="--arc-deg:${deg}deg" tabindex="0">
+        return `<div class="${this.#rowClasses()}" data-or-control="${this.key}">
+            <div class="or-knob" data-or-knob="${this.key}" style="--arc-deg:${deg}deg" tabindex="0">
                 <div class="or-knob-arc"></div>
                 <div class="or-knob-disc"></div>
             </div>
-            <span class="or-knob-label">${_escHtml(this.#label)}</span>
-            <span class="ne-val" data-key="${this.#key}">${this.#fmt(this.#value)}</span>
+            <span class="or-knob-label">${_escHtml(this.label)}</span>
+            <span class="ne-val" data-key="${this.key}">${this.formatValue(this.getValue())}</span>
         </div>`
     }
 
@@ -130,11 +95,11 @@ export class OrKnob {
     createElement() {
         const div = document.createElement('div')
         div.className = this.#rowClasses()
-        div.dataset.orControl = this.#key
+        div.dataset.orControl = this.key
 
         const knob = document.createElement('div')
         knob.className = 'or-knob'
-        knob.dataset.orKnob = this.#key
+        knob.dataset.orKnob = this.key
         knob.tabIndex = 0
         knob.style.setProperty('--arc-deg', `${this.#arcDeg()}deg`)
 
@@ -147,12 +112,12 @@ export class OrKnob {
 
         const label = document.createElement('span')
         label.className = 'or-knob-label'
-        label.textContent = this.#label
+        label.textContent = this.label
 
         const val = document.createElement('span')
         val.className = 'ne-val'
-        val.dataset.key = this.#key
-        val.textContent = this.#fmt(this.#value)
+        val.dataset.key = this.key
+        val.textContent = this.formatValue(this.getValue())
 
         div.append(knob, label, val)
         this.#bind(div)
@@ -170,46 +135,40 @@ export class OrKnob {
     }
 
     #bind(rowEl) {
-        this.#unbind()
+        this.#unbindKeys()
+        this.unbindGestures()
         this.el = rowEl
-        this.#valSpan = rowEl.querySelector('.ne-val')
+        this.setValSpan(rowEl.querySelector('.ne-val'))
         this.#knobEl = rowEl.querySelector('.or-knob')
         if (!this.#knobEl) return
         this.#knobEl.addEventListener('mousedown', this.#boundOnMousedown)
         this.#knobEl.addEventListener('keydown', this.#boundOnKeydown)
-        this.#knobEl.addEventListener('dblclick', this.#boundOnDblClick)
-        this.#knobEl.addEventListener('contextmenu', this.#boundOnContextMenu)
-        this.#valSpan?.addEventListener('dblclick', this.#boundOnDblClick)
-        this.#valSpan?.addEventListener('contextmenu', this.#boundOnContextMenu)
+        this.bindGestures(this.#knobEl)
     }
 
-    #unbind() {
+    #unbindKeys() {
         this.#knobEl?.removeEventListener('mousedown', this.#boundOnMousedown)
         this.#knobEl?.removeEventListener('keydown', this.#boundOnKeydown)
-        this.#knobEl?.removeEventListener('dblclick', this.#boundOnDblClick)
-        this.#knobEl?.removeEventListener('contextmenu', this.#boundOnContextMenu)
-        this.#valSpan?.removeEventListener('dblclick', this.#boundOnDblClick)
-        this.#valSpan?.removeEventListener('contextmenu', this.#boundOnContextMenu)
     }
 
     #onMousedown(e) {
         if (e.button !== 0) return // left click only
         e.preventDefault()
         this.#dragStartY = e.clientY
-        this.#dragStartVal = this.#value
+        this.#dragStartVal = this.getValue()
         this.#knobEl.classList.add('dragging')
 
         const isLog = this.#useLog
-        const baseSensitivity = isLog ? this.#logRange / 200 : (this.#max - this.#min) / 200
+        const baseSensitivity = isLog ? this.#logRange / 200 : (this.max - this.min) / 200
         const startLogPos = isLog
-            ? (Math.log10(Math.max(this.#min, this.#dragStartVal)) - this.#logMin) / this.#logRange
+            ? (Math.log10(Math.max(this.min, this.#dragStartVal)) - this.#logMin) / this.#logRange
             : 0
 
         const onMove = (ev) => {
             const deltaY = this.#dragStartY - ev.clientY
             const isFine = ev.shiftKey
             const sensitivity = isFine ? baseSensitivity * 0.1 : baseSensitivity
-            const stepSize = isFine ? this.#step * 0.1 : this.#step
+            const stepSize = isFine ? this.step * 0.1 : this.step
 
             let clamped
             if (isLog) {
@@ -219,10 +178,7 @@ export class OrKnob {
             } else {
                 clamped = this.#clampStep(this.#dragStartVal + deltaY * sensitivity, stepSize)
             }
-            if (clamped !== this.#value) {
-                this.setValue(clamped)
-                this.#onChange?.(clamped, this.#key)
-            }
+            this.commitValue(clamped)
         }
         const onUp = () => {
             window.removeEventListener('mousemove', onMove)
@@ -241,81 +197,22 @@ export class OrKnob {
 
         const isFine = e.shiftKey || e.altKey
         const mult = isFine ? 0.1 : e.ctrlKey || e.metaKey ? 10 : 1
-        const delta = (isUp ? 1 : -1) * this.#step * mult
-        const stepSize = isFine ? this.#step * 0.1 : this.#step
-        const clamped = this.#clampStep(this.#value + delta, stepSize)
-        if (clamped !== this.#value) {
-            this.setValue(clamped)
-            this.#onChange?.(clamped, this.#key)
-        }
+        const delta = (isUp ? 1 : -1) * this.step * mult
+        const stepSize = isFine ? this.step * 0.1 : this.step
+        this.commitValue(this.#clampStep(this.getValue() + delta, stepSize))
     }
 
-    /** Reset value to default on double-click */
-    #onDblClick(e) {
-        e.preventDefault()
-        e.stopPropagation()
-        this.setValue(this.#defaultValue, true)
+    /** Steps a prompt value onto the knob grid (BaseControl hook). */
+    sanitizePromptInput(num) {
+        return this.#clampStep(num)
     }
 
-    /** Prompt direct numeric value input on right-click / context menu */
-    #onContextMenu(e) {
-        e.preventDefault()
-        e.stopPropagation()
-        this.promptDirectInput()
-    }
-
-    /** Opens prompt for entering raw numeric value */
-    promptDirectInput() {
-        const val = promptNumericInput(this.#label, this.#min, this.#max, this.#value, this.#unit, (num) =>
-            this.#clampStep(num),
-        )
-        if (val !== null) this.setValue(val, true)
+    /** Paints the arc angle (BaseControl hook). */
+    applyValue(_val) {
+        if (this.#knobEl) this.#knobEl.style.setProperty('--arc-deg', `${this.#arcDeg()}deg`)
     }
 
     // ─── Public API ───────────────────────────────────────────────────────
-
-    /** @returns {string} knob identifier */
-    get key() {
-        return this.#key
-    }
-
-    /** @returns {Function|null} current onChange callback */
-    get onChange() {
-        return this.#onChange
-    }
-    /** @param {Function|null} fn — rebind the onChange callback */
-    set onChange(fn) {
-        this.#onChange = fn
-    }
-
-    /** Formats value for display (exposed for testing). */
-    formatValue(v) {
-        return this.#fmt(v)
-    }
-
-    /**
-     * Updates the knob visual and value display.
-     * @param {number} val
-     * @param {boolean} [triggerCallback=false]
-     */
-    setValue(val, triggerCallback = false) {
-        if (this.#value === val && !triggerCallback) return
-        this.#value = val
-        if (this.#knobEl) this.#knobEl.style.setProperty('--arc-deg', `${this.#arcDeg()}deg`)
-        if (this.#valSpan) this.#valSpan.textContent = this.#fmt(val)
-        if (triggerCallback) this.#onChange?.(val, this.#key)
-    }
-
-    /** @returns {number} current value */
-    getValue() {
-        return this.#value
-    }
-
-    /** Toggles the LFO indicator CSS class. */
-    setHasLfo(bool) {
-        this.#hasLfo = bool
-        this.el?.classList.toggle('has-lfo', bool)
-    }
 
     /** Toggles disabled visual state. */
     setDisabled(bool) {
@@ -324,9 +221,8 @@ export class OrKnob {
 
     /** Removes event listeners. */
     destroy() {
-        this.#unbind()
-        this.el = null
-        this.#valSpan = null
+        this.#unbindKeys()
         this.#knobEl = null
+        super.destroy()
     }
 }
