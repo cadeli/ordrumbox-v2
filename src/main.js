@@ -7,6 +7,8 @@ import { initSelectDropdown } from './ui/select_dropdown.js'
 import { applyColorScheme } from './ui/theme.js'
 import { serviceRegistry } from './state/service_registry.js'
 import { soundRegistry } from './state/sound_registry.js'
+import { playbackEvents } from './state/event_bus.js'
+import { EVENTS } from './core/events.js'
 
 /**
  * Kicks the settings fetch before anything else (loadSettings is single-flight,
@@ -32,6 +34,12 @@ function primeColorScheme() {
 
 export function init() {
     primeColorScheme()
+    // The 'c' shortcut cycles soundRegistry.settings.colorScheme and emits;
+    // keyboard_shortcuts.js must not import ui/, so the scheme is applied
+    // here, next to primeColorScheme().
+    playbackEvents.on(EVENTS.COLOR_SCHEME_CHANGE, (scheme) => {
+        applyColorScheme(scheme)
+    })
     initGlobalListeners()
     createAndInitPanels()
     initSelectDropdown()

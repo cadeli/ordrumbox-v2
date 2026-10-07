@@ -557,6 +557,44 @@ describe('ResourcesLoader', () => {
 
             expect(soundRegistry.settings.colorScheme).toBe(1)
         })
+
+        it('keeps the stored scheme when settings.json repeats the value already applied', async () => {
+            // 'c' cycles persist in IndexedDB: the file only wins when it
+            // carries a NEW value (an MCP write), not at every reload.
+            await putStored({ colorScheme: 3, colorSchemeFromFile: 2 })
+            fetchSpy.mockResolvedValue(makeJsonResponse({ colorScheme: 2 }))
+
+            await loader.loadSettings(true)
+
+            expect(soundRegistry.settings.colorScheme).toBe(3)
+        })
+
+        it('applies a new settings.json value (MCP write) and records it as seen', async () => {
+            await putStored({ colorScheme: 1, colorSchemeFromFile: 2 })
+            fetchSpy.mockResolvedValue(makeJsonResponse({ colorScheme: 3 }))
+
+            await loader.loadSettings(true)
+
+            expect(soundRegistry.settings.colorScheme).toBe(3)
+            expect(soundRegistry.settings.colorSchemeFromFile).toBe(3)
+        })
+
+        it('records the file value as seen on a fresh profile (JSON branch)', async () => {
+            await idbClearStore('settings')
+            fetchSpy.mockResolvedValue(makeJsonResponse({ colorScheme: 3 }))
+
+            await loader.loadSettings(true)
+
+            expect(soundRegistry.settings.colorScheme).toBe(3)
+            expect(soundRegistry.settings.colorSchemeFromFile).toBe(3)
+        })
+
+        it('ships settings.json without colorScheme (the key signals an MCP write)', async () => {
+            const { readFileSync } = await import('node:fs')
+            const file = JSON.parse(readFileSync(new URL('../assets/data/settings.json', import.meta.url), 'utf8'))
+
+            expect('colorScheme' in file).toBe(false)
+        })
     })
 
     describe('audioCtx', () => {

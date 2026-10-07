@@ -1,6 +1,5 @@
 {
     "version": 1,
     "sampleDirs": [],
-    "maxSampleDirs": 10,
-    "colorScheme": 1
+    "maxSampleDirs": 10
 }

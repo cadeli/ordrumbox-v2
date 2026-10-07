@@ -36,6 +36,9 @@ class SoundRegistry {
             sampleDirs: [],
             maxSampleDirs: 10,
             colorScheme: 1,
+            // Last colorScheme value observed in settings.json — the file only
+            // wins at boot when it differs from this (see ResourcesLoader).
+            colorSchemeFromFile: null,
             master: MASTER_BUS_DEFAULTS,
             session: SESSION_DEFAULTS,
         },

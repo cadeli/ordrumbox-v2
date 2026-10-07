@@ -229,6 +229,7 @@ export default class ResourcesLoader {
             sampleDirs: [],
             maxSampleDirs: 10,
             colorScheme: 1,
+            colorSchemeFromFile: null,
             master: { ...MASTER_BUS_DEFAULTS },
             session: { ...SESSION_DEFAULTS },
         }
@@ -256,6 +257,12 @@ export default class ResourcesLoader {
             if (settings.master) settings.master = { ...MASTER_BUS_DEFAULTS, ...settings.master }
             Object.assign(soundRegistry.settings, defaults, settings)
             soundRegistry.settings.colorScheme = normalizeColorScheme(soundRegistry.settings.colorScheme)
+            if ('colorScheme' in settings) {
+                // Fresh profile: remember the file value (same bookkeeping as
+                // #applyFileColorScheme) so the next boot's IDB branch only
+                // re-applies it once MCP actually writes a different scheme.
+                soundRegistry.settings.colorSchemeFromFile = normalizeColorScheme(settings.colorScheme)
+            }
         } catch (e) {
             logger.warn('ResourcesLoader', 'Failed to load settings from JSON, using defaults', e)
         }
@@ -264,9 +271,12 @@ export default class ResourcesLoader {
     /**
      * colorScheme is the one settings key with an external writer: the MCP
      * `setColorScheme` tool drops it straight into settings.json (it has no
-     * browser channel), so the file wins over the stored copy on every boot —
-     * the deliberate exception to the IDB-first rule above. Offline or a file
-     * without the key: the stored value (already normalized) stands.
+     * browser channel), so the file wins over the stored copy — the deliberate
+     * exception to the IDB-first rule above. To keep that from also wiping the
+     * 'c' shortcut's stored choice at every reload, the file only wins when its
+     * value differs from the last file value this browser applied
+     * (colorSchemeFromFile), i.e. right after an MCP write; in-between, the
+     * stored scheme stands. Offline or a file without the key: same.
      */
     async #applyFileColorScheme() {
         try {
@@ -274,7 +284,15 @@ export default class ResourcesLoader {
             if (!response.ok) return
             const file = await response.json()
             if (file && typeof file === 'object' && 'colorScheme' in file) {
-                soundRegistry.settings.colorScheme = normalizeColorScheme(file.colorScheme)
+                const fileScheme = normalizeColorScheme(file.colorScheme)
+                if (soundRegistry.settings.colorSchemeFromFile !== fileScheme) {
+                    soundRegistry.settings.colorScheme = fileScheme
+                    soundRegistry.settings.colorSchemeFromFile = fileScheme
+                    // Persist the seen marker right away: without it, the next
+                    // boot would apply the same file value again and wipe a
+                    // 'c' choice made during this session.
+                    void this.saveSettings()
+                }
             }
         } catch (e) {
             logger.debug('ResourcesLoader', 'No colorScheme override in settings.json', e)

@@ -49,6 +49,11 @@ export const EVENTS = Object.freeze({
     PATTERN_SETTINGS_TOGGLE: 'patternSettingsToggle',
     MOBILE_SEQ_TOGGLE: 'mobileSeqToggle',
     MOBILE_TRACK_TOGGLE: 'mobileTrackToggle',
+    /**
+     * Payload: the normalized scheme (1..3). Emitted by the 'c' shortcut;
+     * main.js is the application point (applyColorScheme lives in ui/).
+     */
+    COLOR_SCHEME_CHANGE: 'colorSchemeChange',
 })
 
 /** Maps appState.currentView (incl. 'output' alias) to its toggle event. */

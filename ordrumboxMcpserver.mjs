@@ -1351,14 +1351,14 @@ export async function handleToolCall(toolName, args, onError) {
             try {
                 raw = await readFile(filePath, 'utf8')
             } catch (e) {
-                if (e?.code !== 'ENOENT') throw new Error(`Cannot read ${filePath}: ${e.message}`)
+                if (e?.code !== 'ENOENT') throw new Error(`Cannot read ${filePath}: ${e.message}`, { cause: e })
             }
             let settings = {}
             if (raw !== null) {
                 try {
                     settings = JSON.parse(raw)
                 } catch (e) {
-                    throw new Error(`Invalid JSON in ${filePath}: ${e.message}`)
+                    throw new Error(`Invalid JSON in ${filePath}: ${e.message}`, { cause: e })
                 }
                 if (!settings || typeof settings !== 'object' || Array.isArray(settings)) settings = {}
             }

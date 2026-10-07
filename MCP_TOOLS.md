@@ -693,7 +693,7 @@ Each arrangement write rewrites the `songs` array of `song.json` and leaves the 
 
 ### setColorScheme
 
-Sets the UI color scheme of the app. The value is written to `settings.json` — the one settings key MCP owns, re-read by the app on every boot and applied to `<html data-scheme>`.
+Sets the UI color scheme of the app. The value is written to `settings.json` — the one settings key MCP owns. The shipped file carries no `colorScheme`, so the app treats its presence as an MCP write.
 
 **Input:**
 
@@ -711,7 +711,7 @@ Any other value (out of range, not an integer) falls back to `1`. Existing `sett
 
 **Output:** `{ "message", "scheme", "previous", "filePath" }`
 
-The scheme is applied at the **next app boot** — the MCP server has no live channel to the browser.
+The scheme is applied at the **next app boot** — the MCP server has no live channel to the browser. It wins for that boot (the stored copy is overridden); afterwards the app's own choice — the `c` key cycles the scheme in-app — is stored and kept across reloads until MCP writes the file again.
 
 ---
 

@@ -185,6 +185,58 @@ describe('Keyboard shortcuts', () => {
         expect(showToast).toHaveBeenCalledWith('VU meters off', 'info')
     })
 
+    it('KeyC cycles the color scheme 1 → 2 → 3 → 1', () => {
+        expect(soundRegistry.settings.colorScheme).toBe(1)
+        fireKeydown('KeyC')
+        expect(soundRegistry.settings.colorScheme).toBe(2)
+        expect(showToast).toHaveBeenCalledWith('Color scheme 2/3', 'info')
+        fireKeydown('KeyC')
+        expect(soundRegistry.settings.colorScheme).toBe(3)
+        expect(showToast).toHaveBeenCalledWith('Color scheme 3/3', 'info')
+        fireKeydown('KeyC')
+        expect(soundRegistry.settings.colorScheme).toBe(1)
+        expect(showToast).toHaveBeenCalledWith('Color scheme 1/3', 'info')
+    })
+
+    it('KeyC emits COLOR_SCHEME_CHANGE and persists the new scheme', async () => {
+        const { playbackEvents } = await import('../src/state/event_bus.js')
+        const saveSpy = vi.fn()
+        serviceRegistry.resourcesLoader = { saveSettings: saveSpy }
+        const schemeSpy = vi.fn()
+        playbackEvents.on(EVENTS.COLOR_SCHEME_CHANGE, schemeSpy)
+        try {
+            fireKeydown('KeyC')
+            expect(schemeSpy).toHaveBeenCalledWith(2)
+            expect(saveSpy).toHaveBeenCalled()
+        } finally {
+            playbackEvents.off?.(EVENTS.COLOR_SCHEME_CHANGE, schemeSpy)
+        }
+    })
+
+    it('KeyC is ignored while typing in a text INPUT', () => {
+        const input = document.createElement('input')
+        input.type = 'text'
+        document.body.appendChild(input)
+
+        fireKeydownOn(input, 'KeyC')
+
+        expect(soundRegistry.settings.colorScheme).toBe(1)
+        input.remove()
+    })
+
+    it('Ctrl+C does not cycle the color scheme (copy shortcut wins)', () => {
+        fireKeydown('KeyC', 'c', { ctrlKey: true })
+
+        expect(soundRegistry.settings.colorScheme).toBe(1)
+        expect(showToast).not.toHaveBeenCalledWith(expect.stringContaining('Color scheme'), 'info')
+    })
+
+    it('Ctrl+V does not toggle the VU meters (modifier guard)', () => {
+        fireKeydown('KeyV', 'v', { ctrlKey: true })
+
+        expect(serviceRegistry.cmd.toggleShowVus).not.toHaveBeenCalled()
+    })
+
     it('KeyQ calls seq.simpleBeep for track 0', () => {
         fireKeydown('KeyQ')
         expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(0)

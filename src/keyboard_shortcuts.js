@@ -5,6 +5,7 @@ import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/event_bus.js'
 import { detectTrackType } from './core/drum_taxonomy.js'
 import { getRandomKey } from './core/notes.js'
+import { COLOR_SCHEME_COUNT, normalizeColorScheme } from './core/constants.js'
 import ResourcesLoader from './loader/resources_loader.js'
 import { logger } from './core/logger.js'
 import { showToast } from './core/notify.js'
@@ -74,6 +75,15 @@ async function generatePattern() {
 function toggleVus() {
     serviceRegistry.cmd?.toggleShowVus()
     showToast(appState.showVus ? 'VU meters on' : 'VU meters off', 'info')
+}
+
+function cycleColorScheme() {
+    const current = normalizeColorScheme(soundRegistry.settings.colorScheme)
+    const next = (current % COLOR_SCHEME_COUNT) + 1
+    soundRegistry.settings.colorScheme = next
+    playbackEvents.emit(EVENTS.COLOR_SCHEME_CHANGE, next)
+    void serviceRegistry.resourcesLoader?.saveSettings?.()
+    showToast(`Color scheme ${next}/${COLOR_SCHEME_COUNT}`, 'info')
 }
 
 function toggleStartStop() {
@@ -249,6 +259,7 @@ async function autoAssignAllTracks() {
 
 const PHYSICAL_KEYBOARD_SHORTCUTS = {
     KeyB: generatePattern,
+    KeyC: cycleColorScheme,
     KeyF: selectRandomPattern,
     KeyG: selectRandomDrumkit,
     KeyH: convertToGeneratedSounds,
@@ -301,6 +312,13 @@ async function handleKeyboardShortcut(event) {
     if (modShortcut) {
         event.preventDefault()
         await modShortcut()
+        return
+    }
+
+    // Bare keys only: without this guard Ctrl+C (copy), Ctrl+V (paste)… would
+    // also hit the physical-code map below — Ctrl+C would cycle the color
+    // scheme while copying in the pattern grid.
+    if (event.ctrlKey || event.metaKey || event.altKey) {
         return
     }
 
