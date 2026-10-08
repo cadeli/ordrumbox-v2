@@ -214,12 +214,11 @@ describe('TrackEditor loop slider events', () => {
         const onLoopPointChangeSpy = vi.fn()
         playbackEvents.on(EVENTS.LOOP_POINT_CHANGE, onLoopPointChangeSpy)
 
-        // Simulate the onChange call that happens during drag/input
-        // This is what _renderLoopPanel does:
-        // onChange: (v, key) => editor.onLoopSlider({ dataset: { loop: key }, value: v })
+        // Simulate the onChange call that happens during drag/input:
+        // onChange: (v, key) => editor.onLoopSlider(key, v)
 
         expect(() => {
-            editor.onLoopSlider({ dataset: { loop: 'loopAtStep' }, value: 32 })
+            editor.onLoopSlider('loopAtStep', 32)
         }).not.toThrow()
 
         expect(track.loopAtStep).toBe(32)
@@ -256,7 +255,7 @@ describe('TrackEditor loop slider events', () => {
         const offMeta = playbackEvents.on(EVENTS.PATTERN_META_CHANGE, metaSpy)
         const offParam = playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, paramSpy)
 
-        editor.onLoopSlider({ dataset: { loop: 'stepsPerBeat' }, value: 8 })
+        editor.onLoopSlider('stepsPerBeat', 8)
 
         expect(track.stepsPerBeat).toBe(8)
         expect(metaSpy).toHaveBeenCalled()
@@ -290,7 +289,7 @@ describe('TrackEditor loop slider events', () => {
         const metaSpy = vi.fn()
         const offMeta = playbackEvents.on(EVENTS.PATTERN_META_CHANGE, metaSpy)
 
-        editor.onLoopSlider({ dataset: { loop: 'swingAmount' }, value: 0.5 })
+        editor.onLoopSlider('swingAmount', 0.5)
 
         expect(track.swingAmount).toBe(0.5)
         expect(metaSpy).not.toHaveBeenCalled()

@@ -181,7 +181,7 @@ describe('TrackEditor — OrSlider integration', () => {
         const fn = vi.fn()
         playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, fn)
 
-        const knob = editor.fxKnobs.find((k) => k.key === 'filterFreq')
+        const knob = editor.getControl('filterFreq')
         expect(knob).not.toBeNull()
         knob.setValue(1000)
         knob.onChange?.(1000, 'filterFreq')
@@ -192,7 +192,7 @@ describe('TrackEditor — OrSlider integration', () => {
     it('filterFreq knob shows formatted Hz display after value change', () => {
         editor.track = makeTrack({ filterFreq: 20 })
         editor.sync()
-        const knob = editor.fxKnobs.find((k) => k.key === 'filterFreq')
+        const knob = editor.getControl('filterFreq')
         expect(knob).not.toBeNull()
         knob.setValue(2500)
         knob.onChange?.(2500, 'filterFreq')

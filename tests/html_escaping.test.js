@@ -34,7 +34,7 @@ function hostileSound() {
     }
 }
 
-/** Minimal editor stub — only the fields SoundSection.render() reads. */
+/** Minimal editor stub — only the fields SoundSection.sync() reads. */
 function makeEditor(track = {}) {
     return {
         track: { name: 'KICK', sampleId: SOUND_URL, useSoftSynth: false, useAutoAssignSound: false, ...track },
@@ -44,6 +44,14 @@ function makeEditor(track = {}) {
         synthEditor: { getGeneratedSoundKeys: () => [] },
         esc: escapeHtml,
     }
+}
+
+function mountSoundSection(editor) {
+    const section = new SoundSection(editor)
+    const container = document.createElement('div')
+    section.mount(container)
+    section.sync(editor.track)
+    return container
 }
 
 describe('HTML escaping in innerHTML fragments', () => {
@@ -69,23 +77,31 @@ describe('HTML escaping in innerHTML fragments', () => {
         soundRegistry.drumkitList = [hostileKit()]
         soundRegistry.sounds = { [SOUND_URL]: hostileSound() }
 
-        const html = new SoundSection(makeEditor()).render()
+        const container = mountSoundSection(makeEditor())
 
         // title="…" attribute built from kitName / url / key
-        expect(html).toContain('&quot;')
-        expect(html).not.toContain('onmouseover="window.__pwned=1"')
-        expect(html).toContain('title="Kit: Kit &quot;')
+        const sampleLabel = container
+            .querySelector('select[data-sound="sample"]')
+            .closest('.ne-row')
+            .querySelector('label')
+        expect(sampleLabel.outerHTML).toContain('&quot;')
+        expect(sampleLabel.outerHTML).not.toContain('onmouseover="window.__pwned=1"')
+        expect(sampleLabel.outerHTML).toContain('title="Kit: Kit &quot;')
     })
 
     it('track_editor sound tab escapes sample labels when the kit has matches', () => {
         soundRegistry.drumkitList = [hostileKit()]
         soundRegistry.sounds = { [SOUND_URL]: hostileSound() }
 
-        const html = new SoundSection(makeEditor()).render()
+        const container = mountSoundSection(makeEditor())
 
-        // <option> for the matching sample: label is kit/display_name
-        expect(html).toContain('Pwn &quot;')
-        expect(html).not.toMatch(/onmouseover="window\.__pwned=1"/)
+        // <option> for the matching sample: label is kit/display_name.
+        // The label is a text node (quotes need no escaping there), but the
+        // malicious string must never become an attribute.
+        const sampleSelect = container.querySelector('select[data-sound="sample"]')
+        const option = [...sampleSelect.options].find((o) => o.value === SOUND_URL)
+        expect(option.textContent).toContain('Pwn')
+        expect(option.hasAttribute('onmouseover')).toBe(false)
     })
 
     it('drumkit_manager detail escapes kit names and sample urls', () => {

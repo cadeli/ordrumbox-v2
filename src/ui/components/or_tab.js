@@ -152,6 +152,22 @@ export class OrTab {
     }
 
     /**
+     * Refresh the bar's active buttons and panel visibility inside `root`
+     * WITHOUT firing onChange — for containers whose bar HTML is built once
+     * (stable DOM), so renderBar() cannot repaint the active state anymore.
+     * Buttons must carry the data attribute themselves (renderBar/createElement).
+     * @param {HTMLElement} root
+     */
+    refresh(root) {
+        const { btn, dataAttr } = this.#css
+        const camelDataAttr = OrTab.#toCamel(dataAttr)
+        root.querySelectorAll(`.${btn}`).forEach((el) => {
+            el.classList.toggle('active', /** @type {HTMLElement} */ (el).dataset[camelDataAttr] === this.#activeTab)
+        })
+        this.togglePanels(root)
+    }
+
+    /**
      * Toggle panel visibility within a container.
      * Uses the configured panel/hidden CSS classes and panelData attribute.
      * @param {HTMLElement} container

@@ -135,6 +135,9 @@ export class OrSlider extends BaseControl {
         const div = document.createElement('div')
         div.className = this.#rowClasses()
         div.dataset.orControl = this.key
+        // Same attributes as toHTML(): row-click selection (.ne-row[data-prop])
+        // must work whichever creation path a panel uses.
+        div.dataset.prop = this.key
 
         const label = document.createElement('label')
         label.textContent = this.label

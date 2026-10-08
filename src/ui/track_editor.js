@@ -1,6 +1,9 @@
 // src/ui/track_editor.js — Coordinator
 //
 // Thin coordinator that delegates tab rendering to section modules.
+// The DOM skeleton is built once in createDOM(); sync() only updates values
+// in place — no innerHTML wipe, no listener re-binding, and #ne-container
+// (which hosts the inline note editor) has a fixed place in the DOM.
 // Dependencies are injected via the constructor (DI) with fallback to
 // module-level singletons.
 
@@ -13,8 +16,8 @@ import { getNoteAbsoluteStep } from '../core/notes.js'
 
 import SynthEditor from './synth_editor.js'
 import { OrTab } from './components/or_tab.js'
-import { syncKnobs } from './components/sync_helpers.js'
-import { fmt, setViewBtn, knobFormat, setPatternPanelHidden } from './components/ui_utils.js'
+import { OrKnob } from './components/or_knob.js'
+import { setViewBtn, knobFormat, setPatternPanelHidden } from './components/ui_utils.js'
 import BasePanel from './base_panel.js'
 import { TICK, isMobileViewport } from '../core/constants.js'
 import { isMobileLandscape, applyLayout, removeLayout } from './mobile_track_layout.js'
@@ -32,6 +35,7 @@ import LoopSection from './track_editor/loop_section.js'
 
 // ── Constants ────────────────────────────────────────────────────────
 import { FX_DEFS, TAB_DEFS, ALL_TRACK_PROPS, KNOB_PROPS } from './track_editor/track_editor_constants.js'
+import { TRACK_DEFAULTS } from '../model/track_schema.js'
 import { EVENTS } from '../core/events.js'
 
 export default class TrackEditor extends BasePanel {
@@ -48,14 +52,11 @@ export default class TrackEditor extends BasePanel {
     #isDragging
     #selectedLfoTarget
     #prevFilterType
-    #sliders
     #knobs
-    #fxKnobs
     #rafId
     #lastTick
     #isSelecting
     #lfoBridge
-    #delegationBound
     #noteEditor
     #waveObserver
     #waveObservedCanvas
@@ -70,10 +71,17 @@ export default class TrackEditor extends BasePanel {
     #modSection
     #loopSection
 
-    /**
-     * @param {object} [deps]  Optional dependency overrides (DI).
-     *   When omitted the module-level singletons are used.
-     */
+    // ── Cached DOM refs (built once by createDOM) ────────────────
+    #teRoot
+    #headerTrackEl
+    #sampleBarEl
+    #sampleInfoEl
+    #waveCanvas
+    /** @type {Map<string, import('./components/or_slider.js').OrSlider|import('./components/or_knob.js').OrKnob>} */
+    #controls
+    /** False until createDOM() completes — sync() no-ops until then. */
+    #domReady
+
     /**
      * @param {object} [deps] injected singletons, defaulting to the modules
      * @param {object} [deps.appState]
@@ -98,13 +106,11 @@ export default class TrackEditor extends BasePanel {
         this.#lastTick = -1
         this.#isDragging = false
         this.#isSelecting = false
-        this.#sliders = new Map()
         this.#lfoBridge = null
         this.#selectedLfoTarget = null
-        this.#delegationBound = false
         this.#prevFilterType = undefined
         this.#knobs = []
-        this.#fxKnobs = []
+        this.#controls = new Map()
         this.#noteEditor = null
         this.#waveObserver = null
         this.#waveObservedCanvas = null
@@ -163,13 +169,6 @@ export default class TrackEditor extends BasePanel {
         return this.#selectedPropKey
     }
 
-    get isDragging() {
-        return this.#isDragging
-    }
-    set isDragging(v) {
-        this.#isDragging = v
-    }
-
     get selectedLfoTarget() {
         return this.#selectedLfoTarget
     }
@@ -184,15 +183,10 @@ export default class TrackEditor extends BasePanel {
         this.#prevFilterType = v
     }
 
-    get sliders() {
-        return this.#sliders
-    }
-    get fxKnobs() {
-        return this.#fxKnobs
-    }
     get fxTab() {
         return this.#fxTab
     }
+
     get neContainer() {
         return this.#neContainer
     }
@@ -210,6 +204,16 @@ export default class TrackEditor extends BasePanel {
         return this.#playbackEvents
     }
 
+    /**
+     * Live value control (slider or knob) for a track key, or null.
+     * Generation sliders win over FX knobs for the shared FX keys.
+     * @param {string} key
+     * @returns {import('./components/or_slider.js').OrSlider|import('./components/or_knob.js').OrKnob|null}
+     */
+    getControl(key) {
+        return this.#controls.get(key) ?? this.#knobs.find((k) => k.key === key) ?? null
+    }
+
     // ── Lifecycle ──────────────────────────────────────────────────
 
     setNoteEditor(editor) {
@@ -218,11 +222,105 @@ export default class TrackEditor extends BasePanel {
 
     createDOM() {
         super.createDOM()
-        this.#neContainer = document.createElement('div')
-        this.#neContainer.id = 'ne-container'
-        this.#neContainer.style.display = 'none'
-        this.container.appendChild(this.#neContainer)
+        this.container.innerHTML = `
+            <div class="track-editor">
+                <div class="ne-header">
+                    <span class="ne-track"></span>
+                </div>
+                <div class="te-sample-bar-wrap">
+                    <div class="te-sample-bar">
+                        <div class="te-sample-left">
+                            <span class="te-sample-info" title="Pitch / Duration / Peak"></span>
+                            <button class="te-load-btn" data-action="load-sample" title="Import sample to replace current">↑</button>
+                            <input type="file" class="te-load-input hidden-file-input" accept=".wav,.flac,.mp3,.aac">
+                        </div>
+                        <canvas class="te-waveform" width="500" height="48"></canvas>
+                    </div>
+                </div>
+                <div class="te-knob-bar">
+                    <div data-or-knob="velocity"></div>
+                    <div data-or-knob="pan"></div>
+                    <div data-or-knob="pitch"></div>
+                    <div data-or-knob="decay"></div>
+                </div>
+                ${this.#tab.renderBar()}
+                <div class="te-scroll">
+                    <div class="ne-tab-panel" data-tab-panel="fx"></div>
+                    <div class="ne-tab-panel" data-tab-panel="snd"></div>
+                    <div class="ne-tab-panel" data-tab-panel="mod"></div>
+                    <div class="ne-tab-panel" data-tab-panel="loop"></div>
+                    <div class="ne-tab-panel" data-tab-panel="gen"></div>
+                </div>
+            </div>
+            <div id="ne-container" style="display: none;"></div>
+        `
+        this.#teRoot = this.container.querySelector('.track-editor')
+        this.#headerTrackEl = this.container.querySelector('.ne-track')
+        this.#sampleBarEl = this.container.querySelector('.te-sample-bar')
+        this.#sampleInfoEl = this.container.querySelector('.te-sample-info')
+        this.#waveCanvas = this.container.querySelector('canvas.te-waveform')
+        this.#neContainer = this.container.querySelector('#ne-container')
+        this.#tab.bindTo(this.#teRoot)
+        this.#initKnobs()
+        this.#mountSections()
+        this.#bindEvents()
         this.synthEditor.createDOM()
+        this.#domReady = true
+    }
+
+    /** Build each section's rows once inside its tab panel. */
+    #mountSections() {
+        for (const tab of TAB_DEFS) {
+            const panel = this.#teRoot.querySelector(`[data-tab-panel="${tab.id}"]`)
+            if (!panel) continue
+            if (tab.id === 'gen') this.#genSection.mount(panel)
+            else if (tab.id === 'fx') this.#fxSection.mount(panel)
+            else if (tab.id === 'snd') this.#sndSection.mount(panel)
+            else if (tab.id === 'mod') this.#modSection.mount(panel)
+            else if (tab.id === 'loop') this.#loopSection.mount(panel)
+        }
+    }
+
+    /** Create the knob-bar OrKnobs once, replacing the placeholders. */
+    #initKnobs() {
+        const bar = this.container.querySelector('.te-knob-bar')
+        this.#knobs = KNOB_PROPS.map((def) => {
+            const isDecay = def.key === 'decay'
+            const dflt = TRACK_DEFAULTS[def.key] ?? (isDecay ? 500 : def.min)
+            const knob = new OrKnob({
+                key: def.key,
+                label: def.label,
+                min: def.min,
+                max: def.max,
+                step: def.step,
+                value: isDecay ? (this.#soundRegistry.sounds[this.#track?.sampleId]?.decay ?? 0) : (this.#track?.[def.key] ?? dflt),
+                defaultValue: isDecay ? 500 : dflt,
+                scale: def.scale,
+                format: knobFormat(def),
+                // decay's formatter already appends "ms" — a unit here
+                // would render the value as "5000 ms ms".
+                unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
+                onChange: (v) => {
+                    if (isDecay) {
+                        // Looked up live: the track's sample can change while
+                        // the knob persists.
+                        const sound = this.#soundRegistry.sounds[this.#track?.sampleId]
+                        if (sound) sound.decay = v
+                    } else {
+                        // Continuous knob: coalesce the drag into ONE undo step.
+                        this.#serviceRegistry.cmd?.updateTrack(
+                            this.#track,
+                            { [def.key]: v },
+                            { desc: `${def.label} on ${this.#track.name}`, coalesce: true },
+                        )
+                    }
+                    this.#emitTrackChange()
+                    if (isDecay) this.#drawSampleWaveform()
+                },
+            })
+            bar.querySelector(`[data-or-knob="${def.key}"]`)?.replaceWith(knob.createElement())
+            return knob
+        })
     }
 
     showNoteEditorForTrack(track, trackIdx) {
@@ -287,6 +385,15 @@ export default class TrackEditor extends BasePanel {
         this.#stopStepWatch()
         this.#waveObserver?.disconnect()
         this.#waveObserver = null
+        this.#genSection.destroy?.()
+        this.#fxSection.destroy?.()
+        this.#loopSection.destroy?.()
+        this.#modSection.destroy?.()
+        for (const k of this.#knobs) k.destroy()
+        this.#knobs = []
+        // Sections are gone: a stale caller (an old ViewManager still bound
+        // to the bus) must not reach them — sync() no-ops until createDOM().
+        this.#domReady = false
     }
 
     // ── Step watch (LFO animation) ─────────────────────────────────
@@ -339,7 +446,7 @@ export default class TrackEditor extends BasePanel {
         if (!lfoValues || !this.#track) return
         ALL_TRACK_PROPS.forEach((p) => {
             if (!p.lfoKey || !this.#track[p.lfoKey]) return
-            const ctrl = this.#sliders.get(p.key) ?? this.#fxKnobs.find((kn) => kn.key === p.key)
+            const ctrl = this.#controls.get(p.key)
             if (!ctrl) return
             const raw = lfoValues[p.key] ?? 0
             ctrl.setValue(p.denormalize ? p.denormalize(raw) : raw)
@@ -377,103 +484,53 @@ export default class TrackEditor extends BasePanel {
 
     sync() {
         if (!this.#track) return
+        // createDOM() builds the section rows; sync() before it (e.g. a view
+        // switch while bootstrap is still unwinding) or after destroy() (a
+        // stale bus listener on a torn-down instance) has nothing to update.
+        if (!this.#domReady) return
 
+        // 1. Header
         const soundInfo = this.#sndSection.getSoundInfo()
+        this.#headerTrackEl.textContent = `Track: ${this.#track.name}${soundInfo ? ' - ' + soundInfo : ''}`
 
-        const headerHtml = `<div class="ne-header">
-            <span class="ne-track">Track: ${this.esc(this.#track.name)}${soundInfo ? ' - ' + this.esc(soundInfo) : ''}</span>
-        </div>`
+        // 2. Sample bar (visibility + analysis text)
+        this.#updateSampleBar()
 
-        const sampleBarHtml = this.#renderSampleBar()
-        const knobBarHtml = this.#renderKnobBar()
+        // 3. Knob bar
+        this.#syncKnobValues()
 
-        // ── Snapshot existing instances for reuse ──────────────────
-        const prevSliders = new Map(this.#sliders)
-        this.#sliders.clear()
-        const prevFxKnobs = new Map(this.#fxKnobs.map((k) => [k.key, k]))
-        this.#fxKnobs = []
+        // 4. Main tab bar
+        this.#tab.refresh(this.#teRoot)
 
-        const tabBarHtml = this.#tab.renderBar()
+        // 5. Sections
+        this.#genSection.sync(this.#track)
+        this.#fxSection.sync(this.#track)
+        this.#sndSection.sync(this.#track)
+        this.#modSection.sync(this.#track)
+        this.#loopSection.sync(this.#track)
 
-        let panelsHtml = ''
-
-        const TAB_PANEL_MAP = {
-            gen: () => this.#genSection.render(),
-            fx: () => this.#fxSection.render(),
-            snd: () => this.#sndSection.render(),
-            mod: () => this.#modSection.render(),
-            loop: () => this.#loopSection.render(),
-        }
-
-        for (const tab of TAB_DEFS) {
-            const isHidden = this.#tab.isHidden(tab.id)
-            const panelFn = TAB_PANEL_MAP[tab.id]
-            const content = panelFn ? panelFn() : ''
-            panelsHtml += `<div class="ne-tab-panel ${isHidden ? 'ne-tab-panel-hidden' : ''}" data-tab-panel="${tab.id}">${content}</div>`
-        }
-
-        // Detach ne-container before innerHTML wipe (it lives in #te-panel,
-        // not inside .track-editor, but innerHTML on #te-panel would destroy it)
-        const neC = this.#preserveNeContainer()
-
-        this.container.innerHTML = `<div class="track-editor">${headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + `<div class="te-scroll">${panelsHtml}</div>`}</div>`
-
-        this.#restoreNeContainer(neC)
-        const teElement = this.container.querySelector('.track-editor') ?? this.container
-        this.#tab.bindTo(teElement)
-
-        // Mount main sliders
-        this.#sliders.forEach((s) => {
-            const row = this.container.querySelector(`.ne-row[data-or-control="${s.key}"]`)
-            if (row) {
-                s.mount(row)
-                const input = row.querySelector('input')
-                if (input) {
-                    this.listen(input, 'change', () => {
-                        this.#isDragging = false
-                        this.#isSelecting = false
-                        this.#emitTrackChange()
-                    })
-                }
-            }
-        })
-
-        // Mount FX knobs
-        this.#fxKnobs.forEach((k) => {
-            const row = this.container.querySelector(`.ne-row[data-or-control="${k.key}"]`)
-            if (row) k.mount(row)
-        })
-
-        // ── Knob bar (keep-alive: reuse OrKnob instances) ───────────
-        this.#syncKnobs()
-
-        // ── Destroy orphaned slider/fxKnob instances ──────────────
-        for (const [key, slider] of prevSliders) {
-            if (!this.#sliders.has(key)) slider.destroy()
-        }
-        for (const [key, knob] of prevFxKnobs) {
-            if (!this.#fxKnobs.some((k) => k.key === key)) knob.destroy()
-        }
+        // 6. Key → control registry (LFO step watch + getControl)
+        this.#rebuildControls()
 
         if (this.synthEditor?.panel?.style?.display !== 'block') {
             this.container.style.display = isMobileViewport() ? 'flex' : 'block'
         }
-        this.#bindEvents()
+
+        // 7. Waveform
         this.#drawSampleWaveform()
 
         this.#syncMobileLayout()
     }
 
-    /** Detach ne-container from DOM so innerHTML wipe doesn't destroy it. */
-    #preserveNeContainer() {
-        const neC = this.#neContainer
-        if (neC?.parentNode) neC.parentNode.removeChild(neC)
-        return neC
-    }
-
-    /** Re-attach previously preserved ne-container after innerHTML wipe. */
-    #restoreNeContainer(neC) {
-        if (neC) this.container.appendChild(neC)
+    /** Rebuild the key → control registry. Gen sliders win over FX knobs. */
+    #rebuildControls() {
+        this.#controls = new Map(this.#genSection.controls)
+        for (const [key, knob] of this.#fxSection.controls) {
+            if (!this.#controls.has(key)) this.#controls.set(key, knob)
+        }
+        for (const [key, slider] of this.#loopSection.controls) {
+            if (!this.#controls.has(key)) this.#controls.set(key, slider)
+        }
     }
 
     /** Apply mobile-specific layout if on a mobile viewport. */
@@ -486,82 +543,45 @@ export default class TrackEditor extends BasePanel {
         }
     }
 
-    /** Sync knob bar: reuse OrKnob instances, create new ones, destroy orphans. */
-    #syncKnobs() {
-        this.#knobs = [
-            ...syncKnobs({
-                container: this.container,
-                configs: KNOB_PROPS.map((def) => {
-                    const isDecay = def.key === 'decay'
-                    const sound = isDecay ? this.#soundRegistry.sounds[this.#track?.sampleId] : null
-                    return {
-                        key: def.key,
-                        label: def.label,
-                        val: isDecay ? (sound?.decay ?? 0) : (this.#track[def.key] ?? def.min),
-                        min: def.min,
-                        max: def.max,
-                        step: def.step,
-                        scale: def.scale,
-                        format: knobFormat(def),
-                        // decay's formatter already appends "ms" — a unit here
-                        // would render the value as "5000 ms ms".
-                        unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
-                        onChange: (v) => {
-                            if (isDecay) {
-                                if (sound) sound.decay = v
-                            } else {
-                                // Continuous knob: coalesce the drag into ONE undo step.
-                                this.#serviceRegistry.cmd?.updateTrack(
-                                    this.#track,
-                                    { [def.key]: v },
-                                    { desc: `${def.label} on ${this.#track.name}`, coalesce: true },
-                                )
-                            }
-                            this.#emitTrackChange()
-                            if (isDecay) this.#drawSampleWaveform()
-                        },
-                    }
-                }),
-                prev: new Map(this.#knobs.map((k) => [k.key, k])),
-            }).values(),
-        ]
+    /** Sync knob bar values in place. */
+    #syncKnobValues() {
+        const track = this.#track
+        for (const def of KNOB_PROPS) {
+            const knob = this.#knobs.find((k) => k.key === def.key)
+            if (!knob) continue
+            if (def.key === 'decay') {
+                const sound = this.#soundRegistry.sounds[track?.sampleId]
+                knob.setValue(sound?.decay ?? 0)
+            } else {
+                knob.setValue(track[def.key] ?? def.min)
+            }
+        }
     }
 
     // ── Sample bar ─────────────────────────────────────────────────
 
-    #renderSampleBar() {
+    /** Toggle the sample bar and refresh its analysis text. */
+    #updateSampleBar() {
         const track = this.#track
-        if (track.useSoftSynth) return ''
-        const sampleId = track.sampleId ?? ''
-        const sound = this.#soundRegistry.sounds[sampleId]
-        if (!sound?.buffer) return ''
+        const sound = track.useSoftSynth ? null : this.#soundRegistry.sounds[track.sampleId ?? '']
+        if (!sound?.buffer) {
+            this.#sampleBarEl.style.display = 'none'
+            return
+        }
+        this.#sampleBarEl.style.display = ''
         const analysis = analyzeSample(sound.buffer)
         const pitchStr = analysis?.noteInfo ? `${analysis.noteInfo.note}${analysis.noteInfo.octave}` : '—'
         const durStr = analysis?.durationSec != null ? (analysis.durationSec * 1000).toFixed(0) + ' ms' : '—'
         const peakStr = analysis?.peakDb != null ? analysis.peakDb.toFixed(1) + ' dB' : '—'
-        return `<div class="te-sample-bar">
-            <div class="te-sample-left">
-                <span class="te-sample-info" title="Pitch / Duration / Peak">${pitchStr} · ${durStr} · ${peakStr}</span>
-                <button class="te-load-btn" data-action="load-sample" title="Import sample to replace current">↑</button>
-                <input type="file" class="te-load-input hidden-file-input" accept=".wav,.flac,.mp3,.aac">
-            </div>
-            <canvas class="te-waveform" width="500" height="48"></canvas>
-        </div>`
-    }
-
-    #renderKnobBar() {
-        return `<div class="te-knob-bar">
-            <div data-or-knob="velocity"></div>
-            <div data-or-knob="pan"></div>
-            <div data-or-knob="pitch"></div>
-            <div data-or-knob="decay"></div>
-        </div>`
+        this.#sampleInfoEl.textContent = `${pitchStr} · ${durStr} · ${peakStr}`
     }
 
     #drawSampleWaveform() {
-        const canvas = /** @type {HTMLCanvasElement | null} */ (this.container?.querySelector('.te-waveform'))
+        const canvas = this.#waveCanvas
         if (!canvas) return
-        const sound = this.#soundRegistry.sounds[this.#track?.sampleId]
+        const track = this.#track
+        if (track.useSoftSynth) return
+        const sound = this.#soundRegistry.sounds[track?.sampleId]
         if (!sound?.buffer) return
         const analysis = analyzeSample(sound.buffer)
         if (!analysis?.envelope?.length) return
@@ -705,15 +725,18 @@ export default class TrackEditor extends BasePanel {
         this.#emitTrackChange()
     }
 
-    // ── Event delegation ───────────────────────────────────────────
+    // ── Event delegation (bound once by createDOM) ─────────────────
 
     #bindEvents() {
-        if (this.#delegationBound) return
-
         // LFO sliders are plain <input> elements (not OrSlider instances)
-        // and require delegated input handling.
+        // and require delegated input handling. Any range-input drag marks
+        // the editor as dragging so PATTERN_CHANGE events are ignored until
+        // the matching change event resets the flag.
         this.listen(this.container, 'input', (e) => {
             const target = /** @type {HTMLElement} */ (e.target)
+            // the nested note editor owns its own inputs
+            if (target.closest('#ne-container')) return
+            if (/** @type {HTMLInputElement} */ (target).type === 'range') this.#isDragging = true
             if (target.dataset.lfoKey) {
                 this.#onLfoSlider(target)
             }
@@ -732,6 +755,14 @@ export default class TrackEditor extends BasePanel {
             if (target.closest('#ne-container')) return
             if (target.classList.contains('te-load-input')) {
                 this.#onSampleFileSelected(e)
+                return
+            }
+            if (/** @type {HTMLInputElement} */ (target).type === 'range') {
+                if (this.#isDragging) {
+                    this.#isDragging = false
+                    this.#isSelecting = false
+                    this.#emitTrackChange()
+                }
                 return
             }
             if (target.tagName === 'SELECT') {
@@ -796,8 +827,6 @@ export default class TrackEditor extends BasePanel {
             else if (btn.dataset.action === 'toggle-auto') this.#sndSection.toggleAuto()
             else if (btn.dataset.action === 'load-sample') this.#onLoadSample()
         })
-
-        this.#delegationBound = true
     }
 
     #onRowClick(propKey) {
@@ -835,41 +864,37 @@ export default class TrackEditor extends BasePanel {
         this.#emitTrackChange()
     }
 
-    onLoopSlider(input) {
+    onLoopSlider(key, value) {
         if (!this.#track) return
-        this.#isDragging = true
-        const key = input.dataset.loop
-        const val = key === 'swingAmount' ? parseFloat(input.value) : parseInt(input.value)
+        const track = this.#track
         const cmd = this.#serviceRegistry.cmd
         // Continuous control: coalesce the drag into ONE undo step.
-        const opts = { desc: `${key} on ${this.#track.name}`, coalesce: true }
+        const opts = { desc: `${key} on ${track.name}`, coalesce: true }
 
         if (key === 'stepsPerBeat') {
-            cmd?.setStepsPerBeat(this.#track, val, { coalesce: true })
+            cmd?.setStepsPerBeat(track, value, { coalesce: true })
         } else if (key === 'loopAtStep') {
             // The end step can never pass the track's beat length.
-            const maxSteps = (this.#track.beatCount ?? 4) * (this.#track.stepsPerBeat ?? 4)
-            cmd?.updateTrack(this.#track, { loopAtStep: Math.min(val, maxSteps) }, opts)
+            const maxSteps = (track.beatCount ?? 4) * (track.stepsPerBeat ?? 4)
+            cmd?.updateTrack(track, { loopAtStep: Math.min(value, maxSteps) }, opts)
         } else {
-            cmd?.updateTrack(this.#track, { [key]: val }, opts)
+            cmd?.updateTrack(track, { [key]: value }, opts)
         }
 
-        if (input.nextElementSibling) {
-            input.nextElementSibling.textContent = key === 'swingAmount' ? fmt(val) : val
-        }
-
-        const maxSteps = (this.#track.beatCount ?? 4) * (this.#track.stepsPerBeat ?? 4)
-        const loopSlider = this.#sliders.get('loopAtStep')
+        // Keep the loop slider's bounds in sync — this path does not call
+        // sync(), and the dragged control must survive a mid-drag sync().
+        const maxSteps = (track.beatCount ?? 4) * (track.stepsPerBeat ?? 4)
+        const loopSlider = this.#controls.get('loopAtStep')
         if (loopSlider) {
             loopSlider.setMax?.(maxSteps)
-            if (key !== 'loopAtStep') loopSlider.setValue(this.#track.loopAtStep)
+            if (key !== 'loopAtStep') loopSlider.setValue(track.loopAtStep)
         }
 
         if (key === 'loopAtStep') {
             this.#playbackEvents.batch(() => {
                 this.#playbackEvents.emit(EVENTS.LOOP_POINT_CHANGE, {
                     trackIdx: this.#selectedTrackIdx,
-                    loopAtStep: this.#track.loopAtStep,
+                    loopAtStep: track.loopAtStep,
                 })
                 this.#emitTrackChange()
             })
@@ -912,10 +937,6 @@ export default class TrackEditor extends BasePanel {
         this.#selectedTrackIdx = -1
         this.#selectedPropKey = null
         this.#lastTick = -1
-        this.#knobs.forEach((k) => k.destroy())
-        this.#knobs = []
-        this.#fxKnobs.forEach((k) => k.destroy())
-        this.#fxKnobs = []
         if (this.#lfoBridge) {
             this.#lfoBridge.destroy()
             this.#lfoBridge = null

@@ -20,31 +20,30 @@ vi.mock('../src/ui/track_editor/track_editor_constants.js', async () => {
 function makeEditor(track) {
     return {
         track,
-        sliders: new Map(),
         selectedPropKey: null,
-        isDragging: false,
         serviceRegistry: { cmd: null },
         playbackEvents: { batch: (fn) => fn(), emit: vi.fn() },
     }
 }
 
 describe('GenerationSection — LFO indicator on existing sliders', () => {
-    it('re-applies the LFO flag through setHasLfo on re-render', () => {
+    it('re-applies the LFO flag through setHasLfo on re-sync', () => {
         const track = { name: 'LEAD', velocity: 0.8, velocityLfo: 0 }
         const editor = makeEditor(track)
         const section = new GenerationSection(editor)
+        const container = document.createElement('div')
+        section.mount(container)
+        section.sync(track)
 
-        section.render()
-        const slider = editor.sliders.get('velocity')
+        const slider = section.controls.get('velocity')
         expect(slider).toBeTruthy()
-        expect(slider.toHTML()).not.toContain('has-lfo')
+        expect(slider.el.classList.contains('has-lfo')).toBe(false)
 
         track.velocityLfo = 4
         const setHasLfo = vi.spyOn(slider, 'setHasLfo')
-        section.render()
+        section.sync(track)
 
         expect(setHasLfo).toHaveBeenCalledWith(true)
-        expect('_hasLfo' in slider).toBe(false)
-        expect(slider.toHTML()).toContain('has-lfo')
+        expect(slider.el.classList.contains('has-lfo')).toBe(true)
     })
 })

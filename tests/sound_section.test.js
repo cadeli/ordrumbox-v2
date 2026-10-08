@@ -70,107 +70,111 @@ describe('SoundSection', () => {
         vi.clearAllMocks()
     })
 
-    describe('render()', () => {
-        it('returns empty string when track is null', () => {
+    describe('mount()/sync()', () => {
+        function mountSection(editor) {
+            section = new SoundSection(editor)
+            const container = document.createElement('div')
+            section.mount(container)
+            section.sync(editor.track)
+            return container
+        }
+
+        it('sync with null track does not throw and keeps the rows', () => {
             const editor = makeMockEditor()
             editor.track = null
-            section = new SoundSection(editor)
-            expect(section.render()).toBe('')
+            const container = mountSection(editor)
+            expect(container.querySelector('select[data-sound="instrument"]')).not.toBeNull()
         })
 
         it('renders selects when track exists', () => {
-            const editor = makeMockEditor()
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('data-sound="instrument"')
-            expect(html).toContain('data-sound="sample"')
-            expect(html).toContain('data-sound="generated"')
-            expect(html).toContain('data-key="mono"')
-            expect(html).toContain('data-action="toggle-auto"')
+            const container = mountSection(makeMockEditor())
+            expect(container.querySelector('select[data-sound="instrument"]')).not.toBeNull()
+            expect(container.querySelector('select[data-sound="sample"]')).not.toBeNull()
+            expect(container.querySelector('select[data-sound="generated"]')).not.toBeNull()
+            expect(container.querySelector('button[data-key="mono"]')).not.toBeNull()
+            expect(container.querySelector('button[data-action="toggle-auto"]')).not.toBeNull()
         })
 
         it('renders correct instrument options', () => {
-            const editor = makeMockEditor()
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('KICK')
-            expect(html).toContain('SNARE')
+            const container = mountSection(makeMockEditor())
+            const instrumentSelect = container.querySelector('select[data-sound="instrument"]')
+            const values = [...instrumentSelect.options].map((o) => o.value)
+            expect(values).toContain('KICK')
+            expect(values).toContain('SNARE')
         })
 
         it('renders correct sample options for current instrument', () => {
-            const editor = makeMockEditor()
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('kick_1.wav')
+            const container = mountSection(makeMockEditor())
+            const sampleSelect = container.querySelector('select[data-sound="sample"]')
+            const values = [...sampleSelect.options].map((o) => o.value)
+            expect(values).toContain('kick_1.wav')
         })
 
         it('shows no-samples message when matchingSounds is empty', () => {
             const editor = makeMockEditor({ track: { name: 'TOM', sampleId: 'unknown_sound' } })
             editor.soundRegistry.sounds = {}
             editor.soundRegistry.drumkitList = []
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('— no samples —')
+            const container = mountSection(editor)
+            const sampleSelect = container.querySelector('select[data-sound="sample"]')
+            const labels = [...sampleSelect.options].map((o) => o.textContent)
+            expect(labels).toContain('— no samples —')
         })
 
         it('handles useSoftSynth=true with existing generated key', () => {
             const editor = makeMockEditor({ track: { useSoftSynth: true, synthSoundKey: 'BASS1' } })
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('data-sound="generated"')
+            const container = mountSection(editor)
+            expect(container.querySelector('select[data-sound="generated"]')).not.toBeNull()
         })
 
         it('handles useSoftSynth=true with missing generated key adds it to options', () => {
             const editor = makeMockEditor({ track: { useSoftSynth: true, synthSoundKey: 'UNKNOWN_KEY' } })
             editor.synthEditor.getGeneratedSoundKeys.mockReturnValue(['BASS1', 'PIANO'])
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('UNKNOWN_KEY')
+            const container = mountSection(editor)
+            const generatedSelect = container.querySelector('select[data-sound="generated"]')
+            const values = [...generatedSelect.options].map((o) => o.value)
+            expect(values).toContain('UNKNOWN_KEY')
         })
 
         it('defaults currentGeneratedSound to BASS1 when useSoftSynth=true and no synthSoundKey', () => {
             const editor = makeMockEditor({ track: { useSoftSynth: true } })
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('BASS1')
+            const container = mountSection(editor)
+            const generatedSelect = container.querySelector('select[data-sound="generated"]')
+            expect(generatedSelect.value).toBe('BASS1')
         })
 
         it('sets currentGeneratedSound to none when useSoftSynth=false', () => {
-            const editor = makeMockEditor()
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('>none<')
+            const container = mountSection(makeMockEditor())
+            const generatedSelect = container.querySelector('select[data-sound="generated"]')
+            expect(generatedSelect.value).toBe('none')
         })
 
         it('renders mono ON when track.mono is true', () => {
             const editor = makeMockEditor({ track: { mono: true } })
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('active')
-            expect(html).toContain('ON')
+            const container = mountSection(editor)
+            const monoBtn = container.querySelector('button[data-key="mono"]')
+            expect(monoBtn.classList.contains('active')).toBe(true)
+            expect(monoBtn.textContent).toBe('ON')
         })
 
         it('renders mono OFF when track.mono is false', () => {
-            const editor = makeMockEditor()
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('>OFF<')
+            const container = mountSection(makeMockEditor())
+            const monoBtn = container.querySelector('button[data-key="mono"]')
+            expect(monoBtn.textContent).toBe('OFF')
         })
 
         it('shows auto led ON class when useAutoAssignSound is true', () => {
-            const editor = makeMockEditor()
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('lfo-led on')
-            expect(html).toContain('Disable')
+            const container = mountSection(makeMockEditor())
+            const autoBtn = container.querySelector('button[data-action="toggle-auto"]')
+            expect(autoBtn.classList.contains('on')).toBe(true)
+            expect(autoBtn.title).toContain('Disable')
         })
 
         it('shows auto led OFF class when useAutoAssignSound is false', () => {
             const editor = makeMockEditor({ track: { useAutoAssignSound: false } })
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).not.toContain('lfo-led on')
-            expect(html).toContain('Enable')
+            const container = mountSection(editor)
+            const autoBtn = container.querySelector('button[data-action="toggle-auto"]')
+            expect(autoBtn.classList.contains('on')).toBe(false)
+            expect(autoBtn.title).toContain('Enable')
         })
 
         it('renders multiple drumkits in sample list', () => {
@@ -185,10 +189,11 @@ describe('SoundSection', () => {
                 kitName: 'TRAP',
                 display_name: 'Trap Kick',
             }
-            section = new SoundSection(editor)
-            const html = section.render()
-            expect(html).toContain('kick_1.wav')
-            expect(html).toContain('trap_kick.wav')
+            const container = mountSection(editor)
+            const sampleSelect = container.querySelector('select[data-sound="sample"]')
+            const values = [...sampleSelect.options].map((o) => o.value)
+            expect(values).toContain('kick_1.wav')
+            expect(values).toContain('trap_kick.wav')
         })
     })
 
