@@ -7,9 +7,31 @@ import { removeLayout } from './mobile_track_layout.js'
 import { EVENTS } from '../core/events.js'
 
 /**
+ * Declarative view table — the whole navigation reads from it.
+ *
+ * `activePanel`: the one central panel the view keeps open (null = the
+ * pattern grid is the workspace). `hidePattern`: the pattern grid is pushed
+ * out. `hideTrackMobile`: the track editor is dropped on mobile viewports
+ * (desktop always keeps it).
+ *
+ * @type {Record<string, { activePanel: 'synth'|'proll'|'song'|null, hidePattern: boolean, hideTrackMobile: boolean }>}
+ */
+const VIEW_DEFS = {
+    edit: { activePanel: null, hidePattern: false, hideTrackMobile: false },
+    synth: { activePanel: 'synth', hidePattern: true, hideTrackMobile: true },
+    proll: { activePanel: 'proll', hidePattern: true, hideTrackMobile: false },
+    song: { activePanel: 'song', hidePattern: true, hideTrackMobile: false },
+    mobileSeq: { activePanel: null, hidePattern: false, hideTrackMobile: true },
+    mobileTrack: { activePanel: null, hidePattern: true, hideTrackMobile: false },
+}
+
+/**
  * ViewManager — single coordinator for synth / edit / proll / song view
  * switching. Listens to toolbar and tab toggle events and calls
  * panel.show() / panel.hide() without touching another panel's DOM.
+ * Every view switch is `#switchTo()` reading VIEW_DEFS: open the view's
+ * activePanel, close the other central panels, then settle the pattern
+ * grid and the track editor.
  *
  * Slot panels (tools, master, dm, about) are mutually exclusive —
  * showing one hides all others and replaces the master panel in the same DOM slot.
@@ -24,7 +46,6 @@ export default class ViewManager {
     #songPanel
     #currentView
     #slots
-    #viewHandlers
 
     constructor({
         trackEditor,
@@ -53,18 +74,6 @@ export default class ViewManager {
             ['master', { event: EVENTS.MASTER_TOGGLE, panel: outputPanel }],
             ['dm', { event: EVENTS.DRUMKIT_MANAGER_TOGGLE, panel: drumkitManager }],
             ['about', { event: EVENTS.ABOUT_TOGGLE, panel: aboutPanel }],
-        ])
-
-        // ── View registry: view name → { enter, exit } ──────────────────
-        // `exit` runs cleanup for the view being left (only views that need
-        // teardown define one); `enter` renders the view being switched to.
-        this.#viewHandlers = new Map([
-            ['synth', { enter: () => this.#showSynth(), exit: () => this.#synthEditor?.closePanelAndCommit() }],
-            ['edit', { enter: () => this.#showEdit() }],
-            ['proll', { enter: () => this.#showProll(), exit: () => this.#pianoRollPanel?.hide() }],
-            ['song', { enter: () => this.#showSong(), exit: () => this.#songPanel?.hide() }],
-            ['mobileSeq', { enter: () => this.#showMobileSeq(), exit: () => this.#exitMobileSeq() }],
-            ['mobileTrack', { enter: () => this.#showMobileTrack(), exit: () => this.#exitMobileTrack() }],
         ])
     }
 
@@ -128,12 +137,30 @@ export default class ViewManager {
 
         this.#patternSettingsPanel?.hide?.()
 
-        this.#viewHandlers.get(prev)?.exit?.()
+        if (prev === 'mobileTrack') {
+            removeLayout(this.#trackEditor.container)
+            this.#noteEditor?.hide()
+        }
         if (isMobileViewport() && this.#slots.has(prev)) {
             this.#hideOtherSlotPanels(null)
         }
 
-        this.#viewHandlers.get(view)?.enter?.()
+        const def = VIEW_DEFS[view]
+
+        if (def.activePanel !== 'synth') this.#synthEditor.closePanelAndCommit()
+        if (def.activePanel !== 'proll') this.#pianoRollPanel.hide()
+        if (def.activePanel !== 'song') this.#songPanel?.hide()
+
+        if (isMobileViewport() && def.hideTrackMobile) {
+            this.#trackEditor.hide()
+        } else {
+            this.#ensureEditorsVisible()
+        }
+        setPatternPanelHidden(def.hidePattern)
+
+        if (def.activePanel === 'synth') void this.#synthEditor.showPanel()
+        else if (def.activePanel === 'proll') this.#pianoRollPanel.show()
+        else if (def.activePanel === 'song') this.#songPanel?.show()
 
         setViewMode(view)
         // Playback mode follows the visible view: the sequencer re-anchors its
@@ -171,68 +198,5 @@ export default class ViewManager {
     #ensureEditorsVisible() {
         this.#ensureTrackEditorVisible()
         this.#ensureNoteEditorVisible()
-    }
-
-    // ── Per-view exit handlers (cleanup when leaving a view) ────────────────
-
-    #exitMobileSeq() {
-        this.#pianoRollPanel?.hide()
-        setPatternPanelHidden(false)
-    }
-
-    #exitMobileTrack() {
-        removeLayout(this.#trackEditor.container)
-        this.#noteEditor?.hide()
-    }
-
-    // ── Per-view enter handlers (render the view being switched to) ─────────
-
-    #showSynth() {
-        if (isMobileViewport()) {
-            this.#trackEditor.hide()
-        } else {
-            this.#ensureEditorsVisible()
-        }
-        setPatternPanelHidden(true)
-        void this.#synthEditor.showPanel()
-    }
-
-    #showEdit() {
-        this.#synthEditor.closePanelAndCommit()
-        this.#pianoRollPanel.hide()
-        setPatternPanelHidden(false)
-        this.#ensureEditorsVisible()
-    }
-
-    #showProll() {
-        this.#synthEditor.closePanelAndCommit()
-        this.#ensureEditorsVisible()
-        this.#pianoRollPanel.show()
-        setPatternPanelHidden(true)
-    }
-
-    #showSong() {
-        this.#synthEditor.closePanelAndCommit()
-        this.#pianoRollPanel.hide()
-        this.#ensureEditorsVisible()
-        this.#songPanel?.show()
-        setPatternPanelHidden(true)
-    }
-
-    #showMobileSeq() {
-        this.#synthEditor.closePanelAndCommit()
-        if (isMobileViewport()) {
-            this.#trackEditor.hide()
-        } else {
-            this.#ensureEditorsVisible()
-        }
-        setPatternPanelHidden(false)
-    }
-
-    #showMobileTrack() {
-        this.#synthEditor.closePanelAndCommit()
-        this.#pianoRollPanel.hide()
-        this.#ensureEditorsVisible()
-        setPatternPanelHidden(true)
     }
 }

@@ -156,7 +156,7 @@ export function bindTabToggles(container, onChange) {
 }
 
 /**
- * View name, as registered in ViewManager#viewHandlers.
+ * View name, as a key of VIEW_DEFS (src/ui/view_manager.js).
  * @typedef {'synth' | 'edit' | 'proll' | 'song' | 'mobileSeq' | 'mobileTrack'} ViewName
  */
 
