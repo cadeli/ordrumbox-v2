@@ -5,7 +5,7 @@
  * Verifies that each bottom tab (sequencer, track, synth, master) shows the
  * correct panel with proper position, size, visibility, and scrollability.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/event_bus.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -85,6 +85,17 @@ function setupCanvas() {
     })
 }
 
+const liveApps = []
+
+// Neither ViewManager nor MobileTabBar is a BasePanel: only this releases
+// their bus subscriptions and detaches the tab bar.
+afterEach(() => {
+    liveApps.splice(0).forEach((app) => {
+        app.viewManager.destroy()
+        app.mobileTabBar.destroy()
+    })
+})
+
 function setupApp(viewport) {
     document.body.innerHTML = ''
     Object.assign(global.window, { innerWidth: viewport.width, innerHeight: viewport.height })
@@ -145,7 +156,9 @@ function setupApp(viewport) {
     const mobileTabBar = new MobileTabBar()
     mobileTabBar.init()
 
-    return { viewManager, trackEditor, noteEditor, toolsPanel, outputPanel, aboutPanel, mobileTabBar }
+    const app = { viewManager, trackEditor, noteEditor, toolsPanel, outputPanel, aboutPanel, mobileTabBar }
+    liveApps.push(app)
+    return app
 }
 
 // The visibility matrix (which panel is shown for which tab) lives in

@@ -21,7 +21,7 @@
  *   Track editor : full width, replaces pattern panel
  *   Slot panels  : full width, replaces pattern panel
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/event_bus.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -113,6 +113,13 @@ function mockAnchor(el, top, height) {
     Object.defineProperty(el, 'offsetTop', { value: top, configurable: true })
     Object.defineProperty(el, 'offsetHeight', { value: height, configurable: true })
 }
+
+const liveApps = []
+
+// ViewManager is not a BasePanel: only this releases its bus subscriptions.
+afterEach(() => {
+    liveApps.splice(0).forEach((app) => app.viewManager.destroy())
+})
 
 function setupApp(viewport) {
     document.body.innerHTML = ''
@@ -215,7 +222,7 @@ function setupApp(viewport) {
     mockAnchor(document.getElementById('piano-roll-panel'), TOOLBAR_H, MAIN_H)
     mockAnchor(document.getElementById('soft-synth-panel'), TOOLBAR_H, MAIN_H)
 
-    return {
+    const app = {
         viewManager,
         trackEditor,
         noteEditor,
@@ -226,6 +233,8 @@ function setupApp(viewport) {
         drumkitManager,
         patternSettingsPanel,
     }
+    liveApps.push(app)
+    return app
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -454,6 +463,18 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
             ctx.aboutPanel.show()
             expect(ctx.toolsPanel.isVisible).toBe(true)
             expect(ctx.aboutPanel.isVisible).toBe(true)
+        })
+    })
+
+    describe('ViewManager destroy()', () => {
+        it('stops switching views once destroyed', () => {
+            playbackEvents.emit(EVENTS.EDIT_TOGGLE)
+            expect(ctx.viewManager.currentView).toBe('edit')
+
+            ctx.viewManager.destroy()
+
+            playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
+            expect(ctx.viewManager.currentView).toBe('edit')
         })
     })
 })

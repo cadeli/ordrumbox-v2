@@ -1,13 +1,14 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import Toolbar from '../src/ui/toolbar.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/commander.js'
 import { playbackEvents } from '../src/state/event_bus.js'
+import { EVENTS } from '../src/core/events.js'
 
 describe('Toolbar UI Layout', () => {
     let toolbar
@@ -41,6 +42,10 @@ describe('Toolbar UI Layout', () => {
 
         toolbar = new Toolbar()
         toolbar.init()
+    })
+
+    afterEach(() => {
+        toolbar?.destroy()
     })
 
     it('renders the toolbar container at the root level', () => {
@@ -148,5 +153,68 @@ describe('Toolbar UI Layout', () => {
 
         // 2 beats * 4 stepsPerBeat = 8 max → loopAtStep clamped
         expect(track.loopAtStep).toBe(8)
+    })
+})
+
+describe('Toolbar destroy()', () => {
+    let toolbar
+
+    beforeEach(() => {
+        appState.reset()
+        soundRegistry.reset()
+        serviceRegistry.transport = { isRunning: false }
+        serviceRegistry.history = { canUndo: false, canRedo: false, undo: vi.fn(), redo: vi.fn() }
+        document.body.innerHTML = ''
+        toolbar = new Toolbar()
+        toolbar.init()
+    })
+
+    afterEach(() => {
+        toolbar?.destroy()
+    })
+
+    it('detaches the bar from the document', () => {
+        expect(document.getElementById('tb')).not.toBeNull()
+
+        toolbar.destroy()
+
+        expect(document.getElementById('tb')).toBeNull()
+        expect(toolbar.container).toBeNull()
+        expect(() => toolbar.checkOverflow()).not.toThrow()
+    })
+
+    it('stops reacting to bus events once destroyed', () => {
+        const startBtn = toolbar.startBtn
+
+        serviceRegistry.transport = { isRunning: true }
+        playbackEvents.emit(EVENTS.PLAYBACK_START)
+        expect(startBtn.textContent).toBe('■')
+
+        toolbar.destroy()
+
+        serviceRegistry.transport = { isRunning: false }
+        playbackEvents.emit(EVENTS.PLAYBACK_STOP)
+        expect(startBtn.textContent).toBe('■')
+    })
+
+    it('unbinds the undo/redo document shortcut', () => {
+        const fire = () =>
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true }))
+
+        fire()
+        expect(serviceRegistry.history.undo).toHaveBeenCalledTimes(1)
+
+        toolbar.destroy()
+
+        fire()
+        expect(serviceRegistry.history.undo).toHaveBeenCalledTimes(1)
+    })
+
+    it('can init again after destroy without duplicating the bar', () => {
+        toolbar.destroy()
+        toolbar.init()
+
+        expect(document.querySelectorAll('#tb').length).toBe(1)
+        expect(document.getElementById('tb').parentElement).toBe(document.body)
     })
 })

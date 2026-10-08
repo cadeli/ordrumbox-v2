@@ -127,5 +127,6 @@ describe('HTML escaping in innerHTML fragments', () => {
         expect(btns.length).toBeGreaterThan(0)
         expect(btns[0].innerHTML).not.toContain('<span>')
         expect(btns[0].textContent.length).toBeGreaterThan(0)
+        bar.destroy()
     })
 })

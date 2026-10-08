@@ -28,6 +28,7 @@ export default class PatternSettingsPanel {
 
     /** Owns every listener bound through #life — released by destroy(). */
     #life = new Lifecycle()
+    #initialized = false
 
     get isOpen() {
         return this.#isOpen
@@ -60,12 +61,25 @@ export default class PatternSettingsPanel {
     destroy() {
         this.#life.destroy()
         this.container?.remove()
+        this.#initialized = false
     }
 
+    /**
+     * Idempotent: a second init() tears down the previous cycle first, so the
+     * document never carries two panels and handlers are never bound twice.
+     */
     init() {
+        this.#beginInit()
         this.#createDOM()
         this.#bindEvents()
         this.#subscribeEvents()
+    }
+
+    #beginInit() {
+        if (this.#initialized) this.destroy()
+        // Fresh signal per init cycle: destroy() aborted the previous one.
+        this.#life.reset()
+        this.#initialized = true
     }
 
     #createDOM() {

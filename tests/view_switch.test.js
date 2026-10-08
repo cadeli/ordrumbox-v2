@@ -26,26 +26,12 @@ vi.mock('../src/state/app_state.js', () => ({
 import { playbackEvents } from '../src/state/event_bus.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 
-function makeMockToolbar() {
-    return {
-        drumBtn: null,
-        bassBtn: null,
-        chordsBtn: null,
-        undoBtn: null,
-        redoBtn: null,
-        synthBtn: null,
-        editBtn: null,
-        prollBtn: null,
-    }
-}
-
 describe('ViewSwitch', () => {
-    let tb, vs
+    let vs
 
     beforeEach(() => {
         vi.clearAllMocks()
-        tb = makeMockToolbar()
-        vs = new ViewSwitch(tb)
+        vs = new ViewSwitch()
     })
 
     describe('createDOM()', () => {
@@ -60,26 +46,26 @@ describe('ViewSwitch', () => {
 
         it('creates drumBtn with correct attributes', () => {
             vs.createDOM()
-            expect(tb.drumBtn.className).toBe('tb-view-btn tb-gen-btn')
-            expect(tb.drumBtn.dataset.gen).toBe('drum')
-            expect(tb.drumBtn.textContent).toBe('↻ Drum')
-            expect(tb.drumBtn.title).toBe('Generate drum pattern')
+            expect(vs.drumBtn.className).toBe('tb-view-btn tb-gen-btn')
+            expect(vs.drumBtn.dataset.gen).toBe('drum')
+            expect(vs.drumBtn.textContent).toBe('↻ Drum')
+            expect(vs.drumBtn.title).toBe('Generate drum pattern')
         })
 
         it('creates bassBtn with correct attributes', () => {
             vs.createDOM()
-            expect(tb.bassBtn.className).toBe('tb-view-btn tb-gen-btn')
-            expect(tb.bassBtn.dataset.gen).toBe('bass')
-            expect(tb.bassBtn.textContent).toBe('↻ Bass')
-            expect(tb.bassBtn.title).toBe('Generate bass line')
+            expect(vs.bassBtn.className).toBe('tb-view-btn tb-gen-btn')
+            expect(vs.bassBtn.dataset.gen).toBe('bass')
+            expect(vs.bassBtn.textContent).toBe('↻ Bass')
+            expect(vs.bassBtn.title).toBe('Generate bass line')
         })
 
         it('creates chordsBtn with correct attributes', () => {
             vs.createDOM()
-            expect(tb.chordsBtn.className).toBe('tb-view-btn tb-gen-btn')
-            expect(tb.chordsBtn.dataset.gen).toBe('chords')
-            expect(tb.chordsBtn.textContent).toBe('↻ Chords')
-            expect(tb.chordsBtn.title).toBe('Generate chords')
+            expect(vs.chordsBtn.className).toBe('tb-view-btn tb-gen-btn')
+            expect(vs.chordsBtn.dataset.gen).toBe('chords')
+            expect(vs.chordsBtn.textContent).toBe('↻ Chords')
+            expect(vs.chordsBtn.title).toBe('Generate chords')
         })
 
         it('creates undo group with correct class and label', () => {
@@ -93,18 +79,18 @@ describe('ViewSwitch', () => {
 
         it('creates undoBtn initially disabled', () => {
             vs.createDOM()
-            expect(tb.undoBtn.disabled).toBe(true)
-            expect(tb.undoBtn.className).toBe('tb-undo-btn')
-            expect(tb.undoBtn.textContent).toBe('↶')
-            expect(tb.undoBtn.title).toBe('Undo (Ctrl+Z)')
+            expect(vs.undoBtn.disabled).toBe(true)
+            expect(vs.undoBtn.className).toBe('tb-undo-btn')
+            expect(vs.undoBtn.textContent).toBe('↶')
+            expect(vs.undoBtn.title).toBe('Undo (Ctrl+Z)')
         })
 
         it('creates redoBtn initially disabled', () => {
             vs.createDOM()
-            expect(tb.redoBtn.disabled).toBe(true)
-            expect(tb.redoBtn.className).toBe('tb-undo-btn')
-            expect(tb.redoBtn.textContent).toBe('↷')
-            expect(tb.redoBtn.title).toBe('Redo (Ctrl+Y)')
+            expect(vs.redoBtn.disabled).toBe(true)
+            expect(vs.redoBtn.className).toBe('tb-undo-btn')
+            expect(vs.redoBtn.textContent).toBe('↷')
+            expect(vs.redoBtn.title).toBe('Redo (Ctrl+Y)')
         })
 
         it('creates view group with correct class and label', () => {
@@ -118,26 +104,26 @@ describe('ViewSwitch', () => {
 
         it('creates synthBtn with correct attributes', () => {
             vs.createDOM()
-            expect(tb.synthBtn.className).toBe('tb-view-btn')
-            expect(tb.synthBtn.dataset.view).toBe('synth')
-            expect(tb.synthBtn.textContent).toBe('Synth')
-            expect(tb.synthBtn.title).toBe('Toggle Soft Synth')
+            expect(vs.synthBtn.className).toBe('tb-view-btn')
+            expect(vs.synthBtn.dataset.view).toBe('synth')
+            expect(vs.synthBtn.textContent).toBe('Synth')
+            expect(vs.synthBtn.title).toBe('Toggle Soft Synth')
         })
 
         it('creates editBtn with correct attributes', () => {
             vs.createDOM()
-            expect(tb.editBtn.className).toBe('tb-view-btn')
-            expect(tb.editBtn.dataset.view).toBe('edit')
-            expect(tb.editBtn.textContent).toBe('Grid')
-            expect(tb.editBtn.title).toBe('Toggle Track Editor')
+            expect(vs.editBtn.className).toBe('tb-view-btn')
+            expect(vs.editBtn.dataset.view).toBe('edit')
+            expect(vs.editBtn.textContent).toBe('Grid')
+            expect(vs.editBtn.title).toBe('Toggle Track Editor')
         })
 
         it('creates prollBtn with correct attributes', () => {
             vs.createDOM()
-            expect(tb.prollBtn.className).toBe('tb-view-btn')
-            expect(tb.prollBtn.dataset.view).toBe('proll')
-            expect(tb.prollBtn.textContent).toBe('proll')
-            expect(tb.prollBtn.title).toBe('Toggle Proll')
+            expect(vs.prollBtn.className).toBe('tb-view-btn')
+            expect(vs.prollBtn.dataset.view).toBe('proll')
+            expect(vs.prollBtn.textContent).toBe('proll')
+            expect(vs.prollBtn.title).toBe('Toggle Proll')
         })
 
         it('returns all three wrapper elements', () => {
@@ -155,17 +141,17 @@ describe('ViewSwitch', () => {
         })
 
         it('emits synthToggle on synthBtn click', () => {
-            tb.synthBtn.click()
+            vs.synthBtn.click()
             expect(playbackEvents.emit).toHaveBeenCalledWith('synthToggle')
         })
 
         it('emits editToggle on editBtn click', () => {
-            tb.editBtn.click()
+            vs.editBtn.click()
             expect(playbackEvents.emit).toHaveBeenCalledWith('editToggle')
         })
 
         it('emits prollToggle on prollBtn click', () => {
-            tb.prollBtn.click()
+            vs.prollBtn.click()
             expect(playbackEvents.emit).toHaveBeenCalledWith('prollToggle')
         })
     })
@@ -177,14 +163,14 @@ describe('ViewSwitch', () => {
         })
 
         it('calls history.undo on undoBtn click', () => {
-            tb.undoBtn.disabled = false
-            tb.undoBtn.click()
+            vs.undoBtn.disabled = false
+            vs.undoBtn.click()
             expect(serviceRegistry.history.undo).toHaveBeenCalled()
         })
 
         it('calls history.redo on redoBtn click', () => {
-            tb.redoBtn.disabled = false
-            tb.redoBtn.click()
+            vs.redoBtn.disabled = false
+            vs.redoBtn.click()
             expect(serviceRegistry.history.redo).toHaveBeenCalled()
         })
     })
@@ -204,9 +190,9 @@ describe('ViewSwitch', () => {
             const drums = vi.spyOn(patternAutoGen, 'toggleDrums').mockImplementation(async () => {})
             const melodic = vi.spyOn(patternAutoGen, 'toggleMelodic').mockImplementation(async () => {})
             try {
-                tb.drumBtn.click()
-                tb.bassBtn.click()
-                tb.chordsBtn.click()
+                vs.drumBtn.click()
+                vs.bassBtn.click()
+                vs.chordsBtn.click()
 
                 expect(drums).toHaveBeenCalledTimes(1)
                 expect(melodic).toHaveBeenNthCalledWith(1, 'BASS')

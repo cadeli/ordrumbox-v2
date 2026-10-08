@@ -187,8 +187,14 @@ describe('Granular patternChange events', () => {
     })
 
     describe('Toolbar signal consumers', () => {
+        let toolbar
+
+        afterEach(() => {
+            toolbar?.destroy()
+        })
+
         it('toolbar gen buttons update via signal on noteChange', () => {
-            const toolbar = new Toolbar()
+            toolbar = new Toolbar()
             toolbar.init()
             playbackEvents.emit(EVENTS.PATTERN_CHANGE)
             appState.patterns[0].tracks[0]._toolbarAuto = true
@@ -197,7 +203,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('toolbar pattern select rebuilds via signal on patternStructureChange', () => {
-            const toolbar = new Toolbar()
+            toolbar = new Toolbar()
             toolbar.init()
             const prevLen = toolbar.patternSelect.options.length
             appState.patterns.push({ name: 'New', beatCount: 4, bpm: 120, tracks: [] })
@@ -206,7 +212,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('toolbar page label updates via signal on patternMetaChange', () => {
-            const toolbar = new Toolbar()
+            toolbar = new Toolbar()
             toolbar.init()
             playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
             // a string is always "defined": pin what the label has to show
@@ -214,7 +220,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('toolbar does NOT rebuild pattern select on patternChange', () => {
-            const toolbar = new Toolbar()
+            toolbar = new Toolbar()
             toolbar.init()
             const len = toolbar.patternSelect.options.length
             playbackEvents.emit(EVENTS.PATTERN_CHANGE)

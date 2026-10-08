@@ -24,6 +24,9 @@ beforeEach(async () => {
 })
 
 afterEach(() => {
+    // Every Toolbar subscribes to playbackEvents + document keydown; release
+    // them so the next test starts from a silent bar.
+    createdToolbars.splice(0).forEach((tb) => tb.destroy())
     delete globalThis.requestAnimationFrame
     delete globalThis.cancelAnimationFrame
 })
@@ -129,9 +132,12 @@ function setupServices() {
     }
 }
 
+const createdToolbars = []
+
 function initToolbar() {
     const tb = new Toolbar()
     tb.init()
+    createdToolbars.push(tb)
     return tb
 }
 

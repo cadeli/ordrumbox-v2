@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/event_bus.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -127,6 +127,11 @@ describe('Mobile tab bar', () => {
 
         mobileTabBar = new MobileTabBar()
         mobileTabBar.init()
+    })
+
+    afterEach(() => {
+        mobileTabBar?.destroy()
+        viewManager?.destroy()
     })
 
     function seqVisible() {
@@ -257,6 +262,35 @@ describe('Mobile tab bar', () => {
             playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
             const masterBtn = mobileTabBar.container.querySelector('[data-tab="master"]')
             expect(masterBtn.classList.contains('active')).toBe(true)
+        })
+    })
+
+    describe('destroy()', () => {
+        it('detaches the bar from the document', () => {
+            expect(document.getElementById('mobile-tab-bar')).not.toBeNull()
+
+            mobileTabBar.destroy()
+
+            expect(document.getElementById('mobile-tab-bar')).toBeNull()
+            expect(mobileTabBar.container).toBeNull()
+        })
+
+        it('stops tracking tab events once destroyed', () => {
+            const trackBtn = mobileTabBar.container.querySelector('[data-tab="track"]')
+            expect(trackBtn.classList.contains('active')).toBe(false)
+
+            mobileTabBar.destroy()
+
+            playbackEvents.emit(EVENTS.EDIT_TOGGLE)
+            expect(trackBtn.classList.contains('active')).toBe(false)
+        })
+
+        it('can init again after destroy without duplicating the bar', () => {
+            mobileTabBar.destroy()
+            mobileTabBar.init()
+
+            expect(document.querySelectorAll('#mobile-tab-bar').length).toBe(1)
+            expect(document.getElementById('mobile-tab-bar').parentElement).toBe(document.body)
         })
     })
 })

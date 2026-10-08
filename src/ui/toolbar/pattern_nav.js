@@ -4,6 +4,7 @@
 import { playbackEvents } from '../../state/event_bus.js'
 import { prevPage, nextPage } from '../page_nav.js'
 import { EVENTS } from '../../core/events.js'
+import { Lifecycle } from '../../core/lifecycle.js'
 import {
     rebuildPatternSelect,
     rebuildDrumkitSelect,
@@ -12,27 +13,67 @@ import {
 } from '../select_lists.js'
 
 export default class PatternNav {
-    #tb
+    /** Owns every listener bound through #life — released by destroy(). */
+    #life = new Lifecycle()
+    /** @type {HTMLSelectElement} */
+    #patternSelect
+    /** @type {HTMLSelectElement} */
+    #drumkitSelect
+    /** @type {HTMLButtonElement} */
+    #prevPageBtn
+    /** @type {HTMLButtonElement} */
+    #nextPageBtn
+    /** @type {HTMLSpanElement} */
+    #pageLabel
+    /** @type {HTMLSpanElement} */
+    #patLabel
+    /** @type {HTMLSpanElement} */
+    #kitLabel
 
-    /** @param {import('../toolbar.js').default} toolbar */
-    constructor(toolbar) {
-        this.#tb = toolbar
+    get patternSelect() {
+        return this.#patternSelect
+    }
+
+    get drumkitSelect() {
+        return this.#drumkitSelect
+    }
+
+    get prevPageBtn() {
+        return this.#prevPageBtn
+    }
+
+    get nextPageBtn() {
+        return this.#nextPageBtn
+    }
+
+    get pageLabel() {
+        return this.#pageLabel
+    }
+
+    get patLabel() {
+        return this.#patLabel
+    }
+
+    get kitLabel() {
+        return this.#kitLabel
+    }
+
+    /** Releases every DOM listener bound through listen(). */
+    destroy() {
+        this.#life.destroy()
     }
 
     createDOM() {
-        const tb = this.#tb
-
         // ── Pattern select ──────────────────────────────────────
         const patWrap = document.createElement('div')
         patWrap.className = 'tb-group'
-        const patLabel = document.createElement('span')
-        patLabel.className = 'tb-label'
-        patLabel.textContent = 'Pattern'
-        patLabel.title = 'Current pattern'
-        tb.patLabel = patLabel
-        tb.patternSelect = document.createElement('select')
-        patWrap.appendChild(patLabel)
-        patWrap.appendChild(tb.patternSelect)
+        this.#patLabel = document.createElement('span')
+        this.#patLabel.className = 'tb-label'
+        this.#patLabel.textContent = 'Pattern'
+        this.#patLabel.title = 'Current pattern'
+        this.#patternSelect = document.createElement('select')
+        patWrap.appendChild(this.#patLabel)
+        patWrap.appendChild(this.#patternSelect)
 
         // ── Page navigation ─────────────────────────────────────
         const pageWrap = document.createElement('div')
@@ -40,61 +81,70 @@ export default class PatternNav {
         const pageLabelTop = document.createElement('span')
         pageLabelTop.className = 'tb-label'
         pageLabelTop.textContent = 'Page'
-        tb.prevPageBtn = document.createElement('button')
-        tb.prevPageBtn.className = 'tb-prev-page'
-        tb.prevPageBtn.textContent = '◀'
-        tb.prevPageBtn.title = 'Previous Page'
-        tb.pageLabel = document.createElement('span')
-        tb.pageLabel.className = 'tb-page-label'
-        tb.pageLabel.textContent = 'P1'
-        tb.nextPageBtn = document.createElement('button')
-        tb.nextPageBtn.className = 'tb-next-page'
-        tb.nextPageBtn.textContent = '▶'
-        tb.nextPageBtn.title = 'Next Page'
+        this.#prevPageBtn = document.createElement('button')
+        this.#prevPageBtn.className = 'tb-prev-page'
+        this.#prevPageBtn.textContent = '◀'
+        this.#prevPageBtn.title = 'Previous Page'
+        this.#pageLabel = document.createElement('span')
+        this.#pageLabel.className = 'tb-page-label'
+        this.#pageLabel.textContent = 'P1'
+        this.#nextPageBtn = document.createElement('button')
+        this.#nextPageBtn.className = 'tb-next-page'
+        this.#nextPageBtn.textContent = '▶'
+        this.#nextPageBtn.title = 'Next Page'
         pageWrap.appendChild(pageLabelTop)
         const pageRow = document.createElement('div')
         pageRow.className = 'tb-page-row'
-        pageRow.appendChild(tb.prevPageBtn)
-        pageRow.appendChild(tb.pageLabel)
-        pageRow.appendChild(tb.nextPageBtn)
+        pageRow.appendChild(this.#prevPageBtn)
+        pageRow.appendChild(this.#pageLabel)
+        pageRow.appendChild(this.#nextPageBtn)
         pageWrap.appendChild(pageRow)
 
         // ── Drumkit select ──────────────────────────────────────
         const kitWrap = document.createElement('div')
         kitWrap.className = 'tb-group'
-        const kitLabel = document.createElement('span')
-        kitLabel.className = 'tb-label'
-        kitLabel.textContent = 'Drumkit'
-        kitLabel.title = 'Click to open Drumkit Manager'
-        kitLabel.style.cursor = 'pointer'
-        tb.kitLabel = kitLabel
-        tb.drumkitSelect = document.createElement('select')
-        kitWrap.appendChild(kitLabel)
-        kitWrap.appendChild(tb.drumkitSelect)
+        this.#kitLabel = document.createElement('span')
+        this.#kitLabel.className = 'tb-label'
+        this.#kitLabel.textContent = 'Drumkit'
+        this.#kitLabel.title = 'Click to open Drumkit Manager'
+        this.#kitLabel.style.cursor = 'pointer'
+        this.#drumkitSelect = document.createElement('select')
+        kitWrap.appendChild(this.#kitLabel)
+        kitWrap.appendChild(this.#drumkitSelect)
 
         return { patWrap, pageWrap, kitWrap }
     }
 
+    /**
+     * Renders the page position and refills both selects from the model.
+     * @param {{pageLabel: string, atFirstPage: boolean, atLastPage: boolean}} data
+     */
+    sync(data) {
+        this.#pageLabel.textContent = data.pageLabel
+        this.#nextPageBtn.disabled = data.atLastPage
+        this.#prevPageBtn.disabled = data.atFirstPage
+
+        rebuildPatternSelect(this.#patternSelect)
+        rebuildDrumkitSelect(this.#drumkitSelect)
+    }
+
     bindEvents() {
-        const tb = this.#tb
+        // Fresh signal if this is a re-init cycle after destroy().
+        this.#life.reset()
 
-        tb.patternSelect.addEventListener('change', () => onPatternSelectChange(tb.patternSelect))
+        this.#life.listen(this.#patternSelect, 'change', () =>
+            onPatternSelectChange(this.#patternSelect),
+        )
 
-        tb.drumkitSelect.addEventListener('change', () => onDrumkitSelectChange(tb.drumkitSelect))
+        this.#life.listen(this.#drumkitSelect, 'change', () =>
+            onDrumkitSelectChange(this.#drumkitSelect),
+        )
 
-        tb.kitLabel.addEventListener('click', () => {
+        this.#life.listen(this.#kitLabel, 'click', () => {
             playbackEvents.emit(EVENTS.DRUMKIT_MANAGER_TOGGLE, true)
         })
 
-        tb.prevPageBtn.addEventListener('click', () => prevPage())
-        tb.nextPageBtn.addEventListener('click', () => nextPage())
-    }
-
-    rebuildPatternSelect() {
-        rebuildPatternSelect(this.#tb.patternSelect)
-    }
-
-    rebuildDrumkitSelect() {
-        rebuildDrumkitSelect(this.#tb.drumkitSelect)
+        this.#life.listen(this.#prevPageBtn, 'click', () => prevPage())
+        this.#life.listen(this.#nextPageBtn, 'click', () => nextPage())
     }
 }

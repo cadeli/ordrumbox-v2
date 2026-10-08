@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -30,6 +30,10 @@ describe('Toolbar overflow (mobile single-line)', () => {
 
         appState.patterns = [{ name: 'P1', bpm: 120, beatCount: 1, stepsPerBeat: 16, tracks: [{ stepsPerBeat: 16 }] }]
         soundRegistry.drumkitList = [{ name: 'real', instruments: [] }]
+    })
+
+    afterEach(() => {
+        toolbar?.destroy()
     })
 
     function simulateOverflow(toolbar, overflowing) {

@@ -1,10 +1,14 @@
 import { playbackEvents } from '../state/event_bus.js'
 import { logger } from '../core/logger.js'
 import { EVENTS } from '../core/events.js'
+import { Lifecycle } from '../core/lifecycle.js'
 
 export default class MobileTabBar {
     #currentTab
     #isSwitching
+    /** Owns the click listener and every bus sub — released by destroy(). */
+    #life = new Lifecycle()
+    #initialized = false
 
     constructor() {
         this.container = null
@@ -12,11 +16,31 @@ export default class MobileTabBar {
         this.#isSwitching = false
     }
 
+    /**
+     * Idempotent: a second init() tears down the previous bar first, so the
+     * document never carries two of them and handlers are never bound twice.
+     */
     init() {
+        this.#beginInit()
         this.#createDOM()
         this.#bindEvents()
         this.#subscribeEvents()
         this.#updateActive()
+    }
+
+    #beginInit() {
+        if (this.#initialized) this.destroy()
+        // Fresh signal per init cycle: destroy() aborted the previous one.
+        this.#life.reset()
+        this.#initialized = true
+    }
+
+    /** Releases every listener and detaches the bar from the document. */
+    destroy() {
+        this.#life.destroy()
+        this.container?.remove()
+        this.container = null
+        this.#initialized = false
     }
 
     #createDOM() {
@@ -42,7 +66,7 @@ export default class MobileTabBar {
     }
 
     #bindEvents() {
-        this.container.addEventListener('click', (e) => {
+        this.#life.listen(this.container, 'click', (e) => {
             const btn = /** @type {Element} */ (e.target).closest('.mtb-btn')
             if (!btn) return
             const tab = /** @type {HTMLElement} */ (btn).dataset.tab
@@ -59,7 +83,7 @@ export default class MobileTabBar {
             [EVENTS.MASTER_TOGGLE]: 'master',
         }
         for (const [event, tab] of Object.entries(tabMap)) {
-            playbackEvents.on(event, (arg) => {
+            this.#life.sub(playbackEvents, event, (arg) => {
                 if (!this.#isSwitching) {
                     if (event === EVENTS.MASTER_TOGGLE && arg === false) return
                     this.#currentTab = tab

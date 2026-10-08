@@ -81,6 +81,22 @@ describe('PatternSettingsPanel', () => {
             expect(opts[0].value).toBe('1')
             expect(opts[MAX_BEATS - 1].value).toBe(String(MAX_BEATS))
         })
+
+        it('is idempotent: a second init() does not duplicate the panel', () => {
+            panel.init()
+
+            expect(document.querySelectorAll('#pattern-settings-panel').length).toBe(1)
+            expect(document.body.contains(panel.container)).toBe(true)
+        })
+
+        it('is idempotent: a second init() binds the bus handlers once', () => {
+            const spy = vi.spyOn(panel, 'sync')
+            panel.init()
+
+            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
+
+            expect(spy).toHaveBeenCalledTimes(1)
+        })
     })
 
     describe('show / hide', () => {

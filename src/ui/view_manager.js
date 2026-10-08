@@ -5,6 +5,7 @@ import { setViewMode, setPatternPanelHidden } from './components/ui_utils.js'
 import { isMobileViewport } from '../core/constants.js'
 import { removeLayout } from './mobile_track_layout.js'
 import { EVENTS } from '../core/events.js'
+import { Lifecycle } from '../core/lifecycle.js'
 
 /**
  * Declarative view table — the whole navigation reads from it.
@@ -46,6 +47,8 @@ export default class ViewManager {
     #songPanel
     #currentView
     #slots
+    /** Owns every bus sub bound through #life — released by destroy(). */
+    #life = new Lifecycle()
 
     constructor({
         trackEditor,
@@ -77,19 +80,29 @@ export default class ViewManager {
         ])
     }
 
+    /**
+     * Idempotent: a second init() drops the previous subscriptions first.
+     */
     init() {
+        this.#life.reset()
+
         // View switches (synth, edit, proll, mobile)
-        playbackEvents.on(EVENTS.SYNTH_TOGGLE, () => this.#switchTo('synth'))
-        playbackEvents.on(EVENTS.EDIT_TOGGLE, () => this.#switchTo('edit'))
-        playbackEvents.on(EVENTS.PROLL_TOGGLE, () => this.#switchTo('proll'))
-        playbackEvents.on(EVENTS.SONG_TOGGLE, () => this.#switchTo('song'))
-        playbackEvents.on(EVENTS.MOBILE_SEQ_TOGGLE, () => this.#switchTo('mobileSeq'))
-        playbackEvents.on(EVENTS.MOBILE_TRACK_TOGGLE, () => this.#switchTo('mobileTrack'))
+        this.#life.sub(playbackEvents, EVENTS.SYNTH_TOGGLE, () => this.#switchTo('synth'))
+        this.#life.sub(playbackEvents, EVENTS.EDIT_TOGGLE, () => this.#switchTo('edit'))
+        this.#life.sub(playbackEvents, EVENTS.PROLL_TOGGLE, () => this.#switchTo('proll'))
+        this.#life.sub(playbackEvents, EVENTS.SONG_TOGGLE, () => this.#switchTo('song'))
+        this.#life.sub(playbackEvents, EVENTS.MOBILE_SEQ_TOGGLE, () => this.#switchTo('mobileSeq'))
+        this.#life.sub(playbackEvents, EVENTS.MOBILE_TRACK_TOGGLE, () => this.#switchTo('mobileTrack'))
 
         // Slot panels — one listener per event, all routed through #toggleSlotPanel
         for (const [name, { event, panel }] of this.#slots) {
-            playbackEvents.on(event, (show) => this.#toggleSlotPanel(show, name, panel))
+            this.#life.sub(playbackEvents, event, (show) => this.#toggleSlotPanel(show, name, panel))
         }
+    }
+
+    /** Unsubscribes every handler bound in init(). */
+    destroy() {
+        this.#life.destroy()
     }
 
     get currentView() {
