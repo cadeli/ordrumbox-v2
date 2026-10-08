@@ -2,6 +2,7 @@ import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/event_bus.js'
 import { MAX_BEATS } from '../core/constants.js'
+import { Lifecycle } from '../core/lifecycle.js'
 import { prevPage, nextPage } from './page_nav.js'
 import { maxPageFor } from './page_nav.js'
 import { EVENTS } from '../core/events.js'
@@ -25,6 +26,9 @@ export default class PatternSettingsPanel {
     #bassBtn
     #chordsBtn
 
+    /** Owns every listener bound through #life — released by destroy(). */
+    #life = new Lifecycle()
+
     get isOpen() {
         return this.#isOpen
     }
@@ -47,29 +51,14 @@ export default class PatternSettingsPanel {
         return this.#nextPageBtn
     }
 
-    /** Owns every DOM listener bound through listen() — aborted by destroy(). */
-    #abortController = new AbortController()
-
     constructor() {
         this.container = null
         this.#isOpen = false
     }
 
-    /**
-     * addEventListener tied to the panel lifetime: destroy() aborts them all,
-     * so no handler reference is kept for removeEventListener.
-     * @param {EventTarget} target
-     * @param {string} type
-     * @param {EventListener} handler
-     * @param {AddEventListenerOptions} [options]
-     */
-    listen(target, type, handler, options) {
-        target?.addEventListener(type, handler, { ...options, signal: this.#abortController.signal })
-    }
-
-    /** Aborts every listener bound through listen(). */
+    /** Releases every DOM listener bound through listen() and every bus sub. */
     destroy() {
-        this.#abortController.abort()
+        this.#life.destroy()
         this.container?.remove()
     }
 
@@ -163,7 +152,7 @@ export default class PatternSettingsPanel {
         this.#chordsBtn = this.container.querySelector('.ps-gen-chords')
 
         /* Close button */
-        this.listen(closeBtn, 'click', () => this.hide())
+        this.#life.listen(closeBtn, 'click', () => this.hide())
     }
 
     #bindEvents() {
@@ -175,12 +164,12 @@ export default class PatternSettingsPanel {
     }
 
     #bindPageControls() {
-        this.listen(this.#prevPageBtn, 'click', () => prevPage())
-        this.listen(this.#nextPageBtn, 'click', () => nextPage())
+        this.#life.listen(this.#prevPageBtn, 'click', () => prevPage())
+        this.#life.listen(this.#nextPageBtn, 'click', () => nextPage())
     }
 
     #bindBeatsSelect() {
-        this.listen(this.#beatsSelect, 'change', () => this.#onBeatsChange())
+        this.#life.listen(this.#beatsSelect, 'change', () => this.#onBeatsChange())
     }
 
     #onBeatsChange() {
@@ -197,11 +186,11 @@ export default class PatternSettingsPanel {
     }
 
     #bindDrumkitSelect() {
-        this.listen(this.#drumkitSelect, 'change', () => onDrumkitSelectChange(this.#drumkitSelect))
+        this.#life.listen(this.#drumkitSelect, 'change', () => onDrumkitSelectChange(this.#drumkitSelect))
     }
 
     #bindPatternSelect() {
-        this.listen(this.#patternSelect, 'change', () => onPatternSelectChange(this.#patternSelect))
+        this.#life.listen(this.#patternSelect, 'change', () => onPatternSelectChange(this.#patternSelect))
     }
 
     // ── Generation buttons ───────────────────────────────────────────
@@ -212,16 +201,16 @@ export default class PatternSettingsPanel {
     // toolbar's ViewSwitch.
 
     #bindGenerationButtons() {
-        this.listen(this.#drumBtn, 'click', () => patternAutoGen.toggleDrums())
-        this.listen(this.#bassBtn, 'click', () => patternAutoGen.toggleMelodic('BASS'))
-        this.listen(this.#chordsBtn, 'click', () => patternAutoGen.toggleMelodic('PIANO'))
+        this.#life.listen(this.#drumBtn, 'click', () => patternAutoGen.toggleDrums())
+        this.#life.listen(this.#bassBtn, 'click', () => patternAutoGen.toggleMelodic('BASS'))
+        this.#life.listen(this.#chordsBtn, 'click', () => patternAutoGen.toggleMelodic('PIANO'))
     }
 
     #subscribeEvents() {
-        playbackEvents.on(EVENTS.PATTERN_META_CHANGE, () => this.sync())
-        playbackEvents.on(EVENTS.PATTERN_STRUCTURE_CHANGE, () => this.sync())
-        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => this.syncSelects())
-        playbackEvents.on(EVENTS.PATTERN_SETTINGS_TOGGLE, (show) => {
+        this.#life.sub(playbackEvents, EVENTS.PATTERN_META_CHANGE, () => this.sync())
+        this.#life.sub(playbackEvents, EVENTS.PATTERN_STRUCTURE_CHANGE, () => this.sync())
+        this.#life.sub(playbackEvents, EVENTS.DRUMKIT_CHANGE, () => this.syncSelects())
+        this.#life.sub(playbackEvents, EVENTS.PATTERN_SETTINGS_TOGGLE, (show) => {
             if (show) this.show()
             else this.hide()
         })

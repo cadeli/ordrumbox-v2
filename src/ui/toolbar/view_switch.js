@@ -4,33 +4,22 @@
 import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/event_bus.js'
 import { EVENTS } from '../../core/events.js'
+import { Lifecycle } from '../../core/lifecycle.js'
 import patternAutoGen from '../../logic/services/pattern_auto_gen.js'
 
 export default class ViewSwitch {
     #tb
-    /** Owns every DOM listener bound through listen() — aborted by destroy(). */
-    #abortController = new AbortController()
+    /** Owns every listener bound through #life — released by destroy(). */
+    #life = new Lifecycle()
 
     /** @param {import('../toolbar.js').default} toolbar */
     constructor(toolbar) {
         this.#tb = toolbar
     }
 
-    /**
-     * addEventListener tied to the toolbar lifetime: destroy() aborts them all,
-     * so no handler reference is kept for removeEventListener.
-     * @param {EventTarget} target
-     * @param {string} type
-     * @param {EventListener} handler
-     * @param {AddEventListenerOptions} [options]
-     */
-    listen(target, type, handler, options) {
-        target?.addEventListener(type, handler, { ...options, signal: this.#abortController.signal })
-    }
-
-    /** Aborts every listener bound through listen(). */
+    /** Releases every listener bound through listen(). */
     destroy() {
-        this.#abortController.abort()
+        this.#life.destroy()
     }
 
     createDOM() {
@@ -129,31 +118,31 @@ export default class ViewSwitch {
     bindEvents() {
         const tb = this.#tb
 
-        this.listen(tb.synthBtn, 'click', () => {
+        this.#life.listen(tb.synthBtn, 'click', () => {
             playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         })
-        this.listen(tb.editBtn, 'click', () => {
+        this.#life.listen(tb.editBtn, 'click', () => {
             playbackEvents.emit(EVENTS.EDIT_TOGGLE)
         })
-        this.listen(tb.prollBtn, 'click', () => {
+        this.#life.listen(tb.prollBtn, 'click', () => {
             playbackEvents.emit(EVENTS.PROLL_TOGGLE)
         })
-        this.listen(tb.songBtn, 'click', () => {
+        this.#life.listen(tb.songBtn, 'click', () => {
             playbackEvents.emit(EVENTS.SONG_TOGGLE)
         })
 
-        this.listen(tb.undoBtn, 'click', () => {
+        this.#life.listen(tb.undoBtn, 'click', () => {
             serviceRegistry.history?.undo()
         })
-        this.listen(tb.redoBtn, 'click', () => {
+        this.#life.listen(tb.redoBtn, 'click', () => {
             serviceRegistry.history?.redo()
         })
 
         // Generation orchestration (undo transaction, track creation, event
         // batch) lives in logic/services/pattern_auto_gen.js — shared with
         // the pattern settings panel.
-        this.listen(tb.drumBtn, 'click', () => patternAutoGen.toggleDrums())
-        this.listen(tb.bassBtn, 'click', () => patternAutoGen.toggleMelodic('BASS'))
-        this.listen(tb.chordsBtn, 'click', () => patternAutoGen.toggleMelodic('PIANO'))
+        this.#life.listen(tb.drumBtn, 'click', () => patternAutoGen.toggleDrums())
+        this.#life.listen(tb.bassBtn, 'click', () => patternAutoGen.toggleMelodic('BASS'))
+        this.#life.listen(tb.chordsBtn, 'click', () => patternAutoGen.toggleMelodic('PIANO'))
     }
 }

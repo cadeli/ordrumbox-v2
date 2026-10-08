@@ -1,19 +1,19 @@
 import { injectUiCss, escapeHtml } from './components/ui_utils.js'
+import { Lifecycle } from '../core/lifecycle.js'
 
 /**
  * BasePanel - Base class for all UI panels.
- * Encapsulates common logic: DOM creation, CSS injection, show/hide and
- * EventBus lifecycle (sub() → destroy()).
+ * Encapsulates common logic: DOM creation, CSS injection, show/hide.
+ * Cancellation (DOM listeners + bus subscriptions) comes from the composed
+ * Lifecycle: sub() / listen() / destroy() delegate to it.
  */
 export default class BasePanel {
     /** Live instances, keyed by panel id — used to make init() idempotent. */
     static #instances = new Map()
 
-    #unsubs = []
+    #lifecycle = new Lifecycle()
     #initialized = false
     #ownsContainer = false
-    /** Owns every DOM listener bound through listen() — aborted by destroy(). */
-    #abortController = new AbortController()
 
     constructor(id) {
         this.id = id
@@ -38,8 +38,8 @@ export default class BasePanel {
      */
     beginInit() {
         if (this.#initialized) this.destroy()
-        // Fresh controller per init cycle: destroy() aborted the previous one.
-        this.#abortController = new AbortController()
+        // Fresh signal per init cycle: destroy() aborted the previous one.
+        this.#lifecycle.reset()
         const prev = BasePanel.#instances.get(this.id)
         if (prev && prev !== this) prev.destroy()
         BasePanel.#instances.set(this.id, this)
@@ -48,7 +48,7 @@ export default class BasePanel {
 
     /** Signal shared by every listener bound through listen(). */
     get signal() {
-        return this.#abortController.signal
+        return this.#lifecycle.signal
     }
 
     /**
@@ -60,7 +60,7 @@ export default class BasePanel {
      * @param {AddEventListenerOptions} [options]
      */
     listen(target, type, handler, options) {
-        target?.addEventListener(type, handler, { ...options, signal: this.#abortController.signal })
+        this.#lifecycle.listen(target, type, handler, options)
     }
 
     injectCSS() {
@@ -94,9 +94,7 @@ export default class BasePanel {
      * @returns {() => void} unsubscribe function
      */
     sub(bus, event, fn) {
-        const off = bus.on(event, fn)
-        this.#unsubs.push(off)
-        return off
+        return this.#lifecycle.sub(bus, event, fn)
     }
 
     /** Teardown hook for derived classes (observers, rAF, document listeners). */
@@ -108,8 +106,7 @@ export default class BasePanel {
      * container created by createDOM().
      */
     destroy() {
-        for (const off of this.#unsubs.splice(0)) off()
-        this.#abortController.abort()
+        this.#lifecycle.destroy()
         this.onDestroy()
         if (this.#ownsContainer) this.container?.remove()
         if (BasePanel.#instances.get(this.id) === this) BasePanel.#instances.delete(this.id)

@@ -1,6 +1,6 @@
 // tests/pattern_settings_panel.test.js
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/commander.js'
@@ -63,6 +63,10 @@ describe('PatternSettingsPanel', () => {
         }
         panel = new PatternSettingsPanel()
         panel.init()
+    })
+
+    afterEach(() => {
+        panel.destroy()
     })
 
     describe('init', () => {
@@ -363,6 +367,35 @@ describe('PatternSettingsPanel', () => {
             ]
             playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
             expect(panel.drumkitSelect.options.length).toBe(2)
+        })
+    })
+
+    describe('destroy', () => {
+        it('unsubscribes the four bus handlers (no leak on teardown)', () => {
+            const spy = vi.spyOn(panel, 'sync')
+            panel.destroy()
+
+            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
+            expect(spy).not.toHaveBeenCalled()
+
+            // re-subscribed handlers are gone too: the toggle no longer shows it
+            playbackEvents.emit(EVENTS.PATTERN_SETTINGS_TOGGLE, true)
+            expect(panel.isOpen).toBe(false)
+        })
+
+        it('detaches the container', () => {
+            const container = panel.container
+            panel.destroy()
+            expect(document.body.contains(container)).toBe(false)
+        })
+
+        it('unbinds the DOM listeners (close button)', () => {
+            panel.show()
+            const closeBtn = panel.container.querySelector('.ps-close-btn')
+            panel.destroy()
+            closeBtn.click()
+            expect(panel.isOpen).toBe(true)
         })
     })
 })
