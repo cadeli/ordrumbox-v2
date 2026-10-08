@@ -22,14 +22,14 @@ export default class AboutPanel extends BasePanel {
     }
 
     #registerInstallPrompt() {
-        window.addEventListener('beforeinstallprompt', (e) => {
+        this.listen(window, 'beforeinstallprompt', (e) => {
             e.preventDefault()
             this.#deferredPrompt = e
             if (this.#installBtn) {
                 this.#installBtn.style.display = ''
             }
         })
-        window.addEventListener('appinstalled', () => {
+        this.listen(window, 'appinstalled', () => {
             this.#deferredPrompt = null
             if (this.#installBtn) {
                 this.#installBtn.style.display = 'none'
@@ -86,7 +86,7 @@ export default class AboutPanel extends BasePanel {
         }
 
         this.#installBtn = this.container.querySelector('#about-pwa-install')
-        this.#installBtn?.addEventListener('click', () => this.#installPwa())
+        this.listen(this.#installBtn, 'click', () => this.#installPwa())
     }
 
     #installPwa() {

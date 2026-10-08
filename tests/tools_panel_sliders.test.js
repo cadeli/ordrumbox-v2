@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 const downloadMock = vi.fn()
 vi.mock('../src/logic/midi/midi_exporter.js', () => ({
@@ -82,5 +82,56 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
         expect(downloadMock).toHaveBeenCalledTimes(1)
         const opts = downloadMock.mock.calls[0][2]
         expect(opts.loops).toBe(3)
+    })
+})
+
+describe('ToolsPanel — MIDI indicator teardown', () => {
+    let toolsPanel
+
+    beforeEach(() => {
+        global.window.innerWidth = 1200
+        global.window.innerHeight = 800
+
+        appState.reset()
+        soundRegistry.reset()
+        serviceRegistry.reset()
+
+        document.body.innerHTML = ''
+
+        toolsPanel = new ToolsPanel()
+        toolsPanel.init()
+    })
+
+    afterEach(() => {
+        toolsPanel.destroy()
+        serviceRegistry.midiManager = null
+    })
+
+    it('disconnects the MIDI indicator from the manager on destroy', () => {
+        const manager = {
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            getStatus: vi.fn().mockReturnValue({
+                supported: true,
+                ready: true,
+                inputCount: 1,
+                outputCount: 0,
+                syncEnabled: false,
+            }),
+            isReady: true,
+            outputs: [],
+            selectedOutputId: '',
+        }
+        serviceRegistry.midiManager = manager
+
+        toolsPanel.sync()
+
+        expect(manager.addEventListener).toHaveBeenCalledWith('statusChange', expect.any(Function))
+        expect(manager.addEventListener).toHaveBeenCalledWith('activity', expect.any(Function))
+
+        toolsPanel.destroy()
+
+        expect(manager.removeEventListener).toHaveBeenCalledWith('statusChange', expect.any(Function))
+        expect(manager.removeEventListener).toHaveBeenCalledWith('activity', expect.any(Function))
     })
 })

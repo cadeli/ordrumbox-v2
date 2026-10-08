@@ -43,6 +43,7 @@ export default class SynthEditor {
     #waveform
     #presets
     #lfoRafId
+    #modelOff
 
     constructor(host, deps = {}) {
         this.host = host
@@ -58,7 +59,7 @@ export default class SynthEditor {
             soundRegistry: this.#soundRegistry,
             serviceRegistry: this.#serviceRegistry,
         })
-        this.#model.subscribe(() => this.#renderEditor())
+        this.#modelOff = this.#model.subscribe(() => this.#renderEditor())
 
         /** @type {Map<string, import('./components/or_knob.js').OrKnob>} knob instances kept alive between renders */
         this.#knobMap = new Map()
@@ -81,10 +82,27 @@ export default class SynthEditor {
         this.#scrollEl = document.createElement('div')
         this.#scrollEl.className = 'ss-scroll'
         this.panel.appendChild(this.#scrollEl)
+        // Re-armed after destroy(), which unsubscribed from the model.
+        this.#modelOff ??= this.#model.subscribe(() => this.#renderEditor())
     }
 
     dispose() {
         this.panel?.remove()
+    }
+
+    /**
+     * Tears the editor down: stops the LFO meter loop, drops the model
+     * subscription and the knobs, and detaches the panel. The delegation flag
+     * is reset so a later createDOM() binds the new panel again.
+     */
+    destroy() {
+        this.#stopLfoWatch()
+        this.#modelOff?.()
+        this.#modelOff = null
+        for (const knob of this.#knobMap.values()) knob.destroy?.()
+        this.#knobMap.clear()
+        this.#delegationBound = false
+        this.dispose()
     }
 
     /** @returns {string[]} sorted keys of loaded synth presets. */

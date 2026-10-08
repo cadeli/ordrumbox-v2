@@ -40,6 +40,15 @@ export default class MidiIndicatorView {
         }
     }
 
+    /** Releases the manager listeners and the pending activity flash. */
+    destroy() {
+        this.disconnect()
+        if (this.#activityTimer) {
+            clearTimeout(this.#activityTimer)
+            this.#activityTimer = null
+        }
+    }
+
     sync(midiManager) {
         if (midiManager) {
             const s = midiManager.getStatus()

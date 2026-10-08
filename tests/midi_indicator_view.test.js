@@ -172,4 +172,34 @@ describe('MidiIndicatorView', () => {
 
         vi.useRealTimers()
     })
+
+    it('destroy() releases the manager listeners', () => {
+        const container = buildMidiContainer()
+        const view = new MidiIndicatorView(container)
+        const manager = makeMidiManager({ ready: true })
+
+        view.connect(manager)
+        view.destroy()
+        manager.dispatchEvent(new Event('statusChange'))
+
+        view.sync(null)
+        expect(container.querySelector('#midiReadyLabel').textContent).toBe('Locked')
+    })
+
+    it('destroy() clears the pending activity timer', () => {
+        vi.useFakeTimers()
+        const container = buildMidiContainer()
+        const view = new MidiIndicatorView(container)
+
+        view.flashActivity()
+        expect(vi.getTimerCount()).toBe(1)
+
+        view.destroy()
+        expect(vi.getTimerCount()).toBe(0)
+
+        vi.advanceTimersByTime(150)
+        expect(container.querySelector('#midiActivityLabel').textContent).toBe('Activity')
+
+        vi.useRealTimers()
+    })
 })

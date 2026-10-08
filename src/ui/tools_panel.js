@@ -69,6 +69,10 @@ export default class ToolsPanel extends BasePanel {
 
     subscribe() {}
 
+    onDestroy() {
+        this.#midi.destroy()
+    }
+
     sync() {
         this.#midi.sync()
         if (this.isVisible) {

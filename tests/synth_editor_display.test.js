@@ -191,4 +191,44 @@ describe('Soft Synth Editor display', () => {
         expect(panel.style.display).toBe('none')
         expect(trackEditor.container.style.display).toBe('block')
     })
+
+    it('synthEditor.destroy() stops the LFO loop and detaches the panel', async () => {
+        const editor = trackEditor.synthEditor
+        await editor.showPanel()
+        expect(editor.lfoRafId).not.toBeNull()
+
+        editor.destroy()
+
+        expect(editor.lfoRafId).toBeNull()
+        expect(document.getElementById('soft-synth-panel')).toBeNull()
+    })
+
+    it('trackEditor.destroy() tears down the synth editor too', async () => {
+        const editor = trackEditor.synthEditor
+        await editor.showPanel()
+        expect(editor.lfoRafId).not.toBeNull()
+
+        trackEditor.destroy()
+
+        expect(editor.lfoRafId).toBeNull()
+        expect(document.getElementById('soft-synth-panel')).toBeNull()
+    })
+
+    it('re-binds click delegation after destroy() then createDOM()', async () => {
+        const editor = trackEditor.synthEditor
+        editor.destroy()
+        expect(document.getElementById('soft-synth-panel')).toBeNull()
+
+        editor.createDOM()
+        document.getElementById('app-content').appendChild(editor.panel)
+        await editor.showPanel()
+
+        const icon = editor.panel.querySelector('[data-synth-path="vco1.wave"].ss-wave-icon:not(.selected)')
+        expect(icon).not.toBeNull()
+
+        icon.click()
+
+        expect(icon.classList.contains('selected')).toBe(true)
+        expect(editor.model.draft.vco1.wave).toBe(icon.dataset.waveVal)
+    })
 })

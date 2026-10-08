@@ -391,6 +391,7 @@ export default class TrackEditor extends BasePanel {
         this.#modSection.destroy?.()
         for (const k of this.#knobs) k.destroy()
         this.#knobs = []
+        this.synthEditor?.destroy?.()
         // Sections are gone: a stale caller (an old ViewManager still bound
         // to the bus) must not reach them — sync() no-ops until createDOM().
         this.#domReady = false

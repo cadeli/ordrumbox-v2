@@ -104,6 +104,12 @@ export default class MidiSection {
         this.#midiView = new MidiIndicatorView(root)
     }
 
+    /** Releases the MIDI manager listeners held by the indicator view. */
+    destroy() {
+        this.#midiView?.destroy()
+        this.#midiView = null
+    }
+
     sync() {
         const root = this.#panel.container
         const outputSelect = root.querySelector('#tp-midi-output-select')
