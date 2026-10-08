@@ -139,7 +139,7 @@ describe('Functional: Auto-assign sounds', () => {
 
         expect(kick.sampleId).toBe('snd_kick')
         expect(snare.sampleId).toBe('snd_snare')
-        expect(chh.sampleId).toBe('snd_chh')
+        expect(chh.sampleId).toMatch(/snd_(chh|ohh)/)
     })
 
     it('finds equivalent instrument when direct match fails', () => {
