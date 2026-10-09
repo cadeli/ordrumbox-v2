@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { readFileSync, existsSync, statSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -11,10 +11,12 @@ const KITS_DIR = join(PROJECT_ROOT, 'assets/kits')
 describe('drumkits.json validation', () => {
     let drumkits
 
+    beforeAll(() => {
+        drumkits = JSON.parse(readFileSync(DRUMKITS_JSON, 'utf-8'))
+    })
+
     it('drumkits.json exists and is valid JSON', () => {
         expect(existsSync(DRUMKITS_JSON)).toBe(true)
-        const raw = readFileSync(DRUMKITS_JSON, 'utf-8')
-        drumkits = JSON.parse(raw)
         expect(Array.isArray(drumkits)).toBe(true)
         expect(drumkits.length).toBeGreaterThan(0)
     })

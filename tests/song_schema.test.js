@@ -15,6 +15,7 @@ import {
     normalizeSongs,
     pruneSongClips,
 } from '../src/model/song_schema.js'
+import { TICK } from '../src/core/constants.js'
 
 describe('slugify', () => {
     it('lowercases and dashes', () => {
@@ -90,6 +91,14 @@ describe('measuresForPattern', () => {
         expect(measuresForPattern({ beatCount: 4 })).toBe(1)
         expect(measuresForPattern({ beatCount: 8 })).toBe(2)
         expect(measuresForPattern({ beatCount: 16 })).toBe(4)
+    })
+
+    // Cross-check for the WAV export duration: 2 measures of 4/4 at 120 bpm
+    // is 4 seconds of audio, at 240 bpm 2 seconds (60 / bpm = one beat).
+    it('a measure is 128 ticks and scales with bpm', () => {
+        expect(BEATS_PER_MEASURE * TICK).toBe(128)
+        expect(2 * BEATS_PER_MEASURE * (60 / 120)).toBeCloseTo(4, 6)
+        expect(2 * BEATS_PER_MEASURE * (60 / 240)).toBeCloseTo(2, 6)
     })
 
     // beatCount is authored in beats and may be any value in 1..MAX_BEATS

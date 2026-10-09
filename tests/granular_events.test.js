@@ -57,6 +57,7 @@ describe('Granular patternChange events', () => {
         // (and EventBus swallows their errors). BasePanel.destroy() would do the
         // same thing through the `off` handles it keeps.
         playbackEvents.clearListeners()
+        vi.restoreAllMocks()
     })
 
     function captureGranular() {

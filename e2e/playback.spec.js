@@ -75,7 +75,7 @@ test.describe('Drumkit loading', () => {
             }
         })
 
-        const kitSelector = page.locator('#tb .tb-group select').first()
+        const kitSelector = page.locator('.tb-group:has(.tb-label:text-is("Drumkit")) select')
         const optionCount = await kitSelector.locator('option').count()
         if (optionCount > 1) {
             await kitSelector.selectOption({ index: 1 })

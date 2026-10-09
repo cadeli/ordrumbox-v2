@@ -174,22 +174,6 @@ export async function renderSynthBatch(page, configs, opts = {}) {
     )
 }
 
-/**
- * Render a single synth note. For backward compatibility — internally uses a
- * single-config batch. If you need multiple renders, use renderSynthBatch()
- * instead (multiple standalone OfflineAudioContexts produce silence after the
- * first one in Chromium).
- */
-export async function renderSynthNote(page, opts = {}) {
-    const results = await renderSynthBatch(page, [{ synthOverrides: opts.synthOverrides }], {
-        durationPerNote: opts.durationSec ?? 1.0,
-        gapSec: 0,
-        pitch: opts.pitch ?? 0,
-        bpm: opts.bpm ?? 120,
-    })
-    return results[0]
-}
-
 /** RMS on a window [startSec, endSec) of a given channel. */
 export function rmsWindow(channelData, sampleRate, startSec, endSec) {
     const start = Math.floor(startSec * sampleRate)

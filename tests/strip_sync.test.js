@@ -142,6 +142,15 @@ describe('applyTrackToStrip', () => {
         expect(strip.pan.pan.setTargetAtTime).toHaveBeenCalledWith(0.5, 1.0, expect.any(Number))
     })
 
+    // readDefaults:true back-fills absent velocity/pan from TRACK_DEFAULTS (1 / 0),
+    // the counterpart of applyTrackParamsToStrip leaving them untouched.
+    it('back-fills absent velocity/pan from the defaults', () => {
+        const strip = makeStrip()
+        applyTrackToStrip(strip, {}, 1.0)
+        expect(strip.output.gain.setTargetAtTime).toHaveBeenCalledWith(1, 1.0, expect.any(Number))
+        expect(strip.pan.pan.setTargetAtTime).toHaveBeenCalledWith(0, 1.0, expect.any(Number))
+    })
+
     it('skips velocity/pan when opts.skipVelocityPan=true', () => {
         const strip = makeStrip()
         applyTrackToStrip(strip, { name: 'KICK', velocity: 0.8, pan: 0.5 }, 1.0, { skipVelocityPan: true })
@@ -152,6 +161,9 @@ describe('applyTrackToStrip', () => {
 
 // ─── applyTrackParamsToStrip ───────────────────────────────────────────────────────
 
+// Same code as applyTrackToStrip with readDefaults:false — only that switch and
+// the mute handling deserve their own block; the filter/reverb/delay/velocity
+// behaviour is covered once above.
 describe('applyTrackParamsToStrip', () => {
     it('returns early when strip is null', () => {
         expect(() => applyTrackParamsToStrip(null, { filterType: 'lowpass' }, 1.0)).not.toThrow()
@@ -161,46 +173,13 @@ describe('applyTrackParamsToStrip', () => {
         expect(() => applyTrackParamsToStrip(makeStrip(), null, 1.0)).not.toThrow()
     })
 
-    it('calls updateFilter when filterType is set', () => {
+    // The whole point of this entry point: an absent field must stay untouched
+    // instead of being back-filled from TRACK_DEFAULTS.
+    it('leaves velocity and pan untouched when they are absent', () => {
         const strip = makeStrip()
-        applyTrackParamsToStrip(strip, { filterType: 'highpass', filterFreq: 0.3, filterQ: 0.5 }, 1.0)
-        expect(strip.updateFilter).toHaveBeenCalledWith('highpass', 0.3, 0.5)
-    })
-
-    it('passes freq=undefined to updateFilter when filterFreqLfo is set', () => {
-        const strip = makeStrip()
-        applyTrackParamsToStrip(strip, { filterType: 'lowpass', filterFreq: 0.5, filterFreqLfo: { freq: 1 } }, 1.0)
-        expect(strip.updateFilter).toHaveBeenCalledWith('lowpass', undefined, undefined)
-    })
-
-    it('calls updateReverb with 0 when reverbOn=false', () => {
-        const strip = makeStrip()
-        applyTrackParamsToStrip(strip, { reverbType: 'room', reverbOn: false, reverbAmount: 0.5 }, 1.0)
-        expect(strip.updateReverb).toHaveBeenCalledWith('room', 0)
-    })
-
-    it('calls updateDelay with 0 when delayOn=false', () => {
-        const strip = makeStrip()
-        applyTrackParamsToStrip(strip, { delayType: 'tape', delayTime: 1, delayOn: false, delayDepth: 0.3 }, 1.0)
-        expect(strip.updateDelay).toHaveBeenCalledWith('tape', 1, 0)
-    })
-
-    it('calls updateSaturation with 0 when sat=false', () => {
-        const strip = makeStrip()
-        applyTrackParamsToStrip(strip, { saturationType: 'soft', sat: false, saturationAmount: 0.5 }, 1.0)
-        expect(strip.updateSaturation).toHaveBeenCalledWith('soft', 0)
-    })
-
-    it('sets velocity on strip.output.gain', () => {
-        const strip = makeStrip()
-        applyTrackParamsToStrip(strip, { velocity: 0.7 }, 2.0)
-        expect(strip.output.gain.setTargetAtTime).toHaveBeenCalledWith(0.7, 2.0, expect.any(Number))
-    })
-
-    it('sets pan on strip.pan.pan', () => {
-        const strip = makeStrip()
-        applyTrackParamsToStrip(strip, { pan: -0.3 }, 2.0)
-        expect(strip.pan.pan.setTargetAtTime).toHaveBeenCalledWith(-0.3, 2.0, expect.any(Number))
+        applyTrackParamsToStrip(strip, {}, 1.0)
+        expect(strip.output.gain.setTargetAtTime).not.toHaveBeenCalled()
+        expect(strip.pan.pan.setTargetAtTime).not.toHaveBeenCalled()
     })
 
     it('mute=true forces gain to 0', () => {

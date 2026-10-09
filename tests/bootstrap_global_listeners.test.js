@@ -150,6 +150,57 @@ describe('bootstrap/global_listeners', () => {
             press(s, 'a')
             expect(s.value).toBe('50')
         })
+
+        it('respects negative ranges and offsets', () => {
+            const s = makeSlider({ min: -24, max: 24, step: 1, value: 0 })
+            press(s, 'ArrowRight')
+            expect(s.value).toBe('1')
+            press(s, 'ArrowLeft')
+            expect(s.value).toBe('0')
+        })
+
+        it('does not fire input/change when value is already at boundary', () => {
+            const s = makeSlider({ min: 0, max: 10, value: 10 })
+            const inputSpy = vi.fn()
+            s.addEventListener('input', inputSpy)
+            press(s, 'ArrowRight')
+            expect(inputSpy).not.toHaveBeenCalled()
+        })
+
+        it('ignores readonly sliders', () => {
+            const s = makeSlider({ value: 50 })
+            s.readOnly = true
+            press(s, 'ArrowRight')
+            expect(s.value).toBe('50')
+        })
+
+        it('works on LFO dual-range sliders (min/max)', () => {
+            const wrap = document.createElement('div')
+            wrap.className = 'ne-range-container'
+            const min = makeSlider({ min: 0, max: 1, step: 0.01, value: 0 })
+            min.dataset.lfoKey = 'min'
+            const max = makeSlider({ min: 0, max: 1, step: 0.01, value: 1 })
+            max.dataset.lfoKey = 'max'
+            wrap.append(min, max)
+            document.body.appendChild(wrap)
+
+            press(min, 'ArrowRight')
+            expect(parseFloat(min.value)).toBeCloseTo(0.01, 5)
+            press(max, 'ArrowLeft')
+            expect(parseFloat(max.value)).toBeCloseTo(0.99, 5)
+        })
+
+        it('slider keeps focus after an arrow key changes the value', () => {
+            const s = makeSlider({ value: 50 })
+            s.focus()
+            expect(document.activeElement).toBe(s)
+            press(s, 'ArrowRight')
+            expect(document.activeElement).toBe(s)
+            expect(s.value).toBe('51')
+            press(s, 'ArrowRight')
+            expect(document.activeElement).toBe(s)
+            expect(s.value).toBe('52')
+        })
     })
 
     describe('label / .ne-val click focuses the row slider', () => {
@@ -180,6 +231,92 @@ describe('bootstrap/global_listeners', () => {
             document.body.appendChild(orphan)
             orphan.click()
             expect(document.activeElement).not.toBe(orphan)
+        })
+
+        it('does not focus anything if the row has no range input', () => {
+            const row = document.createElement('div')
+            row.className = 'ne-row'
+            row.innerHTML = '<label>Title</label><span class="ne-val">val</span>'
+            document.body.appendChild(row)
+            const before = document.activeElement
+            row.querySelector('label').click()
+            expect(document.activeElement).toBe(before)
+        })
+
+        it('skips disabled sliders', () => {
+            const row = makeRow()
+            const slider = row.querySelector('input[type="range"]')
+            slider.disabled = true
+            const before = document.activeElement
+            row.querySelector('label').click()
+            expect(document.activeElement).toBe(before)
+        })
+
+        it('focuses the first slider in LFO dual-range rows', () => {
+            const row = document.createElement('div')
+            row.className = 'ne-row'
+            row.innerHTML = `
+                <label>Range</label>
+                <div class="ne-range-container">
+                    <input type="range" min="0" max="1" step="0.01" value="0" data-lfo-key="min">
+                    <input type="range" min="0" max="1" step="0.01" value="1" data-lfo-key="max">
+                </div>
+                <span class="ne-val">0.0..1.0</span>
+            `
+            document.body.appendChild(row)
+            const minSlider = row.querySelector('input[data-lfo-key="min"]')
+            row.querySelector('label').click()
+            expect(document.activeElement).toBe(minSlider)
+        })
+    })
+
+    describe('OrSlider does not double-fire with the fallback handler', () => {
+        let OrSlider
+
+        beforeAll(async () => {
+            OrSlider = (await import('../src/ui/components/or_slider.js')).OrSlider
+        })
+
+        function mountOrSlider({ value = 0.5, onChange = vi.fn() } = {}) {
+            const s = new OrSlider({
+                key: 'test',
+                label: 'T',
+                min: 0,
+                max: 1,
+                step: 0.01,
+                value,
+                onChange,
+            })
+            document.body.appendChild(s.createElement())
+            return { slider: s, input: s.input }
+        }
+
+        it('ArrowRight on an OrSlider moves by exactly ONE step (not two)', () => {
+            const { input, slider } = mountOrSlider({ value: 0.5 })
+            input.focus()
+            input.dispatchEvent(
+                new KeyboardEvent('keydown', {
+                    key: 'ArrowRight',
+                    bubbles: true,
+                    cancelable: true,
+                }),
+            )
+            expect(parseFloat(input.value)).toBeCloseTo(0.51, 5)
+            expect(slider.getValue()).toBeCloseTo(0.51, 5)
+        })
+
+        it('onChange fires exactly once per arrow press', () => {
+            const counted = vi.fn()
+            const { input } = mountOrSlider({ onChange: counted })
+            input.focus()
+            input.dispatchEvent(
+                new KeyboardEvent('keydown', {
+                    key: 'ArrowRight',
+                    bubbles: true,
+                    cancelable: true,
+                }),
+            )
+            expect(counted).toHaveBeenCalledTimes(1)
         })
     })
 })

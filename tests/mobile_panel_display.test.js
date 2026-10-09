@@ -198,7 +198,7 @@ describe('Mobile tab: Sequencer — panel visibility & position', () => {
         expect(ctx.trackEditor.container.style.display).toBe('flex')
     })
 
-    it('synth panel is hidden', () => {
+    it('synth panel stays hidden on the track tab', () => {
         playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         const el = document.getElementById('soft-synth-panel')
         expect(el.style.display).toBe('none')

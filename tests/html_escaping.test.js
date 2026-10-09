@@ -107,7 +107,6 @@ describe('HTML escaping in innerHTML fragments', () => {
     it('drumkit_manager detail escapes kit names and sample urls', () => {
         soundRegistry.drumkitList = [hostileKit()]
         soundRegistry.sounds = { [SOUND_URL]: hostileSound() }
-        serviceRegistry.soundRegistry = soundRegistry
 
         const dm = new DrumkitManager()
         dm.init()

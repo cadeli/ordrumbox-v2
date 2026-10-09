@@ -2,14 +2,13 @@
  * MIDI binary reader for tests.
  *
  * Parses a Standard MIDI File (SMF) Type 0 or 1 from a Uint8Array and
- * provides helpers to query note presence at specific tick positions.
+ * extracts the note-on events with their absolute tick positions.
  *
  * Usage:
- *   import { parseMidi, hasNoteAt, findNotesAt, findAllNotes } from './helpers/midi_reader.js'
+ *   import { parseMidi, findAllNotes } from './helpers/midi_reader.js'
  *
  *   const midi = parseMidi(new Uint8Array(buffer))
- *   hasNoteAt(midi, { tick: 288, note: 36, channel: 9 })  // → true | false
- *   findNotesAt(midi, { tick: 288 })                       // → [{ channel, note, velocity, trackIdx }]
+ *   findAllNotes(midi)  // → [{ absTick, channel, note, velocity, trackIdx }]
  */
 
 // ─── Low-level parsing ────────────────────────────────────────────────────────
@@ -134,43 +133,4 @@ export function findAllNotes(midi) {
         }
     }
     return noteOns
-}
-
-/**
- * Find all notes at a specific tick position.
- *
- * @param {{ tracks: Array }} midi - Parsed MIDI object
- * @param {{ tick: number, channel?: number, note?: number, velocity?: number }} filter
- * @returns {Array<{ channel, note, velocity, trackIdx }>}
- */
-export function findNotesAt(midi, filter) {
-    const { tick, channel, note, velocity } = filter
-    return findAllNotes(midi).filter(
-        (n) =>
-            n.absTick === tick &&
-            (channel === undefined || n.channel === channel) &&
-            (note === undefined || n.note === note) &&
-            (velocity === undefined || n.velocity === velocity),
-    )
-}
-
-/**
- * Check if a specific note is present at a given tick.
- *
- * @param {{ tracks: Array }} midi - Parsed MIDI object
- * @param {{ tick: number, channel?: number, note?: number, velocity?: number }} filter
- * @returns {boolean}
- */
-export function hasNoteAt(midi, filter) {
-    return findNotesAt(midi, filter).length > 0
-}
-
-/**
- * Get track names from the parsed MIDI.
- *
- * @param {{ trackNames: string[] }} midi - Parsed MIDI object
- * @returns {string[]}
- */
-export function getTrackNames(midi) {
-    return midi.trackNames
 }

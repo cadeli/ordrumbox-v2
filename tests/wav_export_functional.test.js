@@ -5,8 +5,8 @@
  *  1. Mock OfflineAudioContext returns buffers filled with a known sine pattern
  *  2. Export a pattern through WavExporter.exportPatternToWav()
  *  3. Parse the WAV blob binary and verify header + encoded samples
- *  4. Extended: verify scheduling via createBufferSource spy — ticks, velocity,
- *     pitch, every, retrigger, arp, multi-loop
+ *  4. Extended: verify scheduling via the tracked buffer sources — ticks,
+ *     velocity, pitch, every, retrigger, arp, multi-loop
  *
  * The mock renders a 60 Hz sine at 0.8 amplitude so the WAV encoder must
  * faithfully convert those float samples to 16-bit PCM.
@@ -596,27 +596,6 @@ describe('WAV Export — functional end-to-end', () => {
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             expect(blob.type).toBe('audio/wav')
-        })
-    })
-
-    // ── 6. createBufferSource called per note ──────────────────────────────────
-
-    describe('Case 6: engine scheduling', () => {
-        it('createBufferSource is called when notes are present', async () => {
-            const pattern = {
-                name: 'SchedTest',
-                bpm: 120,
-                beatCount: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0), makeNote(0, 16)])],
-            }
-            const exporter = new WavExporter()
-            const spy = vi.spyOn(MockOfflineAudioContext.prototype, 'createBufferSource')
-            spy.mockClear()
-
-            await exporter.exportPatternToWav(pattern, 1)
-
-            expect(spy).toHaveBeenCalled()
-            spy.mockRestore()
         })
     })
 

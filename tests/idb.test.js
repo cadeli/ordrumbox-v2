@@ -476,276 +476,276 @@ describe('IndexedDB helpers', () => {
             expect(songs[0].value.patterns[0].nbBeats).toBeUndefined()
         })
 
-        // ─── MIGRATIONS[6]: stable pattern ids ─────────────────────────────────────
-
-        describe('MIGRATIONS[6] assigns stable pattern ids', () => {
-            it('mints ids on a raw song blob', () => {
-                const songs = [{ key: 'my song', value: { name: 'my song', patterns: [{ name: 'Rock', tracks: [] }] } }]
-
-                runMigration6({ songs })
-
-                expect(songs[0].value.patterns[0].id).toBe('rock')
-            })
-
-            it('mints ids inside the {data} envelope of the patterns cache', () => {
-                const patterns = [
-                    {
-                        key: 'song.json',
-                        value: { data: { patterns: [{ name: 'Bass Line', tracks: [] }] }, savedAt: 42 },
-                    },
-                ]
-
-                runMigration6({ patterns })
-
-                expect(patterns[0].value.data.patterns[0].id).toBe('bass-line')
-                expect(patterns[0].value.savedAt).toBe(42)
-            })
-
-            it('de-duplicates same-named patterns in one song', () => {
-                const songs = [
-                    {
-                        key: 'dup',
-                        value: {
-                            patterns: [
-                                { name: 'Same', tracks: [] },
-                                { name: 'Same', tracks: [] },
-                            ],
-                        },
-                    },
-                ]
-
-                runMigration6({ songs })
-
-                const ids = songs[0].value.patterns.map((p) => p.id)
-                expect(new Set(ids).size).toBe(2)
-            })
-
-            // Re-running must not re-slug, or a rename would silently break clips.
-            it('never overwrites an existing id', () => {
-                const songs = [{ key: 's', value: { patterns: [{ id: 'kept', name: 'Renamed', tracks: [] }] } }]
-
-                runMigration6({ songs })
-
-                expect(songs[0].value.patterns[0].id).toBe('kept')
-            })
-
-            it('is a no-op without a transaction', () => {
-                const db = { objectStoreNames: { contains: () => true } }
-                expect(() => idbModule.MIGRATIONS[6](db, null)).not.toThrow()
-            })
-        })
-
-        // ─── MIGRATIONS[7]: retriggerNum → retriggerCount ────────────────────────────
-
-        const runMigration7 = (stores) => runMigrationN(7, stores)
-
-        describe('MIGRATIONS[7] renames retriggerNum to retriggerCount', () => {
-            it('rewrites object notes of every pattern of a raw song', () => {
-                const songs = [
-                    {
-                        key: 'my song',
-                        value: {
-                            name: 'my song',
-                            patterns: [
-                                { name: 'A', tracks: [{ name: 'KICK', notes: [{ beat: 0, retriggerNum: 3 }] }] },
-                                { name: 'B', tracks: [{ name: 'SNARE', notes: [{ beat: 1, retriggerNum: 1 }] }] },
-                            ],
-                        },
-                    },
-                ]
-
-                runMigration7({ songs })
-
-                const song = songs[0].value
-                expect(song.patterns[0].tracks[0].notes[0].retriggerCount).toBe(3)
-                expect(song.patterns[1].tracks[0].notes[0].retriggerCount).toBe(1)
-                expect(JSON.stringify(song)).not.toContain('retriggerNum')
-            })
-
-            it('rewrites the compact noteKeys header as well as the notes', () => {
-                const songs = [
-                    {
-                        key: 'compact',
-                        value: {
-                            patterns: [
-                                {
-                                    name: 'A',
-                                    tracks: [
-                                        { name: 'KICK', noteKeys: ['velocity', 'retriggerNum'], notes: [[0.9, 4]] },
-                                    ],
-                                },
-                            ],
-                        },
-                    },
-                ]
-
-                runMigration7({ songs })
-
-                const track = songs[0].value.patterns[0].tracks[0]
-                expect(track.noteKeys).toEqual(['velocity', 'retriggerCount'])
-                // Positional: the value stays in its slot, only the name moves.
-                expect(track.notes[0]).toEqual([0.9, 4])
-            })
-
-            it('rewrites the {data} envelope used by the patterns cache', () => {
-                const patterns = [
-                    {
-                        key: 'song.json',
-                        value: {
-                            data: { tracks: [{ name: 'BASS', notes: [{ beat: 2, retriggerNum: 5 }] }] },
-                            savedAt: 1700000000000,
-                        },
-                    },
-                ]
-
-                runMigration7({ patterns })
-
-                const entry = patterns[0].value
-                expect(entry.data.tracks[0].notes[0].retriggerCount).toBe(5)
-                // The cache TTL must not be refreshed by the migration.
-                expect(entry.savedAt).toBe(1700000000000)
-            })
-
-            it('leaves already-migrated data alone', () => {
-                const songs = [
-                    {
-                        key: 'ok',
-                        value: { patterns: [{ tracks: [{ notes: [{ beat: 0, retriggerCount: 2 }] }] }] },
-                    },
-                ]
-
-                runMigration7({ songs })
-
-                expect(songs[0].value.patterns[0].tracks[0].notes[0].retriggerCount).toBe(2)
-            })
-
-            it('is a no-op without a transaction', () => {
-                const db = { objectStoreNames: { contains: () => true } }
-                expect(() => idbModule.MIGRATIONS[7](db, null)).not.toThrow()
-            })
-        })
-
-        // ─── MIGRATIONS[8]: soundId → sampleId, startBar/bars → measure keys ─────────
-
-        const runMigration8 = (stores) => runMigrationN(8, stores)
-
-        describe('MIGRATIONS[8] renames the measure-era keys', () => {
-            it('rewrites track soundId and the clip keys of a raw song', () => {
-                const songs = [
-                    {
-                        key: 'my song',
-                        value: {
-                            name: 'my song',
-                            loopBars: 8,
-                            clips: [
-                                { pattern: 'verse', startBar: 0, bars: 2 },
-                                { pattern: 'chorus', startBar: 2, bars: 4 },
-                            ],
-                            patterns: [
-                                { name: 'A', tracks: [{ name: 'KICK', soundId: 'kick01' }] },
-                                { name: 'B', tracks: [{ name: 'SNARE', soundId: 'snare01' }] },
-                            ],
-                        },
-                    },
-                ]
-
-                runMigration8({ songs })
-
-                const song = songs[0].value
-                expect(song.patterns[0].tracks[0].sampleId).toBe('kick01')
-                expect(song.patterns[1].tracks[0].sampleId).toBe('snare01')
-                expect(song.loopMeasureCount).toBe(8)
-                expect(song.clips).toEqual([
-                    { pattern: 'verse', startMeasure: 0, measureCount: 2 },
-                    { pattern: 'chorus', startMeasure: 2, measureCount: 4 },
-                ])
-                expect(JSON.stringify(song)).not.toContain('soundId')
-                expect(JSON.stringify(song)).not.toContain('startBar')
-                expect(JSON.stringify(song)).not.toContain('loopBars')
-            })
-
-            it('rewrites the {data} envelope used by the patterns cache', () => {
-                const patterns = [
-                    {
-                        key: 'song.json',
-                        value: {
-                            data: { tracks: [{ name: 'BASS', soundId: 'bass01' }] },
-                            savedAt: 1700000000000,
-                        },
-                    },
-                ]
-
-                runMigration8({ patterns })
-
-                const entry = patterns[0].value
-                expect(entry.data.tracks[0].sampleId).toBe('bass01')
-                // The cache TTL must not be refreshed by the migration.
-                expect(entry.savedAt).toBe(1700000000000)
-            })
-
-            it('leaves already-migrated data alone', () => {
-                const songs = [
-                    {
-                        key: 'ok',
-                        value: {
-                            loopMeasureCount: 4,
-                            clips: [{ pattern: 'a', startMeasure: 0, measureCount: 1 }],
-                            patterns: [{ tracks: [{ sampleId: 'kick01' }] }],
-                        },
-                    },
-                ]
-
-                runMigration8({ songs })
-
-                const song = songs[0].value
-                expect(song.clips[0]).toEqual({ pattern: 'a', startMeasure: 0, measureCount: 1 })
-                expect(song.patterns[0].tracks[0].sampleId).toBe('kick01')
-                expect(song.loopMeasureCount).toBe(4)
-            })
-
-            it('keeps the current key when a record carries both spellings', () => {
-                const songs = [
-                    {
-                        key: 'both',
-                        value: {
-                            patterns: [{ tracks: [{ soundId: 'old', sampleId: 'new' }] }],
-                            clips: [{ pattern: 'a', startBar: 3, startMeasure: 1, bars: 2, measureCount: 5 }],
-                        },
-                    },
-                ]
-
-                runMigration8({ songs })
-
-                const song = songs[0].value
-                expect(song.patterns[0].tracks[0].sampleId).toBe('new')
-                expect(song.clips[0].startMeasure).toBe(1)
-                expect(song.clips[0].measureCount).toBe(5)
-            })
-
-            it('renames the legacy note keys of a walked track as well', () => {
-                const songs = [
-                    {
-                        key: 'notes',
-                        value: { patterns: [{ tracks: [{ notes: [{ beat: 0, beatStep: 2, steppc: 50 }] }] }] },
-                    },
-                ]
-
-                runMigration8({ songs })
-
-                const note = songs[0].value.patterns[0].tracks[0].notes[0]
-                expect(note.stepPercent).toBe(50)
-                expect(note).not.toHaveProperty('steppc')
-            })
-
-            it('is a no-op without a transaction', () => {
-                const db = { objectStoreNames: { contains: () => true } }
-                expect(() => idbModule.MIGRATIONS[8](db, null)).not.toThrow()
-            })
-        })
-
         it('is a no-op when there is no transaction', () => {
             const db = { objectStoreNames: { contains: () => true } }
             expect(() => idbModule.MIGRATIONS[5](db, null)).not.toThrow()
+        })
+    })
+
+    // MIGRATIONS[6] and later live at the top level: each migration is an
+    // independent upgrade, not a nested case of MIGRATIONS[5].
+    describe('MIGRATIONS[6] assigns stable pattern ids', () => {
+        it('mints ids on a raw song blob', () => {
+            const songs = [{ key: 'my song', value: { name: 'my song', patterns: [{ name: 'Rock', tracks: [] }] } }]
+
+            runMigration6({ songs })
+
+            expect(songs[0].value.patterns[0].id).toBe('rock')
+        })
+
+        it('mints ids inside the {data} envelope of the patterns cache', () => {
+            const patterns = [
+                {
+                    key: 'song.json',
+                    value: { data: { patterns: [{ name: 'Bass Line', tracks: [] }] }, savedAt: 42 },
+                },
+            ]
+
+            runMigration6({ patterns })
+
+            expect(patterns[0].value.data.patterns[0].id).toBe('bass-line')
+            expect(patterns[0].value.savedAt).toBe(42)
+        })
+
+        it('de-duplicates same-named patterns in one song', () => {
+            const songs = [
+                {
+                    key: 'dup',
+                    value: {
+                        patterns: [
+                            { name: 'Same', tracks: [] },
+                            { name: 'Same', tracks: [] },
+                        ],
+                    },
+                },
+            ]
+
+            runMigration6({ songs })
+
+            const ids = songs[0].value.patterns.map((p) => p.id)
+            expect(new Set(ids).size).toBe(2)
+        })
+
+        // Re-running must not re-slug, or a rename would silently break clips.
+        it('never overwrites an existing id', () => {
+            const songs = [{ key: 's', value: { patterns: [{ id: 'kept', name: 'Renamed', tracks: [] }] } }]
+
+            runMigration6({ songs })
+
+            expect(songs[0].value.patterns[0].id).toBe('kept')
+        })
+
+        it('is a no-op without a transaction', () => {
+            const db = { objectStoreNames: { contains: () => true } }
+            expect(() => idbModule.MIGRATIONS[6](db, null)).not.toThrow()
+        })
+    })
+
+    // ─── MIGRATIONS[7]: retriggerNum → retriggerCount ────────────────────────────
+
+    const runMigration7 = (stores) => runMigrationN(7, stores)
+
+    describe('MIGRATIONS[7] renames retriggerNum to retriggerCount', () => {
+        it('rewrites object notes of every pattern of a raw song', () => {
+            const songs = [
+                {
+                    key: 'my song',
+                    value: {
+                        name: 'my song',
+                        patterns: [
+                            { name: 'A', tracks: [{ name: 'KICK', notes: [{ beat: 0, retriggerNum: 3 }] }] },
+                            { name: 'B', tracks: [{ name: 'SNARE', notes: [{ beat: 1, retriggerNum: 1 }] }] },
+                        ],
+                    },
+                },
+            ]
+
+            runMigration7({ songs })
+
+            const song = songs[0].value
+            expect(song.patterns[0].tracks[0].notes[0].retriggerCount).toBe(3)
+            expect(song.patterns[1].tracks[0].notes[0].retriggerCount).toBe(1)
+            expect(JSON.stringify(song)).not.toContain('retriggerNum')
+        })
+
+        it('rewrites the compact noteKeys header as well as the notes', () => {
+            const songs = [
+                {
+                    key: 'compact',
+                    value: {
+                        patterns: [
+                            {
+                                name: 'A',
+                                tracks: [
+                                    { name: 'KICK', noteKeys: ['velocity', 'retriggerNum'], notes: [[0.9, 4]] },
+                                ],
+                            },
+                        ],
+                    },
+                },
+            ]
+
+            runMigration7({ songs })
+
+            const track = songs[0].value.patterns[0].tracks[0]
+            expect(track.noteKeys).toEqual(['velocity', 'retriggerCount'])
+            // Positional: the value stays in its slot, only the name moves.
+            expect(track.notes[0]).toEqual([0.9, 4])
+        })
+
+        it('rewrites the {data} envelope used by the patterns cache', () => {
+            const patterns = [
+                {
+                    key: 'song.json',
+                    value: {
+                        data: { tracks: [{ name: 'BASS', notes: [{ beat: 2, retriggerNum: 5 }] }] },
+                        savedAt: 1700000000000,
+                    },
+                },
+            ]
+
+            runMigration7({ patterns })
+
+            const entry = patterns[0].value
+            expect(entry.data.tracks[0].notes[0].retriggerCount).toBe(5)
+            // The cache TTL must not be refreshed by the migration.
+            expect(entry.savedAt).toBe(1700000000000)
+        })
+
+        it('leaves already-migrated data alone', () => {
+            const songs = [
+                {
+                    key: 'ok',
+                    value: { patterns: [{ tracks: [{ notes: [{ beat: 0, retriggerCount: 2 }] }] }] },
+                },
+            ]
+
+            runMigration7({ songs })
+
+            expect(songs[0].value.patterns[0].tracks[0].notes[0].retriggerCount).toBe(2)
+        })
+
+        it('is a no-op without a transaction', () => {
+            const db = { objectStoreNames: { contains: () => true } }
+            expect(() => idbModule.MIGRATIONS[7](db, null)).not.toThrow()
+        })
+    })
+
+    // ─── MIGRATIONS[8]: soundId → sampleId, startBar/bars → measure keys ─────────
+
+    const runMigration8 = (stores) => runMigrationN(8, stores)
+
+    describe('MIGRATIONS[8] renames the measure-era keys', () => {
+        it('rewrites track soundId and the clip keys of a raw song', () => {
+            const songs = [
+                {
+                    key: 'my song',
+                    value: {
+                        name: 'my song',
+                        loopBars: 8,
+                        clips: [
+                            { pattern: 'verse', startBar: 0, bars: 2 },
+                            { pattern: 'chorus', startBar: 2, bars: 4 },
+                        ],
+                        patterns: [
+                            { name: 'A', tracks: [{ name: 'KICK', soundId: 'kick01' }] },
+                            { name: 'B', tracks: [{ name: 'SNARE', soundId: 'snare01' }] },
+                        ],
+                    },
+                },
+            ]
+
+            runMigration8({ songs })
+
+            const song = songs[0].value
+            expect(song.patterns[0].tracks[0].sampleId).toBe('kick01')
+            expect(song.patterns[1].tracks[0].sampleId).toBe('snare01')
+            expect(song.loopMeasureCount).toBe(8)
+            expect(song.clips).toEqual([
+                { pattern: 'verse', startMeasure: 0, measureCount: 2 },
+                { pattern: 'chorus', startMeasure: 2, measureCount: 4 },
+            ])
+            expect(JSON.stringify(song)).not.toContain('soundId')
+            expect(JSON.stringify(song)).not.toContain('startBar')
+            expect(JSON.stringify(song)).not.toContain('loopBars')
+        })
+
+        it('rewrites the {data} envelope used by the patterns cache', () => {
+            const patterns = [
+                {
+                    key: 'song.json',
+                    value: {
+                        data: { tracks: [{ name: 'BASS', soundId: 'bass01' }] },
+                        savedAt: 1700000000000,
+                    },
+                },
+            ]
+
+            runMigration8({ patterns })
+
+            const entry = patterns[0].value
+            expect(entry.data.tracks[0].sampleId).toBe('bass01')
+            // The cache TTL must not be refreshed by the migration.
+            expect(entry.savedAt).toBe(1700000000000)
+        })
+
+        it('leaves already-migrated data alone', () => {
+            const songs = [
+                {
+                    key: 'ok',
+                    value: {
+                        loopMeasureCount: 4,
+                        clips: [{ pattern: 'a', startMeasure: 0, measureCount: 1 }],
+                        patterns: [{ tracks: [{ sampleId: 'kick01' }] }],
+                    },
+                },
+            ]
+
+            runMigration8({ songs })
+
+            const song = songs[0].value
+            expect(song.clips[0]).toEqual({ pattern: 'a', startMeasure: 0, measureCount: 1 })
+            expect(song.patterns[0].tracks[0].sampleId).toBe('kick01')
+            expect(song.loopMeasureCount).toBe(4)
+        })
+
+        it('keeps the current key when a record carries both spellings', () => {
+            const songs = [
+                {
+                    key: 'both',
+                    value: {
+                        patterns: [{ tracks: [{ soundId: 'old', sampleId: 'new' }] }],
+                        clips: [{ pattern: 'a', startBar: 3, startMeasure: 1, bars: 2, measureCount: 5 }],
+                    },
+                },
+            ]
+
+            runMigration8({ songs })
+
+            const song = songs[0].value
+            expect(song.patterns[0].tracks[0].sampleId).toBe('new')
+            expect(song.clips[0].startMeasure).toBe(1)
+            expect(song.clips[0].measureCount).toBe(5)
+        })
+
+        it('renames the legacy note keys of a walked track as well', () => {
+            const songs = [
+                {
+                    key: 'notes',
+                    value: { patterns: [{ tracks: [{ notes: [{ beat: 0, beatStep: 2, steppc: 50 }] }] }] },
+                },
+            ]
+
+            runMigration8({ songs })
+
+            const note = songs[0].value.patterns[0].tracks[0].notes[0]
+            expect(note.stepPercent).toBe(50)
+            expect(note).not.toHaveProperty('steppc')
+        })
+
+        it('is a no-op without a transaction', () => {
+            const db = { objectStoreNames: { contains: () => true } }
+            expect(() => idbModule.MIGRATIONS[8](db, null)).not.toThrow()
         })
     })
 })

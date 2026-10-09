@@ -1,13 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import MidiExporter, { PPQN, encodeVLQ, resolveTrackMidi } from '../src/logic/midi/midi_exporter.js'
-import { buildInstrumentTrack } from './helpers/midi_test_helpers.js'
+import MidiExporter, { encodeVLQ, resolveTrackMidi } from '../src/logic/midi/midi_exporter.js'
 import InstrumentsManager from '../src/logic/services/instruments_manager/index.js'
 import { readUint32BE, readUint16BE, decodeVLQ } from './helpers/midi_reader.js'
 import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const TICKS_PER_MEASURE = PPQN * 1
 
 /** Decode all chunk types and their positions from a raw SMF Uint8Array */
 function parseChunks(bytes) {
@@ -160,145 +157,6 @@ describe('resolveTrackMidi', () => {
         const r = resolveTrackMidi('PAD', mockIm)
         expect(r.midiNote).toBe(60)
         expect(r.channel).toBe(0)
-    })
-})
-
-// ─── buildInstrumentTrack ─────────────────────────────────────────────────────
-
-describe('buildInstrumentTrack', () => {
-    it('returns an MTrk chunk starting with MTrk', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0)])
-        const chunk = buildInstrumentTrack(track, 36, 9)
-        expect(String.fromCharCode(chunk[0], chunk[1], chunk[2], chunk[3])).toBe('MTrk')
-    })
-
-    it('chunk length field matches actual data length', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0)])
-        const chunk = buildInstrumentTrack(track, 36, 9)
-        const declaredLength = readUint32BE(chunk, 4)
-        expect(declaredLength).toBe(chunk.length - 8)
-    })
-
-    it('empty notes produces minimal MTrk (only End of Track)', () => {
-        const track = makeTrack('KICK', [])
-        const chunk = buildInstrumentTrack(track, 36, 9)
-        expect(String.fromCharCode(chunk[0], chunk[1], chunk[2], chunk[3])).toBe('MTrk')
-    })
-
-    it('contains Note On (0x90) and Note Off (0x80) for each note', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0, { velocity: 1.0 })])
-        const chunk = buildInstrumentTrack(track, 36, 9)
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const noteOns = events.filter((e) => e.type === 'midi' && e.status === 0x90)
-        const noteOffs = events.filter((e) => e.type === 'midi' && e.status === 0x80)
-        expect(noteOns.length).toBe(1)
-        expect(noteOffs.length).toBe(1)
-    })
-
-    it('Note On uses correct MIDI note number', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0)])
-        const chunk = buildInstrumentTrack(track, 36, 9)
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const on = events.find((e) => e.type === 'midi' && e.status === 0x90)
-        expect(on.note).toBe(36)
-    })
-
-    it('Note On velocity is scaled from [0,1] to [0,127]', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0, { velocity: 1.0 })])
-        const chunk = buildInstrumentTrack(track, 36, 9)
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const on = events.find((e) => e.type === 'midi' && e.status === 0x90)
-        expect(on.velocity).toBe(127)
-    })
-
-    it('Note On velocity 0.5 maps to 64', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0, { velocity: 0.5 })])
-        const chunk = buildInstrumentTrack(track, 36, 9)
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const on = events.find((e) => e.type === 'midi' && e.status === 0x90)
-        expect(on.velocity).toBe(64)
-    })
-
-    it('second note in beat 1, beatStep 0 has correct absolute tick offset', () => {
-        const track = makeTrack('KICK', [makeNote(1, 0, { velocity: 1.0 })], { stepsPerBeat: 4 })
-        const chunk = buildInstrumentTrack(track, 36, 9)
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const on = events.find((e) => e.type === 'midi' && e.status === 0x90)
-        // beat=1, beatStep=0 → absoluteTick = 1 * 96 = 96
-        // delta from cursor=0 → delta=96
-        expect(on.delta).toBe(TICKS_PER_MEASURE)
-    })
-
-    it('beatStep subdivision is correct (stepsPerBeat=16 → 6 ticks/step)', () => {
-        const track = makeTrack('KICK', [makeNote(0, 1, { velocity: 1.0 })], { stepsPerBeat: 16 })
-        const chunk = buildInstrumentTrack(track, 36, 9)
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const on = events.find((e) => e.type === 'midi' && e.status === 0x90)
-        // 1 step = 96/16 = 6 ticks
-        expect(on.delta).toBe(6)
-    })
-
-    it('uses channel correctly in status byte', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0)])
-        const chunk = buildInstrumentTrack(track, 36, 3) // channel 3
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const on = events.find((e) => e.type === 'midi' && e.status === 0x90)
-        expect(on.channel).toBe(3)
-    })
-
-    it('pitch offset shifts MIDI note number', () => {
-        const track = makeTrack('MELO', [makeNote(0, 0, { velocity: 0.8, pitch: 5 })])
-        const chunk = buildInstrumentTrack(track, 60, 3) // base=60, pitch=5
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const on = events.find((e) => e.type === 'midi' && e.status === 0x90)
-        expect(on.note).toBe(65)
-    })
-
-    it('loops=2 produces 2× the notes', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0), makeNote(1, 0)])
-        const chunk1 = buildInstrumentTrack(track, 36, 9, 1)
-        const chunk2 = buildInstrumentTrack(track, 36, 9, 2)
-        const evts1 = parseMTrkEvents(chunk1, 8, chunk1.length - 8).filter(
-            (e) => e.type === 'midi' && e.status === 0x90,
-        )
-        const evts2 = parseMTrkEvents(chunk2, 8, chunk2.length - 8).filter(
-            (e) => e.type === 'midi' && e.status === 0x90,
-        )
-        expect(evts2.length).toBe(evts1.length * 2)
-    })
-
-    it('ends with an End of Track meta event (0xFF 0x2F 0x00)', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0)])
-        const chunk = buildInstrumentTrack(track, 36, 9)
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const last = events[events.length - 1]
-        expect(last.type).toBe('meta')
-        expect(last.metaType).toBe(0x2f)
-    })
-
-    it('contains a track-name meta event (0x03) with the track name', () => {
-        const track = makeTrack('SNARE', [makeNote(0, 0)])
-        const chunk = buildInstrumentTrack(track, 38, 9)
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const nameEvt = events.find((e) => e.type === 'meta' && e.metaType === 0x03)
-        const name = String.fromCharCode(...nameEvt.data)
-        expect(name).toBe('SNARE')
-    })
-
-    it('clamped velocity: >1 treated as 127', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0, { velocity: 2.0 })])
-        const chunk = buildInstrumentTrack(track, 36, 9)
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const on = events.find((e) => e.type === 'midi' && e.status === 0x90)
-        expect(on.velocity).toBe(127)
-    })
-
-    it('clamped note: pitch offset cannot exceed MIDI 127', () => {
-        const track = makeTrack('MELO', [makeNote(0, 0, { velocity: 0.8, pitch: 200 })])
-        const chunk = buildInstrumentTrack(track, 60, 3)
-        const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
-        const on = events.find((e) => e.type === 'midi' && e.status === 0x90)
-        expect(on.note).toBeLessThanOrEqual(127)
     })
 })
 

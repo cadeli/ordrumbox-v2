@@ -1,11 +1,21 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import SongStructure from '../src/logic/generators/song_structure.js'
 
 describe('SongStructure', () => {
     let structure
+    const originalRandom = Math.random
 
     beforeEach(() => {
+        let seed = 42
+        Math.random = () => {
+            seed = (seed * 9301 + 49297) % 233280
+            return seed / 233280
+        }
         structure = new SongStructure()
+    })
+
+    afterEach(() => {
+        Math.random = originalRandom
     })
 
     describe('GENRES', () => {
@@ -23,10 +33,9 @@ describe('SongStructure', () => {
             })
         })
 
-        it('each structure maps track names to variant strings', () => {
+        it('each structure maps track names to non-empty variant strings', () => {
             Object.values(SongStructure.STRUCTURES).forEach((structure) => {
-                Object.entries(structure).forEach(([track, variant]) => {
-                    expect(typeof track).toBe('string')
+                Object.entries(structure).forEach(([, variant]) => {
                     expect(typeof variant).toBe('string')
                     expect(variant.length).toBeGreaterThan(0)
                 })

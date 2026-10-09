@@ -56,7 +56,7 @@ describe('patternFixer - normalizeNoteGridPosition', () => {
     })
 })
 
-describe('patternFixer - fixNoteDefaults', () => {
+describe('patternFixer - normalizeNote', () => {
     it('applies note defaults', () => {
         const note = { beat: 0, beatStep: 0 }
         const result = { ...note, ...normalizeNote(note) }

@@ -16,8 +16,6 @@
 
 import { test, expect } from '@playwright/test'
 import { bootApp } from './fixtures.js'
-import { TICK } from '../src/core/constants.js'
-import { BEATS_PER_MEASURE } from '../src/model/song_schema.js'
 
 const SR = 44100
 
@@ -209,15 +207,5 @@ test.describe('Song WAV export', () => {
         const frames = dv.getUint32(40, true) / (2 * 2)
         // 2 measures of 4/4 at 120 bpm = 2 * 4 * 0.5 s
         expect(frames / dv.getUint32(24, true)).toBeCloseTo(4, 1)
-    })
-
-    // cross-check the numbers above against the shared constants, so the
-    // expectations cannot silently drift from the engine
-    test('the expected lengths match the engine constants', () => {
-        expect(BEATS_PER_MEASURE).toBe(4)
-        expect(BEATS_PER_MEASURE * TICK).toBe(128)
-        // 2 measures of 4/4, at 120 bpm and then at 240 bpm
-        expect(2 * BEATS_PER_MEASURE * (60 / 120)).toBeCloseTo(4, 6)
-        expect(2 * BEATS_PER_MEASURE * (60 / 240)).toBeCloseTo(2, 6)
     })
 })

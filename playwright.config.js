@@ -26,7 +26,6 @@ export default defineConfig({
     },
 
     webServer: {
-        // TODO: adapt if the Vite command in this repo differs (e.g. "vite --port 3000")
         command: 'npm run dev',
         url: 'http://localhost:3000',
         reuseExistingServer: !process.env.CI,

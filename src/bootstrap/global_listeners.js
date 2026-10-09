@@ -95,7 +95,7 @@ export function initGlobalListeners() {
         mo.observe(document.body, { childList: true, subtree: true })
     }
 
-    // Delegated range-slider arrow-key stepping — kept in sync with tests/slider_keyboard.test.js
+    // Delegated range-slider arrow-key stepping — tested by tests/bootstrap_global_listeners.test.js
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
         const el = e.target

@@ -275,6 +275,7 @@ describe('Sequencer', () => {
         serviceRegistry.audioEngine = {
             start: vi.fn().mockResolvedValue(undefined),
             stop: vi.fn(),
+            setBpm: vi.fn(),
             invalidateCache: vi.fn(),
         }
 
@@ -307,6 +308,7 @@ describe('Sequencer', () => {
         serviceRegistry.audioEngine = {
             start: vi.fn().mockResolvedValue(undefined),
             stop: vi.fn(),
+            setBpm: vi.fn(),
             invalidateCache: vi.fn(),
         }
         seq.stop = vi.fn()
@@ -316,6 +318,115 @@ describe('Sequencer', () => {
         expect(serviceRegistry.resourcesLoader.ensureResourcesLoaded).toHaveBeenCalledTimes(1)
         expect(serviceRegistry.transport.start).toHaveBeenCalled()
         expect(seq.stop).not.toHaveBeenCalled()
+    })
+
+    // ── tempo ownership: the visible view decides ─────────────────────
+
+    describe('playback tempo follows the view', () => {
+        /** A transport stub that records every tempo it is given. */
+        function makeTransport() {
+            return {
+                isRunning: false,
+                tick: 0,
+                nextStepTime: 0,
+                bpm: 120,
+                setBpm: vi.fn(function (bpm) {
+                    this.bpm = bpm
+                }),
+                start: vi.fn(function () {
+                    this.isRunning = true
+                    this.tick = 0
+                }),
+                stop: vi.fn(),
+            }
+        }
+
+        function makeEngine() {
+            return {
+                start: vi.fn().mockResolvedValue(undefined),
+                setBpm: vi.fn(),
+                invalidateCache: vi.fn(),
+            }
+        }
+
+        /** Loads an arrangement whose bpm differs from the pattern's (140). */
+        function withArrangement(songBpm = 120) {
+            appState.patterns = [makePattern({ bpm: 140 })]
+            appState.songs = [{ id: 'demo', name: 'Demo', bpm: songBpm, clips: [] }]
+            appState.selectedSongIdx = 0
+        }
+
+        /** Starts playback so the transport is anchored on the given view. */
+        async function startIn(view) {
+            appState.currentView = view
+            const seq = new Sequencer()
+            const transport = makeTransport()
+            const engine = makeEngine()
+            serviceRegistry.transport = transport
+            serviceRegistry.audioEngine = engine
+            await seq.start()
+            return { seq, transport, engine }
+        }
+
+        it('is the pattern bpm outside the song view and the arrangement bpm inside it', async () => {
+            withArrangement(150)
+            const seq = new Sequencer()
+
+            appState.currentView = 'edit'
+            expect(seq.currentPlaybackTempo()).toBe(140)
+            appState.currentView = 'synth'
+            expect(seq.currentPlaybackTempo()).toBe(140)
+            appState.currentView = 'song'
+            expect(seq.currentPlaybackTempo()).toBe(150)
+        })
+
+        it('starts a pattern view on the pattern bpm, not on the arrangement bpm', async () => {
+            withArrangement(120)
+            const { transport } = await startIn('edit')
+
+            expect(transport.setBpm).toHaveBeenCalledWith(140)
+        })
+
+        it('starts the song view on the arrangement bpm', async () => {
+            withArrangement(120)
+            const { transport } = await startIn('song')
+
+            expect(transport.setBpm).toHaveBeenCalledWith(120)
+        })
+
+        // grid -> synth is not a mode change: the transport keeps its tempo,
+        // its position and its cache.
+        it('leaves the transport alone when the switch stays in pattern mode', async () => {
+            withArrangement(120)
+            const { seq, transport, engine } = await startIn('edit')
+            transport.tick = 42
+            transport.setBpm.mockClear()
+            engine.invalidateCache.mockClear()
+
+            appState.currentView = 'synth'
+            seq.syncPlaybackMode()
+
+            expect(transport.setBpm).not.toHaveBeenCalled()
+            expect(transport.tick).toBe(42)
+            expect(engine.invalidateCache).not.toHaveBeenCalled()
+        })
+
+        it('re-anchors on the new tempo when the playback mode changes', async () => {
+            withArrangement(120)
+            const { seq, transport, engine } = await startIn('song')
+            expect(transport.bpm).toBe(120)
+            transport.tick = 42
+            transport.setBpm.mockClear()
+
+            // leaving the arrangement for a pattern view
+            appState.currentView = 'proll'
+            seq.syncPlaybackMode()
+
+            expect(transport.setBpm).toHaveBeenCalledWith(140)
+            expect(transport.tick).toBe(0)
+            expect(engine.setBpm).toHaveBeenCalledWith(140)
+            expect(engine.invalidateCache).toHaveBeenCalled()
+        })
     })
 
     // ── arrangement cursor: the ruler click ─────────────────────────────
@@ -346,6 +457,7 @@ describe('Sequencer', () => {
             serviceRegistry.transport = makeTransport(false)
             serviceRegistry.audioEngine = {
                 start: vi.fn().mockResolvedValue(undefined),
+                setBpm: vi.fn(),
                 invalidateCache: vi.fn(),
             }
             seq.setSongCursor(3)
@@ -364,6 +476,7 @@ describe('Sequencer', () => {
             serviceRegistry.transport = makeTransport(false)
             serviceRegistry.audioEngine = {
                 start: vi.fn().mockResolvedValue(undefined),
+                setBpm: vi.fn(),
                 invalidateCache: vi.fn(),
             }
             seq.setSongCursor(3)

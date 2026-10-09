@@ -177,7 +177,7 @@ export default class ViewManager {
 
         setViewMode(view)
         // Playback mode follows the visible view: the sequencer re-anchors its
-        // transport (and picks the arrangement tempo) on the switch.
+        // transport only when that switches between pattern and song mode.
         playbackEvents.emit(EVENTS.VIEW_CHANGED, view)
     }
 

@@ -4,7 +4,7 @@
  * Arrangement grid geometry: one column per *used* pattern, one row per measure,
  * one rectangle per clip whose height is its duration.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import ArrangementSection from '../src/ui/song_panel/arrangement_section.js'
@@ -77,6 +77,13 @@ beforeEach(() => {
         },
     ]
     build2 = build()
+})
+
+afterEach(() => {
+    // build() appends a fresh root per test and the cursor loop outlives the
+    // test that started it — neither is torn down by beforeEach.
+    build2.section.stopCursorLoop()
+    document.body.innerHTML = ''
 })
 
 describe('ArrangementSection', () => {

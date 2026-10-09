@@ -13,41 +13,51 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { OrKnob } from '../src/ui/components/or_knob.js'
 import { OrSlider } from '../src/ui/components/or_slider.js'
 
-function getValText(el) {
-    const span = el.querySelector('.ne-val')
-    return span?.textContent ?? ''
-}
+/** Union of both controls' probe values — formatValue must clip every one. */
+const PROBE_VALUES = [
+    0,
+    0.1,
+    0.01,
+    0.001,
+    0.0001,
+    0.00001,
+    0.000001,
+    0.0000001,
+    1,
+    10,
+    100,
+    1000,
+    10000,
+    100000,
+    0.123456789,
+    1.23456789,
+    12.3456789,
+    123.456789,
+    Number.MAX_SAFE_INTEGER,
+    Number.MIN_VALUE,
+]
 
-describe('OrKnob — CLS prevention', () => {
-    let knob
-
-    beforeEach(() => {
-        knob = new OrKnob({
-            key: 'test',
-            label: 'Test',
-            min: 0,
-            max: 1,
-            step: 0.0000001,
-            value: 0.123456789012345,
-            format: (v) => v.toFixed(15),
-        })
-    })
-
-    it('truncates displayed value to at most 8 chars (excluding unit)', () => {
-        const el = knob.createElement()
-        const text = getValText(el)
-        expect(text.length).toBeLessThanOrEqual(8)
-    })
-
-    it('truncates very small numbers', () => {
-        knob.setValue(0.0000001)
-        const el = knob.createElement()
-        const text = getValText(el)
-        expect(text.length).toBeLessThanOrEqual(8)
-    })
-
-    it('truncates very large numbers', () => {
-        const largeKnob = new OrKnob({
+const CONTROLS = [
+    {
+        name: 'OrKnob',
+        unit: '',
+        /** @param {object} cfg */
+        make: (cfg) =>
+            new OrKnob({
+                key: 'test',
+                label: 'Test',
+                min: 0,
+                max: 1,
+                step: 0.0000001,
+                value: 0.123456789012345,
+                format: (v) => v.toFixed(15),
+                ...cfg,
+            }),
+        /** A value outside the default range's precision, to clip. */
+        tiny: 0.0000001,
+        /** A DOM setValue that must not replace the .ne-val span. */
+        inRange: 0.999,
+        largeCfg: {
             key: 'large',
             label: 'Large',
             min: 0,
@@ -55,69 +65,27 @@ describe('OrKnob — CLS prevention', () => {
             step: 1,
             value: 123456.789,
             format: (v) => v.toFixed(10),
-        })
-        const el = largeKnob.createElement()
-        const text = getValText(el)
-        expect(text.length).toBeLessThanOrEqual(8)
-    })
-
-    it('.ne-val element always exists with class ne-val', () => {
-        const el = knob.createElement()
-        const span = el.querySelector('.ne-val')
-        expect(span).not.toBeNull()
-        expect(span.classList.contains('ne-val')).toBe(true)
-    })
-
-    it('keeps same DOM element when setValue is called', () => {
-        const el = knob.createElement()
-        const spanBefore = el.querySelector('.ne-val')
-        knob.setValue(0.999)
-        const spanAfter = el.querySelector('.ne-val')
-        expect(spanAfter).toBe(spanBefore)
-    })
-
-    it('text content updates correctly after setValue', () => {
-        const el = knob.createElement()
-        knob.setValue(0.5)
-        expect(getValText(el).length).toBeLessThanOrEqual(8)
-        knob.setValue(1)
-        expect(getValText(el).length).toBeLessThanOrEqual(8)
-    })
-})
-
-describe('OrSlider — CLS prevention', () => {
-    let slider
-
-    beforeEach(() => {
-        slider = new OrSlider({
-            key: 'test',
-            label: 'Test',
-            min: 0,
-            max: 20000,
-            step: 1,
-            value: 12345.6789012345,
-            format: (v) => v.toFixed(10),
-            unit: 'Hz',
-        })
-    })
-
-    it('truncates displayed value to at most 8 chars (excluding unit)', () => {
-        const el = slider.createElement()
-        const text = getValText(el)
-        const valuePart = text.replace(' Hz', '').trim()
-        expect(valuePart.length).toBeLessThanOrEqual(8)
-    })
-
-    it('truncates extreme precision values', () => {
-        slider.setValue(0.123456789012345)
-        const el = slider.createElement()
-        const text = getValText(el)
-        const valuePart = text.replace(' Hz', '').trim()
-        expect(valuePart.length).toBeLessThanOrEqual(8)
-    })
-
-    it('truncates very large values with unit', () => {
-        const bigSlider = new OrSlider({
+        },
+    },
+    {
+        name: 'OrSlider',
+        unit: 'Hz',
+        /** @param {object} cfg */
+        make: (cfg) =>
+            new OrSlider({
+                key: 'test',
+                label: 'Test',
+                min: 0,
+                max: 20000,
+                step: 1,
+                value: 12345.6789012345,
+                format: (v) => v.toFixed(10),
+                unit: 'Hz',
+                ...cfg,
+            }),
+        tiny: 0.123456789012345,
+        inRange: 0.001,
+        largeCfg: {
             key: 'big',
             label: 'Big',
             min: 0,
@@ -126,119 +94,89 @@ describe('OrSlider — CLS prevention', () => {
             value: 12345678.12345678,
             format: (v) => v.toFixed(8),
             unit: 'Hz',
-        })
-        const el = bigSlider.createElement()
-        const text = getValText(el)
-        const valuePart = text.replace(' Hz', '').trim()
-        expect(valuePart.length).toBeLessThanOrEqual(8)
+        },
+    },
+]
+
+function getValText(el) {
+    const span = el.querySelector('.ne-val')
+    return span?.textContent ?? ''
+}
+
+/** The number part of the value text, without the unit. */
+function valuePart(text, unit) {
+    return unit ? text.replace(` ${unit}`, '').trim() : text
+}
+
+describe.each(CONTROLS)('$name — CLS prevention', ({ make, unit, tiny, inRange, largeCfg }) => {
+    let ctl
+
+    beforeEach(() => {
+        document.body.innerHTML = ''
+        ctl = make()
+    })
+
+    it('truncates displayed value to at most 8 chars (excluding unit)', () => {
+        const el = ctl.createElement()
+        expect(valuePart(getValText(el), unit).length).toBeLessThanOrEqual(8)
+    })
+
+    it('truncates very small numbers', () => {
+        ctl.setValue(tiny)
+        const el = ctl.createElement()
+        expect(valuePart(getValText(el), unit).length).toBeLessThanOrEqual(8)
+    })
+
+    it('truncates very large numbers', () => {
+        const large = make(largeCfg)
+        const el = large.createElement()
+        expect(valuePart(getValText(el), unit).length).toBeLessThanOrEqual(8)
     })
 
     it('.ne-val element always exists with class ne-val', () => {
-        const el = slider.createElement()
+        const el = ctl.createElement()
         const span = el.querySelector('.ne-val')
         expect(span).not.toBeNull()
         expect(span.classList.contains('ne-val')).toBe(true)
     })
 
     it('keeps same DOM element when setValue is called', () => {
-        const el = slider.createElement()
+        const el = ctl.createElement()
         const spanBefore = el.querySelector('.ne-val')
-        slider.setValue(0.001)
+        ctl.setValue(inRange)
         const spanAfter = el.querySelector('.ne-val')
         expect(spanAfter).toBe(spanBefore)
     })
 
-    it('value text does not exceed 8 chars after multiple extreme setValue calls', () => {
-        const el = slider.createElement()
-
-        const extremeValues = [0.000000001, 123456789.12345679, 0.123456789012345, 99999.999999, 0, 20000]
+    it('value text stays within 8 chars through extreme setValue calls', () => {
+        const el = ctl.createElement()
+        const extremeValues = [...PROBE_VALUES, 123456789.12345679, 99999.999999, 0, 20000]
         for (const v of extremeValues) {
-            slider.setValue(v)
-            const text = getValText(el)
-            const valuePart = text.replace(' Hz', '').trim()
-            expect(valuePart.length).toBeLessThanOrEqual(8)
+            ctl.setValue(v)
+            expect(valuePart(getValText(el), unit).length).toBeLessThanOrEqual(8)
         }
     })
 
     it('text content updates correctly after setValue', () => {
-        const el = slider.createElement()
-        slider.setValue(100)
-        const text100 = getValText(el)
-        expect(text100.endsWith(' Hz')).toBe(true)
-        expect(text100.replace(' Hz', '').trim().length).toBeLessThanOrEqual(8)
-        slider.setValue(0.5)
-        const text05 = getValText(el)
-        expect(text05.endsWith(' Hz')).toBe(true)
-        expect(text05.replace(' Hz', '').trim().length).toBeLessThanOrEqual(8)
-    })
-
-    it('unit is preserved after truncation', () => {
-        const el = slider.createElement()
-        slider.setValue(12345.6789)
-        const text = getValText(el)
-        expect(text.endsWith(' Hz')).toBe(true)
-    })
-})
-
-describe('CLS prevention — width stability', () => {
-    it('OrKnob: _fmt always returns ≤ 8 chars for any numeric input', () => {
-        const values = [
-            0,
-            0.1,
-            0.01,
-            0.001,
-            0.0001,
-            0.00001,
-            0.000001,
-            1,
-            10,
-            100,
-            1000,
-            10000,
-            100000,
-            0.123456789,
-            1.23456789,
-            12.3456789,
-            123.456789,
-            Number.MAX_SAFE_INTEGER,
-            Number.MIN_VALUE,
-        ]
-        const k = new OrKnob({
-            key: 'x',
-            label: 'X',
-            min: -99999,
-            max: 99999,
-            step: 0.001,
-            value: 0,
-            format: (v) => v.toFixed(12),
-        })
-        for (const v of values) {
-            const result = k.formatValue(v)
-            expect(result.length).toBeLessThanOrEqual(8)
+        const el = ctl.createElement()
+        for (const v of [0.5, 1]) {
+            ctl.setValue(v)
+            const text = getValText(el)
+            if (unit) expect(text.endsWith(` ${unit}`)).toBe(true)
+            expect(valuePart(text, unit).length).toBeLessThanOrEqual(8)
         }
     })
 
-    it('OrSlider: _fmt always returns ≤ 8 chars for any numeric input', () => {
-        const values = [
-            0,
-            0.1,
-            0.01,
-            0.001,
-            0.0001,
-            0.00001,
-            1,
-            10,
-            100,
-            1000,
-            10000,
-            100000,
-            0.123456789,
-            1.23456789,
-            12.3456789,
-            Number.MAX_SAFE_INTEGER,
-            Number.MIN_VALUE,
-        ]
-        const s = new OrSlider({
+    it.skipIf(!unit)('unit is preserved after truncation', () => {
+        const el = ctl.createElement()
+        ctl.setValue(12345.6789)
+        expect(getValText(el).endsWith(` ${unit}`)).toBe(true)
+    })
+})
+
+describe.each(CONTROLS)('CLS prevention — width stability', ({ name, make, unit }) => {
+    it(`${name}: formatValue always returns ≤ 8 chars for any numeric input`, () => {
+        const ctl = make({
             key: 'x',
             label: 'X',
             min: -99999,
@@ -246,12 +184,9 @@ describe('CLS prevention — width stability', () => {
             step: 0.001,
             value: 0,
             format: (v) => v.toFixed(12),
-            unit: 'Hz',
         })
-        for (const v of values) {
-            const result = s.formatValue(v)
-            const valuePart = result.replace(' Hz', '').trim()
-            expect(valuePart.length).toBeLessThanOrEqual(8)
+        for (const v of PROBE_VALUES) {
+            expect(valuePart(ctl.formatValue(v), unit).length).toBeLessThanOrEqual(8)
         }
     })
 })

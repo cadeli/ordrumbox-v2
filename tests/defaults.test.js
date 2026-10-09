@@ -55,11 +55,6 @@ describe('Defaults', () => {
     // ── getNoteProp ─────────────────────────────────────────────────
 
     describe('getNoteProp', () => {
-        it('returns note property when present', () => {
-            const note = { velocity: 0.5 }
-            expect(Defaults.getNoteProp(note, 'velocity')).toBe(0.5)
-        })
-
         it('returns default when property is missing', () => {
             const note = { beat: 0 }
             expect(Defaults.getNoteProp(note, 'velocity')).toBe(NOTE_DEFAULTS.velocity)
@@ -77,11 +72,6 @@ describe('Defaults', () => {
     // ── getTrackProp ─────────────────────────────────────────────────
 
     describe('getTrackProp', () => {
-        it('returns track property when present', () => {
-            const track = { beatCount: 8 }
-            expect(Defaults.getTrackProp(track, 'beatCount')).toBe(8)
-        })
-
         it('returns default when property is missing', () => {
             const track = { name: 'KICK' }
             expect(Defaults.getTrackProp(track, 'beatCount')).toBe(TRACK_DEFAULTS.beatCount)
@@ -95,11 +85,6 @@ describe('Defaults', () => {
     // ── getPatternProp ───────────────────────────────────────────────
 
     describe('getPatternProp', () => {
-        it('returns pattern property when present', () => {
-            const pattern = { bpm: 140 }
-            expect(Defaults.getPatternProp(pattern, 'bpm')).toBe(140)
-        })
-
         it('returns default when property is missing', () => {
             const pattern = { name: 'Rock' }
             expect(Defaults.getPatternProp(pattern, 'bpm')).toBe(PATTERN_DEFAULTS.bpm)

@@ -374,4 +374,45 @@ describe('MidiManager', () => {
             expect(result).toBe(false)
         })
     })
+
+    describe('event emission', () => {
+        it('extends EventTarget', () => {
+            const mgr = createManager()
+            expect(mgr).toBeInstanceOf(EventTarget)
+        })
+
+        it('emits statusChange on disable()', () => {
+            const mgr = createManager()
+            const handler = vi.fn()
+            mgr.addEventListener('statusChange', handler)
+            mgr.disable()
+            expect(handler).toHaveBeenCalledTimes(1)
+        })
+
+        it('emits statusChange on toggleExternalSync()', () => {
+            const mgr = createManager()
+            const handler = vi.fn()
+            mgr.addEventListener('statusChange', handler)
+            mgr.toggleExternalSync()
+            expect(handler).toHaveBeenCalledTimes(1)
+        })
+
+        it('emits statusChange on setExternalSyncEnabled()', () => {
+            const mgr = createManager()
+            const handler = vi.fn()
+            mgr.addEventListener('statusChange', handler)
+            mgr.setExternalSyncEnabled(true)
+            expect(handler).toHaveBeenCalledTimes(1)
+        })
+
+        it('emits activity on note-on channel 9', async () => {
+            const { parseMidiNoteOn } = await import('../src/logic/midi/midi_parser.js')
+            parseMidiNoteOn.mockReturnValue({ noteKey: 60, channel: 9 })
+            const mgr = createManager()
+            const handler = vi.fn()
+            mgr.addEventListener('activity', handler)
+            mgr.onMidiMessage({ data: new Uint8Array([0x99, 60, 100]) })
+            expect(handler).toHaveBeenCalledTimes(1)
+        })
+    })
 })

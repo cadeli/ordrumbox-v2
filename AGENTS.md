@@ -85,7 +85,7 @@ Test helpers in `tests/helpers/`:
 
 - `cmd_test_helpers.js` — command test utilities
 - `make_pattern.js` — pattern fixture builder
-- `midi_test_helpers.js`, `midi_builder.js`, `midi_reader.js` — MIDI test utilities
+- `midi_builder.js`, `midi_reader.js` — MIDI test utilities
 - `wav_builder.js` — WAV file builder for tests
 - `worklet_mocks.js` — AudioWorklet mocks
 
@@ -116,7 +116,7 @@ import { bootApp } from './fixtures.js'
 #### E2E helpers
 
 - `e2e/helpers/synth_render.js` — `renderSynthBatch(overrides, noteCount, options)` renders N notes in one OfflineAudioContext
-- `e2e/fixtures.js` — `bootApp(page)`, `audioContextState(page)`
+- `e2e/fixtures.js` — `bootApp(page)`, `stackClipOnMeasure(page, measure)`
 
 ## Undo policy
 

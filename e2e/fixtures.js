@@ -16,10 +16,6 @@ export async function bootApp(page) {
     await page.waitForSelector('#waiting-screen', { state: 'hidden' })
 }
 
-export function audioContextState(page) {
-    return page.evaluate(() => window.__e2e?.serviceRegistry?.audioCtx?.state ?? null)
-}
-
 /**
  * Places a second clip on a measure of the selected arrangement, so two patterns
  * cover it, then asks the Song view to re-render.

@@ -5,13 +5,13 @@
  * precise sample positions) for testing audio analysis pipelines.
  *
  * Usage:
- *   import { buildWav, buildWavFromOnsets } from './helpers/wav_builder.js'
+ *   import { buildWav, buildWavFromTicks } from './helpers/wav_builder.js'
  *
  *   // Build a WAV with a 440 Hz sine burst at sample 44100
  *   const wav = buildWav({ sampleRate: 44100, onsets: [{ sample: 44100, freq: 440, duration: 0.05 }] })
  *
- *   // Build from logical positions (seconds)
- *   const wav = buildWavFromOnsets({ bpm: 120, onsets: [{ time: 0, freq: 440 }, { time: 0.5, freq: 880 }] })
+ *   // Build from logical positions (engine ticks)
+ *   const wav = buildWavFromTicks({ bpm: 120, onsets: [{ tick: 0, freq: 440 }] })
  */
 
 import { bufferToWav } from '../../src/audio/export/wav_encoder.js'
@@ -114,27 +114,6 @@ export async function buildWav(options) {
 
     // Convert Blob to Uint8Array
     return await blobToArrayBuffer(blob)
-}
-
-/**
- * Build a WAV file from onset positions specified in seconds.
- *
- * @param {Object} options
- * @param {number} options.bpm - BPM for time calculations
- * @param {number} [options.sampleRate=44100] - Sample rate
- * @param {Array<{ time: number, freq?: number, duration?: number, amplitude?: number }>} options.onsets
- *   Array of onset positions in seconds.
- * @returns {Uint8Array} - Complete WAV file as bytes
- */
-export async function buildWavFromOnsets(options) {
-    const { sampleRate = DEFAULT_SAMPLE_RATE, onsets = [], ...rest } = options
-
-    const sampleOnsets = onsets.map((o) => ({
-        ...o,
-        sample: Math.round(o.time * sampleRate),
-    }))
-
-    return buildWav({ sampleRate, onsets: sampleOnsets, ...rest })
 }
 
 /**

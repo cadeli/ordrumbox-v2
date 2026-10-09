@@ -114,7 +114,7 @@ test.describe('Undo / Redo', () => {
 
         const [{ beat, step }] = await findTwoEmptyCells(page)
 
-        const redoBtn = page.locator('.tb-redo, button:has-text("Redo")').first()
+        const redoBtn = page.locator('button[title^="Redo"]')
 
         await cell(page, beat, step).click()
         await expect(cell(page, beat, step)).toHaveClass(/filled/)
@@ -123,10 +123,8 @@ test.describe('Undo / Redo', () => {
         await page.keyboard.press('Control+z')
         await expect(cell(page, beat, step)).not.toHaveClass(/filled/)
 
-        // After undo the redo entry exists → button enabled (if rendered)
-        if ((await redoBtn.count()) > 0) {
-            await expect(redoBtn).toBeEnabled()
-        }
+        // After undo the redo entry exists → button enabled
+        await expect(redoBtn).toBeEnabled()
         const state = await historyState(page)
         expect(state.canRedo).toBe(true)
 

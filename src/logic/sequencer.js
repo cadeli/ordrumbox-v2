@@ -21,6 +21,8 @@ export default class Sequencer {
     #pendingStop
     /** Measure the arrangement cursor is on; the song ruler sets it. */
     #songCursorMeasure = 0
+    /** Whether the transport was last anchored in the song view's mode. */
+    #anchoredSongMode = false
 
     constructor(options = {}) {
         this.serviceRegistry = options.serviceRegistry ?? serviceRegistry
@@ -164,11 +166,13 @@ export default class Sequencer {
             return
         }
         this.ensureTransport()
-        // A song plays every pattern at one tempo; the arrangement's bpm wins.
-        // Offline export deliberately keeps the pattern's own bpm so a render
-        // never depends on which view happens to be open.
-        const songBpm = this.currentSongTempo()
-        this.serviceRegistry.transport.setBpm(songBpm ?? selectedPattern.bpm)
+        // The tempo belongs to the visible view: the song view runs the whole
+        // arrangement at its bpm, every other view loops the selected pattern at
+        // the pattern's own bpm. Offline export deliberately keeps the pattern's
+        // own bpm so a render never depends on which view happens to be open.
+        const bpm = this.currentPlaybackTempo() ?? selectedPattern.bpm
+        this.serviceRegistry.transport.setBpm(bpm)
+        this.#anchoredSongMode = this.appState.currentView === 'song'
         const autoAssign = await getAutoAssignService()
         // A song sounds every pattern its clips reference, not only the selected
         // one. In pattern mode the selected pattern is the one that gets its
@@ -184,6 +188,9 @@ export default class Sequencer {
         // just re-pointed must not keep its pre-assignment map.
         this.serviceRegistry.audioEngine.invalidateCache()
         await this.serviceRegistry.audioEngine.start(selectedPattern)
+        // The strips derive their delay times from the bpm, so they must follow
+        // the tempo the transport was just given.
+        this.serviceRegistry.audioEngine.setBpm(bpm)
         this.serviceRegistry.transport.start()
         // An arrangement plays from the cursor the user aimed with the ruler. A
         // pattern view has no measures, so it always starts from its own zero: a
@@ -264,7 +271,6 @@ export default class Sequencer {
         return true
     }
 
-    /** Tempo of the arrangement when a song is selected and being played. */
     /**
      * Patterns that need sounds assigned before the transport runs: the selected
      * one in pattern mode, the whole arrangement in song mode.
@@ -278,6 +284,7 @@ export default class Sequencer {
         return patterns.length ? patterns : [selectedPattern]
     }
 
+    /** Tempo of the arrangement when a song is selected and being played. */
     currentSongTempo = () => {
         const song = this.appState.songs?.[this.appState.selectedSongIdx ?? 0]
         if (!song) return null
@@ -286,17 +293,39 @@ export default class Sequencer {
     }
 
     /**
-     * Re-anchor the transport when the view (and so the playback mode) changes:
-     * a switch between pattern and song mode mid-playback must start the new
-     * mode from its own zero, not continue a stale tick count.
+     * The tempo the transport must run at for the visible view: the song view
+     * plays the whole arrangement at its own bpm, every other view loops the
+     * selected pattern at the pattern's own bpm. Looking at a song's tempo from
+     * a pattern view is what made playback jump back to the arrangement's bpm
+     * on a view switch.
+     * @returns {number|null}
+     */
+    currentPlaybackTempo = () => {
+        const patternBpm = this.appState.selectedPattern?.bpm ?? null
+        if (this.appState.currentView !== 'song') return patternBpm
+        return this.currentSongTempo() ?? patternBpm
+    }
+
+    /**
+     * Re-anchor the transport when the playback mode (pattern vs song) changes:
+     * a switch between the two modes mid-playback must start the new mode from
+     * its own zero, not continue a stale tick count. Two pattern views — grid,
+     * synth, piano roll — share one mode, so switching between them leaves the
+     * transport, and its tempo, alone.
      */
     syncPlaybackMode = () => {
         const transport = this.serviceRegistry.transport
         if (!transport?.isRunning) return
+        const songMode = this.appState.currentView === 'song'
+        if (songMode === this.#anchoredSongMode) return
+        this.#anchoredSongMode = songMode
         transport.tick = 0
         transport.nextStepTime = this.serviceRegistry.audioCtx.currentTime
-        const songBpm = this.currentSongTempo()
-        if (songBpm != null) transport.setBpm(songBpm)
+        const bpm = this.currentPlaybackTempo()
+        if (bpm != null) {
+            transport.setBpm(bpm)
+            this.serviceRegistry.audioEngine?.setBpm(bpm)
+        }
         this.serviceRegistry.audioEngine?.invalidateCache()
     }
 

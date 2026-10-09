@@ -121,6 +121,17 @@ describe.each(CONTROLS)('BaseControl — $name', ({ make, gestureTarget }) => {
         expect(out.split(' ')[0].length).toBeLessThanOrEqual(8)
         expect(out.endsWith(' ms')).toBe(true)
     })
+
+    it('setValue with triggerCallback fires onChange', () => {
+        const onChange = vi.fn()
+        const ctl = make({ onChange, step: 0.1, value: 0.5 })
+        ctl.createElement()
+
+        ctl.setValue(0.51, true)
+
+        expect(ctl.getValue()).toBeCloseTo(0.51, 4)
+        expect(onChange).toHaveBeenCalledWith(0.51, 'k')
+    })
 })
 
 describe('prompt sanitizing', () => {

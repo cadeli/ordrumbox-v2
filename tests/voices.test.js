@@ -488,6 +488,10 @@ describe('WorkletSynthVoice parameter coverage', () => {
 
         const cases = [
             { target: 'NOT', expected: 0 },
+            { target: 'FLT', expected: 1 },
+            { target: 'VCO1', expected: 2 },
+            { target: 'VCO2', expected: 3 },
+            { target: 'VCO3', expected: 4 },
             { target: 'filter.freq', expected: 15 },
             { target: 'filter.Q', expected: 17 },
             { target: 'masterVolume', expected: 5 },
@@ -495,6 +499,10 @@ describe('WorkletSynthVoice parameter coverage', () => {
             { target: 'vco1.detune', expected: 7 },
             { target: 'vco1.gain', expected: 6 },
             { target: 'vco2.octave', expected: 11 },
+            { target: 'vco2.detune', expected: 10 },
+            { target: 'vco2.gain', expected: 9 },
+            { target: 'vco3.octave', expected: 14 },
+            { target: 'vco3.detune', expected: 13 },
             { target: 'vco3.gain', expected: 12 },
             { target: 'noise.mix', expected: 18 },
             { target: 'subGain', expected: 19 },
@@ -512,6 +520,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
             { target: 'modEnvelope.decay', expected: 31 },
             { target: 'modEnvelope.sustain', expected: 32 },
             { target: 'modEnvelope.release', expected: 33 },
+            { target: 'filter.filterEnvelopeAmount', expected: 16 },
             { target: 'filterEnv.filterEnvelopeAmount', expected: 16 },
         ]
 
@@ -582,7 +591,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
         const ctx = createMockAudioCtx()
         const strip = createMockStrip()
         const gs = makeGeneratedSound({
-            lfo: { target: 'subGain', wave: 'sine', freq: 1, depth: 0.5 },
+            lfo: { target: 'notARealTarget', wave: 'sine', freq: 1, depth: 0.5 },
         })
         const voice = new WorkletSynthVoice(ctx, strip, gs, 'test')
         const flatNote = makeFlatNote()
@@ -590,7 +599,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
         await voice.setup(flatNote, 1.0)
 
         const msg = lastPostByType('update')
-        expect(msg.lfo1Target).toBe(19) // subGain → target 19
+        expect(msg.lfo1Target).toBe(0) // unknown → NOT
     })
 })
 

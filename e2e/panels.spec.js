@@ -56,17 +56,20 @@ test.describe('Toolbar view buttons — real click → panel visible', () => {
         await gridBtn.click()
     })
 
-    test('Synth Editor toggle shows/hides #se-panel', async ({ page }) => {
+    test('Soft Synth toggle shows/hides #soft-synth-panel', async ({ page }) => {
         await page.goto('/')
         await dismissWaitingScreen(page)
         await page.waitForSelector('.tb-view-btn', { timeout: 5000 })
 
-        const synthBtn = page.locator('button[title="Toggle Synth Editor"]')
-        if (await synthBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await synthBtn.click()
-            await expect(page.locator('#se-panel')).toBeVisible({ timeout: 3000 })
-            await synthBtn.click()
-        }
+        const synthBtn = page.locator('button[title="Toggle Soft Synth"]')
+        await expect(synthBtn).toBeVisible()
+
+        // a view button switches to its view (clicking it twice is a no-op),
+        // so the panel goes away with the switch back to the grid view
+        await synthBtn.click()
+        await expect(page.locator('#soft-synth-panel')).toBeVisible({ timeout: 3000 })
+        await page.locator('button[title="Toggle Track Editor"]').click()
+        await expect(page.locator('#soft-synth-panel')).toBeHidden({ timeout: 3000 })
     })
 })
 
