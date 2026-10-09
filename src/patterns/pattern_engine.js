@@ -39,14 +39,24 @@ export function normalizeArp(arp) {
     if (Array.isArray(arp)) {
         intervals = arp
     } else if (typeof arp === 'string') {
-        if (!/\d/.test(arp)) return null
-        const parts = arp.split(',')
-        const result = []
-        for (let i = 0; i < parts.length; i++) {
-            const v = Number(parts[i].trim())
-            if (Number.isFinite(v)) result.push(v)
+        const s = arp.trim().toLowerCase()
+        if (s === 'random') {
+            mode = 'random'
+            intervals = [0, 2, 4, 5, 7, 9, 11, 12] // major scale default
+        } else if (s === 'up' || s === 'down' || s === 'updown') {
+            mode = s
+            intervals = [0, 2, 4, 5, 7, 9, 11, 12] // major scale default
+        } else if (!/\d/.test(s)) {
+            return null
+        } else {
+            const parts = s.split(',')
+            const result = []
+            for (let i = 0; i < parts.length; i++) {
+                const v = Number(parts[i].trim())
+                if (Number.isFinite(v)) result.push(v)
+            }
+            intervals = result
         }
-        intervals = result
     } else if (typeof arp === 'object' && arp !== null) {
         intervals = Array.isArray(arp.intervals) ? arp.intervals : []
         mode = String(arp.mode ?? mode).toLowerCase()
@@ -63,7 +73,9 @@ export function normalizeArp(arp) {
     if (!filtered.includes(0)) filtered.unshift(0)
 
     let sequence
-    if (mode === 'down') {
+    if (mode === 'random') {
+        sequence = [...filtered].sort(() => Math.random() - 0.5)
+    } else if (mode === 'down') {
         sequence = [...filtered].sort((a, b) => b - a)
     } else if (mode === 'updown') {
         const ascending = [...filtered].sort((a, b) => a - b)

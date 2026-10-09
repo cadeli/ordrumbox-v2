@@ -1,6 +1,5 @@
 // playwright.config.js
-// Replaces about_panel.test.js / mobile_css_layout.test.js / sub_panel_toggles.test.js
-// with tests running in real Chromium (required for real AudioContext + Canvas).
+// E2E tests running in real Chromium (required for real AudioContext + Canvas).
 import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
@@ -40,8 +39,7 @@ export default defineConfig({
         },
         {
             name: 'mobile-chromium',
-            // Replaces mobile_css_layout.test.js: real viewport + touch events,
-            // not a media query simulation.
+            // Real viewport + touch events, not a media query simulation.
             use: { ...devices['Pixel 7'] },
             testMatch: /.*\.mobile\.spec\.js/,
         },

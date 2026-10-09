@@ -119,14 +119,15 @@ These are recalculated on the fly from other properties:
 
 ## LFO object
 
-Used by `velocityLfo`, `pitchLfo`, `panLfo`, `filterFreqLfo`, `filterQLfo`.
+Used by `velocityLfo`, `pitchLfo`, `panLfo`, `filterFreqLfo`, `filterQLfo` (track LFOs).
 
-| Property | Type     | Default  | Description                                                             |
-| -------- | -------- | -------- | ----------------------------------------------------------------------- |
-| `freq`   | `number` | `0`      | LFO frequency in Hz (when sync is off).                                 |
-| `wave`   | `string` | `"sine"` | Waveform: `"sine"`, `"triangle"`, `"sawtooth"`, `"square"`, `"random"`. |
-| `depth`  | `number` | `0`      | Modulation depth (0–1). 0 = no modulation.                              |
-| `sync`   | `string` | `"off"`  | Tempo sync mode: `"off"`, or a beat division string.                    |
+| Property | Type     | Default  | Description                                                                 |
+| -------- | -------- | -------- | --------------------------------------------------------------------------- |
+| `type`   | `string` | `"sine"` | Waveform: `"sine"`, `"triangle"`, `"sawtooth"`, `"square"`, `"random"`.     |
+| `freq`   | `number` | `1`      | LFO frequency in cycles per pattern (when sync is off).                     |
+| `min`    | `number` | *from target* | Modulation minimum (target property range).                              |
+| `max`    | `number` | *from target* | Modulation maximum (target property range).                              |
+| `phase`  | `number` | `0`      | Phase offset in cycles (0–1).                                               |
 
 When `null`, the LFO is disabled.
 
@@ -343,7 +344,7 @@ Applied by `updateTrack()` and MCP tools. Out-of-range values are clamped:
 | `swingResolution`  | 1   | 8     |
 | `swingAmount`      | 0   | 1     |
 | `filterFreq`       | 20  | 20000 |
-| `filterQ`          | 0.1 | 24    |
+| `filterQ`          | 0.707 | 18.707 |
 | `reverbAmount`     | 0   | 1     |
 | `delayTime`        | 0   | 4     |
 | `delayDepth`       | 0   | 1     |

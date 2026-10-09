@@ -7,8 +7,7 @@
  *
  * Replaces: panel_always_visible, panel_display, panel_positioning,
  *           ui_modal_flow, mobile_landscape_flow, roundtrip3 display tests,
- *           and duplicate display assertions in sub_panel_toggles and
- *           synth_editor_display.
+ *           and duplicate display assertions in synth_editor_display.
  *
  * ── Desktop layout (1200×800) ──────────────────────────────────────
  *   Top-left     : 75% × 450px @ top:64  — pattern / piano-roll / synth

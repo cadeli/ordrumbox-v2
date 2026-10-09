@@ -9,7 +9,7 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 - Programmable grid for note entry and track looping
 - Support for complex polyrhythm and per-track swing settings
 - Precision controls for pitch, volume, and panning per note
-- Retrigger and Euclidean Fill with visual ghost notes (blue for retrigger, yellow for euclidean)
+- Retrigger and Euclidean Fill with visual ghost notes (white for retrigger, lighter white for euclidean)
 - Real-time visual feedback with step-by-step playback
 
 ### Track Variation
@@ -20,12 +20,11 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 
 - Integrated Soft Synth with 3 VCOs (sine, triangle, saw, square), ADSR envelope, and filters
 - FM synthesis: osc2 modulates osc1 frequency, osc3 modulates osc2 frequency (0–1 depth)
-- Filter: TPT SVF with Lowpass, Highpass, Bandpass, Notch modes and adjustable Q (0.1–20)
+- Filter: TPT SVF with Lowpass, Highpass, Bandpass, Notch modes; track Q 0.707–18.707, synth Q 0.1–24
 - Filter envelope modulation (sweeps cutoff from base frequency toward 20 kHz)
 - White noise generator with mix and independent highpass filter
-- Glide (slide) between notes for portamento effects
-- 2 LFOs with target routing: filter freq, per-VCO detune/octave/gain, master volume, noise mix, filter Q, filter envelope amount
-- LFO sync to tempo (1/1, 1/2, 1/4, 1/8, 1/16, triplet variants)
+- 2 LFOs with target routing: filter freq, per-VCO detune/octave/gain, master volume, noise mix, filter Q, filter envelope amount, FM amount/algo, envelope params, mod envelope params
+- LFO sync to tempo (off/free, 1/1, 1/2, 1/4, 1/8, 1/16, 1/8T, 1/16T)
 - AudioWorklet-based synthesis (requires AudioWorklet support)
 - Per-track effects: Reverb, Delay, and Saturation
 
@@ -90,7 +89,7 @@ Both probability controls use values from `0` to `1`, where `1` equals 100%.
 Each track has adjustable parameters accessible through the track control panel. Use these controls to customize your sound:
 
 - **Volume (velocity)**: Adjust the overall loudness of the track (0 to 1).
-- **Pan (PANO)**: Move the sound left or right in the stereo field (-1 to 1).
+- **Pan**: Move the sound left or right in the stereo field (-1 to 1).
 - **Pitch**: Change the pitch of the sound in semitones.
 - **Swing**: Add swing timing to give the groove a more laid-back feel.
 - **Loop Step**: Define where the track loops back in the pattern.
@@ -115,7 +114,7 @@ For more professional setups, orDrumbox is compatible with external MIDI control
 
 - Import and export patterns as local project files (JSON)
 - Import MIDI files — automatically maps GM instruments and drums to tracks
-- Import WAV/drumkit directories — drag a folder of audio files to create a new drumkit
+- Import WAV/drumkit directories — use the file input (webkitdirectory) to select a folder of audio files and create a new drumkit
 - Save and load your creations
 
 ## Development

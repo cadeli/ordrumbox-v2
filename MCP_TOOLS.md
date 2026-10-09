@@ -165,7 +165,7 @@ Adds multiple notes to a pattern
 
 | Property                | Type        | Range        | Default  | Description                                                       |
 | ----------------------- | ----------- | ------------ | -------- | ----------------------------------------------------------------- |
-| `trackName`             | string      | max 12 chars | required | Instrument name (e.g., KICK, SNARE)                               |
+| `trackName`             | string      |              | required | Instrument name (e.g., KICK, SNARE)                               |
 | `step`                  | integer     | >=0          | required | Absolute step number (0-based)                                    |
 | `velocity`              | number      | 0-1          | 0.8      | Note velocity                                                     |
 | `pan`                   | number      | -1 to 1      | 0        | Stereo pan                                                        |
@@ -176,7 +176,7 @@ Adds multiple notes to a pattern
 | `arpTriggerProbability` | number      | 0-1          | 1        | Arpeggio note probability                                         |
 | `retriggerCount`        | integer     | 1-16         | 1        | Number of retriggers                                              |
 | `rate`                  | integer     | 1-16         | 1        | Retrigger step spacing                                            |
-| `arp`                   | string/null |              | null     | Arpeggio pattern ("up", "down", "upDown", "random", or "0,1,2,3") |
+| `arp`                   | string/null |              | null     | Arpeggio pattern: numeric string "0,1,2,3" (comma-separated semitone intervals) or object `{intervals: number[], mode?: "up"|"down"|"updown"}` |
 | `euclideanFill`         | integer     | 0-16         | 0        | Euclidean pulses (0-16, 0=disabled)                               |
 | `euclideanRotation`     | integer     | 0-15         | 0        | Euclidean phase rotation in steps                                 |
 
@@ -226,7 +226,7 @@ Numeric ranges come from the app model (`TRACK_VALUE_RANGES` in `src/model/track
 | `useAutoAssignSound`                                                                                                            | boolean     |                                                                           | Auto-assign the sound matching the track name                                                                         |
 | `sampleId`                                                                                                                      | string      |                                                                           | Assigned sample URL/id                                                                                                |
 | `synthSoundKey`                                                                                                                 | string/null |                                                                           | Synth preset key (e.g. "BASS1"); `null` unlinks                                                                       |
-| `filterType`                                                                                                                    | string      | lowpass, highpass, bandpass, notch, peaking, lowshelf, highshelf, allpass | Filter type                                                                                                           |
+| `filterType`                                                                                                                    | string      | lowpass, highpass, bandpass, allpass | Filter type (track filter; notch/peaking/lowshelf/highshelf are synth-only) |
 | `filterFreq`                                                                                                                    | number      | 20-20000                                                                  | Filter cutoff frequency in Hz                                                                                         |
 | `filterQ`                                                                                                                       | number      | 0.707-18.707                                                              | Filter resonance / Q factor                                                                                           |
 | `reverbType`                                                                                                                    | string      | none, room, hall, plate, spring, gated                                    | Reverb preset                                                                                                         |
@@ -264,8 +264,8 @@ Numeric ranges come from the app model (`TRACK_VALUE_RANGES` in `src/model/track
 | `prob`                  | number      | 0-1     | 1       | Note trigger probability                                          |
 | `arpTriggerProbability` | number      | 0-1     | 1       | Arpeggio note probability                                         |
 | `retriggerCount`        | integer     | 1-16    | 1       | Number of retriggers                                              |
-| `rate`                  | integer     | 1-16    | 1       | Retrigger step spacing                                            |
-| `arp`                   | string/null |         | null    | Arpeggio pattern ("up", "down", "upDown", "random", or "0,1,2,3") |
+| `rate`                  | integer     | 1-16    | 1       | Retrigger step spacing (rate=1 → 1/8 step; rate=8 → 1 step)     |
+| `arp`                   | string/null |         | null    | Arpeggio pattern: numeric string "0,1,2,3" (comma-separated semitone intervals) or object `{intervals: number[], mode?: "up"|"down"|"updown"}` |
 | `euclideanFill`         | integer     | 0-16    | 0       | Euclidean pulses (0-16, 0=disabled)                               |
 | `euclideanRotation`     | integer     | 0-15    | 0       | Euclidean phase rotation in steps                                 |
 | `velocity`              | number      | 0-1     |         | Note velocity override                                            |
@@ -275,7 +275,6 @@ Numeric ranges come from the app model (`TRACK_VALUE_RANGES` in `src/model/track
 **Track Name Constraints:**
 
 - Must be a valid instrument name from `listAllInstrumentsNames`
-- Maximum 12 characters
 - Example: "KICK", "SNARE", "CHH", "OHH", "TOM", "CRASH", etc.
 
 **Input:**
@@ -446,7 +445,7 @@ Sets the description text for a pattern.
 
 Returns the full list of all instruments from InstrumentsManager with detailed info (id, name, drum flag, pan).
 
-Use this to get valid track names for MCP requests (max 12 chars).
+Use this to get valid track names for MCP requests.
 
 **Input:** `{}`
 
@@ -540,7 +539,7 @@ Analyzes audio samples and returns their full characteristics.
 }
 ```
 
-Samples are resolved relative to `public/assets/kits/`.
+Samples are resolved relative to `assets/kits/`.
 
 ---
 
@@ -781,15 +780,15 @@ The engine uses an internal resolution of **TICK = 32 ticks per beat**.
     - `retriggerCount: 3` -> Play 3 times per step
     - `rate: 1` -> Spacing between retriggers
 - **Arpeggio (arp):** Sequences through multiple pitches within a single step
-    - Values: "up", "down", "upDown", "random", or note indices like "0,1,2,3"
-    - Example: `arp: "0,1,2"` cycles through 3 pitches
+    - Values: numeric string "0,1,2,3" (comma-separated semitone intervals) or object `{intervals: number[], mode?: "up"|"down"|"updown"}`
+    - Example: `arp: "0,1,2"` cycles through 3 pitches (intervals 0, +1, +2 semitones)
 - These properties can be set via `addNotesToPattern` or `updateTrack` with `noteUpdates`
 
 ### Use LFOs for Evolving Sounds
 
 - Add Low Frequency Oscillators to track parameters for movement and evolution
 - Available LFO targets: velocity, pitch, pan, filterFreq, filterQ
-- LFO parameters: frequency (speed), depth (amount), phase (start point)
+- LFO parameters: `{ type, freq, min, max, phase }` (`type`: sine, triangle, sawtooth, square, random; `freq` default 1; `min`/`max` from target range; `phase` default 0; `null` disables)
 - Use sparingly - subtle LFO modulation adds interest without overwhelming the groove
 
 ---
@@ -806,8 +805,8 @@ Each note has additional properties controlling how it's played:
 | `arpTriggerProbability` | number      | 0-1   | 1       | Probability that each arpeggio note is played                  |
 | `retriggerCount`        | integer     | 1-16  | 1       | Number of repetitions after initial trigger                    |
 | `rate`                  | integer     | 1-16  | 1       | Step spacing between repetitions                               |
-| `arp`                   | string/null | -     | null    | Arpeggio pattern (up, down, upDown, random, or custom indices) |
-| `euclideanFill`         | integer     | 0-100 | 0       | Euclidean rhythm fill percentage                               |
+| `arp`                   | string/null | -     | null    | Arpeggio: numeric string "0,1,2,3" or object `{intervals: number[], mode?: "up"|"down"|"updown"}` |
+| `euclideanFill`         | integer     | 0-16  | 0       | Euclidean rhythm fill percentage (0-16, 0=disabled)              |
 
 #### Trigger Mechanism
 
@@ -827,7 +826,7 @@ Repeats the note multiple times after the initial trigger.
 **Examples:**
 
 - `retriggerCount: 1` -> 1 note (no repetition)
-- `retriggerCount: 4, rate: 4` -> 4 notes, 1 step apart
+- `retriggerCount: 4, rate: 8` -> 4 notes, 1 step apart
 
 If `arp` is defined, `rate` defaults for basic retriggering.
 
@@ -837,7 +836,7 @@ Plays a sequence of pitches on a single step.
 
 **Parameters:**
 
-- `arp`: Arpeggio type ("up", "down", "upDown", "random", or custom "0,1,2,3,4")
+- `arp`: Arpeggio type — numeric string "0,1,2,3" (comma-separated semitone intervals) or object `{intervals: number[], mode?: "up"|"down"|"updown"}`
 - `arpTriggerProbability`: Randomly skips individual arpeggio notes
 
 **Example:**
@@ -848,7 +847,7 @@ Plays a sequence of pitches on a single step.
 
 ## 9. Best Practices
 
-1. **Use instrument IDs** (max 12 chars) from `listAllInstrumentsNames` - not arbitrary names
+1. **Use instrument IDs** from `listAllInstrumentsNames` - not arbitrary names
 2. **Use loop points** (`loopAtStep`) instead of repeating notes across beats
 3. **Use triggers/retriggers/arp** to create rhythmic variation without extra notes
 4. **Use LFOs** sparingly to add subtle movement to sounds
