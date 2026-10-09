@@ -9,7 +9,7 @@ import { logger } from '../core/logger.js'
 import { EVENTS } from '../core/events.js'
 import { NOTE_DEFAULTS } from '../core/note_schema.js'
 
-const ARP_TYPES = ['up', 'down', 'updown']
+const ARP_TYPES = ['up', 'down', 'updown', 'random']
 const SCALES_URL = 'assets/data/scales.json'
 
 let scalesCache = null
@@ -76,6 +76,7 @@ const GROUPS = [
         props: [
             { key: 'euclideanFill', label: 'Eucl', min: 0, max: 16, step: 1 },
             { key: 'euclideanRotation', label: 'Rot', min: 0, max: 15, step: 1 },
+            { key: 'arpTriggerProbability', label: 'Prob', min: 0, max: 1, step: 0.01 },
         ],
     },
     {
