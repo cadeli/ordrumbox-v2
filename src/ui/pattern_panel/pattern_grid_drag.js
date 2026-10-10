@@ -101,6 +101,6 @@ export default class PatternGridDrag {
             this.#editor.applySelection()
             emitNotesChanged(track)
         }
-        this.#editor.gauge.show({ note, trackIdx, trackPitch: track?.pitch ?? 0, label: axis, dir })
+        this.#editor.gauge.show({ note, trackPitch: track?.pitch ?? 0, label: axis, dir })
     }
 }

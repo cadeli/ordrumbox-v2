@@ -213,7 +213,7 @@ export default class KeyboardSection {
             this.#editor.applySelection()
             emitNotesChanged(track)
         }
-        this.#editor.gauge.show({ note, trackIdx, trackPitch, label: key, dir: nudgeDir })
+        this.#editor.gauge.show({ note, trackPitch, label: key, dir: nudgeDir })
         return true
     }
 
