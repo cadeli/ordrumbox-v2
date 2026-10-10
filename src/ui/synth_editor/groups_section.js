@@ -1,4 +1,4 @@
-// src/ui/synth_editor/GroupsSection.js
+// src/ui/synth_editor/groups_section.js
 // Renders synth parameter groups: VCOs, filter, FM, LFO, noise, envelope.
 // Manages knob placeholders and icon rows.
 

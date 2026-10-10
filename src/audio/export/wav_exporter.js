@@ -150,7 +150,6 @@ export default class WavExporter {
                 patterns: [pattern],
                 getSelectedPatternIdx: () => 0,
                 getAutoGenerator: getAutoGeneratorService,
-                uiState: {},
                 TICK,
                 secondsPerTick: secondsPerTick, // one sequencer tick, for swing
                 isOffline: true,
@@ -224,7 +223,6 @@ export default class WavExporter {
                 getCurrentView: () => 'song',
                 getSongs: () => [song],
                 getSelectedSongIdx: () => 0,
-                uiState: {},
                 TICK,
                 secondsPerTick: secondsPerTick,
                 isOffline: true,

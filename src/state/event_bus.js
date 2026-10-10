@@ -106,8 +106,11 @@ export const playbackEvents = new EventBus()
 
 /**
  * The "a track parameter changed" pair, repeated at ~20 call sites across the
- * panels (the payloads had already drifted: some sites passed a track, some an
- * array, some nothing — every subscriber ignores them).
+ * panels. Payloads drifted along the way (a track, an array, nothing), so a
+ * subscriber must tolerate any of them: sequencer.js passes whatever it gets
+ * to Engine.syncTrack(), most other handlers ignore the argument — and
+ * PATTERN_CHANGE's payload IS a contract (array of changed tracks, empty =
+ * the whole pattern, see EVENTS.PATTERN_CHANGE in core/events.js).
  * @param {any} [track]
  * @param {{batch: Function, emit: Function}} [bus] injected bus (DI)
  */

@@ -1,4 +1,4 @@
-// src/ui/track_editor/SoundSection.js
+// src/ui/track_editor/sound_section.js
 // Sound tab — instrument/sample/synth selects, mono toggle, auto-assign.
 // The rows are built once by mount(); sync() only updates values in place.
 

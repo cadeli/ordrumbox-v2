@@ -208,8 +208,13 @@ export default class TrackCommands {
 
                 if (track.notes) {
                     for (const note of track.notes) {
-                        const stepPercent =
-                            note.stepPercent ?? Math.round((note.beatStep * 100) / (oldStepsPerBeat ?? 4))
+                        // `??` would keep a legacy NaN stepPercent (old imports
+                        // computed it from a missing beatStep); derive from
+                        // beatStep unless it is finite.
+                        const stepPercent = Number.isFinite(note.stepPercent)
+                            ? note.stepPercent
+                            : Math.round(((Number(note.beatStep) || 0) * 100) / (oldStepsPerBeat ?? 4))
+                        note.stepPercent = stepPercent
                         note.beatStep = Math.min(Math.round((stepPercent / 100) * target), target - 1)
                     }
                 }

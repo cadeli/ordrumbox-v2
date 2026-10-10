@@ -120,6 +120,15 @@ describe('Exporter', () => {
             expect(cleaned.noteKeys).toEqual(['velocity'])
             expect(cleaned.notes[0]).toEqual([0.5])
         })
+
+        it('keeps a track whose notes are all default instead of dropping them', () => {
+            // A single note on beat 0 / step 0 at velocity 0.8 has no non-default
+            // key, but its POSITION is data: writing `notes: []` would delete it.
+            const track = { ...TRACK_DEFAULTS, beatCount: 2, notes: [{ ...NOTE_DEFAULTS }] }
+            const cleaned = Exporter.cleanTrack(track)
+            expect(cleaned.noteKeys).toEqual([])
+            expect(cleaned.notes).toEqual([[]])
+        })
     })
 
     // ── cleanPattern / export ────────────────────────────────────────

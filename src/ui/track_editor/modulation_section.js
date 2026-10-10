@@ -1,4 +1,4 @@
-// src/ui/track_editor/ModulationSection.js
+// src/ui/track_editor/modulation_section.js
 // Modulation (LFO) tab — LFO target buttons + type/freq/range/phase controls.
 // The rows are built once by mount(); sync() only updates values in place.
 

@@ -20,7 +20,7 @@
  *   - Track loop shorter than the pattern (loop repeat)
  *   - every / pos  (note fires every N loops)
  *   - retriggerCount / rate (note fires N times from one beatStep)
- *   - Arpeggio (array of semitone intervals, modes: up / down / updown)
+ *   - Arpeggio (array of semitone intervals, modes: up / down / updown / random)
  *   - Combination: arp + retrigger on melodic track
  *   - Multi-loop export (pattern repeated 4×)
  */

@@ -1,4 +1,4 @@
-// src/ui/synth_editor/WaveformSection.js
+// src/ui/synth_editor/waveform_section.js
 // Waveform canvas drawing: oscillators + ADSR envelope preview.
 
 import { WAVE_BUFFER } from './synth_editor_constants.js'

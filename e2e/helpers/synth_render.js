@@ -131,7 +131,6 @@ export async function renderSynthBatch(page, configs, opts = {}) {
                     selectedPatternIdx: 0,
                     getSelectedPatternIdx: () => 0,
                     getAutoGenerator: () => false,
-                    uiState: {},
                     TICK,
                     secondsPerTick: 60 / bpm,
                     isOffline: true,

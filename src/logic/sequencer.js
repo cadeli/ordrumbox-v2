@@ -69,7 +69,6 @@ export default class Sequencer {
             getSongs: () => this.appState.songs ?? [],
             getSelectedSongIdx: () => this.appState.selectedSongIdx ?? 0,
             getAutoGenerator: getAutoGeneratorService,
-            uiState: {}, // UI state removed
             TICK,
             secondsPerTick: this.appState.secondsPerTick,
         })
@@ -184,8 +183,10 @@ export default class Sequencer {
         this.serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
 
         this.ensureAudioEngine()
-        // Flat notes cache each track's sampleId, so a pattern auto-assign has
-        // just re-pointed must not keep its pre-assignment map.
+        // The auto-assign above mutates track.sampleId in place, on the very
+        // track objects the flat-note and playback caches hold: their
+        // ref/version keys would still see them as unchanged, so the caches
+        // must be dropped explicitly or the pre-assignment sound keeps playing.
         this.serviceRegistry.audioEngine.invalidateCache()
         await this.serviceRegistry.audioEngine.start(selectedPattern)
         // The strips derive their delay times from the bpm, so they must follow

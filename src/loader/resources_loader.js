@@ -126,7 +126,7 @@ export default class ResourcesLoader {
             await this.#patternsLoadingPromise
         }
 
-        // 1b. Load Settings from localStorage (or fallback to JSON file)
+        // 1b. Load Settings from IndexedDB (or fallback to JSON file)
         if (!soundRegistry.settings.loaded) {
             await this.loadSettings()
             soundRegistry.settings.loaded = true

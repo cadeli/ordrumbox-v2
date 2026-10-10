@@ -900,8 +900,11 @@ export default class TrackEditor extends BasePanel {
                 this.#emitTrackChange()
             })
         } else if (key === 'stepsPerBeat') {
-            // Structure change: grid cell count per beat and piano-roll columns
-            // must rebuild — TRACK_PARAM_CHANGE alone only updates cell content.
+            // Structure change: the piano roll rebuilds its columns only on
+            // PATTERN_META_CHANGE — its TRACK_PARAM_CHANGE handler merely
+            // re-renders notes (piano_roll_panel.js) — so emit both. (The
+            // pattern grid catches the change on TRACK_PARAM_CHANGE itself,
+            // via its structureSig check.)
             this.#playbackEvents.batch(() => {
                 this.#playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
                 this.#emitTrackChange()

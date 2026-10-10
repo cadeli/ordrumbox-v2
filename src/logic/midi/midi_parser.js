@@ -250,10 +250,11 @@ export function estimateBpmFromClockPulses(pulseTimes) {
  * Update clock pulse tracking array, keeping only recent pulses.
  * @param {number[]} pulseTimes - Existing pulse timestamps
  * @param {number} now - Current timestamp from performance.now()
- * @returns {number[]} Updated pulse times (max 32 pulses, ~2 seconds at 120 BPM)
+ * @returns {number[]} Updated pulse times (last 32 pulses ≈ 0.7 s at 120 BPM)
  */
 export function updateClockPulseTracking(pulseTimes, now) {
     const updated = [...pulseTimes, now]
-    // Keep last 32 pulses (~2 seconds at 120 BPM = 24 ppqn * 2 = 48 pulses)
+    // Keep the last 32 pulses: a 24 PPQN clock delivers 48 pulses/s at
+    // 120 BPM, so this spans ≈0.7 s of clock history.
     return updated.slice(-32)
 }

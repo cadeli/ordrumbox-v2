@@ -24,9 +24,11 @@ Creates a new empty pattern.
 {
     "message": "Pattern created",
     "pattern": { "name": "My Pattern", "beatCount": 4, "tracks": [] },
-    "filePath": "assets/data/patterns/my-pattern.json"
+    "filePath": "/abs/path/to/ordrumbox-v2/assets/data/patterns/my_pattern.json"
 }
 ```
+
+`filePath` is always an **absolute** path. The file name is sanitized: lowercased and every run of non-alphanumerics becomes `_` (`My Pattern` → `my_pattern.json`). The pattern is also appended to the `patterns` array of `assets/data/song.json`.
 
 ---
 
@@ -44,7 +46,9 @@ Reads a pattern from the patterns index and returns its full data. Does NOT modi
 
 **Output:**
 
-Every track field is returned with its model default filled in (`TRACK_DEFAULTS`), compact-format notes are decoded, and derived keys (`loopPointBeat`, `loopPointStep`) are omitted.
+**Output** (abridged: the response carries every `TRACK_DEFAULTS` / `NOTE_DEFAULTS` field, only a subset is shown below):
+
+Stored track values are kept as-is; fields missing from the stored file fall back to their model default (`TRACK_DEFAULTS`), and compact-format notes are decoded.
 
 ```json
 {
@@ -127,9 +131,11 @@ Saves the current pattern to an individual JSON file under `assets/data/patterns
 ```json
 {
     "message": "Saved",
-    "filePath": "assets/data/patterns/my-pattern.json"
+    "filePath": "/abs/path/to/ordrumbox-v2/assets/data/patterns/my_pattern.json"
 }
 ```
+
+`filePath` is absolute; the file name is sanitized (lowercased, non-alphanumeric runs → `_`).
 
 ---
 
@@ -176,7 +182,7 @@ Adds multiple notes to a pattern
 | `arpTriggerProbability` | number      | 0-1          | 1        | Arpeggio note probability                                         |
 | `retriggerCount`        | integer     | 1-16         | 1        | Number of retriggers                                              |
 | `rate`                  | integer     | 1-16         | 1        | Retrigger step spacing                                            |
-| `arp`                   | string/null |              | null     | Arpeggio pattern: numeric string "0,1,2,3" (comma-separated semitone intervals) or object `{intervals: number[], mode?: "up"|"down"|"updown"}` |
+| `arp`                   | string/number[]/object/null |              | null     | Arpeggio pattern: numeric string "0,1,2,3" or array of semitone intervals, a mode keyword (`"up"`, `"down"`, `"updown"`, `"random"` — loads a default major-scale interval set), or object `{intervals: number[], mode?: "up"|"down"|"updown"|"random"}` |
 | `euclideanFill`         | integer     | 0-16         | 0        | Euclidean pulses (0-16, 0=disabled)                               |
 | `euclideanRotation`     | integer     | 0-15         | 0        | Euclidean phase rotation in steps                                 |
 
@@ -226,7 +232,7 @@ Numeric ranges come from the app model (`TRACK_VALUE_RANGES` in `src/model/track
 | `useAutoAssignSound`                                                                                                            | boolean     |                                                                           | Auto-assign the sound matching the track name                                                                         |
 | `sampleId`                                                                                                                      | string      |                                                                           | Assigned sample URL/id                                                                                                |
 | `synthSoundKey`                                                                                                                 | string/null |                                                                           | Synth preset key (e.g. "BASS1"); `null` unlinks                                                                       |
-| `filterType`                                                                                                                    | string      | lowpass, highpass, bandpass, allpass | Filter type (track filter; notch/peaking/lowshelf/highshelf are synth-only) |
+| `filterType`                                                                                                                    | string      | lowpass, highpass, bandpass, notch, allpass                    | Filter type (the track strip also implements notch; peaking/lowshelf/highshelf are synth-only and fall back to lowpass on a track) |
 | `filterFreq`                                                                                                                    | number      | 20-20000                                                                  | Filter cutoff frequency in Hz                                                                                         |
 | `filterQ`                                                                                                                       | number      | 0.707-18.707                                                              | Filter resonance / Q factor                                                                                           |
 | `reverbType`                                                                                                                    | string      | none, room, hall, plate, spring, gated                                    | Reverb preset                                                                                                         |
@@ -265,9 +271,9 @@ Numeric ranges come from the app model (`TRACK_VALUE_RANGES` in `src/model/track
 | `arpTriggerProbability` | number      | 0-1     | 1       | Arpeggio note probability                                         |
 | `retriggerCount`        | integer     | 1-16    | 1       | Number of retriggers                                              |
 | `rate`                  | integer     | 1-16    | 1       | Retrigger step spacing (rate=1 → 1/8 step; rate=8 → 1 step)     |
-| `arp`                   | string/null |         | null    | Arpeggio pattern: numeric string "0,1,2,3" (comma-separated semitone intervals) or object `{intervals: number[], mode?: "up"|"down"|"updown"}` |
+| `arp`                   | string/number[]/object/null |         | null    | Arpeggio pattern: numeric string "0,1,2,3" or array of semitone intervals, a mode keyword (`"up"`, `"down"`, `"updown"`, `"random"` — loads a default major-scale interval set), or object `{intervals: number[], mode?: "up"|"down"|"updown"|"random"}` |
 | `euclideanFill`         | integer     | 0-16    | 0       | Euclidean pulses (0-16, 0=disabled)                               |
-| `euclideanRotation`     | integer     | 0-15    | 0       | Euclidean phase rotation in steps                                 |
+| `euclideanRotation`     | integer     | 0-15    | 0       | Euclidean phase rotation in steps — only applied when at least one *other* note property is present in the same `noteUpdates` call (server gate) |
 | `velocity`              | number      | 0-1     |         | Note velocity override                                            |
 | `pan`                   | number      | -1 to 1 |         | Note pan override                                                 |
 | `pitch`                 | number      |         |         | Note pitch override                                               |
@@ -467,7 +473,7 @@ Use this to get valid track names for MCP requests.
 
 ### listPatterns
 
-Returns the list of all patterns from patterns.json.
+Returns the list of all patterns from `assets/data/song.json` (the `patterns` array).
 
 **Input:** `{}`
 
@@ -509,7 +515,7 @@ Analyzes audio samples and returns their full characteristics.
 
 ```json
 {
-    "samples": ["kick.wav", "snare.wav"]
+    "samples": ["real/kick.wav", "real/snare.wav"]
 }
 ```
 
@@ -519,12 +525,10 @@ Analyzes audio samples and returns their full characteristics.
 {
   "results": [
     {
-      "samplePath": "kick.wav",
+      "samplePath": "real/kick.wav",
       "analysis": {
         "envelope": [...],
-        "pitch": null,
-        "volume": 0.5,
-        "length": 0.5,
+        "durationSec": 0.5,
         "peakDb": -3.0,
         "rmsDb": -12.0,
         "fundamentalHz": null,
@@ -761,7 +765,7 @@ The engine uses an internal resolution of **TICK = 32 ticks per beat**.
 - Formula: `beat = floor(loopAtStep / stepsPerBeat)` and `beatStep = loopAtStep % stepsPerBeat`
 - Example: `loopAtStep: 8` with `stepsPerBeat: 4` → beat `2`, beatStep `0`
 - Example: `loopAtStep: 32` with `stepsPerBeat: 8` → beat `4`, beatStep `0`
-- By default `loopAtStep` is `null` (= auto): the track repeats over its whole length, i.e. `beatCount × stepsPerBeat` steps (or the last note, whichever is further). Set it to shorten that — do NOT duplicate the notes instead.
+- By default `loopAtStep` is `null` (= auto): the track repeats over its whole length, i.e. `beatCount × stepsPerBeat` steps. Set it to shorten that — do NOT duplicate the notes instead.
 
 ### Use Loop Points Instead of Repeated Notes
 
@@ -776,11 +780,11 @@ The engine uses an internal resolution of **TICK = 32 ticks per beat**.
     - `every: 4` -> note plays every 4th loop iteration (skips 3 loops between plays)
     - `every: 1` -> note plays every loop (default, continuous)
     - `pos: 0-15` -> phase offset for the trigger pattern
-- **Retrigger (retriggerCount, rate):** Repeats the sound at regular intervals within a step
-    - `retriggerCount: 3` -> Play 3 times per step
-    - `rate: 1` -> Spacing between retriggers
-- **Arpeggio (arp):** Sequences through multiple pitches within a single step
-    - Values: numeric string "0,1,2,3" (comma-separated semitone intervals) or object `{intervals: number[], mode?: "up"|"down"|"updown"}`
+- **Retrigger (retriggerCount, rate):** Repeats the sound at regular intervals starting from the note
+    - `retriggerCount: 3` -> 3 hits (initial trigger + 2 repeats)
+    - `rate` -> spacing between hits: 1-7 = rate/8 of a step (rate 1 = 1/8 step), 8-16 = rate-7 steps (rate 8 = 1 step)
+- **Arpeggio (arp):** Sequences through multiple pitches starting from the note
+    - Values: numeric string "0,1,2,3" (comma-separated semitone intervals), an array of intervals, a mode keyword (`"up"`, `"down"`, `"updown"`, `"random"` — default major-scale set), or object `{intervals: number[], mode?: "up"|"down"|"updown"|"random"}`
     - Example: `arp: "0,1,2"` cycles through 3 pitches (intervals 0, +1, +2 semitones)
 - These properties can be set via `addNotesToPattern` or `updateTrack` with `noteUpdates`
 
@@ -805,18 +809,18 @@ Each note has additional properties controlling how it's played:
 | `arpTriggerProbability` | number      | 0-1   | 1       | Probability that each arpeggio note is played                  |
 | `retriggerCount`        | integer     | 1-16  | 1       | Number of repetitions after initial trigger                    |
 | `rate`                  | integer     | 1-16  | 1       | Step spacing between repetitions                               |
-| `arp`                   | string/null | -     | null    | Arpeggio: numeric string "0,1,2,3" or object `{intervals: number[], mode?: "up"|"down"|"updown"}` |
-| `euclideanFill`         | integer     | 0-16  | 0       | Euclidean rhythm fill percentage (0-16, 0=disabled)              |
+| `arp`                   | string/number[]/object/null | -     | null    | Arpeggio: numeric string "0,1,2,3" or interval array, mode keyword ("up"|"down"|"updown"|"random"), or `{intervals: number[], mode?: "up"|"down"|"updown"|"random"}` |
+| `euclideanFill`         | integer     | 0-16  | 0       | Euclidean pulses over the span to the next note (0-16, 0=disabled)   |
 
 #### Trigger Mechanism
 
-Controls whether a note triggers on each step.
+Controls whether a note triggers on each pattern pass (loop), via `(loop + pos) % every === 0`.
 
 **Examples:**
 
-- `every: 1, pos: 0` -> Plays every step (1/1)
-- `every: 4, pos: 0` -> Plays 1 out of every 4 steps (1/4)
-- `every: 4, pos: 2` -> Plays on steps 2, 6, 10...
+- `every: 1, pos: 0` -> Plays every pass
+- `every: 4, pos: 0` -> Plays every 4th pass (3 passes skipped)
+- `every: 4, pos: 2` -> Plays on passes 2, 6, 10...
 - `prob: 0.5` -> Plays about half of the triggered notes
 
 #### Retrigger Mechanism
@@ -828,7 +832,7 @@ Repeats the note multiple times after the initial trigger.
 - `retriggerCount: 1` -> 1 note (no repetition)
 - `retriggerCount: 4, rate: 8` -> 4 notes, 1 step apart
 
-If `arp` is defined, `rate` defaults for basic retriggering.
+With `arp`, `retriggerCount` becomes the **number of arp notes** generated (1-16) instead of a repeat count, and `rate` sets their spacing (same spacing rule as plain retriggers).
 
 #### Arpeggio
 
@@ -836,8 +840,8 @@ Plays a sequence of pitches on a single step.
 
 **Parameters:**
 
-- `arp`: Arpeggio type — numeric string "0,1,2,3" (comma-separated semitone intervals) or object `{intervals: number[], mode?: "up"|"down"|"updown"}`
-- `arpTriggerProbability`: Randomly skips individual arpeggio notes
+- `arp`: Arpeggio pattern — numeric string "0,1,2,3" or interval array, mode keyword ("up"|"down"|"updown"|"random"), or object `{intervals: number[], mode?: "up"|"down"|"updown"|"random"}`
+- `arpTriggerProbability`: Randomly skips individual arpeggio notes (it also gates plain retrigger repeats)
 
 **Example:**
 

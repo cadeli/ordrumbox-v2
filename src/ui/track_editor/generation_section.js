@@ -1,4 +1,4 @@
-// src/ui/track_editor/GenerationSection.js
+// src/ui/track_editor/generation_section.js
 // "Generation" tab — Basic/Transport props + Groove/Engine sub-tabs.
 // The rows are built once by mount(); sync() only updates values in place.
 

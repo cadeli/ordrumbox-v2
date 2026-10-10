@@ -1,4 +1,4 @@
-// src/ui/pattern_panel/PlaybackOverlaySection.js
+// src/ui/pattern_panel/playback_overlay_section.js
 // Playhead animation, VU meter updates, RAF loop.
 
 import { TICK, BEATS_PER_PAGE } from '../../core/constants.js'

@@ -75,10 +75,13 @@ The LLM will call:
 
 ### 2. Add variation with triggers and retriggers
 
-_"On the FourOnFloor pattern, make the hi-hat play 16th notes with retriggers."_
+_"On the FourOnFloor pattern, make the hi-hat play 16th notes and add a retrigger (ratchet) on the last beat."_
 
-- `addNotesToPattern({ patternName: "FourOnFloor", notes: [{ trackName: "CHH", step: 0, every: 4 }] })`
-- Or via `updateTrack({ patternName: "FourOnFloor", trackName: "CHH", updates: {}, noteUpdates: { every: 4 } })`
+- 16th notes = one note per grid step (the default is 4 steps per beat):
+  `addNotesToPattern({ patternName: "FourOnFloor", notes: [{ trackName: "CHH", step: 0 }, ..., { trackName: "CHH", step: 15 }] })`
+- A retrigger ratchets a single note into consecutive hits — `retriggerCount` hits spaced `getStepSpacing(rate)` steps apart (`rate: 8` = 1 step):
+  `updateTrack({ patternName: "FourOnFloor", trackName: "CHH", updates: {}, noteUpdates: { retriggerCount: 4, rate: 8 } })`
+- `every` is not a step selector: it fires a note once every N **pattern passes** (`every: 4` = every 4th loop).
 
 ### 3. Apply effects to a track
 
@@ -94,8 +97,8 @@ _"Add a lowpass filter to the KICK and some reverb to the SNARE."_
 
 ### 5. Browse samples
 
-- `listKitSamples({})` → list all WAV files
-- `analyzeSamples({ samples: ["kits/kit1/kick.wav"] })` → get duration, pitch, spectral data
+- `listKitSamples({})` → list all WAV files (paths relative to `assets/kits/`, e.g. `real/kick.wav`)
+- `analyzeSamples({ samples: ["real/kick.wav"] })` → get duration, pitch, spectral data
 
 ---
 
@@ -119,7 +122,7 @@ _"Add a lowpass filter to the KICK and some reverb to the SNARE."_
 | `loadPattern`                  | Read pattern data                                              |
 | `listPatterns`                 | List all pattern names                                         |
 | `listAllInstrumentsNames`      | Get valid track names (66 instruments)                         |
-| `setPatternBpm`                | Set tempo (20-300)                                             |
+| `setPatternBpm`                | Set tempo (schema 20–300; the app toolbar slider uses 20–250)  |
 | `setPatternTags`               | Set genre/category tags                                        |
 | `setPatternBeatCount`          | Set number of beats                                            |
 | `setPatternDescription`        | Add description text                                           |
@@ -129,6 +132,8 @@ _"Add a lowpass filter to the KICK and some reverb to the SNARE."_
 | `createArrangement`            | Create an arrangement, optionally filled with clips            |
 | `addPatternToArrangement`      | Place a pattern at a measure in an arrangement                 |
 | `removePatternFromArrangement` | Remove clips by measure and/or by pattern                      |
+| `selectPattern`                | Select the current pattern for the MCP session (in-memory)     |
+| `setColorScheme`               | Set the UI color scheme in settings (1–3)                      |
 
 See `MCP_TOOLS.md` for full parameter details.
 
@@ -139,4 +144,4 @@ See `MCP_TOOLS.md` for full parameter details.
 - All step/beat indices are **0-indexed**
 - Track names are **uppercase instrument IDs** (max 12 chars) — use `listAllInstrumentsNames` to see them
 - The server logs debug info to stderr; JSON-RPC messages go to stdout
-- Patterns are saved to `assets/data/patterns/<name>.json`
+- Patterns are saved to `assets/data/patterns/<name>.json`, where `<name>` is sanitized (lowercased, every run of non-alphanumerics → `_`, e.g. `My Pattern` → `my_pattern.json`) and appended to the `patterns` array of `assets/data/song.json`

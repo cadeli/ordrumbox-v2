@@ -1,4 +1,4 @@
-// src/ui/track_editor/LoopSection.js
+// src/ui/track_editor/loop_section.js
 // Loop tab — stepsPerBeat, loopAtStep, swingAmount sliders.
 // The rows are built once by mount(); sync() only updates values in place.
 

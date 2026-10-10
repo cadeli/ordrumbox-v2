@@ -47,12 +47,30 @@ describe('patternFixer - normalizeNoteGridPosition', () => {
         expect(note.stepPercent).toBe(50)
     })
 
-    it('leaves beatStep undefined when missing', () => {
+    it('adds the overflow to the note beat instead of replacing it', () => {
+        // beat 1 + beatStep 6 (spb 4) = beat 2 step 2, NOT beat 1 step 2.
+        const track = { stepsPerBeat: 4 }
+        const note = { beatStep: 6, beat: 1 }
+        normalizeNoteGridPosition(track, note)
+        expect(note.beatStep).toBe(2)
+        expect(note.beat).toBe(2)
+        expect(note.stepPercent).toBe(50)
+    })
+
+    it('treats a missing beat as 0 when wrapping', () => {
+        const track = { stepsPerBeat: 4 }
+        const note = { beatStep: 6 }
+        normalizeNoteGridPosition(track, note)
+        expect(note.beatStep).toBe(2)
+        expect(note.beat).toBe(1)
+    })
+
+    it('leaves beatStep undefined when missing, and derives stepPercent 0 (never NaN)', () => {
         const track = { stepsPerBeat: 4 }
         const note = {}
         normalizeNoteGridPosition(track, note)
         expect(note.beatStep).toBeUndefined()
-        expect(note.stepPercent).toBeNaN()
+        expect(note.stepPercent).toBe(0)
     })
 })
 

@@ -387,15 +387,12 @@ export default class NoteEditor extends BasePanel {
 
     /**
      * Computes note.arp from scale intervals + mode, or null if range <= 0
-     * (pure). Overrides model the NEW value of a control being edited, since
-     * the note itself is only updated once the command runs.
-     * @param {{range?: number, scale?: string, type?: string}} [overrides]
-     */
-    /**
-     * The note's `arp` from a scale/type/range triple. `range` is the number of
-     * scale degrees, i.e. `arp.intervals.length` — it is NOT a note field: it used
-     * to be cached in `note.arpRange`, which nothing persisted, so the Range
-     * slider came back wrong on reload and two values could describe one arp.
+     * (pure). `range` is the number of scale degrees, i.e.
+     * `arp.intervals.length` — it is NOT a note field: it used to be cached in
+     * `note.arpRange`, which nothing persisted, so the Range slider came back
+     * wrong on reload and two values could describe one arp. Overrides model
+     * the NEW value of a control being edited, since the note itself is only
+     * updated once the command runs.
      * @param {{range?: number, scale?: string, type?: string}} [overrides]
      */
     #arpValue(overrides = {}) {

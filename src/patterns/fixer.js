@@ -1,5 +1,6 @@
 import { getPanFromTrackName } from '../core/drum_taxonomy.js'
 import { getTracksArray } from '../core/tracks.js'
+import { toFiniteNumber } from '../core/numbers.js'
 import { normalizeTrack } from '../model/track_schema.js'
 import {
     canonicalNoteKeys,
@@ -44,9 +45,14 @@ export function normalizeNoteGridPosition(track, note) {
     if (note.beatStep >= track.stepsPerBeat) {
         const prevBeatStep = note.beatStep
         note.beatStep %= track.stepsPerBeat
-        note.beat = Math.floor(prevBeatStep / track.stepsPerBeat)
+        // Wrap the overflow into the NEXT beat (add, never replace): a note on
+        // beat 1 with beatStep 6 (stepsPerBeat 4) is beat 2 step 2, not beat 1.
+        note.beat = toFiniteNumber(note.beat, 0) + Math.floor(prevBeatStep / track.stepsPerBeat)
     }
-    note.stepPercent = Math.round((note.beatStep * 100) / track.stepsPerBeat)
+    // A note without beatStep (compact note, partial object) must not poison
+    // stepPercent with NaN: the rescale paths read it with `??`, which passes
+    // NaN straight through into beatStep.
+    note.stepPercent = Math.round((toFiniteNumber(note.beatStep, 0) * 100) / track.stepsPerBeat)
     return note
 }
 

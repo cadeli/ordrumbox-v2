@@ -18,8 +18,8 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 
 ### Synthesis & Automation
 
-- Integrated Soft Synth with 3 VCOs (sine, triangle, saw, square), ADSR envelope, and filters
-- FM synthesis: osc2 modulates osc1 frequency, osc3 modulates osc2 frequency (0–1 depth)
+- Integrated Soft Synth with 3 VCOs (sine, triangle, saw, square, random sample & hold), ADSR envelope, and filters
+- FM synthesis: 5 selectable algorithms (2→1, 3→1, 3→2→1, 2+3→1, 2↔1) with a 0–1 amount
 - Filter: TPT SVF with Lowpass, Highpass, Bandpass, Notch modes; track Q 0.707–18.707, synth Q 0.1–24
 - Filter envelope modulation (sweeps cutoff from base frequency toward 20 kHz)
 - White noise generator with mix and independent highpass filter
@@ -104,7 +104,7 @@ You can also access additional controls by clicking the TOOLS button, which prov
 
 ### Direct Controls
 
-Use your computer keyboard as a drum pad. Every key is mapped to a specific sound in the selected drumkit for live finger-drumming.
+Use your computer keyboard as a drum pad: **Q–P** trigger the first 10 tracks of the current pattern, and **1–9** toggle the mute of tracks 1–9.
 
 ### MIDI Controllers
 
@@ -145,7 +145,7 @@ npx playwright test --project=mobile-chromium    # Mobile only (Pixel 7)
 
 Playwright starts the dev server automatically via the `webServer` config in `playwright.config.js`. Workers: 1 (serial) — AudioContext tests are sensitive to parallelism.
 
-Tests use `window.__e2e` (exposed in `main.js` after init) to access `appState`, `serviceRegistry`, `soundRegistry`, and `playbackEvents` from `page.evaluate()`.
+Tests use `window.__e2e` (installed at the end of boot by `installE2eHook()` in `src/bootstrap/startup.js`) to access `appState`, `serviceRegistry`, `soundRegistry`, and `playbackEvents` from `page.evaluate()`.
 
 ### Dev Tools
 
@@ -159,7 +159,7 @@ Tests use `window.__e2e` (exposed in `main.js` after init) to access `appState`,
 - Test Framework: Vitest + Playwright
 - Audio: Web Audio API with AudioWorklet synthesis
 - Node Pool: Recycling of GainNode, BiquadFilterNode, and StereoPannerNode for reduced GC pressure
-- Storage: IndexedDB for caching, LocalStorage for settings, JSON for import/export
+- Storage: IndexedDB for caching and settings, JSON for import/export
 - Desktop: Electron wrapper
 - PWA: Service Worker for offline support
 - MCP Server: Model Context Protocol server for programmatic control

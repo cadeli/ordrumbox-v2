@@ -9,7 +9,8 @@ import { EVENTS } from '../core/events.js'
  * - Timer worker stoppage (tab throttled, worker crash) — via tick counter
  * - AudioContext suspension (browser policy, user gesture required)
  *
- * Fires playbackEvents.onStall / onStallResume when state changes.
+ * Emits EVENTS.STALL / EVENTS.STALL_RESUME on playbackEvents when the state
+ * changes.
  */
 export default class StallDetector {
     #audioCtx

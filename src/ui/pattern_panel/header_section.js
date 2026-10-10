@@ -1,4 +1,4 @@
-// src/ui/pattern_panel/HeaderSection.js
+// src/ui/pattern_panel/header_section.js
 // Pattern header: name, BPM/meta, page info, action buttons.
 
 import { valueOrFallback } from '../../core/logger.js'

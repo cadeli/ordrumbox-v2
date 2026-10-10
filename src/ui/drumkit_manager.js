@@ -370,8 +370,8 @@ export default class DrumkitManager extends BasePanel {
     }
 
     // ── Gain / Tune / Decay knobs ─────────────────────────────────────
-    // Same OrKnob widget and keep-alive pattern as track_editor's knob bar
-    // (see track_editor.js #syncKnobs / sync_helpers.js), so this panel
+    // Same OrKnob widget and keep-alive pattern as track_editor's knob row
+    // (see track_editor.js #syncKnobValues), so this panel
     // looks and behaves like the rest of the app instead of raw <input
     // type="range"> sliders.
 

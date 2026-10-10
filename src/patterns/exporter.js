@@ -90,7 +90,11 @@ export class Exporter {
         const usedKeys = detectUsedKeys(cleanedNotes)
 
         if (usedKeys.length === 0) {
-            return null
+            // Every note is exactly default (e.g. a single note on beat 0 /
+            // step 0 at velocity 0.8). Their position still is data, so emit
+            // empty compact arrays — returning null would write `notes: []`
+            // and delete them from the file.
+            return { noteKeys: [], notes: cleanedNotes.map(() => []) }
         }
 
         const encoded = cleanedNotes.map((note) => noteToObjectCompact(note, usedKeys))

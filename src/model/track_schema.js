@@ -196,7 +196,11 @@ export function clampStepsPerBeat(track) {
         : TRACK_DEFAULTS.stepsPerBeat
     const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? {})
     for (const note of notes) {
-        const stepPercent = note.stepPercent ?? Math.round((note.beatStep * 100) / (current || 4))
+        // `??` would keep a legacy NaN stepPercent (old imports computed it
+        // from a missing beatStep); derive from beatStep unless it is finite.
+        const stepPercent = Number.isFinite(note.stepPercent)
+            ? note.stepPercent
+            : Math.round(((Number(note.beatStep) || 0) * 100) / (current || 4))
         note.stepPercent = stepPercent
         note.beatStep = Math.min(Math.round((stepPercent / 100) * target), target - 1)
     }

@@ -146,9 +146,11 @@ export default class WorkletSynthVoice extends BaseVoice {
             // Send trigger
             this.workletNode.port.postMessage({ type: 'trigger', startTime: time })
 
-            // Re-send all parameters after trigger because the processor clears
-            // #overrides on trigger (line 291 of synth_voice_source.js), which
-            // wipes out the LFO, filter, and other params sent during setup().
+            // Re-send the full parameter state together with the trigger. The
+            // trigger itself leaves #overrides intact (only construction and
+            // `reset` clear them in synth_voice_source.js), so this is an
+            // idempotent safety net: the node ends up playing with the state
+            // setup() computed no matter when it was last cleared.
             this.#sendUpdate(gs, this.#lastPan)
 
             // Auto-release after one step (a 16th note = a quarter of a beat).

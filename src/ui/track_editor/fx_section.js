@@ -1,4 +1,4 @@
-// src/ui/track_editor/FxSection.js
+// src/ui/track_editor/fx_section.js
 // FX tab — tab bar with LED indicators + per-FX control panels.
 // The rows are built once by mount(); sync() only updates values in place.
 

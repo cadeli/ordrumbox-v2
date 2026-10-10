@@ -61,8 +61,10 @@ const NOTE_KEY_ORDER = [
  *
  * @typedef {Object} NoteDefaults
  * @property {number} velocity              - Playback volume (0-1). Default: 0.8
- * @property {number} beat                  - Measure index within the track (0-based). Default: 0
- * @property {number} beatStep              - Step index within the measure (0-based). Default: 0
+ * @property {number} beat                  - Beat index within the track (0-based; a measure
+ *                                          is 4 beats). Default: 0
+ * @property {number} beatStep              - Step index within the beat (0-based,
+ *                                          0..stepsPerBeat-1). Default: 0
  * @property {number} pitch                 - Pitch offset in semitones. Default: 0 (no transposition)
  * @property {number} pan                   - Stereo pan (-1=left, 0=center, 1=right). Default: 0
  * @property {number} every                 - Fire once every N passes of the pattern
@@ -76,8 +78,13 @@ const NOTE_KEY_ORDER = [
  *                                          `>=8` -> value-7 steps). Bigger = WIDER, and
  *                                          1 is the tightest setting, not "normal".
  *                                          Default: 1
- * @property {number} retriggerCount          - Number of retriggers per step (1=no retrigger). Default: 1
- * @property {Array|null} arp               - Arpeggio intervals (e.g. [0, 4, 7]). Default: null (disabled)
+ * @property {number} retriggerCount          - Number of hits: initial trigger plus its repeats
+ *                                          (1 = the note alone). With arp, the number of arp
+ *                                          notes. Default: 1
+ * @property {Array|string|Object|null} arp - Arpeggio: interval array (e.g. [0, 4, 7]),
+ *                                          numeric string "0,4,7", mode keyword
+ *                                          ("up"/"down"/"updown"/"random"), or
+ *                                          {intervals, mode?}. Default: null (disabled)
  * @property {number} arpTriggerProbability - Probability of arpeggio trigger (0-1). Default: 1
  * @property {number} euclideanFill         - Euclidean pulses k over the span to the next note, base note included (0-16, 0=disabled). Default: 0 (disabled)
  * @property {number} euclideanRotation     - Phase offset of the euclidean pattern in steps (0-15). Default: 0

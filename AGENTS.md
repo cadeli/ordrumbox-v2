@@ -42,8 +42,9 @@ index.html → src/main.js (bootstrap after "Start" click)
         ui/                      ← vanilla JS panel components
         ui/synth_editor/         ← soft synth UI
         ui/track_editor/         ← track editor UI
-        ui/pattern_panel/        ← pattern grid (coordinator + 11 section modules;
-                                   note editing lives in pattern_grid_drag.js)
+        ui/pattern_panel/        ← pattern grid (coordinator + 9 section modules
+                                   + labels.js; note editing lives in
+                                   pattern_grid_drag.js)
         ui/piano_roll/           ← piano roll (coordinator + section modules:
                                    viewport/render/menu/playback/drag, plus
                                    the pure hit_test.js helper)
@@ -115,7 +116,7 @@ import { bootApp } from './fixtures.js'
 
 #### E2E helpers
 
-- `e2e/helpers/synth_render.js` — `renderSynthBatch(overrides, noteCount, options)` renders N notes in one OfflineAudioContext
+- `e2e/helpers/synth_render.js` — `renderSynthBatch(page, configs, opts)` renders one offline slot per config object in a single OfflineAudioContext
 - `e2e/fixtures.js` — `bootApp(page)`, `stackClipOnMeasure(page, measure)`
 
 ## Undo policy
