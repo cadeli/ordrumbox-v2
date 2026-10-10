@@ -80,6 +80,13 @@
        panel below it (the pattern panel leaves the same 4px) */
     --workspace-gap: 4px;
 
+    /* Size of the screen the user actually sees, in both orientations.
+       On a phone 100vh is the LARGE viewport (address bar collapsed), so a
+       shell sized with it sticks out behind the URL bar; 100dvh tracks the
+       visible area instead. The @supports block below upgrades this to
+       100dvh, leaving 100vh as the fallback. */
+    --app-vh: 100vh;
+
     /* ── Radius ── */
     --radius-sm: 4px;
 
@@ -88,6 +95,15 @@
 
     /* ── Canvas / Waveform ── */
     --toast-shadow: rgba(0, 0, 0, 0.55);
+}
+
+/* The app occupies exactly the screen minus the browser URL bar: prefer the
+   dynamic viewport height (portrait and landscape alike), the 100vh fallback
+   declared above applies on browsers without dynamic viewport units. */
+@supports (height: 100dvh) {
+    :root {
+        --app-vh: 100dvh;
+    }
 }
 
 /* ---- Color schemes -------------------------------------------------
@@ -163,7 +179,7 @@ body {
 
 #app-main {
     width: 100%;
-    min-height: 100vh;
+    min-height: var(--app-vh);
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
@@ -607,7 +623,7 @@ body {
 /* ---- App Content flex layout (desktop) ---- */
 #app-content {
     display: flex;
-    height: calc(100vh - 64px);
+    height: calc(var(--app-vh) - 64px);
     width: 100%;
 }
 
@@ -4623,7 +4639,7 @@ html.is-compact {
             'knobs  tabs   notes'
             'knobs  panels notes';
         top: 0 !important;
-        height: 100vh !important;
+        height: var(--app-vh) !important;
         border-left: none !important;
         overflow: visible !important;
     }
