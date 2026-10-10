@@ -28,6 +28,7 @@ export function getNoteSubPositions(note, track, totalSteps, resolveSpanEnd = cr
     const retriggerCount = arpConfig ? getArpNoteCount(note) : (note.retriggerCount ?? 1)
     const hasTriggers = arpConfig || retriggerCount > 1 || euclideanFill > 0
 
+    /** @type {Array<{pos: number, type: 'retrigger'|'euclidean', pitchOffset: number}>} */
     const positions = []
     if (!hasTriggers) return positions
 

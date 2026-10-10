@@ -44,7 +44,7 @@ export default class ViewportSection {
     }
 
     updatePageInfo() {
-        const nav = this.#editor.container.querySelector('#pp-pr-page-nav')
+        const nav = /** @type {HTMLElement|null} */ (this.#editor.container.querySelector('#pp-pr-page-nav'))
         const info = this.#editor.container.querySelector('#pp-pr-page-info')
         if (!info || !nav) return
         const total = this.#totalPages()
@@ -54,8 +54,8 @@ export default class ViewportSection {
         }
         nav.style.display = 'flex'
         info.textContent = `${appState.currentPage + 1}/${total}`
-        const prev = this.#editor.container.querySelector('#pp-pr-prev')
-        const next = this.#editor.container.querySelector('#pp-pr-next')
+        const prev = /** @type {HTMLButtonElement|null} */ (this.#editor.container.querySelector('#pp-pr-prev'))
+        const next = /** @type {HTMLButtonElement|null} */ (this.#editor.container.querySelector('#pp-pr-next'))
         if (prev) prev.disabled = appState.currentPage <= 0
         if (next) next.disabled = appState.currentPage >= total - 1
     }

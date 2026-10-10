@@ -23,7 +23,14 @@ export function decodeVLQ(bytes, offset) {
     return { value, bytesRead }
 }
 
+/**
+ * @param {Uint8Array} bytes
+ * @param {number} dataOffset
+ * @param {number} length
+ * @returns {MidiEvent[]}
+ */
 function parseMTrkEvents(bytes, dataOffset, length) {
+    /** @type {MidiEvent[]} */
     const events = []
     let pos = dataOffset
     let cursor = 0

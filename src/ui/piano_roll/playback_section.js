@@ -112,7 +112,8 @@ export default class PlaybackSection {
         const loopAtStep = track.loopAtStep ?? totalSteps
         const notes = track.notes ?? []
         const resolveSpanEnd = createStepResolver(track)
-        for (const el of gridEl.querySelectorAll('.pp-pr-note')) {
+        const noteEls = /** @type {NodeListOf<HTMLElement>} */ (gridEl.querySelectorAll('.pp-pr-note'))
+        for (const el of noteEls) {
             const note = notes[parseInt(el.dataset.note, 10)]
             if (!note) continue
             const basePos = getNoteAbsoluteStep(note, stepsPerBeat)

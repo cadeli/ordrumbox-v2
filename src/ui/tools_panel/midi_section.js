@@ -94,7 +94,7 @@ export default class MidiSection {
             }
         })
 
-        const outputSelect = root.querySelector('#tp-midi-output-select')
+        const outputSelect = /** @type {HTMLSelectElement} */ (root.querySelector('#tp-midi-output-select'))
         outputSelect.addEventListener('change', () => {
             if (serviceRegistry.midiManager) {
                 serviceRegistry.midiManager.setSelectedOutput(outputSelect.value)
@@ -112,7 +112,7 @@ export default class MidiSection {
 
     sync() {
         const root = this.#panel.container
-        const outputSelect = root.querySelector('#tp-midi-output-select')
+        const outputSelect = /** @type {HTMLSelectElement} */ (root.querySelector('#tp-midi-output-select'))
         const enableBtn = root.querySelector('#tp-midi-enable')
 
         if (serviceRegistry.midiManager) {

@@ -123,7 +123,7 @@ export default class PianoRollPanel extends BasePanel {
             this.#playback.hidePlayhead()
             this.#playback.resetPrevLoopTick()
         })
-        this.listen(this.container, 'mousedown', (e) => this.#drag.onMouseDown(e))
+        this.listen(this.container, 'mousedown', (e) => this.#drag.onMouseDown(/** @type {MouseEvent} */ (e)))
         this.listen(this.container, 'click', (e) => {
             // A note drag ends over the note it started on, and clicking an
             // already selected note deletes it: that click is not a click.
@@ -320,7 +320,12 @@ export default class PianoRollPanel extends BasePanel {
         const note = this.#selectedNote
         if (!track || !note || !serviceRegistry.cmd?.updateNote) return false
 
-        const { key, changed, trackPitch, dir: nudgeDir } = applyNoteNudge({
+        const {
+            key,
+            changed,
+            trackPitch,
+            dir: nudgeDir,
+        } = applyNoteNudge({
             registry: serviceRegistry,
             track,
             trackIdx: this.#selectedTrackIdx,

@@ -44,7 +44,9 @@ export function initGlobalListeners() {
         } else if (docEl.msRequestFullscreen) {
             docEl.msRequestFullscreen()
         }
-        screen.orientation.lock('landscape-primary')
+        // `lock` is still missing from the DOM types (and from some engines).
+        const orientation = /** @type {ScreenOrientation & {lock: (o: string) => Promise<void>}} */ (screen.orientation)
+        orientation.lock('landscape-primary')
     }
 
     playbackEvents.on(EVENTS.TRACK_SELECT, (data) => {

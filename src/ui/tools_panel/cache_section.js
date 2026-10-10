@@ -75,15 +75,15 @@ export default class CacheSection {
             this.refresh()
         })
         root.querySelector('#tp-cache-list').addEventListener('click', async (e) => {
-            const viewBtn = e.target.closest('.tp-cache-item-view')
+            const viewBtn = /** @type {Element} */ (e.target).closest('.tp-cache-item-view')
             if (viewBtn) {
-                const { cacheType, cacheKey } = viewBtn.dataset
+                const { cacheType, cacheKey } = /** @type {HTMLElement} */ (viewBtn).dataset
                 await this.showJson(cacheType, cacheKey)
                 return
             }
-            const delBtn = e.target.closest('.tp-cache-item-del')
+            const delBtn = /** @type {Element} */ (e.target).closest('.tp-cache-item-del')
             if (!delBtn) return
-            const { cacheType, cacheKey } = delBtn.dataset
+            const { cacheType, cacheKey } = /** @type {HTMLElement} */ (delBtn).dataset
             if (!window.confirm(`Remove "${cacheKey}" from ${cacheType} cache?`)) return
             if (!(await removeCacheEntry(cacheType, cacheKey))) {
                 showToast(`Cannot delete from "${cacheType}"`, 'error')

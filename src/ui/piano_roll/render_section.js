@@ -60,7 +60,7 @@ export default class RenderSection {
     }
 
     #renderKeys() {
-        const el = this.#editor.container.querySelector('#pp-piano-keys')
+        const el = /** @type {HTMLElement|null} */ (this.#editor.container.querySelector('#pp-piano-keys'))
         if (!el) return
         el.style.height = `${GRID_HEIGHT}px`
         let html = ''
@@ -75,7 +75,7 @@ export default class RenderSection {
     }
 
     #renderGrid() {
-        const gridEl = this.#editor.container.querySelector('#pp-piano-grid')
+        const gridEl = /** @type {HTMLElement|null} */ (this.#editor.container.querySelector('#pp-piano-grid'))
         if (!gridEl || !this.#editor.track) return
         const { stepsPerBeat, pageStartStep, visibleSteps } = this.#editor.pageInfo()
         const gridWidth = visibleSteps * this.#editor.cellWidth

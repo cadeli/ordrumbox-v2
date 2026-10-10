@@ -137,7 +137,7 @@ export default class PatternPanel extends BasePanel {
             },
             { passive: false },
         )
-        this.listen(this.container, 'mousedown', (e) => this.#drag.onMouseDown(e))
+        this.listen(this.container, 'mousedown', (e) => this.#drag.onMouseDown(/** @type {MouseEvent} */ (e)))
         this.listen(this.container, 'input', (e) => this.#pointer.onInput(e))
         this.listen(this.container, 'keydown', (e) => this.#keyboard.onKeyDown(e))
         this.listen(this.container, 'contextmenu', (e) => this.#menuSection.onContextMenu(e))

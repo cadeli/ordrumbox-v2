@@ -250,7 +250,7 @@ export default class WaveformSection {
     }
 
     #drawEnvCanvas() {
-        const canvas = this.#root()?.querySelector('.ss-env-canvas')
+        const canvas = /** @type {HTMLCanvasElement|null} */ (this.#root()?.querySelector('.ss-env-canvas'))
         if (!canvas || !this.#model.draft) return
         const ctx = canvas.getContext('2d')
         if (!ctx) return
@@ -305,7 +305,7 @@ export default class WaveformSection {
     }
 
     #drawFilterResponse() {
-        const canvas = this.#root()?.querySelector('.ss-filter-curve')
+        const canvas = /** @type {HTMLCanvasElement|null} */ (this.#root()?.querySelector('.ss-filter-curve'))
         if (!canvas || !this.#model.draft) return
         const ctx = canvas.getContext('2d')
         if (!ctx) return

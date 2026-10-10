@@ -113,7 +113,10 @@ export default class StallDetector {
         if (this.#audioCtx?.state === 'suspended') {
             try {
                 await this.#audioCtx.resume()
-                if (this.#audioCtx?.state === 'running') {
+                // Re-read through a cast: TS would keep the 'suspended'
+                // narrowing taken by the if above across the await.
+                const state = /** @type {AudioContextState} */ (this.#audioCtx?.state)
+                if (state === 'running') {
                     logger.info('StallDetector', 'AudioContext resumed via .resume()')
                 }
             } catch (e) {

@@ -55,8 +55,8 @@ export default class ArrangementSection {
         this.#titleEl = titleEl
         this.#listEl = listEl
         // Delegated so it survives every re-render of the grid.
-        this.#panel.listen(this.#listEl, 'contextmenu', (e) => this.#onContextMenu(e))
-        this.#panel.listen(this.#listEl, 'click', (e) => this.#onGridClick(e))
+        this.#panel.listen(this.#listEl, 'contextmenu', (e) => this.#onContextMenu(/** @type {MouseEvent} */ (e)))
+        this.#panel.listen(this.#listEl, 'click', (e) => this.#onGridClick(/** @type {MouseEvent} */ (e)))
 
         this.#panel.sub(playbackEvents, EVENTS.PLAYBACK_START, () => this.startCursorLoop())
         this.#panel.sub(playbackEvents, EVENTS.PLAYBACK_STOP, () => this.stopCursorLoop())
