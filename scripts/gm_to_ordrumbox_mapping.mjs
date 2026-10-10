@@ -76,14 +76,15 @@ const runAutoAssign = (trackName) => {
 
     let info = ''
     if (tier === 1) {
-        info = logLine.includes('nom exact') ? 'exact' : 'contains'
+        info = logLine.includes('exact match') ? 'exact' : 'contains'
     } else if (tier === 2) {
-        const kitMatch = logLine.match(/autre kit "([^"]+)"/)
+        const kitMatch = logLine.match(/(?:autre|other) kit "([^"]+)"/)
         info = `alt kit${kitMatch ? ' "' + kitMatch[1] + '"' : ''}`
     } else if (tier === 3) {
         const keyMatch = logLine.match(/key="(\w+)"/)
-        const kitMatch = logLine.match(/(même kit|autre kit "([^"]+)")/)
-        const subType = kitMatch?.[1]?.startsWith('même') ? 'same kit' : `alt kit "${kitMatch?.[2] ?? '?'}"`
+        const sameKit = logLine.includes('same kit')
+        const kitMatch = logLine.match(/(?:autre|other) kit "([^"]+)"/)
+        const subType = sameKit ? 'same kit' : `alt kit "${kitMatch?.[1] ?? '?'}"`
         info = `subst → ${keyMatch?.[1] ?? '?'} (${subType})`
     } else if (tier === 4) {
         info = 'random'
@@ -111,7 +112,7 @@ console.log(
     '  kit sélectionné: punchy | alt: real, matt, electro, open, ropen, generated, human, 8bits, delagrange, vintage',
 )
 console.log('  étape1: GM name → instrument [match info]  |  étape2: instrument → sample [tier]')
-console.log('  tiers: [t1]=punchy exact/contains  [t2]=alt kit  [t3]=subst  [t4]=random')
+console.log('  tiers: [t1]=punchy exact  [t2]=alt kit exact  [t3]=subst  [t4]=random (last resort)')
 console.log('  ────────────────────────────────────────────────────────────────────────────────────────────────\n')
 
 console.log('── Drums ──')

@@ -32,15 +32,30 @@ describe('Functional: Auto-assign sounds', () => {
         expect(track.sampleId).toBe('snd_kick')
     })
 
-    it('autoAssignTrackSounds renames track when instrument name is found', () => {
+    it('autoAssignTrackSounds never rewrites the track name, only matches with it', () => {
         const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
         const track = cmd.createTrack(4, 'kick_01.wav', 4)
         track.useAutoAssignSound = true
 
         autoAssign.autoAssignTrackSounds(track)
 
-        expect(track.name).toBe('KICK')
+        expect(track.name).toBe('kick_01.wav')
         expect(track.sampleId).toBe('snd_kick')
+        warnSpy.mockRestore()
+    })
+
+    // The exact match must win every time: before, tier 1 drew a random candidate
+    // of the same coarse type, so "CHH" could land on the open hi-hat.
+    it('tier1 is deterministic when several candidates share the track type', () => {
+        const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+        for (let i = 0; i < 30; i++) {
+            const track = cmd.createTrack(4, 'CHH', 4)
+            track.useAutoAssignSound = true
+
+            autoAssign.autoAssignTrackSounds(track)
+
+            expect(track.sampleId).toBe('snd_chh')
+        }
         warnSpy.mockRestore()
     })
 
@@ -139,7 +154,7 @@ describe('Functional: Auto-assign sounds', () => {
 
         expect(kick.sampleId).toBe('snd_kick')
         expect(snare.sampleId).toBe('snd_snare')
-        expect(chh.sampleId).toMatch(/snd_(chh|ohh)/)
+        expect(chh.sampleId).toBe('snd_chh')
     })
 
     it('finds equivalent instrument when direct match fails', () => {
@@ -152,18 +167,18 @@ describe('Functional: Auto-assign sounds', () => {
         expect(track.sampleId).not.toBe('NOT_DEFINED')
     })
 
-    it('getSampleIdFromKitAndTrackname returns matching sound in kit', () => {
-        const result = autoAssign.getSampleIdFromKitAndTrackname('real', 'KICK')
+    it('getSampleIdFromTrackname returns matching sound in kit', () => {
+        const result = autoAssign.getSampleIdFromTrackname('KICK', 'real')
         expect(result).toBe('snd_kick')
     })
 
-    it('getSampleIdFromKitAndTrackname returns NOT_FOUND for unknown track', () => {
-        const result = autoAssign.getSampleIdFromKitAndTrackname('real', 'TOM')
+    it('getSampleIdFromTrackname ignores other kits when a kit is given', () => {
+        const result = autoAssign.getSampleIdFromTrackname('KICK', 'nonexistent')
         expect(result).toBe(AutoAssign.NOT_FOUND)
     })
 
-    it('getSampleIdFromKitAndTrackname returns NOT_FOUND for unknown kit', () => {
-        const result = autoAssign.getSampleIdFromKitAndTrackname('nonexistent', 'KICK')
+    it('getSampleIdFromTrackname returns NOT_FOUND for unknown track', () => {
+        const result = autoAssign.getSampleIdFromTrackname('TOM', 'real')
         expect(result).toBe(AutoAssign.NOT_FOUND)
     })
 
