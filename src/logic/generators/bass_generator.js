@@ -2,6 +2,7 @@ import BaseGenerator from './base_generator.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import ResourcesLoader from '../../loader/resources_loader.js'
 import { logger } from '../../core/logger.js'
+import { pickRandom } from '../../core/random.js'
 
 export default class BassGenerator extends BaseGenerator {
     static BASS_GENERATION_CONFIGS = Object.freeze({
@@ -293,7 +294,7 @@ export default class BassGenerator extends BaseGenerator {
         const stepsPerBeat = bassTrack.stepsPerBeat ?? 4
         const beat = config.beat ?? 0
         const probs = config.probabilitySets
-            ? config.probabilitySets[Math.floor(Math.random() * config.probabilitySets.length)]
+            ? pickRandom(config.probabilitySets)
             : (config.probabilities ?? [0.7, 0.7, 0.6, 0.7])
 
         const generatedTones = [tones[0] + rootNote]
@@ -349,7 +350,7 @@ export default class BassGenerator extends BaseGenerator {
                             : config.strongBeatIntervals[1]
                     notePitch = rootPitch + interval
                 } else {
-                    const degree = scale[Math.floor(Math.random() * scale.length)]
+                    const degree = pickRandom(scale)
                     notePitch = rootPitch + degree
                     isVariation = true
                     if (Math.abs(notePitch - lastStepNote) > config.maxLeap) {

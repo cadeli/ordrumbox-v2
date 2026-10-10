@@ -1,5 +1,6 @@
 import { toFiniteNumber } from '../../core/numbers.js'
 import { detectTrackType } from '../../core/drum_taxonomy.js'
+import { pickRandom } from '../../core/random.js'
 export default class SongStructure {
     static TAG = 'SongStructure'
 
@@ -31,8 +32,8 @@ export default class SongStructure {
     /** Random bass variant for a genre, canonical first. @param {string} genre */
     static randomBassVariant = (genre) => {
         const variants = SongStructure.BASS_VARIANTS_BY_GENRE[genre]
-        if (!variants || variants.length === 0) return SongStructure.pick(['basic'])
-        return SongStructure.pick(variants)
+        if (!variants || variants.length === 0) return pickRandom(['basic'])
+        return pickRandom(variants)
     }
 
     static STYLE_TO_GENRE = Object.freeze({
@@ -278,8 +279,6 @@ export default class SongStructure {
         'harmonic minor',
     ])
 
-    static pick = (list) => list[Math.floor(Math.random() * list.length)]
-
     static poolFor = (trackName, trackType) => {
         const key = String(trackName ?? '').toUpperCase()
         if (SongStructure.VARIANT_POOLS[key]) return SongStructure.VARIANT_POOLS[key]
@@ -308,16 +307,16 @@ export default class SongStructure {
 
             if (Math.random() < 0.55) {
                 const pool = SongStructure.poolFor(trackName, detectTrackType(trackName))
-                if (pool) result[trackName] = SongStructure.pick(pool)
+                if (pool) result[trackName] = pickRandom(pool)
             }
         }
 
         if (Math.random() < 0.3) {
             const missing = SongStructure.OPTIONAL_EXTRAS.filter((name) => !(name in result))
             if (missing.length > 0) {
-                const trackName = SongStructure.pick(missing)
+                const trackName = pickRandom(missing)
                 const pool = SongStructure.poolFor(trackName, detectTrackType(trackName))
-                if (pool) result[trackName] = SongStructure.pick(pool)
+                if (pool) result[trackName] = pickRandom(pool)
             }
         }
 
@@ -325,10 +324,10 @@ export default class SongStructure {
     }
 
     /** Random tonal centre for a generated pattern (semitone offset). */
-    static randomKeyOffset = () => SongStructure.pick(SongStructure.KEY_OFFSETS)
+    static randomKeyOffset = () => pickRandom(SongStructure.KEY_OFFSETS)
 
     /** Random scale (name from assets/data/scales.json) for a generated pattern. */
-    static randomScale = () => SongStructure.pick(SongStructure.SCALES)
+    static randomScale = () => pickRandom(SongStructure.SCALES)
 
     constructor(structure = null) {
         this.structure = structure ?? [
@@ -348,7 +347,7 @@ export default class SongStructure {
 
     getRandomGenre = () => {
         const genres = SongStructure.GENRES
-        return genres[Math.floor(Math.random() * genres.length)]
+        return pickRandom(genres)
     }
 
     generateStructure = (genre) => {

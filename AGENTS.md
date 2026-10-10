@@ -196,7 +196,9 @@ src/
   core/            — constants, IDB wrapper, logger, timer worker, and the pure
                     domain modules: numbers.js (clamp/toFiniteNumber), notes.js
                     (step math + note signatures), tracks.js (track array/loop
-                    helpers), drum_taxonomy.js (name -> type -> pan)
+                    helpers), drum_taxonomy.js (name -> type -> pan), random.js
+                    (pickRandom/pickRandomKey - every draw from a list or an
+                    object; range draws stay inline)
   loader/          — asset/resource loading
   logic/           — sequencer, LFO, history, commands, generators, MIDI, services
   model/           — data models (flat_note, instrument, track/pattern schema)

@@ -1,4 +1,5 @@
 import BaseGenerator from './base_generator.js'
+import { pickRandom } from '../../core/random.js'
 
 export default class KickGenerator extends BaseGenerator {
     static KICK_GENERATION_CONFIGS = Object.freeze({
@@ -100,6 +101,6 @@ export default class KickGenerator extends BaseGenerator {
 
     getRndVariantName = () => {
         const variants = Object.keys(this.configs).filter((v) => v !== 'break')
-        return variants[Math.floor(Math.random() * variants.length)] ?? 'basic'
+        return pickRandom(variants) ?? 'basic'
     }
 }

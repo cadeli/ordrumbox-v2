@@ -1,4 +1,5 @@
 import BaseGenerator from './base_generator.js'
+import { pickRandom } from '../../core/random.js'
 
 export default class MelodyGenerator extends BaseGenerator {
     static MELODY_GENERATION_CONFIGS = Object.freeze({
@@ -248,10 +249,10 @@ export default class MelodyGenerator extends BaseGenerator {
 
                 let notePitch
                 if (strongBeat || Math.random() > (config.variation ?? 0.3)) {
-                    const interval = strongIntervals[Math.floor(Math.random() * strongIntervals.length)] ?? 0
+                    const interval = pickRandom(strongIntervals) ?? 0
                     notePitch = pitchBias + interval
                 } else {
-                    const degree = scale[Math.floor(Math.random() * scale.length)] ?? 0
+                    const degree = pickRandom(scale) ?? 0
                     notePitch = pitchBias + degree
                     if (Math.abs(notePitch - lastStepNote) > (config.maxLeap ?? 7)) {
                         notePitch = pitchBias

@@ -5,6 +5,8 @@
  * animation, so it never interferes with hit testing, layout or drag flows.
  */
 
+import { pickRandom } from './random.js'
+
 const BURST_CLASS = 'click-burst'
 const COLORS = ['--toy-pink', '--toy-cyan', '--toy-yellow', '--toy-violet', '--toy-orange', '--toy-lime']
 const MAX_ACTIVE = 14
@@ -17,7 +19,7 @@ function spawn(x, y) {
     if (active >= MAX_ACTIVE) return
     const el = document.createElement('div')
     el.className = BURST_CLASS
-    el.style.setProperty('--burst-color', `var(${COLORS[Math.floor(Math.random() * COLORS.length)]})`)
+    el.style.setProperty('--burst-color', `var(${pickRandom(COLORS)})`)
     el.style.left = `${Math.round(x)}px`
     el.style.top = `${Math.round(y)}px`
 

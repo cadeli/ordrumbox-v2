@@ -151,15 +151,3 @@ export function getStepSpacing(value) {
         return value - 7
     }
 }
-
-/**
- * @param {object} obj - an object whose keys are candidates (a scale, a palette…)
- * @returns {string|null} a random key, null when obj is empty
- */
-export function getRandomKey(obj) {
-    const keys = Object.keys(obj)
-    if (keys.length === 0) return null
-
-    const randomIdx = Math.floor(Math.random() * keys.length)
-    return keys[randomIdx]
-}

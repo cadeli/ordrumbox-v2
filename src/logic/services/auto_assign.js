@@ -1,7 +1,7 @@
 import { appState as _appState } from '../../state/app_state.js'
 import { soundRegistry as soundRegistrySingleton } from '../../state/sound_registry.js'
 import InstrumentsManager, { instrumentsManager } from './instruments_manager/index.js'
-import { getRandomKey } from '../../core/notes.js'
+import { pickRandom, pickRandomKey } from '../../core/random.js'
 import { detectTrackType } from '../../core/drum_taxonomy.js'
 import { getTracksArray } from '../../core/tracks.js'
 import { NOT_FOUND } from '../../core/constants.js'
@@ -75,7 +75,7 @@ export default class AutoAssign {
         }
         if (track.synthSoundKey && generated[track.synthSoundKey]) return track.synthSoundKey
 
-        const picked = getRandomKey(generated)
+        const picked = pickRandomKey(generated)
         const why = track.synthSoundKey ? `stale "${track.synthSoundKey}"` : 'none'
         track.synthSoundKey = picked
         logger.warn(TAG, `  ${track.name}: synth preset ${why} → ${picked} (random)`)
@@ -98,7 +98,7 @@ export default class AutoAssign {
         // ── tier 1 : same kit, exact name match (random among all matches) ─
         const tier1Ids = this.#findExactSoundIds(matchNames, { kitName: selectedDrumkitName })
         if (tier1Ids.length > 0) {
-            const picked = this.#pickRandom(tier1Ids)
+            const picked = pickRandom(tier1Ids)
             const url = this.#soundRegistry.sounds[picked]?.url
             logger.warn(
                 TAG,
@@ -111,7 +111,7 @@ export default class AutoAssign {
         // ── tier 2 : other kits, exact name match (random among all matches)
         const tier2Ids = this.#findExactSoundIds(matchNames, { excludeKitName: selectedDrumkitName })
         if (tier2Ids.length > 0) {
-            const picked = this.#pickRandom(tier2Ids)
+            const picked = pickRandom(tier2Ids)
             const sound = this.#soundRegistry.sounds[picked]
             logger.warn(
                 TAG,
@@ -137,7 +137,7 @@ export default class AutoAssign {
         }
 
         // ── tier 4 : last resort, any sound of the registry ────────────────
-        const picked = this.#pickRandom(Object.keys(this.#soundRegistry.sounds))
+        const picked = pickRandom(Object.keys(this.#soundRegistry.sounds))
         if (picked) {
             const url = this.#soundRegistry.sounds[picked]?.url
             logger.warn(TAG, `🔴 ${originalName} [${selectedDrumkitName}] => ${url}  (random, tier4)`)
@@ -160,16 +160,6 @@ export default class AutoAssign {
         if (validInstrumentIds.includes(trackName)) return trackName
         const foundId = instrumentsManager.findInstrumentFromFileName(trackName)?.id
         return foundId && validInstrumentIds.includes(foundId) ? foundId : trackName
-    }
-
-    /**
-     * @template T
-     * @param {T[]} items
-     * @returns {T|null} one item chosen uniformly at random, null when empty
-     */
-    #pickRandom(items) {
-        if (!items || items.length === 0) return null
-        return items[Math.floor(Math.random() * items.length)]
     }
 
     /**
@@ -258,7 +248,7 @@ export default class AutoAssign {
         const ids = this.#entriesInScope(drumkitName)
             .filter(([, sound]) => sound.key?.toUpperCase().includes(upperSearch))
             .map(([key]) => key)
-        return this.#pickRandom(ids) ?? NOT_FOUND
+        return pickRandom(ids) ?? NOT_FOUND
     }
 
     /**
@@ -282,6 +272,6 @@ export default class AutoAssign {
             if (normalizeName(sound.key) === wanted) exact.push(key)
             else if (detectTrackType(sound.key) === trackType) sameType.push(key)
         }
-        return this.#pickRandom(exact.length > 0 ? exact : sameType) ?? NOT_FOUND
+        return pickRandom(exact.length > 0 ? exact : sameType) ?? NOT_FOUND
     }
 }

@@ -21,17 +21,7 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { TRACK_VALUE_RANGES } from '../../model/track_schema.js'
 import { clamp } from '../../core/numbers.js'
-
-/**
- * Uniform pick over a list. Module-local so a generator can choose between
- * skeletons without importing SongStructure (which owns the genre tables).
- * @template T
- * @param {T[]} list
- * @returns {T|undefined}
- */
-const StructurePicker = {
-    pick: (list) => list[Math.floor(Math.random() * list.length)],
-}
+import { pickRandom } from '../../core/random.js'
 
 export default class BaseGenerator {
     #toneThreshold = 6
@@ -102,7 +92,7 @@ export default class BaseGenerator {
      * Subclasses can override the octave threshold.
      */
     getRndTone = (tones) => {
-        const tone = tones[Math.floor(Math.random() * tones.length)] ?? 0
+        const tone = pickRandom(tones) ?? 0
         return tone > this.#toneThreshold ? tone - 12 : tone
     }
 
@@ -130,7 +120,7 @@ export default class BaseGenerator {
     #degreeOffset = (source, pitchBias, approachNotes) => {
         if (source === 'approach') {
             const pool = approachNotes?.length ? approachNotes : [-1, -2]
-            return pool[Math.floor(Math.random() * pool.length)] + pitchBias
+            return (pickRandom(pool) ?? 0) + pitchBias
         }
         const sourceOffsets = { root: 0, third: 4, fifth: 7, seventh: 11, octave: 12 }
         if (Object.hasOwn(sourceOffsets, source)) return sourceOffsets[source] + pitchBias
@@ -199,7 +189,7 @@ export default class BaseGenerator {
 
     getRndVariantName = () => {
         const variants = Object.keys(this.configs)
-        return variants[Math.floor(Math.random() * variants.length)] ?? 'basic'
+        return pickRandom(variants) ?? 'basic'
     }
 
     generateGridVariant = (track, config, getAccentContext, getGhostContext, density = 1, opts = {}) => {
@@ -246,7 +236,7 @@ export default class BaseGenerator {
         // A phrase may declare its own `chance` (0-1): the per-degree density that
         // `density` cannot express, since it thins EVERY phrase of the skeleton the
         // same way. Without it a phrase skeleton is all-or-nothing per note.
-        const phrases = config.phraseSets ? StructurePicker.pick(config.phraseSets) : config.phrases
+        const phrases = config.phraseSets ? pickRandom(config.phraseSets) : config.phrases
         phrases.forEach((phrase) => {
             if (density < 1 && Math.random() >= density) return
             if (typeof phrase.chance === 'number' && Math.random() >= phrase.chance) return
@@ -261,7 +251,7 @@ export default class BaseGenerator {
                     if (!occupied.has(s)) freeSteps.push(s)
                 }
                 if (freeSteps.length === 0) return
-                step = freeSteps[Math.floor(Math.random() * freeSteps.length)]
+                step = pickRandom(freeSteps)
             } else {
                 step = phrase.step
             }
@@ -318,7 +308,7 @@ export default class BaseGenerator {
         const choices = [averageSpacing]
         if (averageSpacing - spacingJitter >= 1) choices.push(averageSpacing - spacingJitter)
         choices.push(averageSpacing + spacingJitter)
-        return choices[Math.floor(Math.random() * choices.length)] ?? averageSpacing
+        return pickRandom(choices) ?? averageSpacing
     }
 
     /**

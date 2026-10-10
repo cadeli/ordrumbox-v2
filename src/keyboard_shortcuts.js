@@ -4,7 +4,7 @@ import { getAutoAssignService, getAutoGeneratorService } from './state/service_l
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/event_bus.js'
 import { detectTrackType } from './core/drum_taxonomy.js'
-import { getRandomKey } from './core/notes.js'
+import { pickRandom, pickRandomKey } from './core/random.js'
 import { COLOR_SCHEME_COUNT, normalizeColorScheme } from './core/constants.js'
 import ResourcesLoader from './loader/resources_loader.js'
 import { logger } from './core/logger.js'
@@ -134,24 +134,26 @@ async function duplicateCurrentPattern() {
 
 function selectRandomPattern() {
     const patterns = appState.patterns ?? []
-    if (patterns.length === 0) {
+    const picked = pickRandom(patterns)
+    if (!picked) {
         showToast('No pattern selected', 'info')
         return
     }
-    const num = Math.floor(Math.random() * patterns.length)
+    const num = patterns.indexOf(picked)
     serviceRegistry.cmd.setSelectedPatternIdx(num)
-    showToast(`Pattern "${patterns[num]?.name ?? num + 1}" selected`, 'success')
+    showToast(`Pattern "${picked.name ?? num + 1}" selected`, 'success')
 }
 
 function selectRandomDrumkit() {
     const drumkits = soundRegistry.drumkitList ?? []
-    if (drumkits.length === 0) {
+    const picked = pickRandom(drumkits)
+    if (!picked) {
         showToast('No drumkit available', 'info')
         return
     }
-    const num = Math.floor(Math.random() * drumkits.length)
+    const num = drumkits.indexOf(picked)
     serviceRegistry.cmd.setSelectedDrumkitIdx(num)
-    showToast(`Drumkit "${drumkits[num]?.name ?? num + 1}" selected`, 'success')
+    showToast(`Drumkit "${picked.name ?? num + 1}" selected`, 'success')
 }
 
 const SYNTH_SOUND_MAP = {
@@ -192,7 +194,7 @@ async function convertToGeneratedSounds() {
         const type = detectTrackType(track.name)
         let synthKey = SYNTH_SOUND_MAP[type]
         if (!generatedSoundKeys.includes(synthKey)) {
-            synthKey = getRandomKey(soundRegistry.generatedSounds)
+            synthKey = pickRandomKey(soundRegistry.generatedSounds)
             if (synthKey) randomPicks.set(type || track.name, synthKey)
         }
         track.useSoftSynth = true
@@ -228,7 +230,7 @@ function assignRandomSampleAllTracks() {
     Object.values(selectedPattern.tracks).forEach((track) => {
         track.useAutoAssignSound = false
         track.useSoftSynth = false
-        track.sampleId = allSounds[Math.floor(Math.random() * allSounds.length)]
+        track.sampleId = pickRandom(allSounds)
     })
 
     serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)

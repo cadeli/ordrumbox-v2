@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import {
     getAudibleNoteSignature,
     getNoteAbsoluteStep,
-    getRandomKey,
     getStepSpacing,
     normalizeSignatureValue,
     semiToneToPitch,
@@ -46,18 +45,6 @@ describe('core/notes', () => {
             expect(getStepSpacing(8)).toBe(1)
             expect(getStepSpacing(16)).toBe(9)
             expect(getStepSpacing(23)).toBe(16)
-        })
-    })
-
-    describe('getRandomKey', () => {
-        it('returns a key from the object', () => {
-            const obj = { a: 1, b: 2, c: 3 }
-            const key = getRandomKey(obj)
-            expect(['a', 'b', 'c']).toContain(key)
-        })
-
-        it('returns null for empty object', () => {
-            expect(getRandomKey({})).toBeNull()
         })
     })
 

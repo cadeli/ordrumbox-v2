@@ -324,7 +324,7 @@ describe('Generators', () => {
         const sortedKey = (positions) => [...positions].sort().join(',')
 
         // The first Math.random() of generateNewBass('basic') is the skeleton pick
-        // (StructurePicker.pick), so a counter-based mock can choose the skeleton and
+        // (pickRandom over phraseSets), so a counter-based mock can choose the skeleton and
         // still drive the per-phrase `chance` draws.
         const mockRandom = (firstValue, restValue) => {
             let calls = 0

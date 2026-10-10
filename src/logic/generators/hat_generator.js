@@ -1,4 +1,5 @@
 import BaseGenerator from './base_generator.js'
+import { pickRandom } from '../../core/random.js'
 
 export default class HatGenerator extends BaseGenerator {
     static HAT_GENERATION_CONFIGS = Object.freeze({
@@ -378,7 +379,7 @@ export default class HatGenerator extends BaseGenerator {
         const variants = Object.entries(this.configs)
             .filter(([, config]) => config.trackType === trackType)
             .map(([variantName]) => variantName)
-        return variants[Math.floor(Math.random() * variants.length)] ?? (trackType === 'OHH' ? 'ohhBasic' : 'chhBasic')
+        return pickRandom(variants) ?? (trackType === 'OHH' ? 'ohhBasic' : 'chhBasic')
     }
 
     resolveHatVariantName = (trackType, variantName) => {
