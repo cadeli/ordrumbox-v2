@@ -11,7 +11,7 @@ export function safeDisconnect(node) {
     try {
         node.disconnect()
     } catch (e) {
-        logger.warn('Math', 'safeDisconnect: node already disconnected', e)
+        logger.info('Math', 'safeDisconnect: node already disconnected', e)
     }
 }
 

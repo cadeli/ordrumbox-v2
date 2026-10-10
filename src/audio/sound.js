@@ -209,7 +209,7 @@ export default class Sound {
             this.generatedSoundsLoading = false
             if (Object.keys(this.generatedSounds).length === 0) {
                 this.generatedSoundsLoadFailed = true
-                logger.warn('Sound', 'loadGeneratedSounds loaded no generated sounds')
+                logger.info('Sound', 'loadGeneratedSounds loaded no generated sounds')
                 showToast('No synth sounds available', 'warning')
             }
         } catch (error) {

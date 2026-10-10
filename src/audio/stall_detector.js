@@ -74,7 +74,7 @@ export default class StallDetector {
             this.#tryResume()
         } else if (state === 'running' && this.#stalled) {
             this.#stalled = false
-            logger.warn('StallDetector', 'AudioContext resumed')
+            logger.info('StallDetector', 'AudioContext resumed')
             playbackEvents.emit(EVENTS.STALL_RESUME)
         }
     }
@@ -114,7 +114,7 @@ export default class StallDetector {
             try {
                 await this.#audioCtx.resume()
                 if (this.#audioCtx?.state === 'running') {
-                    logger.warn('StallDetector', 'AudioContext resumed via .resume()')
+                    logger.info('StallDetector', 'AudioContext resumed via .resume()')
                 }
             } catch (e) {
                 logger.warn('StallDetector', 'AudioContext resume failed', e)

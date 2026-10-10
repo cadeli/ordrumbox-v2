@@ -47,7 +47,7 @@ export default class AutoAssign {
             const drumkitList = this.#soundRegistry.drumkitList
             const selectedIdx = this.#appState.selectedDrumkitIdx
             const kitName = drumkitList?.[selectedIdx]?.name ?? '?'
-            logger.warn(TAG, `── Auto-assign: kit="${kitName}", pattern="${pattern?.name ?? '?'}" ──`)
+            logger.info(TAG, `── Auto-assign: kit="${kitName}", pattern="${pattern?.name ?? '?'}" ──`)
             tracks.forEach((track) => {
                 if (track.useAutoAssignSound === true && track.useSoftSynth === false) {
                     this.autoAssignTrackSounds(track)
@@ -70,7 +70,7 @@ export default class AutoAssign {
         const generated = this.#soundRegistry.generatedSounds ?? {}
         const keys = Object.keys(generated)
         if (keys.length === 0) {
-            logger.warn(TAG, `  ${track.name}: no synth preset loaded, soft-synth track left unassigned`)
+            logger.info(TAG, `  ${track.name}: no synth preset loaded, soft-synth track left unassigned`)
             return null
         }
         if (track.synthSoundKey && generated[track.synthSoundKey]) return track.synthSoundKey
@@ -78,7 +78,7 @@ export default class AutoAssign {
         const picked = pickRandomKey(generated)
         const why = track.synthSoundKey ? `stale "${track.synthSoundKey}"` : 'none'
         track.synthSoundKey = picked
-        logger.warn(TAG, `  ${track.name}: synth preset ${why} → ${picked} (random)`)
+        logger.info(TAG, `  ${track.name}: synth preset ${why} → ${picked} (random)`)
         return picked
     }
 
@@ -100,7 +100,7 @@ export default class AutoAssign {
         if (tier1Ids.length > 0) {
             const picked = pickRandom(tier1Ids)
             const url = this.#soundRegistry.sounds[picked]?.url
-            logger.warn(
+            logger.info(
                 TAG,
                 `  ${originalName} [${selectedDrumkitName}] => ${url}  (exact match, tier1: same kit, ${tier1Ids.length} candidate(s))`,
             )
@@ -113,7 +113,7 @@ export default class AutoAssign {
         if (tier2Ids.length > 0) {
             const picked = pickRandom(tier2Ids)
             const sound = this.#soundRegistry.sounds[picked]
-            logger.warn(
+            logger.info(
                 TAG,
                 `  ${originalName} [${selectedDrumkitName}] => ${sound?.url}  (exact match, tier2: other kit "${sound?.kitName}", ${tier2Ids.length} candidate(s))`,
             )
@@ -128,7 +128,7 @@ export default class AutoAssign {
             const url = this.#soundRegistry.sounds[eqResult]?.url
             const matchedKit = this.#soundRegistry.sounds[eqResult]?.kitName
             const inSameKit = matchedKit === selectedDrumkitName
-            logger.warn(
+            logger.info(
                 TAG,
                 `🟡 ${originalName} [${selectedDrumkitName}] => ${url}  (substitution to key="${matchedKey}", ${inSameKit ? 'same kit' : `other kit "${matchedKit}"`}, tier3)`,
             )
@@ -140,10 +140,10 @@ export default class AutoAssign {
         const picked = pickRandom(Object.keys(this.#soundRegistry.sounds))
         if (picked) {
             const url = this.#soundRegistry.sounds[picked]?.url
-            logger.warn(TAG, `🔴 ${originalName} [${selectedDrumkitName}] => ${url}  (random, tier4)`)
+            logger.info(TAG, `🔴 ${originalName} [${selectedDrumkitName}] => ${url}  (random, tier4)`)
             track.sampleId = picked
         } else {
-            logger.warn(TAG, `🔴 ${originalName} [${selectedDrumkitName}] => NOT_DEFINED  (no match)`)
+            logger.info(TAG, `🔴 ${originalName} [${selectedDrumkitName}] => NOT_DEFINED  (no match)`)
             track.sampleId = 'NOT_DEFINED'
         }
     }

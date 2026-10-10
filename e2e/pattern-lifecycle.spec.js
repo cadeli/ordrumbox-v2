@@ -188,7 +188,9 @@ test.describe.serial('Full session lifecycle', () => {
         })
         page = await context.newPage()
         page.on('console', (message) => pageLogs.push(message.text()))
-        await bootApp(page)
+        // T2 asserts the boot auto-assign report, which is an info-level log of
+        // the AutoAssign tag — opened here with ?log= (survives the reload).
+        await bootApp(page, '?log=AutoAssign:info')
         dialogs = installDialogHandler(page)
     })
 

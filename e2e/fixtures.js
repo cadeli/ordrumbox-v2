@@ -9,8 +9,16 @@
 // playbackEvents } once boot completes — that is the hook we use to wait for
 // loading to finish and to read the actual AudioContext state.
 
-export async function bootApp(page) {
-    await page.goto('/')
+/**
+ * Boots the app past the welcome screen.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} [search] - query string to boot with, e.g. '?log=AutoAssign:info'
+ * to watch a logger tag whose messages are silent at the default WARN level.
+ * `page.reload()` keeps it, so the tag stays open across a reload.
+ */
+export async function bootApp(page, search = '') {
+    await page.goto(`/${search}`)
     await page.locator('#waiting-screen-start-btn').click()
     await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 15_000 })
     await page.waitForSelector('#waiting-screen', { state: 'hidden' })

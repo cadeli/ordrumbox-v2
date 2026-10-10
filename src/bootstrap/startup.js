@@ -79,13 +79,15 @@ function installE2eHook() {
 }
 
 async function logIdbReport() {
-    // Dev diagnostic only: dropped from prod builds by terser (drop_console)
+    // Dev diagnostic only: muted unless the Main tag is opened
+    // (?log=Main:info), dropped from prod builds by terser (drop_console)
     // and skipped under vitest so the report never pollutes the test output.
     const meta = /** @type {ImportMeta & { env?: { MODE?: string } }} */ (import.meta)
     if (meta.env?.MODE === 'test') return
+    if (!logger.wouldLog('Main', logger.LEVELS.INFO)) return
 
     const report = await getStorageReport()
-    console.group('%c IndexedDB Report', 'color: #e94560; font-weight: bold')
+    logger.info('Main', '── IndexedDB Report ──')
     logger.info(
         'Main',
         'Usage:',
@@ -95,7 +97,6 @@ async function logIdbReport() {
     for (const [store, keys] of Object.entries(report.stores ?? {})) {
         logger.info('Main', `Store "${store}":`, keys.length, 'entries', keys)
     }
-    console.groupEnd()
 }
 
 /** Deferred startup: load resources, restore session/view, expose e2e hook. */
