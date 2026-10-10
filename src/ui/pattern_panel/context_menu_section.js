@@ -82,6 +82,7 @@ export default class ContextMenuSection {
 
         const canPasteTrack = this.#editor.clipboard?.type === 'track'
         const actions = [
+            { label: 'Rename track', run: () => this.#menuRenameTrack(track) },
             { label: 'Copy track', run: () => this.#menuCopyTrack(tracks, trackIdx) },
             {
                 label: 'Paste tracks',
@@ -94,6 +95,17 @@ export default class ContextMenuSection {
             { label: 'Clear notes', run: () => this.#menuClearTrackNotes(track, pattern, trackIdx) },
         ]
         this.#contextMenu.show(track.name ?? 'Track', actions, x, y)
+    }
+
+    #menuRenameTrack(track) {
+        const input = prompt('Rename track:', track.name ?? '')
+        if (input === null) return
+        const newName = input.trim()
+        // An empty or unchanged name would only pollute the undo stack
+        if (newName === '' || newName === track.name) return
+        this.#editor.serviceRegistry.cmd.changeTrackName(track, newName)
+        this.#editor.emitStructureChange()
+        showToast(`Renamed track to "${newName}"`, 'success')
     }
 
     #menuCopyTrack(tracks, trackIdx) {

@@ -931,6 +931,7 @@ describe('Pattern Panel UI Grid', () => {
                 ...serviceRegistry.cmd,
                 setCurrentPage: vi.fn(),
                 removeTrack: vi.fn(),
+                changeTrackName: vi.fn(),
                 cleanTrack: vi.fn((track) => {
                     track.notes = []
                 }),
@@ -975,11 +976,12 @@ describe('Pattern Panel UI Grid', () => {
             expect(document.querySelector('.cm-menu-header').textContent).toBe('KICK')
         })
 
-        it('lists Copy track, Paste tracks, Duplicate track, Delete track, Randomize, Clear notes', () => {
+        it('lists Rename track, Copy track, Paste tracks, Duplicate track, Delete track, Randomize, Clear notes', () => {
             setupCmd()
             openMenu()
 
             expect(menuLabels()).toEqual([
+                'Rename track',
                 'Copy track',
                 'Paste tracks',
                 'Duplicate track',
@@ -1036,6 +1038,35 @@ describe('Pattern Panel UI Grid', () => {
             expect(panel.clipboard.type).toBe('track')
             expect(panel.clipboard.track.name).toBe('KICK')
             expect(showToast).toHaveBeenCalledWith('Copied track "KICK" (2 notes)', 'success')
+        })
+
+        it('Rename track prompts for a new name and applies it', () => {
+            setupCmd()
+            const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('  SNARE  ')
+
+            openMenu()
+            clickItem('Rename track')
+
+            expect(promptSpy).toHaveBeenCalledWith('Rename track:', 'KICK')
+            expect(serviceRegistry.cmd.changeTrackName).toHaveBeenCalledWith(
+                expect.objectContaining({ name: 'KICK' }),
+                'SNARE',
+            )
+            expect(showToast).toHaveBeenCalledWith('Renamed track to "SNARE"', 'success')
+            promptSpy.mockRestore()
+        })
+
+        it('Rename track ignores a cancelled, empty or unchanged name', () => {
+            setupCmd()
+            const promptSpy = vi.spyOn(window, 'prompt')
+
+            for (const answer of [null, '   ', 'KICK']) {
+                promptSpy.mockReturnValueOnce(answer)
+                openMenu()
+                clickItem('Rename track')
+                expect(serviceRegistry.cmd.changeTrackName).not.toHaveBeenCalled()
+            }
+            promptSpy.mockRestore()
         })
 
         it('Paste tracks is disabled when clipboard has no track', () => {
