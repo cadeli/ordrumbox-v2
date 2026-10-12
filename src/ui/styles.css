@@ -4633,18 +4633,16 @@ html.is-compact {
         border-left: none !important;
     }
 
-    /* Mobile landscape 3-column layout (CSS Grid, no DOM reparenting) */
+    /* Mobile landscape 3-column layout (CSS Grid, no DOM reparenting).
+       Each column scrolls itself: the panel only clips, it never scrolls. */
     #te-panel.te-mobile-landscape {
         display: grid;
         grid-template-columns: 170px 1fr 1fr;
-        grid-template-rows: auto 1fr;
-        grid-template-areas:
-            'knobs  tabs   notes'
-            'knobs  panels notes';
+        grid-template-rows: auto auto 1fr;
         top: 0 !important;
         height: var(--app-vh) !important;
         border-left: none !important;
-        overflow: visible !important;
+        overflow: hidden !important;
     }
 
     /* Promote .track-editor children as grid items of #te-panel */
@@ -4652,9 +4650,10 @@ html.is-compact {
         display: contents;
     }
 
-    /* Grid area assignments */
+    /* Left column: header, sample bar, knob bar — one row each */
     #te-panel.te-mobile-landscape .ne-header {
-        grid-area: knobs;
+        grid-column: 1;
+        grid-row: 1;
         font-size: var(--fs-xs);
         padding: 2px;
         margin-bottom: 2px;
@@ -4663,17 +4662,25 @@ html.is-compact {
         text-overflow: ellipsis;
     }
 
-    #te-panel.te-mobile-landscape .te-sample-bar {
-        grid-area: knobs;
+    #te-panel.te-mobile-landscape .te-sample-bar-wrap {
+        grid-column: 1;
+        grid-row: 2;
         padding: 4px;
         margin-bottom: 4px;
+        box-sizing: border-box;
+    }
+
+    #te-panel.te-mobile-landscape .te-sample-bar {
+        padding: 4px;
         gap: 4px;
         flex-direction: column;
         align-items: stretch;
     }
 
     #te-panel.te-mobile-landscape .te-knob-bar {
-        grid-area: knobs;
+        grid-column: 1;
+        grid-row: 3;
+        align-self: start;
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
@@ -4702,7 +4709,8 @@ html.is-compact {
     }
 
     #te-panel.te-mobile-landscape .ne-tab-bar {
-        grid-area: tabs;
+        grid-column: 2;
+        grid-row: 1;
         position: sticky;
         top: 0;
         z-index: 10;
@@ -4714,8 +4722,12 @@ html.is-compact {
     }
 
     #te-panel.te-mobile-landscape .te-scroll {
-        grid-area: panels;
-        overflow: visible;
+        grid-column: 2;
+        grid-row: 2 / span 2;
+        /* Grid items default to min-height: auto, which pins the 1fr row to
+           the content height and leaves nothing to scroll. */
+        min-height: 0;
+        overflow-y: auto;
     }
 
     #te-panel.te-mobile-landscape .ne-tab-panel:not(.ne-tab-panel-hidden) {
@@ -4753,10 +4765,12 @@ html.is-compact {
 
     /* Note editor: grid area in landscape, block in portrait */
     #te-panel.te-mobile-landscape #ne-container {
-        grid-area: notes;
+        grid-column: 3;
+        grid-row: 1 / span 3;
         display: block !important;
         position: static !important;
         height: auto !important;
+        min-height: 0;
         width: auto !important;
         top: auto !important;
         left: auto !important;

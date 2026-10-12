@@ -102,3 +102,47 @@ test('a touch drag on a knob changes its value', async ({ page }) => {
     if (after === before) after = await drag(-48)
     expect(after).not.toBe(before)
 })
+
+test('the track editor scrolls in mobile landscape', async ({ page }) => {
+    await page.goto('/')
+    await dismissWaitingScreen(page)
+
+    await page.locator('.mtb-btn[data-tab="track"]').click()
+    await expect(page.locator('#te-panel')).toBeVisible({ timeout: 8_000 })
+
+    // Tall tab content, so the middle column really overflows.
+    await page.locator('#te-panel .ne-tab-btn', { hasText: /^gen$/ }).first().click()
+    await page.setViewportSize({ width: 667, height: 375 })
+    await expect(page.locator('#te-panel')).toHaveClass(/te-mobile-landscape/, { timeout: 3_000 })
+
+    // The 3-column grid is stylesheet-driven — an inline display shadows it.
+    expect(await page.locator('#te-panel').evaluate((el) => getComputedStyle(el).display)).toBe('grid')
+
+    // Knobs keep the left column, the panel sits beside them, not under them.
+    const knobs = await page.locator('#te-panel .te-knob-bar').boundingBox()
+    const scroller = page.locator('#te-panel .te-scroll')
+    const scrollerBox = await scroller.boundingBox()
+    expect(knobs.width).toBeLessThanOrEqual(200)
+    expect(scrollerBox.x).toBeGreaterThan(knobs.x + knobs.width - 4)
+
+    // The column is a real scroll container with content to reach …
+    expect(await scroller.evaluate((el) => el.scrollHeight > el.clientHeight + 1)).toBe(true)
+
+    // … and a touch drag inside it scrolls.
+    const start = {
+        x: Math.round(scrollerBox.x + scrollerBox.width / 2),
+        y: Math.round(scrollerBox.y + scrollerBox.height / 2),
+        id: 1,
+    }
+    const cdp = await page.context().newCDPSession(page)
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [start] })
+    for (let i = 1; i <= 10; i++) {
+        await cdp.send('Input.dispatchTouchEvent', {
+            type: 'touchMove',
+            touchPoints: [{ ...start, y: start.y - i * 8 }],
+        })
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+
+    await expect.poll(() => scroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(0)
+})

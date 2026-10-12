@@ -95,9 +95,10 @@ test.describe('Landscape overrides — scroll chain', () => {
 
         // .track-editor stops being a box: its children become grid items
         await expect(page.locator(`${landscape} .track-editor`)).toHaveCSS('display', 'contents')
-        // Grid container does not clip: each cell scrolls on its own
-        await expect(page.locator(landscape)).toHaveCSS('overflow', 'visible')
-        await expect(page.locator(`${landscape} .te-scroll`)).toHaveCSS('overflow', 'visible')
+        // The panel only clips — each content cell is its own scroll container
+        // (a visible .te-scroll never scrolls: nothing but the viewport would)
+        await expect(page.locator(landscape)).toHaveCSS('overflow', 'hidden')
+        await expect(page.locator(`${landscape} .te-scroll`)).toHaveCSS('overflow-y', 'auto')
         await expect(page.locator(`${landscape} #ne-container`)).toHaveCSS('overflow-y', 'auto')
         // #ne-container is the only scroll container of the notes area:
         // the tab panels must not add a nested one
@@ -106,9 +107,10 @@ test.describe('Landscape overrides — scroll chain', () => {
             await expect(tabPanels.nth(i)).toHaveCSS('overflow-y', 'visible')
         }
 
-        // The note editor cell must actually scroll in landscape
+        // Both cells must actually scroll in landscape
         const neContainer = page.locator(`${landscape} #ne-container`)
         await expect(neContainer).toBeVisible({ timeout: 3000 })
         expect(await neContainer.evaluate(isScrollable)).toBe(true)
+        expect(await page.locator(`${landscape} .te-scroll`).evaluate(isScrollable)).toBe(true)
     })
 })

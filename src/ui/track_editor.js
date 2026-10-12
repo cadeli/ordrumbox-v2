@@ -293,7 +293,9 @@ export default class TrackEditor extends BasePanel {
                 min: def.min,
                 max: def.max,
                 step: def.step,
-                value: isDecay ? (this.#soundRegistry.sounds[this.#track?.sampleId]?.decay ?? 0) : (this.#track?.[def.key] ?? dflt),
+                value: isDecay
+                    ? (this.#soundRegistry.sounds[this.#track?.sampleId]?.decay ?? 0)
+                    : (this.#track?.[def.key] ?? dflt),
                 defaultValue: isDecay ? 500 : dflt,
                 scale: def.scale,
                 format: knobFormat(def),
@@ -476,7 +478,7 @@ export default class TrackEditor extends BasePanel {
     show({ track, trackIdx }) {
         this.#track = track
         this.#selectedTrackIdx = trackIdx
-        this.container.style.display = isMobileViewport() ? 'flex' : 'block'
+        this.#applyContainerDisplay()
         this.sync()
         void this.synthEditor.ensureGeneratedSoundsLoaded()
         if (this.#serviceRegistry.transport?.isRunning) this.#startStepWatch()
@@ -514,7 +516,7 @@ export default class TrackEditor extends BasePanel {
         this.#rebuildControls()
 
         if (this.synthEditor?.panel?.style?.display !== 'block') {
-            this.container.style.display = isMobileViewport() ? 'flex' : 'block'
+            this.#applyContainerDisplay()
         }
 
         // 7. Waveform
@@ -534,6 +536,19 @@ export default class TrackEditor extends BasePanel {
         }
     }
 
+    /**
+     * Panel display mode. The landscape grid lives in the stylesheet, so the
+     * inline style has to step aside there — an inline 'flex' beats every
+     * grid rule and collapses the 3 columns back into one clipped column.
+     */
+    #applyContainerDisplay() {
+        if (isMobileLandscape()) {
+            this.container.style.display = ''
+            return
+        }
+        this.container.style.display = isMobileViewport() ? 'flex' : 'block'
+    }
+
     /** Apply mobile-specific layout if on a mobile viewport. */
     #syncMobileLayout() {
         if (isMobileLandscape()) {
@@ -542,6 +557,7 @@ export default class TrackEditor extends BasePanel {
         } else {
             removeLayout(this.container)
         }
+        this.#applyContainerDisplay()
     }
 
     /** Sync knob bar values in place. */
