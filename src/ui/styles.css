@@ -4559,6 +4559,16 @@ html.is-compact {
         display: none;
     }
 
+    /* …except the generation row: auto drum/bass stay in the toolbar */
+    #tb .tb-gen-row {
+        display: flex;
+    }
+
+    /* Chords stay desktop-only — the mobile bar keeps just drum + bass */
+    #tb .tb-gen-btn[data-gen='chords'] {
+        display: none;
+    }
+
     /* Mobile: compact page/beats/gen controls in toolbar */
     #tb .tb-page-group .tb-label,
     #tb .tb-beats-group .tb-label,

@@ -78,7 +78,7 @@ export default class ViewSwitch {
         genLabel.className = 'tb-label'
         genLabel.textContent = 'Generation'
         const genRow = document.createElement('div')
-        genRow.className = 'tb-view-row'
+        genRow.className = 'tb-view-row tb-gen-row'
         this.#drumBtn = document.createElement('button')
         this.#drumBtn.className = 'tb-view-btn tb-gen-btn'
         this.#drumBtn.dataset.gen = 'drum'
@@ -168,12 +168,8 @@ export default class ViewSwitch {
     sync(data) {
         this.#undoBtn.disabled = !data.canUndo
         this.#redoBtn.disabled = !data.canRedo
-        this.#undoBtn.title = data.canUndo
-            ? `Undo: ${data.nextUndoDesc ?? ''} (Ctrl+Z)`
-            : 'Undo (Ctrl+Z)'
-        this.#redoBtn.title = data.canRedo
-            ? `Redo: ${data.nextRedoDesc ?? ''} (Ctrl+Y)`
-            : 'Redo (Ctrl+Y)'
+        this.#undoBtn.title = data.canUndo ? `Undo: ${data.nextUndoDesc ?? ''} (Ctrl+Z)` : 'Undo (Ctrl+Z)'
+        this.#redoBtn.title = data.canRedo ? `Redo: ${data.nextRedoDesc ?? ''} (Ctrl+Y)` : 'Redo (Ctrl+Y)'
 
         this.#drumBtn.classList.toggle('active', data.gen.drum)
         this.#bassBtn.classList.toggle('active', data.gen.bass)
