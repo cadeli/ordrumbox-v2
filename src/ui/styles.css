@@ -2476,6 +2476,9 @@ body {
     border: none;
     box-sizing: border-box;
     outline: none;
+    /* The knob owns the gesture: without it a touch drag scrolls the panel
+       instead and the browser sends pointercancel to the pointer handler. */
+    touch-action: none;
 }
 .or-knob.dragging {
     outline: 2px solid var(--black);

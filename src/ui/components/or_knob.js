@@ -32,8 +32,13 @@ export class OrKnob extends BaseControl {
     #knobEl
     #dragStartY
     #dragStartVal
+    #dragging
+    /** @type {((ev: MouseEvent) => void)|null} */
+    #dragOnMove
+    /** @type {(() => void)|null} */
+    #dragOnEnd
     #boundOnKeydown
-    #boundOnMousedown
+    #boundOnStart
 
     constructor(cfg) {
         super(cfg)
@@ -46,8 +51,11 @@ export class OrKnob extends BaseControl {
         this.#knobEl = null
         this.#dragStartY = 0
         this.#dragStartVal = 0
+        this.#dragging = false
+        this.#dragOnMove = null
+        this.#dragOnEnd = null
         this.#boundOnKeydown = this.#onKeydown.bind(this)
-        this.#boundOnMousedown = this.#onMousedown.bind(this)
+        this.#boundOnStart = this.#onStart.bind(this)
     }
 
     /** Returns 0–100 percentage of current value within range. */
@@ -141,22 +149,31 @@ export class OrKnob extends BaseControl {
         this.setValSpan(rowEl.querySelector('.ne-val'))
         this.#knobEl = rowEl.querySelector('.or-knob')
         if (!this.#knobEl) return
-        this.#knobEl.addEventListener('mousedown', this.#boundOnMousedown)
+        // Touch and pen only travel through the pointer events — a drag bound
+        // to the mouse family alone never moves the value on mobile. Both
+        // families are wired: one gesture fires pointerdown then a
+        // compatibility mousedown, which #dragging ignores.
+        this.#knobEl.addEventListener('pointerdown', this.#boundOnStart)
+        this.#knobEl.addEventListener('mousedown', this.#boundOnStart)
         this.#knobEl.addEventListener('keydown', this.#boundOnKeydown)
         this.bindGestures(this.#knobEl)
     }
 
     #unbindKeys() {
-        this.#knobEl?.removeEventListener('mousedown', this.#boundOnMousedown)
+        this.#endDrag()
+        this.#knobEl?.removeEventListener('pointerdown', this.#boundOnStart)
+        this.#knobEl?.removeEventListener('mousedown', this.#boundOnStart)
         this.#knobEl?.removeEventListener('keydown', this.#boundOnKeydown)
     }
 
-    #onMousedown(e) {
-        if (e.button !== 0) return // left click only
+    #onStart(e) {
+        if (this.#dragging) return // compatibility mousedown of a pointer drag
+        if (e.button !== 0) return // primary button only
         e.preventDefault()
+        this.#dragging = true
         this.#dragStartY = e.clientY
         this.#dragStartVal = this.getValue()
-        this.#knobEl.classList.add('dragging')
+        this.#knobEl?.classList.add('dragging')
 
         const isLog = this.#useLog
         const baseSensitivity = isLog ? this.#logRange / 200 : (this.max - this.min) / 200
@@ -164,7 +181,7 @@ export class OrKnob extends BaseControl {
             ? (Math.log10(Math.max(this.min, this.#dragStartVal)) - this.#logMin) / this.#logRange
             : 0
 
-        const onMove = (ev) => {
+        this.#dragOnMove = (ev) => {
             const deltaY = this.#dragStartY - ev.clientY
             const isFine = ev.shiftKey
             const sensitivity = isFine ? baseSensitivity * 0.1 : baseSensitivity
@@ -180,13 +197,33 @@ export class OrKnob extends BaseControl {
             }
             this.commitValue(clamped)
         }
-        const onUp = () => {
-            window.removeEventListener('mousemove', onMove)
-            window.removeEventListener('mouseup', onUp)
-            this.#knobEl?.classList.remove('dragging')
+        this.#dragOnEnd = () => this.#endDrag()
+
+        // Absolute math from the press, so a mouse drag reaching us through
+        // both families applies the same value twice instead of doubling it.
+        window.addEventListener('pointermove', this.#dragOnMove)
+        window.addEventListener('mousemove', this.#dragOnMove)
+        window.addEventListener('pointerup', this.#dragOnEnd)
+        window.addEventListener('pointercancel', this.#dragOnEnd)
+        window.addEventListener('mouseup', this.#dragOnEnd)
+    }
+
+    /** Ends the running drag: one removal per family, then the visual state. */
+    #endDrag() {
+        if (this.#dragOnMove) {
+            window.removeEventListener('pointermove', this.#dragOnMove)
+            window.removeEventListener('mousemove', this.#dragOnMove)
         }
-        window.addEventListener('mousemove', onMove)
-        window.addEventListener('mouseup', onUp)
+        if (this.#dragOnEnd) {
+            window.removeEventListener('pointerup', this.#dragOnEnd)
+            window.removeEventListener('pointercancel', this.#dragOnEnd)
+            window.removeEventListener('mouseup', this.#dragOnEnd)
+        }
+        this.#dragOnMove = null
+        this.#dragOnEnd = null
+        if (!this.#dragging) return
+        this.#dragging = false
+        this.#knobEl?.classList.remove('dragging')
     }
 
     #onKeydown(e) {

@@ -27,7 +27,7 @@ export default class ImportSection {
 
     bind() {
         const root = this.#panel.container
-        const importMidiFile = root.querySelector('#tp-import-midi-file')
+        const importMidiFile = /** @type {HTMLInputElement} */ (root.querySelector('#tp-import-midi-file'))
         root.querySelector('#tp-import-midi').addEventListener('click', () => importMidiFile.click())
         importMidiFile.addEventListener('change', (e) => this.onImportMidiFile(e))
     }

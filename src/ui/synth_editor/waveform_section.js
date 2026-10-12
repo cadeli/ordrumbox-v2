@@ -42,7 +42,7 @@ export default class WaveformSection {
     }
 
     #drawWaveform() {
-        const canvas = this.#root()?.querySelector('.ss-waveform')
+        const canvas = /** @type {HTMLCanvasElement|null} */ (this.#root()?.querySelector('.ss-waveform'))
         const draft = this.#model.draft
         if (!canvas || !draft) return
         const ctx = canvas.getContext('2d')

@@ -62,3 +62,43 @@ test('html.is-compact is set on mobile and rotation toggles the landscape layout
     await page.setViewportSize({ width: 412, height: 915 })
     await expect(tePanel).not.toHaveClass(/te-mobile-landscape/, { timeout: 3_000 })
 })
+
+test('a touch drag on a knob changes its value', async ({ page }) => {
+    await page.goto('/')
+    await dismissWaitingScreen(page)
+
+    await page.locator('.mtb-btn[data-tab="track"]').click()
+    await expect(page.locator('#te-panel')).toBeVisible({ timeout: 8_000 })
+
+    const row = page.locator('.te-knob-bar [data-or-control="velocity"]').first()
+    const knob = row.locator('.or-knob')
+    await knob.scrollIntoViewIfNeeded()
+    await expect(knob).toBeVisible()
+    const before = (await row.locator('.ne-val').textContent())?.trim()
+
+    const box = await knob.boundingBox()
+    const cx = Math.round(box.x + box.width / 2)
+    const cy = Math.round(box.y + box.height / 2)
+    const maxY = page.viewportSize().height - 4
+
+    // Real touch input through the CDP: the drag has to stay on the knob
+    // (touch-action: none) instead of scrolling the panel away.
+    const cdp = await page.context().newCDPSession(page)
+    const drag = async (dy) => {
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: cx, y: cy, id: 1 }] })
+        for (let i = 1; i <= 8; i++) {
+            await cdp.send('Input.dispatchTouchEvent', {
+                type: 'touchMove',
+                touchPoints: [{ x: cx, y: Math.min(maxY, Math.max(4, cy + (dy * i) / 8)), id: 1 }],
+            })
+        }
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+        return (await row.locator('.ne-val').textContent())?.trim()
+    }
+
+    // Either direction has room from a mid-range value; when the knob sits on
+    // a bound the other direction takes over.
+    let after = await drag(48)
+    if (after === before) after = await drag(-48)
+    expect(after).not.toBe(before)
+})

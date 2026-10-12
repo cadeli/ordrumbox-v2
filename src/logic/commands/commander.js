@@ -109,7 +109,7 @@ export default class Commander {
         // own enumerable function so {...cmd} copies keep driving THIS instance.
         this.deleteNote = (...args) => this.#notes.deleteNote(...args)
         this.addNote = (...args) => this.#notes.addNote(...args)
-        this.updateNote = (...args) => this.#notes.updateNote(...args)
+        this.updateNote = (...args) => /** @type {Function} */ (this.#notes.updateNote)(...args)
         this.pasteStepNotes = (...args) => this.#notes.pasteStepNotes(...args)
         this.addTrack = (...args) => this.#tracks.addTrack(...args)
         this.removeTrack = (...args) => this.#tracks.removeTrack(...args)
