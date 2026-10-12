@@ -13,14 +13,14 @@ import { Lifecycle } from '../core/lifecycle.js'
  * `activePanel`: the one central panel the view keeps open (null = the
  * pattern grid is the workspace). `hidePattern`: the pattern grid is pushed
  * out. `hideTrackMobile`: the track editor is dropped on mobile viewports
- * (desktop always keeps it).
+ * (desktop always keeps it — the flag is only read under isMobileViewport()).
  *
  * @type {Record<string, { activePanel: 'synth'|'proll'|'song'|null, hidePattern: boolean, hideTrackMobile: boolean }>}
  */
 const VIEW_DEFS = {
     edit: { activePanel: null, hidePattern: false, hideTrackMobile: false },
     synth: { activePanel: 'synth', hidePattern: true, hideTrackMobile: true },
-    proll: { activePanel: 'proll', hidePattern: true, hideTrackMobile: false },
+    proll: { activePanel: 'proll', hidePattern: true, hideTrackMobile: true },
     song: { activePanel: 'song', hidePattern: true, hideTrackMobile: false },
     mobileSeq: { activePanel: null, hidePattern: false, hideTrackMobile: true },
     mobileTrack: { activePanel: null, hidePattern: true, hideTrackMobile: false },

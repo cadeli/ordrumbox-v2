@@ -416,16 +416,17 @@ describe('Mobile tab bar: position, size, visibility', () => {
         expect(bar).not.toBeNull()
     })
 
-    it('tab bar has 4 buttons', () => {
+    it('tab bar has 5 buttons', () => {
         const bar = document.getElementById('mobile-tab-bar')
         const btns = bar.querySelectorAll('.mtb-btn')
-        expect(btns.length).toBe(4)
+        expect(btns.length).toBe(5)
     })
 
     it('tab bar buttons have correct data-tab attributes', () => {
         const bar = document.getElementById('mobile-tab-bar')
         expect(bar.querySelector('[data-tab="seq"]')).not.toBeNull()
         expect(bar.querySelector('[data-tab="track"]')).not.toBeNull()
+        expect(bar.querySelector('[data-tab="proll"]')).not.toBeNull()
         expect(bar.querySelector('[data-tab="synth"]')).not.toBeNull()
         expect(bar.querySelector('[data-tab="master"]')).not.toBeNull()
     })

@@ -50,6 +50,7 @@ export default class MobileTabBar {
         const tabs = [
             { id: 'seq', label: 'Sequencer' },
             { id: 'track', label: 'Track' },
+            { id: 'proll', label: 'Piano' },
             { id: 'synth', label: 'Synth' },
             { id: 'master', label: 'Master' },
         ]
@@ -78,6 +79,7 @@ export default class MobileTabBar {
         const tabMap = {
             [EVENTS.MOBILE_SEQ_TOGGLE]: 'seq',
             [EVENTS.MOBILE_TRACK_TOGGLE]: 'track',
+            [EVENTS.PROLL_TOGGLE]: 'proll',
             [EVENTS.SYNTH_TOGGLE]: 'synth',
             [EVENTS.EDIT_TOGGLE]: 'track',
             [EVENTS.MASTER_TOGGLE]: 'master',
@@ -103,6 +105,7 @@ export default class MobileTabBar {
             const dispatchMap = {
                 seq: () => playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE),
                 track: () => playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE),
+                proll: () => playbackEvents.emit(EVENTS.PROLL_TOGGLE),
                 synth: () => playbackEvents.emit(EVENTS.SYNTH_TOGGLE),
                 master: () => playbackEvents.emit(EVENTS.MASTER_TOGGLE, true),
             }

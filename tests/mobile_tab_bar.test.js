@@ -184,6 +184,13 @@ describe('Mobile tab bar', () => {
             expect(spy).toHaveBeenCalled()
         })
 
+        it('clicking Piano tab dispatches prollToggle', () => {
+            const spy = vi.fn()
+            playbackEvents.on(EVENTS.PROLL_TOGGLE, spy)
+            mobileTabBar.container.querySelector('[data-tab="proll"]').click()
+            expect(spy).toHaveBeenCalled()
+        })
+
         it('clicking Master tab dispatches masterToggle(true)', () => {
             const spy = vi.fn()
             playbackEvents.on(EVENTS.MASTER_TOGGLE, spy)
