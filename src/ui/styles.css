@@ -4348,9 +4348,12 @@ select optgroup {
    ======================================== */
 
 html.is-compact {
+    /* Bottom tab bar height: every mobile offset reads this one value */
+    --tabbar-h: 34px;
+
     /* Toast clears the mobile bottom tab bar */
     body {
-        --toast-bottom-offset: 60px;
+        --toast-bottom-offset: var(--tabbar-h);
     }
     /* Centred popup on compact viewports */
     .od-select-popup {
@@ -4383,12 +4386,44 @@ html.is-compact {
         display: none !important;
     }
 
-    /* Collapsed toolbar: essential only (brand, play, bpm, pattern name, settings button) */
+    /* Collapsed toolbar: essential only (brand, play, bpm, pattern name,
+       settings button) — two tight rows instead of the desktop chrome */
     #tb {
         height: auto;
-        min-height: 48px;
-        padding: 4px;
-        gap: 4px;
+        min-height: 0;
+        padding: 2px 4px;
+        gap: 3px;
+    }
+
+    #tb button,
+    #tb select {
+        padding: 2px 3px;
+        font-size: var(--fs-sm);
+    }
+
+    #tb .tb-start {
+        width: 26px;
+        min-width: 26px;
+        height: 26px;
+        min-height: 26px;
+        font-size: 13px;
+    }
+
+    #tb .tb-tools,
+    #tb .tb-about {
+        min-width: 24px;
+        min-height: 24px;
+        font-size: 14px;
+    }
+
+    #tb .tb-sep {
+        height: 24px;
+    }
+
+    /* The pattern name is the only pattern readout left on mobile: it must
+       keep a readable slice instead of being squeezed away by the groups */
+    #tb .tb-pattern-name-mobile {
+        min-width: 72px;
     }
 
     #tb .tb-brand {
@@ -4435,7 +4470,7 @@ html.is-compact {
         top: var(--tb-h, 48px);
         left: 0;
         right: 0;
-        bottom: 60px;
+        bottom: var(--tabbar-h);
         z-index: var(--z-panel);
         background: var(--bg);
         border-bottom: 2px solid var(--accent);
@@ -4516,7 +4551,7 @@ html.is-compact {
 
     /* Mobile app content shifts up to account for bottom tab bar */
     #app-content {
-        padding-bottom: 60px;
+        padding-bottom: var(--tabbar-h);
     }
 
     /* Hide desktop toolbar items that move to mobile tab bar */
@@ -4579,7 +4614,7 @@ html.is-compact {
     .workspace-panel {
         width: 100%;
         top: var(--tb-h, 48px) !important;
-        bottom: 60px !important;
+        bottom: var(--tabbar-h) !important;
         height: auto !important;
         overflow-y: auto;
     }
@@ -4596,7 +4631,7 @@ html.is-compact {
         left: 0 !important;
         width: 100% !important;
         height: auto !important;
-        bottom: 60px !important;
+        bottom: var(--tabbar-h) !important;
         overflow-y: auto !important;
     }
 
@@ -4833,14 +4868,14 @@ html.is-compact {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: var(--tabbar-h, 60px);
     background: var(--surface-2);
     border-top: 2px solid var(--accent);
     display: flex;
     align-items: center;
     justify-content: space-around;
     z-index: var(--z-toolbar);
-    padding-top: 4px;
+    padding-top: 2px;
     box-sizing: border-box;
 }
 
@@ -4855,7 +4890,7 @@ html.is-compact {
     font-size: var(--fs-sm);
     cursor: pointer;
     touch-action: manipulation;
-    padding: 4px;
+    padding: 2px 4px;
     box-sizing: border-box;
 }
 

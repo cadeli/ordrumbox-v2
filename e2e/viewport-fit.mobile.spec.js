@@ -30,11 +30,13 @@ async function measureShell(page) {
             }
         }
         const doc = document.documentElement
+        const tabbarH = Math.round(parseFloat(getComputedStyle(doc).getPropertyValue('--tabbar-h')))
         return {
             vw: window.innerWidth,
             vh: window.innerHeight,
             app: box(document.getElementById('app-main')),
             tabBar: box(document.getElementById('mobile-tab-bar')),
+            tabbarH,
             scrollWidth: doc.scrollWidth,
             scrollHeight: doc.scrollHeight,
             appVh: getComputedStyle(doc).getPropertyValue('--app-vh').trim(),
@@ -59,12 +61,14 @@ for (const [orientation, size] of Object.entries(SIZES)) {
         expect(m.scrollWidth).toBeLessThanOrEqual(m.vw)
         expect(m.scrollHeight).toBeLessThanOrEqual(m.vh)
 
-        // The bottom tab bar sits exactly on the visible bottom edge, full width
+        // The bottom tab bar sits exactly on the visible bottom edge, full
+        // width, and is exactly as tall as the --tabbar-h the panels clear
+        expect(m.tabbarH).toBeGreaterThan(0)
         expect(m.tabBar).toEqual({
             x: 0,
-            y: m.vh - 60,
+            y: m.vh - m.tabbarH,
             width: m.vw,
-            height: 60,
+            height: m.tabbarH,
             bottom: m.vh,
         })
     })
