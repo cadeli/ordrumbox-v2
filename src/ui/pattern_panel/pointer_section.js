@@ -262,8 +262,17 @@ export default class PointerSection {
             const tracks = getTracksArray(pattern)
             const track = tracks[trackIdx]
             if (!track) return
-            track.velocity = parseFloat(volSlider.value)
-            this.#editor.serviceRegistry.audioEngine?.syncTrack(track)
+            const velocity = parseFloat(volSlider.value)
+            if (!Number.isFinite(velocity)) return
+            this.#editor.serviceRegistry.cmd?.updateTrack(
+                track,
+                { velocity },
+                { desc: `Volume on ${track.name}`, coalesce: true },
+            )
+            this.#editor.playbackEvents.batch(() => {
+                this.#editor.playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
+                this.#editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE)
+            })
         }
         const masterSlider = e.target.closest('.pp-master-volume')
         if (masterSlider) {

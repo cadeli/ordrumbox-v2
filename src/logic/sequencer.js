@@ -10,7 +10,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { getAutoAssignService, getAutoGeneratorService } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { logger } from '../core/logger.js'
-import { showToast } from '../core/notify.js'
+import { reportUserError, showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'
 
 export default class Sequencer {
@@ -50,7 +50,21 @@ export default class Sequencer {
         if (!this.serviceRegistry.transport) {
             this.serviceRegistry.transport = new Transport(this.serviceRegistry.audioCtx)
             this.serviceRegistry.transport.onSchedule = (tick, time) => {
-                this.serviceRegistry.audioEngine?.playNotes(tick, time)
+                // The promise is deliberately NOT handed back: Transport arms
+                // #tickInFlight when onSchedule returns a thenable, and that
+                // guard lets ONE tick through per 25 ms poll — at 120 BPM a
+                // tick lasts 15.6 ms, so the lookahead could never catch up and
+                // playback ran slow. The rejection is handled right here so a
+                // failed tick is reported instead of floating unhandled.
+                const result = this.serviceRegistry.audioEngine?.playNotes(tick, time)
+                if (result && typeof result.catch === 'function') {
+                    result.catch((err) => {
+                        logger.error('Sequencer', 'playNotes failed', err)
+                        reportUserError('Sequencer.playNotes', 'Playback tick failed — audio may drop out', {
+                            cause: err,
+                        })
+                    })
+                }
             }
         } else if (!this.serviceRegistry.transport.audioCtx) {
             this.serviceRegistry.transport.audioCtx = this.serviceRegistry.audioCtx

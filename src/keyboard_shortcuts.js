@@ -4,6 +4,7 @@ import { getAutoAssignService, getAutoGeneratorService } from './state/service_l
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/event_bus.js'
 import { detectTrackType } from './core/drum_taxonomy.js'
+import { getTracksArray } from './core/tracks.js'
 import { pickRandom, pickRandomKey } from './core/random.js'
 import { COLOR_SCHEME_COUNT, normalizeColorScheme } from './core/constants.js'
 import ResourcesLoader from './loader/resources_loader.js'
@@ -30,14 +31,13 @@ const PHYSICAL_TRACK_PREVIEW_KEYS = ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'Ke
 const PHYSICAL_KEYS_PREVENTING_BROWSER_DEFAULT = new Set(['Space'])
 
 function toggleTrackMute(trackIdx) {
-    const track = appState.selectedPattern?.tracks?.[trackIdx]
-    if (track) {
-        track.mute = !track.mute
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
-    }
+    const track = getTracksArray(appState.selectedPattern ?? {})[trackIdx]
+    if (!track) return
+    serviceRegistry.cmd?.updateTrack(track, { mute: !track.mute }, { desc: `Mute on ${track.name}` })
+    playbackEvents.batch(() => {
+        playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
+        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
+    })
 }
 
 function previewTrack(trackIdx) {
@@ -127,6 +127,9 @@ async function duplicateCurrentPattern() {
     const clone = cmd.addPattern((pattern.name ?? 'Pattern') + ' copy')
     Object.assign(clone, structuredClone(pattern))
     clone.name = (pattern.name ?? 'Pattern') + ' copy'
+    // Object.assign copied the source id too — two patterns sharing one would
+    // make arrangement references ambiguous.
+    cmd.refreshPatternId(clone)
     await cmd.setSelectedPatternIdx(appState.patterns.length - 1)
     emitPatternStructureChange()
     showToast('Pattern duplicated', 'success')
@@ -190,16 +193,27 @@ async function convertToGeneratedSounds() {
     // the track is converted either way, and the toast names what was random.
     const randomPicks = new Map()
     const generatedSoundKeys = Object.keys(soundRegistry.generatedSounds)
-    Object.values(selectedPattern.tracks).forEach((track) => {
-        const type = detectTrackType(track.name)
-        let synthKey = SYNTH_SOUND_MAP[type]
-        if (!generatedSoundKeys.includes(synthKey)) {
-            synthKey = pickRandomKey(soundRegistry.generatedSounds)
-            if (synthKey) randomPicks.set(type || track.name, synthKey)
+    const tracks = getTracksArray(selectedPattern)
+    const cmd = serviceRegistry.cmd
+    // One undo step for the whole pattern, not one per track.
+    cmd?.recordTransaction('Convert tracks to generated sounds', () => {
+        for (const track of tracks) {
+            const type = detectTrackType(track.name)
+            let synthKey = SYNTH_SOUND_MAP[type]
+            if (!generatedSoundKeys.includes(synthKey)) {
+                synthKey = pickRandomKey(soundRegistry.generatedSounds)
+                if (synthKey) randomPicks.set(type || track.name, synthKey)
+            }
+            cmd.updateTrack(
+                track,
+                {
+                    useSoftSynth: true,
+                    useAutoAssignSound: false,
+                    synthSoundKey: synthKey ?? null,
+                },
+                { desc: `Synth on ${track.name}` },
+            )
         }
-        track.useSoftSynth = true
-        track.useAutoAssignSound = false
-        track.synthSoundKey = synthKey
     })
 
     serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
@@ -227,10 +241,17 @@ function assignRandomSampleAllTracks() {
         return
     }
 
-    Object.values(selectedPattern.tracks).forEach((track) => {
-        track.useAutoAssignSound = false
-        track.useSoftSynth = false
-        track.sampleId = pickRandom(allSounds)
+    const tracks = getTracksArray(selectedPattern)
+    const cmd = serviceRegistry.cmd
+    // One undo step for the whole pattern, not one per track.
+    cmd?.recordTransaction('Random samples on all tracks', () => {
+        for (const track of tracks) {
+            cmd.updateTrack(
+                track,
+                { useAutoAssignSound: false, useSoftSynth: false, sampleId: pickRandom(allSounds) },
+                { desc: `Sample on ${track.name}` },
+            )
+        }
     })
 
     serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
@@ -246,13 +267,19 @@ async function autoAssignAllTracks() {
         return
     }
 
-    Object.values(selectedPattern.tracks).forEach((track) => {
-        track.useAutoAssignSound = true
-        track.useSoftSynth = false
+    const tracks = getTracksArray(selectedPattern)
+    const cmd = serviceRegistry.cmd
+    // One undo step for the whole pattern, not one per track. The service
+    // assignment is inside the transaction so its sampleId writes are covered
+    // by the same before/after snapshot.
+    await cmd?.recordTransaction('Auto-assign all tracks', async () => {
+        for (const track of tracks) {
+            cmd.updateTrack(track, { useAutoAssignSound: true, useSoftSynth: false }, { desc: `Auto-assign on ${track.name}` })
+        }
+        const autoAssign = await getAutoAssignService()
+        autoAssign.autoAssignSounds(selectedPattern)
     })
 
-    const autoAssign = await getAutoAssignService()
-    autoAssign.autoAssignSounds(selectedPattern)
     serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
     serviceRegistry.audioEngine?.invalidateCache()
     playbackEvents.emit(EVENTS.PATTERN_CHANGE)

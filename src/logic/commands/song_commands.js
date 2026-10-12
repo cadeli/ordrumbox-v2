@@ -154,7 +154,9 @@ export default class SongCommands {
             desc: `Add "${added.pattern}" at measure ${added.startMeasure + 1}`,
             params: { pattern: added.pattern, startMeasure: added.startMeasure, song: index },
             execute: () => {
-                song.clips.push({ ...added })
+                // Push the same object: undo finds it with lastIndexOf(added),
+                // so a copy here would make every redo a no-op.
+                song.clips.push(added)
                 this.#setLoop(song, loopAfter)
                 this.#host.persist()
             },
@@ -204,9 +206,11 @@ export default class SongCommands {
                 this.#host.persist()
             },
             undo: () => {
-                // ascending, each back into its original slot
+                // ascending, each back into its original slot — the same
+                // object, since execute() re-finds it with indexOf(r.clip):
+                // a copy would make every later redo a no-op.
                 for (const { clip, index: at } of [...removed].sort((a, b) => a.index - b.index)) {
-                    song.clips.splice(Math.min(at, song.clips.length), 0, { ...clip })
+                    song.clips.splice(Math.min(at, song.clips.length), 0, clip)
                 }
                 this.#setLoop(song, loopBefore)
                 this.#host.persist()

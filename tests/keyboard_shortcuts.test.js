@@ -93,6 +93,19 @@ describe('Keyboard shortcuts', () => {
                 return true
             }),
             resetPage: vi.fn(),
+            // Behavioural stand-in for Commander.updateTrack: apply the
+            // updates so the shortcuts' end state can still be asserted,
+            // while recording the call so tests can check the routing.
+            updateTrack: vi.fn((track, updates) => {
+                Object.assign(track, updates)
+                return track
+            }),
+            // Commander.recordTransaction runs fn as ONE undoable entry.
+            recordTransaction: vi.fn((_desc, fn) => fn()),
+            refreshPatternId: vi.fn((pattern) => {
+                pattern.id = `pattern-${appState.patterns.indexOf(pattern)}`
+                return pattern.id
+            }),
         }
         soundRegistry.drumkitList = [{ name: '8bits' }, { name: 'real' }]
     })
@@ -109,6 +122,12 @@ describe('Keyboard shortcuts', () => {
     it('Digit1 toggles mute on track 0', () => {
         fireKeydown('Digit1')
         expect(appState.patterns[0].tracks[0].mute).toBe(true)
+        // the mute must go through the command layer, or it is not undoable
+        expect(serviceRegistry.cmd.updateTrack).toHaveBeenCalledWith(
+            appState.patterns[0].tracks[0],
+            { mute: true },
+            expect.objectContaining({ desc: 'Mute on KICK' }),
+        )
     })
 
     it('Digit1 emits trackParamChange and patternChange to refresh mute UI', async () => {
@@ -450,6 +469,8 @@ describe('Keyboard shortcuts', () => {
         const track = appState.patterns[0].tracks[0]
         expect(track.useAutoAssignSound).toBe(true)
         expect(track.useSoftSynth).toBe(false)
+        // one undo step for the whole pattern, not one per track
+        expect(serviceRegistry.cmd.recordTransaction).toHaveBeenCalledTimes(1)
         expect(autoAssign.autoAssignSounds).toHaveBeenCalledWith(appState.patterns[0])
         expect(serviceRegistry.flatNotes.applyFlatNotes).toHaveBeenCalledWith(appState.patterns[0])
         expect(showToast).toHaveBeenCalledWith('All tracks auto-assigned', 'success')
@@ -575,6 +596,7 @@ describe('Keyboard shortcuts', () => {
 
     it('Ctrl+D duplicates the current pattern', async () => {
         appState.patterns[0].tracks.push({ name: 'HIHAT', mute: false })
+        appState.patterns[0].id = 'source-id'
 
         fireKeydown('KeyD', 'd', { ctrlKey: true })
         await flushAsyncShortcut()
@@ -583,6 +605,10 @@ describe('Keyboard shortcuts', () => {
         expect(appState.patterns).toHaveLength(2)
         expect(appState.patterns[1].name).toBe('P1 copy')
         expect(appState.patterns[1].tracks).toHaveLength(3)
+        // Object.assign copies the source id too: without a refresh the two
+        // patterns would share one, and arrangement references turn ambiguous.
+        expect(serviceRegistry.cmd.refreshPatternId).toHaveBeenCalledWith(appState.patterns[1])
+        expect(appState.patterns[1].id).not.toBe('source-id')
         expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(1)
         expect(showToast).toHaveBeenCalledWith('Pattern duplicated', 'success')
     })

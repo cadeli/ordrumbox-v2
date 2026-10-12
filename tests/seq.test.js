@@ -3,6 +3,13 @@ import { appState } from '../src/state/app_state.js'
 import { makePattern, PARAM_SETS } from './helpers/make_pattern.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
+import { logger } from '../src/core/logger.js'
+import { reportUserError } from '../src/core/notify.js'
+
+vi.mock('../src/core/notify.js', () => ({
+    showToast: vi.fn(),
+    reportUserError: vi.fn(),
+}))
 
 vi.mock('../src/audio/engine.js', () => ({ default: vi.fn() }))
 vi.mock('../src/audio/stall_detector.js', () => ({
@@ -251,6 +258,38 @@ describe('Sequencer', () => {
         serviceRegistry.transport = fakeTransport
         new Sequencer()
         expect(fakeTransport.audioCtx).toBe(serviceRegistry.audioCtx)
+    })
+
+    // Transport arms #tickInFlight as soon as onSchedule hands back a thenable,
+    // and that guard lets ONE tick through per 25 ms poll — a tick lasts 15.6 ms
+    // at 120 BPM, so the lookahead could never catch up and playback ran slow.
+    it('onSchedule does not return a thenable', () => {
+        serviceRegistry.transport = null
+        serviceRegistry.audioEngine = { playNotes: vi.fn(async () => {}) }
+        new Sequencer()
+
+        const result = serviceRegistry.transport.onSchedule(0, 0)
+        expect(result && typeof result.then).toBeFalsy()
+        expect(serviceRegistry.audioEngine.playNotes).toHaveBeenCalledWith(0, 0)
+    })
+
+    it('reports a rejected playNotes instead of floating an unhandled rejection', async () => {
+        const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
+        serviceRegistry.transport = null
+        const failure = new Error('boom')
+        serviceRegistry.audioEngine = { playNotes: vi.fn(() => Promise.reject(failure)) }
+        new Sequencer()
+
+        serviceRegistry.transport.onSchedule(0, 0)
+        await Promise.resolve()
+        await Promise.resolve()
+
+        expect(reportUserError).toHaveBeenCalledWith(
+            'Sequencer.playNotes',
+            expect.stringContaining('Playback tick failed'),
+            expect.objectContaining({ cause: failure }),
+        )
+        errorSpy.mockRestore()
     })
 
     it('toggleStartStop does nothing if audioCtx creation fails', async () => {

@@ -656,6 +656,17 @@ describe('Functional: Commander operations', () => {
             expect(appState.songs[0].clips).toHaveLength(1)
         })
 
+        // redo re-pushes the SAME object undo looks for: pushing a copy would
+        // leave lastIndexOf(added) at -1 and the second undo would no-op.
+        it('addSongClip still undoes after a redo', () => {
+            song([])
+            cmd.addSongClip({ pattern: 'rock', startMeasure: 0, measureCount: 1 })
+            history.undo()
+            history.redo()
+            history.undo()
+            expect(appState.songs[0].clips).toHaveLength(0)
+        })
+
         it('removeSongClips removes the given indices in one undo step', () => {
             song([
                 { pattern: 'a', startMeasure: 0, measureCount: 1 },
@@ -676,6 +687,23 @@ describe('Functional: Commander operations', () => {
                 { pattern: 'c', startMeasure: 2, measureCount: 1 },
             ])
             cmd.removeSongClips([1])
+            history.undo()
+            expect(appState.songs[0].clips.map((c) => c.pattern)).toEqual(['a', 'b', 'c'])
+        })
+
+        // undo re-inserts the SAME object execute() re-finds with indexOf:
+        // inserting a copy would make every later redo a no-op.
+        it('removeSongClips still redoes after an undo', () => {
+            song([
+                { pattern: 'a', startMeasure: 0, measureCount: 1 },
+                { pattern: 'b', startMeasure: 1, measureCount: 1 },
+                { pattern: 'c', startMeasure: 2, measureCount: 1 },
+            ])
+            cmd.removeSongClips([1])
+            history.undo()
+            expect(appState.songs[0].clips.map((c) => c.pattern)).toEqual(['a', 'b', 'c'])
+            history.redo()
+            expect(appState.songs[0].clips.map((c) => c.pattern)).toEqual(['a', 'c'])
             history.undo()
             expect(appState.songs[0].clips.map((c) => c.pattern)).toEqual(['a', 'b', 'c'])
         })

@@ -27,11 +27,12 @@ export function migrateLegacyTrackKeys(track) {
     if (!track || typeof track !== 'object') return false
     let changed = false
     for (const [legacy, current] of Object.entries(LEGACY_TRACK_KEY_ALIASES)) {
-        if (legacy in track && !(current in track)) {
-            track[current] = track[legacy]
-            changed = true
-        }
+        if (!Object.prototype.hasOwnProperty.call(track, legacy)) continue
+        if (!(current in track)) track[current] = track[legacy]
+        // The delete mutates too, so it counts as a change: dropping it here
+        // left MIGRATIONS[8] thinking the record was already up to date.
         delete track[legacy]
+        changed = true
     }
     return changed
 }
@@ -45,11 +46,10 @@ export function migrateLegacyClipKeys(clip) {
     if (!clip || typeof clip !== 'object') return false
     let changed = false
     for (const [legacy, current] of Object.entries(LEGACY_CLIP_KEY_ALIASES)) {
-        if (legacy in clip && !(current in clip)) {
-            clip[current] = clip[legacy]
-            changed = true
-        }
+        if (!Object.prototype.hasOwnProperty.call(clip, legacy)) continue
+        if (!(current in clip)) clip[current] = clip[legacy]
         delete clip[legacy]
+        changed = true
     }
     return changed
 }
@@ -65,11 +65,10 @@ export function migrateLegacySongKeys(song) {
     if (!song || typeof song !== 'object') return false
     let changed = false
     for (const [legacy, current] of Object.entries(LEGACY_SONG_KEY_ALIASES)) {
-        if (legacy in song && !(current in song)) {
-            song[current] = song[legacy]
-            changed = true
-        }
+        if (!Object.prototype.hasOwnProperty.call(song, legacy)) continue
+        if (!(current in song)) song[current] = song[legacy]
         delete song[legacy]
+        changed = true
     }
     if (Array.isArray(song.clips)) {
         for (const clip of song.clips) changed = migrateLegacyClipKeys(clip) || changed

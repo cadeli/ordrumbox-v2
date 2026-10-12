@@ -218,7 +218,11 @@ export default class PercGenerator extends BaseGenerator {
 
                     const isAccent = step % accentEvery === 0
                     const pitchOffset = pitchPattern[step % pitchPattern.length] ?? 0
-                    const pitch = tones[pitchOffset + pitchBias] ?? pitchBias
+                    // pitchPattern holds scale-degree indices, pitchBias holds
+                    // semitones (getTrackPitchBias returns +/-5): indexing tones
+                    // with both made every low/high tom note fall back to the
+                    // bare bias, since tones[-5] is undefined.
+                    const pitch = (tones[pitchOffset] ?? 0) + pitchBias
 
                     if (Math.random() >= density) continue
 

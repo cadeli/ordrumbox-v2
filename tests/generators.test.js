@@ -415,6 +415,21 @@ describe('Generators', () => {
             expect(gen.getTrackPitchBias({ name: 'TOM' })).toBe(0)
         })
 
+        // pitchPattern holds scale-degree indices while the bias is in
+        // semitones: indexing tones with both made tones[pitchOffset - 5]
+        // undefined for every step, collapsing a LO_TOM onto a single pitch.
+        it('lockedPerc adds the track bias in semitones to each pattern degree', () => {
+            const gen = new PercGenerator()
+            const tones = gen.getScaleSteps('chromatic')
+            const bias = gen.getTrackPitchBias({ name: 'LO_TOM' })
+            const track = makeTrack('LO_TOM', [], { beatCount: 4, stepsPerBeat: 4 })
+            gen.generateNewPerc(track, 'shaker44')
+            expect(track.notes.length).toBeGreaterThan(0)
+            const pitches = [...new Set(track.notes.map((n) => n.pitch))]
+            expect(pitches).toContain((tones[0] ?? 0) + bias)
+            expect(pitches).toContain((tones[1] ?? 0) + bias)
+        })
+
         it('conversation produces notes on call/response steps per beat parity', () => {
             const track = makeTrack('HI_TOM', [], { beatCount: 4, stepsPerBeat: 4 })
             new PercGenerator().generateNewPerc(track, 'conversation')
