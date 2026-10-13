@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { bufferToWav, computeWavExportDuration, computeWavExportSamples } from '../src/audio/export/wav_encoder.js'
+import { bufferToWav } from '../src/audio/export/wav_encoder.js'
 
 function createMockAudioBuffer(channels, length, sampleRate) {
     return {
@@ -92,35 +92,5 @@ describe('wavEncoder - bufferToWav', () => {
         expect(sample0).toBe(0x7fff)
         // -1.5 should be clamped to -0x8000
         expect(sample1).toBe(-0x8000)
-    })
-})
-
-describe('wavEncoder - computeWavExportDuration', () => {
-    it('computes duration for 1 beat at 120 BPM', () => {
-        const duration = computeWavExportDuration(120, 1, 1)
-        expect(duration).toBeCloseTo(0.5, 5)
-    })
-
-    it('computes duration for 4 beats at 120 BPM', () => {
-        const duration = computeWavExportDuration(120, 4, 1)
-        expect(duration).toBeCloseTo(2, 5)
-    })
-
-    it('scales with loopCount', () => {
-        const d1 = computeWavExportDuration(120, 4, 1)
-        const d2 = computeWavExportDuration(120, 4, 2)
-        expect(d2).toBeCloseTo(d1 * 2, 5)
-    })
-})
-
-describe('wavEncoder - computeWavExportSamples', () => {
-    it('computes samples for 1 second at 44100 Hz', () => {
-        const samples = computeWavExportSamples(60, 1, 1, 44100)
-        expect(samples).toBe(44100)
-    })
-
-    it('computes samples for 4 beats at 120 BPM', () => {
-        const samples = computeWavExportSamples(120, 4, 1, 44100)
-        expect(samples).toBeCloseTo(44100 * 2, 0)
     })
 })

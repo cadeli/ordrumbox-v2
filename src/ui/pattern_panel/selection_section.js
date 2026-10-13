@@ -2,6 +2,7 @@
 // Track/note selection and shift-range selection for the pattern grid.
 
 import { getTracksArray } from '../../core/tracks.js'
+import { notesAtStep } from '../../core/notes.js'
 import { isMobileViewport } from '../../core/constants.js'
 import { EVENTS } from '../../core/events.js'
 
@@ -146,11 +147,8 @@ export default class SelectionSection {
                     sel.classList.add('selected')
                     const slices = sel.querySelectorAll('.pp-note-slice')
                     if (slices.length > 0) {
-                        const notes = (
-                            this.#editor.appState.selectedPattern
-                                ? (getTracksArray(this.#editor.appState.selectedPattern)?.[trackIdx]?.notes ?? [])
-                                : []
-                        ).filter((n) => n.beat === beat && n.beatStep === step)
+                        const track = getTracksArray(this.#editor.appState.selectedPattern)?.[trackIdx]
+                        const notes = notesAtStep(track, beat, step)
                         const idx = notes.indexOf(this.#editor.selectedNote)
                         if (idx >= 0 && idx < slices.length) slices[idx].classList.add('selected')
                     }

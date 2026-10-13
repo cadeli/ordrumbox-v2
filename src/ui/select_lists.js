@@ -5,8 +5,7 @@
 import { appState } from '../state/app_state.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { playbackEvents } from '../state/event_bus.js'
-import { EVENTS } from '../core/events.js'
+import { emitPageChanged } from '../state/event_bus.js'
 
 /**
  * Fill `select` with one option per item (value = index), then point it at
@@ -70,10 +69,7 @@ export function onPatternSelectChange(select) {
     if (isNaN(num)) return
     serviceRegistry.cmd.setSelectedPatternIdx(num)
     serviceRegistry.cmd.resetPage()
-    playbackEvents.batch(() => {
-        playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-    })
+    emitPageChanged()
 }
 
 /**

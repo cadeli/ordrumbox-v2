@@ -312,8 +312,7 @@ export default class Engine {
     }
 
     syncAllTracks = async (pattern) => {
-        if (!pattern?.tracks) return
-        for (const track of Object.values(pattern.tracks)) {
+        for (const track of getTracksArray(pattern)) {
             await this.syncTrack(track)
         }
     }

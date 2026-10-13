@@ -1,6 +1,6 @@
-import { playbackEvents } from '../state/event_bus.js'
+import { playbackEvents, emitNotesChanged } from '../state/event_bus.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { fmt, pitchToNoteName, knobFormat, renderOptions } from './components/ui_utils.js'
+import { fmt, pitchToNoteName, knobFormat, knobUnit, renderOptions } from './components/ui_utils.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrTab } from './components/or_tab.js'
 import { syncComponentMap, syncKnobs } from './components/sync_helpers.js'
@@ -213,12 +213,6 @@ export default class NoteEditor extends BasePanel {
         this.sync()
     }
 
-    /** Show with default note values as standalone popup. */
-    async showDefaultNote(data) {
-        await this.#initEmptyData(data)
-        super.show()
-    }
-
     /** Show with default note values inline inside track editor container. */
     async showDefaultNoteInline(data) {
         await this.#initEmptyData(data)
@@ -315,7 +309,7 @@ export default class NoteEditor extends BasePanel {
                     max: def.max,
                     step: def.step,
                     format: knobFormat(def),
-                    unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
+                    unit: knobUnit(def),
                     onChange: (v) => this.#onSlider(def.key, v),
                 })),
                 prev: new Map(this.#knobs.map((k) => [k.key, k])),
@@ -412,10 +406,7 @@ export default class NoteEditor extends BasePanel {
             desc: `Edit note ${key === 'arpRange' ? 'arp' : key} on ${this.#track.name}`,
             coalesce: true,
         })
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [this.#track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.#track])
-        })
+        emitNotesChanged(this.#track)
     }
 
     #onSelect(sel) {
@@ -426,10 +417,7 @@ export default class NoteEditor extends BasePanel {
         serviceRegistry.cmd?.updateNote(this.#track, this.#note, updates, {
             desc: `Edit note ${key === 'arpRange' ? 'arp' : key} on ${this.#track.name}`,
         })
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [this.#track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.#track])
-        })
+        emitNotesChanged(this.#track)
     }
 
     // ─── Public API ───────────────────────────────────────────────────────

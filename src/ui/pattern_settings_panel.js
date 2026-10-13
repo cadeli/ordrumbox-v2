@@ -1,6 +1,6 @@
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { playbackEvents } from '../state/event_bus.js'
+import { playbackEvents, emitPageChanged } from '../state/event_bus.js'
 import { MAX_BEATS } from '../core/constants.js'
 import { Lifecycle } from '../core/lifecycle.js'
 import { prevPage, nextPage } from './page_nav.js'
@@ -193,10 +193,7 @@ export default class PatternSettingsPanel {
         if (!pattern) return
         serviceRegistry.cmd.setPatternBeatCount(pattern, val)
         serviceRegistry.cmd.resetPage()
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        emitPageChanged()
     }
 
     #bindDrumkitSelect() {

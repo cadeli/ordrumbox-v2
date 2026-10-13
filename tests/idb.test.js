@@ -197,14 +197,6 @@ describe('IndexedDB helpers', () => {
         expect(keys).toHaveLength(0)
     })
 
-    it('idbGetAll returns all values in a store', async () => {
-        await idbModule.idbPut('drumkits', 'a', 10)
-        await idbModule.idbPut('drumkits', 'b', 20)
-        const all = await idbModule.idbGetAll('drumkits')
-        expect(all).toContain(10)
-        expect(all).toContain(20)
-    })
-
     it('idbGetAllEntries returns all key-value pairs', async () => {
         await idbModule.idbPut('samples', 'kick.wav', new ArrayBuffer(1024))
         await idbModule.idbPut('samples', 'snare.wav', new ArrayBuffer(2048))

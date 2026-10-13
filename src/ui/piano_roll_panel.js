@@ -253,8 +253,7 @@ export default class PianoRollPanel extends BasePanel {
             if (this.#selectedNote === hit) {
                 cmd.deleteNote(track, hit)
                 this.#clearSelection()
-                playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-                playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+                emitNotesChanged(track)
             } else {
                 this.#selectedNote = hit
                 this.#cursorStep = step
@@ -276,8 +275,7 @@ export default class PianoRollPanel extends BasePanel {
             this.#cursorStep = step
             this.#cursorRow = row
             this.applySelection()
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+            emitNotesChanged(track)
             playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#selectedTrackIdx })
             playbackEvents.emit(EVENTS.NOTE_SELECT, {
                 track,
@@ -400,15 +398,13 @@ export default class PianoRollPanel extends BasePanel {
                 if (this.#selectedNote === note) {
                     cmd.deleteNote(track, note)
                     this.#clearSelection()
-                    playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-                    playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+                    emitNotesChanged(track)
                     return
                 }
                 this.#selectedNote = note
             } else {
                 this.#selectedNote = cmd.addNote(track, beat, beatStep, relativePitch)
-                playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-                playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+                emitNotesChanged(track)
             }
             this.applySelection()
             if (this.#selectedNote)
@@ -425,8 +421,7 @@ export default class PianoRollPanel extends BasePanel {
         if (this.#selectedNote && cmd) {
             cmd.deleteNote(track, this.#selectedNote)
             this.#clearSelection()
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+            emitNotesChanged(track)
         }
     }
 

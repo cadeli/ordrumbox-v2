@@ -3,7 +3,7 @@
 import Mixer from './mixer.js'
 import Sound from './sound.js'
 import NoteParams from '../patterns/note_params.js'
-import { hasAnySolo, shouldTrackPlay } from '../core/tracks.js'
+import { getTracksArray, hasAnySolo, shouldTrackPlay } from '../core/tracks.js'
 import { logger } from '../core/logger.js'
 
 /**
@@ -41,7 +41,7 @@ export async function exportOffline(deps, pattern, loopCount, OfflineAudioContex
         const offlineMixer = await Mixer.create(offlineCtx)
         const offlineSound = new Sound(offlineCtx, offlineMixer, sounds, generatedSounds, true)
 
-        for (const track of Object.values(pattern.tracks)) {
+        for (const track of getTracksArray(pattern)) {
             const strip = await offlineMixer.getOrCreateStrip(track.name)
             if (strip) {
                 await offlineSound.updateStripFromTrack(strip, track, 0)

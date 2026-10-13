@@ -4,7 +4,8 @@
 import { notesAtStep } from '../../core/notes.js'
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import { playbackEvents } from '../../state/event_bus.js'
+import { playbackEvents, emitNotesChanged } from '../../state/event_bus.js'
+import { beatLabel, notesLabel } from '../components/labels.js'
 import { EVENTS } from '../../core/events.js'
 import { showToast } from '../../core/notify.js'
 import ContextMenu from '../components/context_menu.js'
@@ -105,8 +106,7 @@ export default class MenuSection {
         this.#editor.cursorRow = MIDDLE_C + (track.pitch ?? 0) + relativePitch - MIDI_MIN
         this.#editor.applySelection()
         playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+            emitNotesChanged(track)
             playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#editor.selectedTrackIdx })
             playbackEvents.emit(EVENTS.NOTE_SELECT, {
                 track,
@@ -117,7 +117,7 @@ export default class MenuSection {
             })
         })
         serviceRegistry.seq?.simpleBeep(this.#editor.selectedTrackIdx, newNote)
-        showToast(`Added note (pitch ${relativePitch}) — ${track.name} @ beat ${beat + 1}.${beatStep + 1}`, 'success')
+        showToast(`Added note (pitch ${relativePitch}) — ${track.name} @ ${beatLabel(beat, beatStep)}`, 'success')
     }
 
     #menuDeleteNote(hit, beat, beatStep) {
@@ -127,11 +127,8 @@ export default class MenuSection {
         cmd.deleteNote(track, hit)
         if (this.#editor.selectedNote === hit) this.#editor.clearSelection()
         else this.#editor.applySelection()
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        })
-        showToast(`Deleted note — ${track.name} @ beat ${beat + 1}.${beatStep + 1}`, 'success')
+        emitNotesChanged(track)
+        showToast(`Deleted note — ${track.name} @ ${beatLabel(beat, beatStep)}`, 'success')
     }
 
     #menuAddChord(beat, beatStep, rootPitch, intervals, quality) {
@@ -154,8 +151,7 @@ export default class MenuSection {
         this.#editor.cursorRow = MIDDLE_C + (track.pitch ?? 0) + rootPitch - MIDI_MIN
         this.#editor.applySelection()
         playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+            emitNotesChanged(track)
             playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#editor.selectedTrackIdx })
             playbackEvents.emit(EVENTS.NOTE_SELECT, {
                 track,
@@ -166,7 +162,7 @@ export default class MenuSection {
             })
         })
         showToast(
-            `Added ${quality} chord (${added.length} note${added.length === 1 ? '' : 's'}) — ${track.name} @ beat ${beat + 1}.${beatStep + 1}`,
+            `Added ${quality} chord (${notesLabel(added.length)}) — ${track.name} @ ${beatLabel(beat, beatStep)}`,
             'success',
         )
     }
@@ -182,10 +178,7 @@ export default class MenuSection {
         }
         cmd.cleanTrack(track)
         this.#editor.clearSelection()
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        })
+        emitNotesChanged(track)
         showToast(`Cleared notes on "${track.name}"`, 'success')
     }
 
@@ -220,8 +213,7 @@ export default class MenuSection {
         this.#editor.cursorRow = MIDDLE_C + (track.pitch ?? 0) + tonic - MIDI_MIN
         this.#editor.applySelection()
         playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+            emitNotesChanged(track)
             playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#editor.selectedTrackIdx })
             if (firstNote) {
                 playbackEvents.emit(EVENTS.NOTE_SELECT, {
@@ -234,7 +226,7 @@ export default class MenuSection {
             }
         })
         showToast(
-            `Replaced with sequence "${sequence.name}" (${addedCount} note${addedCount === 1 ? '' : 's'}, 1 chord/measure) — ${track.name}`,
+            `Replaced with sequence "${sequence.name}" (${notesLabel(addedCount)}, 1 chord/measure) — ${track.name}`,
             'success',
         )
     }

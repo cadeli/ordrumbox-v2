@@ -3,10 +3,10 @@
 
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import { playbackEvents } from '../../state/event_bus.js'
-import { EVENTS } from '../../core/events.js'
+import { playbackEvents, emitPageChanged } from '../../state/event_bus.js'
 import { BEATS_PER_PAGE, TICK } from '../../core/constants.js'
 import { getNoteAbsoluteStep } from '../../core/notes.js'
+import { getTrackLoopAtStep } from '../../core/tracks.js'
 import { createStepResolver } from '../../patterns/step_resolver.js'
 import { getNoteSubPositions } from '../../patterns/note_positions.js'
 import { reportUserError } from '../../core/notify.js'
@@ -87,7 +87,7 @@ export default class PlaybackSection {
                 this.#editor.gridDirty = true
                 this.#editor.sync()
                 this.illuminateStep(absStep, transport.tick)
-                playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
+                emitPageChanged(playbackEvents)
             }
             if (this.#playhead.style.display !== 'none') this.#playhead.style.display = 'none'
             return
@@ -109,7 +109,7 @@ export default class PlaybackSection {
         const track = this.#editor.track
         if (!track) return
         const { stepsPerBeat, totalSteps } = this.#editor.pageInfo()
-        const loopAtStep = track.loopAtStep ?? totalSteps
+        const loopAtStep = getTrackLoopAtStep(track)
         const notes = track.notes ?? []
         const resolveSpanEnd = createStepResolver(track)
         const noteEls = /** @type {NodeListOf<HTMLElement>} */ (gridEl.querySelectorAll('.pp-pr-note'))

@@ -4,6 +4,7 @@
 import { getNoteAbsoluteStep, notesAtStep } from '../../core/notes.js'
 import { getTracksArray } from '../../core/tracks.js'
 import { EVENTS } from '../../core/events.js'
+import { emitTrackChanged } from '../../state/event_bus.js'
 import { formatNoteTooltip } from '../components/ui_utils.js'
 
 export default class PointerSection {
@@ -105,10 +106,7 @@ export default class PointerSection {
                 solo?.classList.toggle('active', newVal)
             }
         }
-        this.#editor.playbackEvents.batch(() => {
-            this.#editor.playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
-            this.#editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        emitTrackChanged(track, this.#editor.playbackEvents)
     }
 
     onClick(e) {
@@ -269,10 +267,7 @@ export default class PointerSection {
                 { velocity },
                 { desc: `Volume on ${track.name}`, coalesce: true },
             )
-            this.#editor.playbackEvents.batch(() => {
-                this.#editor.playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
-                this.#editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-            })
+            emitTrackChanged(track, this.#editor.playbackEvents)
         }
         const masterSlider = e.target.closest('.pp-master-volume')
         if (masterSlider) {

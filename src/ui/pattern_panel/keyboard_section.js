@@ -4,6 +4,8 @@
 // and Shift+Arrow note nudges (velocity up/down, pitch left/right).
 
 import { getTracksArray } from '../../core/tracks.js'
+import { getNoteAbsoluteStep, notesAtStep } from '../../core/notes.js'
+import { pageBeatWindow } from '../page_nav.js'
 import { BEATS_PER_PAGE } from '../../core/constants.js'
 import { EVENTS } from '../../core/events.js'
 import { emitNotesChanged } from '../../state/event_bus.js'
@@ -148,15 +150,13 @@ export default class KeyboardSection {
         const track = tracks[this.#editor.focusRowIdx]
         if (!track) return
 
-        const startBeat = this.#editor.appState.currentPage * BEATS_PER_PAGE
-        if (this.#editor.cursorBeat < startBeat || this.#editor.cursorBeat >= startBeat + BEATS_PER_PAGE) {
+        const { startBeat, endBeatPage } = pageBeatWindow(this.#editor.appState.currentPage)
+        if (this.#editor.cursorBeat < startBeat || this.#editor.cursorBeat >= endBeatPage) {
             this.#editor.serviceRegistry.cmd.setCurrentPage(Math.floor(this.#editor.cursorBeat / BEATS_PER_PAGE))
             this.#editor.sync()
         }
 
-        const note = (track.notes ?? []).find(
-            (n) => n.beat === this.#editor.cursorBeat && n.beatStep === this.#editor.cursorBeatStep,
-        )
+        const note = notesAtStep(track, this.#editor.cursorBeat, this.#editor.cursorBeatStep)[0]
         this.#editor.selectedNote = note ?? null
         // The cursor walked here: this note was not picked, so Shift+Arrow on it
         // is still range selection.
@@ -168,7 +168,10 @@ export default class KeyboardSection {
                 track,
                 trackIdx: this.#editor.focusRowIdx,
                 note,
-                pos: this.#editor.cursorBeat * stepsPerBeat + this.#editor.cursorBeatStep,
+                pos: getNoteAbsoluteStep(
+                    { beat: this.#editor.cursorBeat, beatStep: this.#editor.cursorBeatStep },
+                    stepsPerBeat,
+                ),
                 beat: this.#editor.cursorBeat,
                 beatStep: this.#editor.cursorBeatStep,
             })
@@ -226,11 +229,9 @@ export default class KeyboardSection {
             `${this.#editor.focusRowIdx}:${this.#editor.cursorBeat}:${this.#editor.cursorBeatStep}`,
         )
         if (cell) {
-            const notesAtStep = (track.notes ?? []).filter(
-                (n) => n.beat === this.#editor.cursorBeat && n.beatStep === this.#editor.cursorBeatStep,
-            )
-            if (notesAtStep.length > 0) {
-                const note = notesAtStep[0]
+            const atStep = notesAtStep(track, this.#editor.cursorBeat, this.#editor.cursorBeatStep)
+            if (atStep.length > 0) {
+                const note = atStep[0]
                 if (this.#editor.selectedNote === note && this.#editor.gridTrackIdx === this.#editor.focusRowIdx) {
                     this.#editor.serviceRegistry.cmd.deleteNote(track, note)
                     this.#editor.clearSelection()
@@ -239,7 +240,10 @@ export default class KeyboardSection {
                     this.#editor.selectedNote = note
                     this.#editor.gridTrackIdx = this.#editor.focusRowIdx
                     this.#editor.applySelection()
-                    const pos = this.#editor.cursorBeat * (track.stepsPerBeat ?? 4) + this.#editor.cursorBeatStep
+                    const pos = getNoteAbsoluteStep(
+                        { beat: this.#editor.cursorBeat, beatStep: this.#editor.cursorBeatStep },
+                        track.stepsPerBeat ?? 4,
+                    )
                     this.#editor.playbackEvents.emit(EVENTS.NOTE_SELECT, {
                         track,
                         trackIdx: this.#editor.focusRowIdx,
@@ -261,7 +265,10 @@ export default class KeyboardSection {
                 this.#editor.updateTrackCellsInPlace(this.#editor.focusRowIdx, track, pattern)
                 this.#editor.applySelection()
 
-                const pos = this.#editor.cursorBeat * (track.stepsPerBeat ?? 4) + this.#editor.cursorBeatStep
+                const pos = getNoteAbsoluteStep(
+                    { beat: this.#editor.cursorBeat, beatStep: this.#editor.cursorBeatStep },
+                    track.stepsPerBeat ?? 4,
+                )
                 this.#editor.playbackEvents.emit(EVENTS.NOTE_SELECT, {
                     track,
                     trackIdx: this.#editor.focusRowIdx,
@@ -281,11 +288,9 @@ export default class KeyboardSection {
         const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return
 
-        const notesAtStep = (track.notes ?? []).filter(
-            (n) => n.beat === this.#editor.cursorBeat && n.beatStep === this.#editor.cursorBeatStep,
-        )
-        if (notesAtStep.length > 0) {
-            for (const note of notesAtStep) {
+        const atStep = notesAtStep(track, this.#editor.cursorBeat, this.#editor.cursorBeatStep)
+        if (atStep.length > 0) {
+            for (const note of atStep) {
                 this.#editor.serviceRegistry.cmd.deleteNote(track, note)
             }
             this.#editor.updateTrackCellsInPlace(this.#editor.focusRowIdx, track, pattern)

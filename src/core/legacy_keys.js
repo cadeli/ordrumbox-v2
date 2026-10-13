@@ -12,10 +12,10 @@
 export const LEGACY_TRACK_KEY_ALIASES = Object.freeze({ soundId: 'sampleId' })
 
 /** Legacy song-clip key -> its current spelling. @type {Readonly<Record<string, string>>} */
-export const LEGACY_CLIP_KEY_ALIASES = Object.freeze({ startBar: 'startMeasure', bars: 'measureCount' })
+const LEGACY_CLIP_KEY_ALIASES = Object.freeze({ startBar: 'startMeasure', bars: 'measureCount' })
 
 /** Legacy song key -> its current spelling. @type {Readonly<Record<string, string>>} */
-export const LEGACY_SONG_KEY_ALIASES = Object.freeze({ loopBars: 'loopMeasureCount' })
+const LEGACY_SONG_KEY_ALIASES = Object.freeze({ loopBars: 'loopMeasureCount' })
 
 /**
  * Rename the legacy spellings of one track's keys in place. The current name

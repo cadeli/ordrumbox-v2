@@ -130,3 +130,27 @@ export const emitNotesChanged = (track, bus = playbackEvents) =>
         bus.emit(EVENTS.NOTE_CHANGE, [track])
         bus.emit(EVENTS.PATTERN_CHANGE, [track])
     })
+
+/**
+ * The "the page changed" pair: the ruler and the page counter repaint on
+ * PATTERN_META_CHANGE, the note renderers on PATTERN_CHANGE.
+ * @param {{batch: Function, emit: Function}} [bus] injected bus (DI)
+ */
+export const emitPageChanged = (bus = playbackEvents) =>
+    bus.batch(() => {
+        bus.emit(EVENTS.PATTERN_META_CHANGE)
+        bus.emit(EVENTS.PATTERN_CHANGE)
+    })
+
+/**
+ * The "pattern structure changed" pair (a track was added, removed, renamed or
+ * the pattern list itself moved). An empty/omitted `tracks` is what
+ * PATTERN_CHANGE treats as "the whole pattern" (see core/events.js).
+ * @param {any[]} [tracks] tracks that changed
+ * @param {{batch: Function, emit: Function}} [bus] injected bus (DI)
+ */
+export const emitStructureChanged = (tracks = [], bus = playbackEvents) =>
+    bus.batch(() => {
+        bus.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
+        bus.emit(EVENTS.PATTERN_CHANGE, tracks)
+    })

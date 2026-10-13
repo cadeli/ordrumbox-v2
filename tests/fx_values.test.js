@@ -4,8 +4,6 @@ import {
     FILTER_TYPES,
     WAVE_TO_INT,
     FILTER_TO_INT,
-    waveToInt,
-    filterToInt,
     DELAY_TIME_VALUES,
     DELAY_TIME_LABELS,
     getDelayTimeInSeconds,
@@ -19,14 +17,12 @@ describe('audio/fx_values', () => {
         it('WAVE_TO_INT mirrors the index in WAVE_TYPES', () => {
             WAVE_TYPES.forEach((name, i) => {
                 expect(WAVE_TO_INT[name], `wave '${name}'`).toBe(i)
-                expect(waveToInt(name), `wave '${name}'`).toBe(i)
             })
         })
 
         it('FILTER_TO_INT mirrors the index in FILTER_TYPES', () => {
             FILTER_TYPES.forEach((name, i) => {
                 expect(FILTER_TO_INT[name], `filter '${name}'`).toBe(i)
-                expect(filterToInt(name), `filter '${name}'`).toBe(i)
             })
         })
 
@@ -34,18 +30,11 @@ describe('audio/fx_values', () => {
         // absent from the UI list.
         it('notch is mapped but not UI-exposed', () => {
             expect(FILTER_TO_INT.notch).toBe(3)
-            expect(filterToInt('notch')).toBe(3)
             expect(FILTER_TYPES).not.toContain('notch')
         })
 
         it('random is the 5th waveform (sample & hold, code 4)', () => {
             expect(WAVE_TYPES).toContain('random')
-            expect(waveToInt('random')).toBe(4)
-        })
-
-        it('unknown names fall back to the first entry', () => {
-            expect(waveToInt('nope')).toBe(0)
-            expect(filterToInt('nope')).toBe(0)
         })
     })
 

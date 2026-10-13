@@ -1,5 +1,7 @@
 import BaseGenerator from './base_generator.js'
 import { pickRandom } from '../../core/random.js'
+import { getTracksArray } from '../../core/tracks.js'
+import { detectTrackType } from '../../core/drum_taxonomy.js'
 
 export default class MelodyGenerator extends BaseGenerator {
     static MELODY_GENERATION_CONFIGS = Object.freeze({
@@ -197,13 +199,13 @@ export default class MelodyGenerator extends BaseGenerator {
     }
 
     #extractBassRootPitch = (pattern) => {
-        if (!pattern?.tracks) return null
-        const bassTrack = pattern.tracks.find((t) => {
-            const name = (t.name ?? '').toUpperCase()
-            return name.includes('BASS')
-        })
-        if (!bassTrack?.notes?.length) return null
-        const pitches = bassTrack.notes.map((n) => n.pitch)
+        // The canonical "is this the bass track" answer — a bare name.includes
+        // missed SYNTH* (mapped to BASS) and claimed BASS DRUM (a KICK), and
+        // it threw when pattern.tracks was the indexed-object shape.
+        const bassTrack = getTracksArray(pattern).find((t) => detectTrackType(t.name ?? '') === 'BASS')
+        const notes = Object.values(bassTrack?.notes ?? {})
+        if (notes.length === 0) return null
+        const pitches = notes.map((n) => n.pitch)
         const freq = new Map()
         let maxCount = 0
         let mostFrequent = pitches[0]

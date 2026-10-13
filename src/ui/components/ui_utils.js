@@ -5,8 +5,7 @@
 
 import { downloadBlob } from '../../core/download.js'
 import { clamp } from '../../core/numbers.js'
-
-const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+import { NOTE_NAMES } from '../../core/note_names.js'
 
 /**
  * Prompt the user for a numeric value, returning the clamped result or null if cancelled.
@@ -201,6 +200,26 @@ const KNOB_FORMATTER_ENTRIES = [
 ]
 const KNOB_FORMATTERS = new Map(KNOB_FORMATTER_ENTRIES)
 export const knobFormat = (def) => KNOB_FORMATTERS.get(def.key) ?? fmt
+
+/** @type {Map<string, string>} unit appended to the value, keyed by param. */
+const KNOB_UNITS = new Map([
+    ['velocity', '%'],
+    ['pitch', 'st'],
+])
+
+/**
+ * Unit a knob/slider value is rendered with, paired with knobFormat().
+ * @param {{key: string}} def
+ * @returns {string} '' when the formatter already carries its own unit
+ */
+export const knobUnit = (def) => KNOB_UNITS.get(def.key) ?? ''
+
+/**
+ * Signed decibels ("+1.0" / "-3.5") — a gain reads as an offset from unity.
+ * @param {number} v
+ * @returns {string}
+ */
+export const formatSignedDb = (v) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}`
 
 // ─── Option / Icon rendering helpers ──────────────────────────────────────
 

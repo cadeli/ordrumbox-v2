@@ -142,22 +142,6 @@ function resolveRootMidiFromSounds(trackName, soundRegistry) {
     return null
 }
 
-export function resolveTrackMidi(trackName, instrumentsManager) {
-    const name = trackName?.trim().toUpperCase() ?? ''
-    const instrument = instrumentsManager.findByName(name)
-    if (instrument && instrument.midi && instrument.midi.length > 0) {
-        const mapping = instrument.midi[0]
-        const isDrum = instrument.drum === true
-        const channel = isDrum ? DRUM_CHANNEL : 0
-        if (mapping.key != null) {
-            const rawKey = parseInt(mapping.key, 10)
-            return { midiNote: Number.isFinite(rawKey) ? rawKey : C3_MIDI_NOTE, channel, isDrum }
-        }
-        return { midiNote: C3_MIDI_NOTE, channel, isDrum }
-    }
-    return { midiNote: DEFAULT_MIDI_NOTE, channel: DRUM_CHANNEL, isDrum: true }
-}
-
 // ─── Engine-driven instrument track builder ───────────────────────────────────
 
 /**
@@ -168,7 +152,7 @@ export function resolveTrackMidi(trackName, instrumentsManager) {
  * @param {number}   channel     0-indexed MIDI channel
  * @param {{ absMidiTick: number, noteKey: number, velocity: number }[]} events
  */
-export function buildInstrumentTrackFromEvents(trackName, midiNote, channel, events, program = null) {
+function buildInstrumentTrackFromEvents(trackName, midiNote, channel, events, program = null) {
     if (events.length === 0) return buildMTrk([])
 
     events.sort((a, b) => a.absMidiTick - b.absMidiTick || a.noteKey - b.noteKey)

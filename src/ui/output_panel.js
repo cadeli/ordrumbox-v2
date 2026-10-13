@@ -1,7 +1,7 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { MASTER_BUS_DEFAULTS } from '../core/constants.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { bindTabToggles } from './components/ui_utils.js'
+import { bindTabToggles, formatSignedDb } from './components/ui_utils.js'
 import { reportUserError } from '../core/notify.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
@@ -111,7 +111,7 @@ export default class OutputPanel extends BasePanel {
             max: 20,
             step: 0.5,
             value: 0,
-            format: (v) => (v >= 0 ? '+' : '') + v.toFixed(1),
+            format: formatSignedDb,
             unit: 'dB',
             onChange: (v) => {
                 serviceRegistry.audioEngine?.mixer?.setMasterBus({ preGain: v })

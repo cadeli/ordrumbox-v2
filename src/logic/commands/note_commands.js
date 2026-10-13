@@ -1,4 +1,5 @@
 import { NOTE_DEFAULTS } from '../../core/note_schema.js'
+import { notesAtStep } from '../../core/notes.js'
 import { getTracksArray } from '../../core/tracks.js'
 import { appState } from '../../state/app_state.js'
 import { clampStepsPerBeat } from '../../model/track_schema.js'
@@ -149,9 +150,7 @@ export default class NoteCommands {
     pasteStepNotes(track, beat, beatStep, sourceNotes) {
         if (!track || !Array.isArray(sourceNotes)) return
         const spb = track.stepsPerBeat ?? 4
-        const before = (track.notes ?? [])
-            .filter((n) => n.beat === beat && n.beatStep === beatStep)
-            .map((n) => ({ ...n }))
+        const before = notesAtStep(track, beat, beatStep).map((n) => ({ ...n }))
 
         track.notes = (track.notes ?? []).filter((n) => !(n.beat === beat && n.beatStep === beatStep))
 

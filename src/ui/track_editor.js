@@ -8,7 +8,7 @@
 // module-level singletons.
 
 import { appState } from '../state/app_state.js'
-import { playbackEvents } from '../state/event_bus.js'
+import { playbackEvents, emitTrackChanged } from '../state/event_bus.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { reportUserError, showToast } from '../core/notify.js'
@@ -17,7 +17,7 @@ import { getNoteAbsoluteStep } from '../core/notes.js'
 import SynthEditor from './synth_editor.js'
 import { OrTab } from './components/or_tab.js'
 import { OrKnob } from './components/or_knob.js'
-import { setViewBtn, knobFormat, setPatternPanelHidden } from './components/ui_utils.js'
+import { setViewBtn, knobFormat, knobUnit, setPatternPanelHidden } from './components/ui_utils.js'
 import BasePanel from './base_panel.js'
 import { TICK, isMobileViewport } from '../core/constants.js'
 import { isMobileLandscape, applyLayout, removeLayout } from './mobile_track_layout.js'
@@ -301,7 +301,7 @@ export default class TrackEditor extends BasePanel {
                 format: knobFormat(def),
                 // decay's formatter already appends "ms" — a unit here
                 // would render the value as "5000 ms ms".
-                unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
+                unit: knobUnit(def),
                 onChange: (v) => {
                     if (isDecay) {
                         // Looked up live: the track's sample can change while
@@ -931,10 +931,7 @@ export default class TrackEditor extends BasePanel {
     }
 
     #emitTrackChange() {
-        this.#playbackEvents.batch(() => {
-            this.#playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, this.#track)
-            this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.#track])
-        })
+        emitTrackChanged(this.#track, this.#playbackEvents)
     }
 
     // ── Hide ───────────────────────────────────────────────────────

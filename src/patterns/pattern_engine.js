@@ -1,4 +1,5 @@
 import { clamp } from '../core/numbers.js'
+import { getTracksArray } from '../core/tracks.js'
 import { getNoteAbsoluteStep, getStepSpacing, stepToTick } from '../core/notes.js'
 import FlatNote from '../model/flat_note.js'
 import Defaults from './defaults.js'
@@ -22,14 +23,6 @@ export function isTriggered(pos, every, loop) {
 export function isProbabilityTriggered(prob = 1, random = Math.random) {
     const probability = clamp(Number(prob), 0, 1)
     return probability >= 1 || random() < probability
-}
-
-export function hasArp(arp) {
-    if (arp == null) return false
-    if (Array.isArray(arp)) return arp.length > 0
-    if (typeof arp === 'string') return arp.trim().length > 0
-    if (typeof arp === 'object') return Array.isArray(arp.intervals) ? arp.intervals.length > 0 : true
-    return false
 }
 
 export function normalizeArp(arp) {
@@ -237,7 +230,7 @@ export function recomputeFlatNotes(pattern, loop = 0, tick = TICK) {
     const flatNotes = new Map()
     const tickCountForPattern = computeTickCountForPattern(pattern.beatCount, tick)
 
-    for (const track of Object.values(pattern.tracks)) {
+    for (const track of getTracksArray(pattern)) {
         const tickCountForLoop = computeTickCountForLoop(track, tick)
 
         // variation2 layer: lookup of per-source-note clones, source data untouched

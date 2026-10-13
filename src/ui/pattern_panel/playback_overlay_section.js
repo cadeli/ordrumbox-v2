@@ -6,7 +6,7 @@ import { TICK, BEATS_PER_PAGE } from '../../core/constants.js'
 import { appState } from '../../state/app_state.js'
 import { getTracksArray } from '../../core/tracks.js'
 import { color } from '../theme.js'
-import { EVENTS } from '../../core/events.js'
+import { emitPageChanged } from '../../state/event_bus.js'
 import { reportUserError } from '../../core/notify.js'
 
 export default class PlaybackOverlaySection {
@@ -190,10 +190,7 @@ export default class PlaybackOverlaySection {
             if (newPage !== appState.currentPage) {
                 editor.serviceRegistry.cmd.setCurrentPage(newPage)
                 editor.requestSync()
-                editor.playbackEvents.batch(() => {
-                    editor.playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-                    editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-                })
+                emitPageChanged(editor.playbackEvents)
             }
             if (this.#playhead.style.display !== 'none') this.#playhead.style.display = 'none'
             return

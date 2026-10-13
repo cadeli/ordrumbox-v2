@@ -1,8 +1,9 @@
 // src/ui/piano_roll/piano_roll_constants.js
-// Shared geometry and note-naming constants for the piano roll panel.
+// Shared geometry for the piano roll panel.
+
+import { NOTE_NAMES } from '../../core/note_names.js'
 
 export const NOTE_HEIGHT = 14
-export const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 export const BLACK_KEY_INDICES = new Set([1, 3, 6, 8, 10])
 
 export const MIDI_MIN = 12

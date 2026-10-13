@@ -3,6 +3,7 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { idbGet, idbPut, idbKeys } from '../../core/idb.js'
 import { migrateLegacyPatternKeys } from '../../core/note_schema.js'
 import { logger } from '../../core/logger.js'
+import { clamp } from '../../core/numbers.js'
 import { normalizeSongs } from '../../model/song_schema.js'
 import { showToast } from '../../core/notify.js'
 
@@ -110,7 +111,7 @@ class SongService {
             appState.songInfos.date = data.date ?? ''
 
             appState.songs = songs
-            appState.selectedSongIdx = Math.min(Math.max(0, data.selectedSongIdx ?? 0), Math.max(0, songs.length - 1))
+            appState.selectedSongIdx = clamp(data.selectedSongIdx ?? 0, 0, Math.max(0, songs.length - 1))
             if (dropped.length > 0) {
                 const names = dropped.map((d) => d.pattern).join(', ')
                 showToast(`Ignored ${dropped.length} song clip(s) referencing an unknown pattern: ${names}`, 'warning')

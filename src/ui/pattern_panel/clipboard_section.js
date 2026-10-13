@@ -3,8 +3,9 @@
 // shortcuts (Ctrl+C/V) and by the track/cell context menus.
 
 import { showToast } from '../../core/notify.js'
+import { notesAtStep } from '../../core/notes.js'
 import { EVENTS } from '../../core/events.js'
-import { notesLabel, beatLabel } from './labels.js'
+import { notesLabel, beatLabel } from '../components/labels.js'
 
 export default class ClipboardSection {
     #editor
@@ -21,9 +22,7 @@ export default class ClipboardSection {
         const editor = this.#editor
         const track = tracks[editor.focusRowIdx]
         if (!track) return
-        const notes = (track.notes ?? [])
-            .filter((n) => n.beat === editor.cursorBeat && n.beatStep === editor.cursorBeatStep)
-            .map((n) => ({ ...n }))
+        const notes = notesAtStep(track, editor.cursorBeat, editor.cursorBeatStep).map((n) => ({ ...n }))
         this.clipboard = { type: 'step', notes }
         const at = beatLabel(editor.cursorBeat, editor.cursorBeatStep)
         showToast(

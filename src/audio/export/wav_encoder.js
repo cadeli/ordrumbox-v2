@@ -50,14 +50,3 @@ export function bufferToWav(abuffer) {
         pos += 4
     }
 }
-
-export function computeWavExportDuration(bpm, beatCount, loopCount) {
-    const secondsPerBeat = 60 / bpm
-    const patternDuration = beatCount * secondsPerBeat
-    return patternDuration * loopCount
-}
-
-export function computeWavExportSamples(bpm, beatCount, loopCount, sampleRate) {
-    const duration = computeWavExportDuration(bpm, beatCount, loopCount)
-    return Math.round(duration * sampleRate)
-}

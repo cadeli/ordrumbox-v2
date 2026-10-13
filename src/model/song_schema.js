@@ -218,17 +218,3 @@ export function normalizeSongs(raw, knownPatternIds) {
     }
     return { songs, dropped }
 }
-
-/**
- * Re-project a song's clips on a new pattern library — used after a pattern is
- * removed, so clips pointing at a dead id are dropped instead of dangling.
- * @param {object|null|undefined} song
- * @param {Set<string>|Map<string, object>} knownPatternIds
- * @returns {object|null} a new song, or null when the song had nothing left
- */
-export function pruneSongClips(song, knownPatternIds) {
-    if (!song) return null
-    const result = normalizeSong(song, knownPatternIds)
-    if (!result.ok || !result.song) return null
-    return result.song.clips.length > 0 ? result.song : null
-}

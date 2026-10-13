@@ -1,7 +1,8 @@
 import { appState } from '../state/app_state.js'
-import { playbackEvents } from '../state/event_bus.js'
+import { playbackEvents, emitStructureChanged } from '../state/event_bus.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { showToast } from '../core/notify.js'
+import { clamp } from '../core/numbers.js'
 import BasePanel from './base_panel.js'
 import songService from '../logic/services/song_service.js'
 import { downloadJson } from './components/ui_utils.js'
@@ -182,7 +183,7 @@ export default class SongPanel extends BasePanel {
             option.textContent = song?.name ?? `Arrangement ${i + 1}`
             select.appendChild(option)
         })
-        const selected = Math.min(Math.max(0, appState.selectedSongIdx ?? 0), songs.length - 1)
+        const selected = clamp(appState.selectedSongIdx ?? 0, 0, songs.length - 1)
         select.value = String(selected)
     }
 
@@ -293,10 +294,7 @@ export default class SongPanel extends BasePanel {
             const newName = input.value.trim()
             if (newName && newName !== currentName) {
                 serviceRegistry.cmd.renamePattern(idx, newName)
-                playbackEvents.batch(() => {
-                    playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
-                    playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-                })
+                emitStructureChanged()
             }
             this.sync()
         }
@@ -349,10 +347,7 @@ export default class SongPanel extends BasePanel {
     #selectPattern(idx) {
         serviceRegistry.cmd.setSelectedPatternIdx(idx)
         serviceRegistry.cmd.resetPage()
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        emitStructureChanged()
         this.#renderList()
     }
 
@@ -406,10 +401,7 @@ export default class SongPanel extends BasePanel {
                 }
 
                 this.#songName = await songService.applyToAppState(data, choice)
-                playbackEvents.batch(() => {
-                    playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
-                    playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-                })
+                emitStructureChanged()
                 this.sync()
                 showToast(`Song "${this.#songName}" loaded`, 'success')
             })
@@ -442,10 +434,7 @@ export default class SongPanel extends BasePanel {
 
                 const fallbackName = file.name.replace(/\.\w+$/, '')
                 this.#songName = await songService.applyToAppState(data, fallbackName)
-                playbackEvents.batch(() => {
-                    playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
-                    playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-                })
+                emitStructureChanged()
                 this.sync()
                 showToast(`Song "${this.#songName}" imported`, 'success')
             } catch (err) {

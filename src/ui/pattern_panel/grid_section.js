@@ -3,6 +3,8 @@
 // volume sliders, vu meters, master track, add-track button.
 
 import { stepToBeat } from '../../core/notes.js'
+import { getTrackLoopAtStep } from '../../core/tracks.js'
+import { noteOpacity, noteTriggerKind } from '../components/note_paint.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { valueOrFallback } from '../../core/logger.js'
 import { getNoteSubPositions } from '../../patterns/note_positions.js'
@@ -56,8 +58,7 @@ export default class GridSection {
             const slicePct = (100 / notesAtStep.length).toFixed(2)
             noteSlicesHtml = notesAtStep
                 .map((note, voiceIdx) => {
-                    const vel = note.velocity ?? 0.8
-                    const alpha = 0.25 + vel * 0.75
+                    const alpha = noteOpacity(note.velocity)
                     return `<div class="pp-note-slice" data-voice-idx="${voiceIdx}" style="width:${slicePct}%;opacity:${alpha.toFixed(2)}"></div>`
                 })
                 .join('')
@@ -79,8 +80,7 @@ export default class GridSection {
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const absPos = b * stepsPerBeat + s
         const isBeyondTrack = b >= (track.beatCount ?? 4)
-        const totalSteps = (track.beatCount ?? 4) * stepsPerBeat
-        const loopAt = track.loopAtStep ?? totalSteps
+        const loopAt = getTrackLoopAtStep(track)
 
         const notesAtStep = cached.noteMap.get(`${b}:${s}`) ?? []
         const ghostsAtStep = cached.ghostMap.get(absPos) ?? []
@@ -90,18 +90,9 @@ export default class GridSection {
         cellEl.classList.toggle('pp-cell-multi', notesAtStep.length > 1)
         cellEl.classList.toggle('pp-loop', loopAt > 0 && absPos === loopAt - 1)
 
-        let isRand = false
-        let isFixed = false
-        if (notesAtStep.length > 0) {
-            const firstNote = notesAtStep[0]
-            if ((firstNote.prob ?? 1) < 1) {
-                isRand = true
-            } else if ((firstNote.every ?? 1) > 1) {
-                isFixed = true
-            }
-        }
-        cellEl.classList.toggle('pp-trig-rand', isRand)
-        cellEl.classList.toggle('pp-trig-fixed', isFixed)
+        const trigKind = notesAtStep.length > 0 ? noteTriggerKind(notesAtStep[0]) : null
+        cellEl.classList.toggle('pp-trig-rand', trigKind === 'rand')
+        cellEl.classList.toggle('pp-trig-fixed', trigKind === 'fixed')
 
         cellEl.innerHTML = this.renderCellContent(notesAtStep, ghostsAtStep)
     }
@@ -133,7 +124,6 @@ export default class GridSection {
     render(tracks, pattern, opts) {
         const editor = this.#editor
         const { startBeat, endBeatPage, effectiveTrackIdx } = opts
-        const totalStepsFor = (track) => (track.beatCount ?? 4) * (track.stepsPerBeat ?? 4)
 
         let html = '<div class="pp-tracks">'
         tracks.forEach((track, trackIdx) => {
@@ -164,15 +154,11 @@ export default class GridSection {
                             cls.push('filled')
                             if (notesAtStep.length > 1) cls.push('pp-cell-multi')
 
-                            const firstNote = notesAtStep[0]
-                            if ((firstNote.prob ?? 1) < 1) {
-                                cls.push('pp-trig-rand')
-                            } else if ((firstNote.every ?? 1) > 1) {
-                                cls.push('pp-trig-fixed')
-                            }
+                            const trigKind = noteTriggerKind(notesAtStep[0])
+                            if (trigKind) cls.push(`pp-trig-${trigKind}`)
                         }
 
-                        const loopAt = track.loopAtStep ?? totalStepsFor(track)
+                        const loopAt = getTrackLoopAtStep(track)
                         if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
 
                         const ghostsAtStep = cached.ghostMap.get(absPos) ?? []

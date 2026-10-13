@@ -7,7 +7,7 @@ import { drawDecayMarker, drawEnvelope } from '../audio/sample_analyzer.js'
 import { formatNote } from '../core/hz_to_note.js'
 import { NOT_FOUND } from '../core/constants.js'
 import { showToast } from '../core/notify.js'
-import { downloadJson, renderOptions, knobFormat } from './components/ui_utils.js'
+import { downloadJson, renderOptions, knobFormat, formatSignedDb } from './components/ui_utils.js'
 import { escapeHtml } from './components/ui_utils.js'
 import { syncKnobs } from './components/sync_helpers.js'
 import { sampleWaveformTheme } from './theme.js'
@@ -30,7 +30,7 @@ const SOUND_KNOB_DEFS = [
         max: 12,
         step: 0.1,
         unit: 'st',
-        format: (v) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}`,
+        format: formatSignedDb,
     },
     {
         key: 'decay',

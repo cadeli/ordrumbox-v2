@@ -9,7 +9,7 @@ const TAG = 'fx_values'
  *
  * These are the single source of truth for BOTH sides of the wire. The UI picks a
  * value by INDEX in these lists (`WAVE_TYPES.indexOf(name)`) and the synth voice
- * turns the name into the integer the worklet expects (`waveToInt`), so the
+ * turns the name into the integer the worklet expects (`WAVE_TO_INT`), so the
  * order here is a contract: it used to be duplicated as `WAVE_TO_INT` /
  * `FILTER_TO_INT` inside worklet_synth_voice.js, and the UI's list was a SUBSET
  * of the worklet's (no `notch`), which is exactly the kind of drift a second
@@ -31,22 +31,6 @@ const ALL_FILTER_TYPES = [...FILTER_TYPES, 'notch']
 /** name → the integer the synth-voice worklet expects. */
 export const WAVE_TO_INT = Object.fromEntries(WAVE_TYPES.map((name, i) => [name, i]))
 export const FILTER_TO_INT = Object.fromEntries(ALL_FILTER_TYPES.map((name, i) => [name, i]))
-
-/**
- * @param {string} wave - a waveform name
- * @returns {number} worklet code, 0 (`sine`) for an unknown name
- */
-export function waveToInt(wave) {
-    return WAVE_TO_INT[wave] ?? 0
-}
-
-/**
- * @param {string} type - a filter type name
- * @returns {number} worklet code, 0 (`lowpass`) for an unknown name
- */
-export function filterToInt(type) {
-    return FILTER_TO_INT[type] ?? 0
-}
 
 /** Delay time multipliers, in beats: 1/16 … 4. */
 export const DELAY_TIME_VALUES = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4]

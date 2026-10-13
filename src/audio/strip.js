@@ -119,10 +119,6 @@ export default class Strip {
         }
     }
 
-    connectVoice(node) {
-        node.connect(this.voicesInput)
-    }
-
     getLevel = () => {
         if (!this.levelAnalyser) return 0
         this.levelAnalyser.getByteTimeDomainData(this.levelData)

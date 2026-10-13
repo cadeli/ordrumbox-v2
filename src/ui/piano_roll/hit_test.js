@@ -2,6 +2,7 @@
 // Shared hit-testing helpers: pointer position to grid cell, cell to note.
 
 import { MIDDLE_C, NOTE_HEIGHT, TOTAL_KEYS } from './piano_roll_constants.js'
+import { notesAtStep, stepToBeat } from '../../core/notes.js'
 
 /**
  * Convert a pointer event inside the grid element into a grid cell.
@@ -17,13 +18,8 @@ export function pointToCell(e, gridEl, cellWidth, pageInfo) {
     const step = pageInfo.pageStartStep + pageStep
     const row = TOTAL_KEYS - 1 - Math.floor((e.clientY - rect.top) / NOTE_HEIGHT)
     if (step < 0 || step >= pageInfo.totalSteps || row < 0 || row >= TOTAL_KEYS) return null
-    return {
-        step,
-        pageStep,
-        row,
-        beat: Math.floor(step / pageInfo.stepsPerBeat),
-        beatStep: step % pageInfo.stepsPerBeat,
-    }
+    const { beat, beatStep } = stepToBeat(step, pageInfo.stepsPerBeat)
+    return { step, pageStep, row, beat, beatStep }
 }
 
 /**
@@ -36,8 +32,6 @@ export function pointToCell(e, gridEl, cellWidth, pageInfo) {
  */
 export function findNoteAt(track, beat, beatStep, midi) {
     const trackPitchOffset = track.pitch ?? 0
-    const note = (track.notes ?? []).find(
-        (n) => n.beat === beat && n.beatStep === beatStep && MIDDLE_C + trackPitchOffset + (n.pitch ?? 0) === midi,
-    )
+    const note = notesAtStep(track, beat, beatStep).find((n) => MIDDLE_C + trackPitchOffset + (n.pitch ?? 0) === midi)
     return note ?? null
 }

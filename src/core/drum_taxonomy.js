@@ -27,7 +27,7 @@ export const PAN_MAP = [0, 0.3, 0.5, -0.4, 0.4, -0.3, -0.2, 1]
 export const DRUM_TYPES = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
 
 /** Track types treated as melodic (auto-generate + empty-track pruning). */
-export const MELODIC_TYPES = new Set(['BASS', 'PIANO', 'ORGAN'])
+const MELODIC_TYPES = new Set(['BASS', 'PIANO', 'ORGAN'])
 
 /** name → pan slot, derived from TRACK_KINDS. */
 export const TRACK_NAME_TO_INDEX = Object.fromEntries(

@@ -22,7 +22,7 @@ import { getNoteAbsoluteStep } from '../core/notes.js'
  * @param {any} track
  * @returns {Set<number>}
  */
-export function buildOccupiedSet(track) {
+function buildOccupiedSet(track) {
     const set = new Set()
     const notes = track.notes
     if (!notes) return set

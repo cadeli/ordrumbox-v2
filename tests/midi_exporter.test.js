@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import MidiExporter, { encodeVLQ, resolveTrackMidi } from '../src/logic/midi/midi_exporter.js'
-import InstrumentsManager from '../src/logic/services/instruments_manager/index.js'
+import MidiExporter, { encodeVLQ } from '../src/logic/midi/midi_exporter.js'
 import { readUint32BE, readUint16BE, decodeVLQ } from './helpers/midi_reader.js'
 import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
 
@@ -75,88 +74,6 @@ describe('encodeVLQ', () => {
             for (const b of encoded) decoded = (decoded << 7) | (b & 0x7f)
             expect(decoded).toBe(v)
         }
-    })
-})
-
-// ─── resolveTrackMidi ─────────────────────────────────────────────────────────
-
-describe('resolveTrackMidi', () => {
-    let im
-
-    beforeEach(() => {
-        im = new InstrumentsManager()
-    })
-
-    it('resolves KICK to MIDI note 36, channel 9', () => {
-        const r = resolveTrackMidi('KICK', im)
-        expect(r.midiNote).toBe(36)
-        expect(r.channel).toBe(9) // channel 10 = index 9
-        expect(r.isDrum).toBe(true)
-    })
-
-    it('resolves SNARE to MIDI note 38', () => {
-        expect(resolveTrackMidi('SNARE', im).midiNote).toBe(38)
-    })
-
-    it('resolves CHH (closed hi-hat) to MIDI note 42', () => {
-        expect(resolveTrackMidi('CHH', im).midiNote).toBe(42)
-    })
-
-    it('resolves OHH (open hi-hat) to MIDI note 46', () => {
-        expect(resolveTrackMidi('OHH', im).midiNote).toBe(46)
-    })
-
-    it('resolves CRASH to MIDI note 49', () => {
-        expect(resolveTrackMidi('CRASH', im).midiNote).toBe(49)
-    })
-
-    it('resolves HI_TOM to MIDI note 50', () => {
-        expect(resolveTrackMidi('HI_TOM', im).midiNote).toBe(50)
-    })
-
-    it('resolves LO_TOM to MIDI note 45', () => {
-        expect(resolveTrackMidi('LO_TOM', im).midiNote).toBe(45)
-    })
-
-    it('falls back to note 36, channel 9 for completely unknown track name', () => {
-        const r = resolveTrackMidi('XYZKJHGFD', im)
-        expect(r.midiNote).toBe(36)
-        expect(r.channel).toBe(9)
-    })
-
-    it('is case-insensitive', () => {
-        const r = resolveTrackMidi('kick', im)
-        expect(r.midiNote).toBe(36)
-    })
-
-    it('handles null gracefully', () => {
-        const r = resolveTrackMidi(null, im)
-        expect(r.midiNote).toBe(36)
-    })
-
-    it('returns midiNote 60 when instrument has MIDI mapping but no key', () => {
-        const mockIm = {
-            findByName: () => ({
-                midi: [{ ch: '3', name: 'Synth' }],
-                drum: false,
-            }),
-        }
-        const r = resolveTrackMidi('SYNTH', mockIm)
-        expect(r.midiNote).toBe(48)
-        expect(r.channel).toBe(0)
-        expect(r.isDrum).toBe(false)
-    })
-
-    it('returns default channel 9 when mapping.channel is missing', () => {
-        const mockIm = {
-            findByName: () => ({
-                midi: [{ key: '60', name: 'Pad' }],
-                drum: false,
-            }),
-        }
-        const r = resolveTrackMidi('PAD', mockIm)
-        expect(r.midiNote).toBe(60)
-        expect(r.channel).toBe(0)
     })
 })
 

@@ -2,7 +2,7 @@ import { appState } from './state/app_state.js'
 import { serviceRegistry } from './state/service_registry.js'
 import { getAutoAssignService, getAutoGeneratorService } from './state/service_loader.js'
 import { soundRegistry } from './state/sound_registry.js'
-import { playbackEvents } from './state/event_bus.js'
+import { playbackEvents, emitStructureChanged, emitTrackChanged } from './state/event_bus.js'
 import { detectTrackType } from './core/drum_taxonomy.js'
 import { getTracksArray } from './core/tracks.js'
 import { pickRandom, pickRandomKey } from './core/random.js'
@@ -34,10 +34,7 @@ function toggleTrackMute(trackIdx) {
     const track = getTracksArray(appState.selectedPattern ?? {})[trackIdx]
     if (!track) return
     serviceRegistry.cmd?.updateTrack(track, { mute: !track.mute }, { desc: `Mute on ${track.name}` })
-    playbackEvents.batch(() => {
-        playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
-        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-    })
+    emitTrackChanged(track)
 }
 
 function previewTrack(trackIdx) {
@@ -91,10 +88,7 @@ function toggleStartStop() {
 }
 
 function emitPatternStructureChange() {
-    playbackEvents.batch(() => {
-        playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
-        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-    })
+    emitStructureChanged()
 }
 
 function saveCurrentPattern() {

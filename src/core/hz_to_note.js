@@ -1,4 +1,4 @@
-const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+import { NOTE_NAMES } from './note_names.js'
 const A4_HZ = 440
 const A4_MIDI = 69
 

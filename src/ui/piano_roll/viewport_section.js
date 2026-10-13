@@ -3,9 +3,9 @@
 
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import { playbackEvents } from '../../state/event_bus.js'
+import { emitPageChanged } from '../../state/event_bus.js'
 import { clamp } from '../../core/numbers.js'
-import { EVENTS } from '../../core/events.js'
+import { pageCountFor } from '../page_nav.js'
 import { BEATS_PER_PAGE } from '../../core/constants.js'
 import {
     KEYS_COLUMN_WIDTH,
@@ -62,8 +62,7 @@ export default class ViewportSection {
 
     #totalPages() {
         if (!this.#editor.track) return 1
-        const beatCount = appState.selectedPattern?.beatCount ?? 4
-        return Math.max(1, Math.ceil(beatCount / BEATS_PER_PAGE))
+        return pageCountFor(appState.selectedPattern)
     }
 
     clampPage() {
@@ -73,19 +72,13 @@ export default class ViewportSection {
     prevPage() {
         if (appState.currentPage <= 0) return
         serviceRegistry.cmd.setCurrentPage(appState.currentPage - 1)
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        emitPageChanged()
     }
 
     nextPage() {
         if (appState.currentPage >= this.#totalPages() - 1) return
         serviceRegistry.cmd.setCurrentPage(appState.currentPage + 1)
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        emitPageChanged()
     }
 
     onWheel(e) {

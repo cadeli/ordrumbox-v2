@@ -313,7 +313,7 @@ export default class TrackVariation {
                     type: 'ghost',
                     cost: COST_ADD,
                     source: byStep.get(sortedSteps[i]),
-                    target: { t, beat: Math.floor(midStep / stepsPerBeat), beatStep: midStep % stepsPerBeat },
+                    target: { t, ...stepToBeat(midStep, stepsPerBeat) },
                 })
             }
 

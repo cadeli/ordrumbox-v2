@@ -5,11 +5,10 @@
 // module-level singletons.
 
 import { appState } from '../state/app_state.js'
-import { playbackEvents } from '../state/event_bus.js'
+import { playbackEvents, emitStructureChanged } from '../state/event_bus.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { BEATS_PER_PAGE } from '../core/constants.js'
-import { maxPageFor } from './page_nav.js'
+import { maxPageFor, pageBeatWindow } from './page_nav.js'
 
 import { getTracksArray } from '../core/tracks.js'
 import BasePanel from './base_panel.js'
@@ -291,10 +290,7 @@ export default class PatternPanel extends BasePanel {
     }
 
     emitStructureChange() {
-        this.#playbackEvents.batch(() => {
-            this.#playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
-            this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        emitStructureChanged([], this.#playbackEvents)
     }
 
     applySelection() {
@@ -306,8 +302,7 @@ export default class PatternPanel extends BasePanel {
             this.sync()
             return
         }
-        const startBeat = this.#appState.currentPage * BEATS_PER_PAGE
-        const endBeatPage = startBeat + BEATS_PER_PAGE
+        const { startBeat, endBeatPage } = pageBeatWindow(this.#appState.currentPage)
 
         this.#grid.updateTrackCells(
             trackIdx,
@@ -321,8 +316,7 @@ export default class PatternPanel extends BasePanel {
     }
 
     #syncCellsInPlace(pattern, tracks) {
-        const startBeat = this.#appState.currentPage * BEATS_PER_PAGE
-        const endBeatPage = startBeat + BEATS_PER_PAGE
+        const { startBeat, endBeatPage } = pageBeatWindow(this.#appState.currentPage)
 
         tracks.forEach((track, trackIdx) => {
             if (!track) return
@@ -390,8 +384,7 @@ export default class PatternPanel extends BasePanel {
 
         const tracks = getTracksArray(pattern)
 
-        const startBeat = this.#appState.currentPage * BEATS_PER_PAGE
-        const endBeatPage = startBeat + BEATS_PER_PAGE
+        const { startBeat, endBeatPage } = pageBeatWindow(this.#appState.currentPage)
 
         if (tracks.length === 0) {
             const prevHeight = this.container.offsetHeight

@@ -3,7 +3,7 @@ import ResourcesLoader from '../loader/resources_loader.js'
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { playbackEvents } from '../state/event_bus.js'
+import { playbackEvents, emitStructureChanged } from '../state/event_bus.js'
 import { logger } from '../core/logger.js'
 import { getStorageReport } from '../core/idb.js'
 import { isMobileViewport } from '../core/constants.js'
@@ -44,8 +44,7 @@ function restoreInitialView() {
     const patIdx = Math.min(appState.selectedPatternIdx, appState.patterns.length - 1)
 
     playbackEvents.batch(() => {
-        playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
-        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
+        emitStructureChanged([], playbackEvents)
         playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
     })
 

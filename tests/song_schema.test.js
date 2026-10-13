@@ -13,7 +13,6 @@ import {
     songBpm,
     normalizeSong,
     normalizeSongs,
-    pruneSongClips,
 } from '../src/model/song_schema.js'
 import { TICK } from '../src/core/constants.js'
 
@@ -357,17 +356,5 @@ describe('normalizeSongs', () => {
 
     it('returns nothing for a non-array', () => {
         expect(normalizeSongs(null, ids)).toEqual({ songs: [], dropped: [] })
-    })
-})
-
-describe('pruneSongClips', () => {
-    it('drops clips whose pattern disappeared', () => {
-        const song = { id: 's', clips: [{ pattern: 'rock', startMeasure: 0, measureCount: 2 }] }
-        expect(pruneSongClips(song, new Set(['bass']))).toBeNull()
-        expect(pruneSongClips(song, new Set(['rock'])).clips).toHaveLength(1)
-    })
-
-    it('is null for a missing song', () => {
-        expect(pruneSongClips(null, new Set())).toBeNull()
     })
 })

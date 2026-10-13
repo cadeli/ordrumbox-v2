@@ -3,6 +3,7 @@
 // The rows are built once by mount(); sync() only updates values in place.
 
 import { stepToBeat } from '../../core/notes.js'
+import { getTrackLoopAtStep } from '../../core/tracks.js'
 import { OrSlider } from '../components/or_slider.js'
 import { TRACK_DEFAULTS } from '../../model/track_schema.js'
 
@@ -62,7 +63,7 @@ export default class LoopSection {
         this.#sliders.get('swingAmount').setValue(track.swingAmount ?? 0)
         const loopSlider = this.#sliders.get('loopAtStep')
         loopSlider.setMax(maxSteps)
-        loopSlider.setValue(track.loopAtStep ?? maxSteps)
+        loopSlider.setValue(Math.min(getTrackLoopAtStep(track), maxSteps))
     }
 
     destroy() {

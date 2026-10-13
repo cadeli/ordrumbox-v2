@@ -380,19 +380,6 @@ export function idbClearStore(storeName) {
     )
 }
 
-export function idbGetAll(storeName) {
-    return withStore(
-        storeName,
-        'readonly',
-        (store) =>
-            new Promise((resolve, reject) => {
-                const req = store.getAll()
-                req.onsuccess = () => resolve(req.result)
-                req.onerror = () => reject(req.error)
-            }),
-    )
-}
-
 export function idbGetAllEntries(storeName) {
     return withStore(
         storeName,

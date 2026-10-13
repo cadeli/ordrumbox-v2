@@ -2,9 +2,8 @@
 
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { playbackEvents } from '../state/event_bus.js'
+import { emitPageChanged } from '../state/event_bus.js'
 import { PATTERN_DEFAULTS } from '../model/pattern_schema.js'
-import { EVENTS } from '../core/events.js'
 import { BEATS_PER_PAGE } from '../core/constants.js'
 
 /**
@@ -30,15 +29,24 @@ export function maxPageFor(pattern) {
 }
 
 /**
+ * The beat window one page covers: [startBeat, endBeatPage). The pattern grid
+ * slices its rows on it, and the cursor follows it.
+ *
+ * @param {number} [page] page index, defaulting to the current one
+ * @returns {{startBeat: number, endBeatPage: number}}
+ */
+export function pageBeatWindow(page = appState.currentPage) {
+    const startBeat = page * BEATS_PER_PAGE
+    return { startBeat, endBeatPage: startBeat + BEATS_PER_PAGE }
+}
+
+/**
  * Navigate to the previous page of steps.
  */
 export function prevPage() {
     if (appState.currentPage > 0) {
         serviceRegistry.cmd?.setCurrentPage(appState.currentPage - 1)
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        emitPageChanged()
     }
 }
 
@@ -51,9 +59,6 @@ export function nextPage() {
     const maxPage = maxPageFor(pattern)
     if (appState.currentPage < maxPage) {
         serviceRegistry.cmd?.setCurrentPage(appState.currentPage + 1)
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        emitPageChanged()
     }
 }

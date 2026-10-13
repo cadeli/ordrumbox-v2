@@ -1,7 +1,7 @@
 import { makeAppStateMock } from './helpers/app_state_mock.js'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import * as flatNotesService from '../src/patterns/flat_notes.js'
-import { hasArp, getArpNoteCount, generateSubNotes, createArpFlatNote } from '../src/patterns/pattern_engine.js'
+import { getArpNoteCount, generateSubNotes, createArpFlatNote } from '../src/patterns/pattern_engine.js'
 import { makeNote, makeTrack, PARAM_SETS } from './helpers/make_pattern.js'
 import * as stepResolver from '../src/patterns/step_resolver.js'
 import { EVENTS } from '../src/core/events.js'
@@ -101,14 +101,6 @@ describe('PatternManager', () => {
     // manager-specific helpers are tested here.
 
     describe('engine helpers unique to the manager', () => {
-        it('hasArp(null) returns false', () => {
-            expect(hasArp(null)).toBe(false)
-        })
-
-        it('hasArp({ type: "up", notes: 4 }) returns true', () => {
-            expect(hasArp({ type: 'up', notes: 4 })).toBe(true)
-        })
-
         it('getArpNoteCount reads retriggerCount from note', () => {
             const note = { retriggerCount: 4 }
             expect(getArpNoteCount(note)).toBe(4)

@@ -6,7 +6,7 @@ import { notesAtStep } from '../../core/notes.js'
 import { getTracksArray } from '../../core/tracks.js'
 import { showToast } from '../../core/notify.js'
 import { EVENTS } from '../../core/events.js'
-import { beatLabel, notesLabel } from './labels.js'
+import { beatLabel, notesLabel } from '../components/labels.js'
 import { emitNotesChanged } from '../../state/event_bus.js'
 
 export default class ContextMenuSection {
@@ -165,9 +165,7 @@ export default class ContextMenuSection {
     #menuCopyNotes(tracks, trackIdx, beat, beatStep) {
         const track = tracks[trackIdx]
         if (!track) return
-        const notes = (track.notes ?? [])
-            .filter((n) => n.beat === beat && n.beatStep === beatStep)
-            .map((n) => ({ ...n }))
+        const notes = notesAtStep(track, beat, beatStep).map((n) => ({ ...n }))
         this.#editor.clipboard = { type: 'step', notes }
         this.#editor.focusRowIdx = trackIdx
         this.#editor.cursorBeat = beat
@@ -244,7 +242,7 @@ export default class ContextMenuSection {
         this.#editor.applySelection()
         emitNotesChanged(track, this.#editor.playbackEvents)
         this.#editor.serviceRegistry.seq?.simpleBeep(trackIdx, note)
-        showToast(`Added note (pitch ${pitch}) — ${track.name} @ beat ${beat + 1}.${beatStep + 1}`, 'success')
+        showToast(`Added note (pitch ${pitch}) — ${track.name} @ ${beatLabel(beat, beatStep)}`, 'success')
     }
 
     destroy() {

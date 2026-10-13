@@ -2,6 +2,8 @@
 // Renders the piano roll: key column, grid, loop point, notes and cursor.
 
 import { getNoteAbsoluteStep } from '../../core/notes.js'
+import { getTrackLoopAtStep } from '../../core/tracks.js'
+import { noteOpacity, noteTriggerKind } from '../components/note_paint.js'
 import { createStepResolver } from '../../patterns/step_resolver.js'
 import { getNoteSubPositions } from '../../patterns/note_positions.js'
 import { formatNoteTooltip } from '../components/ui_utils.js'
@@ -105,7 +107,7 @@ export default class RenderSection {
         const track = this.#editor.track
         if (!track) return
         const { pageStartStep, visibleSteps } = this.#editor.pageInfo()
-        const loopAtStep = track.loopAtStep ?? this.#editor.pageInfo().totalSteps
+        const loopAtStep = getTrackLoopAtStep(track)
         if (loopAtStep > pageStartStep && loopAtStep <= pageStartStep + visibleSteps) {
             const lpEl = document.createElement('div')
             lpEl.className = 'pp-pr-loop-point'
@@ -134,7 +136,6 @@ export default class RenderSection {
             if (row < 0 || row >= TOTAL_KEYS) return
 
             const pageStep = step - pageStartStep
-            const vel = note.velocity ?? 0.8
 
             const el = document.createElement('div')
             el.className = `pp-pr-note${this.#editor.selectedNote === note ? ' selected' : ''}`
@@ -142,20 +143,16 @@ export default class RenderSection {
             el.style.width = `${this.#editor.cellWidth - 2}px`
             el.style.bottom = `${row * NOTE_HEIGHT + 1}px`
             el.style.height = `${NOTE_HEIGHT - 2}px`
-            el.style.opacity = (0.25 + vel * 0.75).toFixed(2)
+            el.style.opacity = noteOpacity(note.velocity).toFixed(2)
             el.title = formatNoteTooltip(note, trackPitchOffset)
             el.dataset.note = String(noteIdx)
             // the step is recoverable without inverting the pixel geometry
             el.dataset.step = String(step)
 
-            const prob = note.prob ?? 1
-            const every = note.every ?? 1
-            if (prob < 1) {
-                el.classList.add('pp-pr-trig-rand')
-                el.dataset.trig = String(Math.round(prob * 10))
-            } else if (every > 1) {
-                el.classList.add('pp-pr-trig-fixed')
-                el.dataset.trig = String(every)
+            const trigKind = noteTriggerKind(note)
+            if (trigKind) {
+                el.classList.add(`pp-pr-trig-${trigKind}`)
+                el.dataset.trig = String(trigKind === 'rand' ? Math.round((note.prob ?? 1) * 10) : (note.every ?? 1))
             }
             fragment.appendChild(el)
 

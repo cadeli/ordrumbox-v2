@@ -2,6 +2,7 @@
 
 import { computeTrackLfoValues } from '../logic/lfo_engine.js'
 import { clamp } from '../core/numbers.js'
+import { getTracksArray } from '../core/tracks.js'
 
 const LFO_SMOOTHING = 0.005
 
@@ -19,7 +20,7 @@ export async function pushStepLfo(mixer, pattern, tick, atTime, TICK) {
     if (!pattern?.tracks) return
     const tickCount = TICK * pattern.beatCount
     const bpm = pattern.bpm
-    const tracks = Object.values(pattern.tracks)
+    const tracks = getTracksArray(pattern)
 
     for (let i = 0; i < tracks.length; i++) {
         const track = tracks[i]

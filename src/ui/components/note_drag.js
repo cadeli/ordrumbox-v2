@@ -11,13 +11,13 @@ import { AXIS_PITCH, AXIS_VELOCITY } from './note_edit.js'
 import { MIDI_MAX, MIDI_MIN, MIDDLE_C } from '../piano_roll/piano_roll_constants.js'
 
 /** Movement in px before the gesture claims an axis. */
-export const AXIS_LOCK_PX = 3
+const AXIS_LOCK_PX = 3
 
 /** Velocity per pixel dragged up: a full 0..1 sweep is 200 px. */
-export const VELOCITY_PER_PX = 0.005
+const VELOCITY_PER_PX = 0.005
 
 /** Pixels per semitone dragged right. */
-export const PITCH_PX_PER_SEMITONE = 12
+const PITCH_PX_PER_SEMITONE = 12
 
 export default class NoteDrag {
     #note = null

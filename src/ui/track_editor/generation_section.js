@@ -7,7 +7,7 @@ import { OrTab } from '../components/or_tab.js'
 import { renderOptions } from '../components/ui_utils.js'
 import { GROUPS, GEN_SUBTAB_DEFS, GEN_GROOVE_PROPS, GEN_ENGINE_PROPS, fmtVal } from './track_editor_constants.js'
 import { TRACK_DEFAULTS } from '../../model/track_schema.js'
-import { EVENTS } from '../../core/events.js'
+import { emitTrackChanged } from '../../state/event_bus.js'
 
 /**
  * @typedef {object} GenProp
@@ -153,10 +153,7 @@ export default class GenerationSection {
                             { [key]: v },
                             { desc: `${key} on ${editor.track.name}`, coalesce: true },
                         )
-                        editor.playbackEvents.batch(() => {
-                            editor.playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, editor.track)
-                            editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [editor.track])
-                        })
+                        emitTrackChanged(editor.track, editor.playbackEvents)
                     },
                 })
                 row.appendChild(s.createElement())
