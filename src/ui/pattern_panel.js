@@ -395,7 +395,9 @@ export default class PatternPanel extends BasePanel {
                         <span class="pp-track-name">Master</span>
                         <input type="range" class="pp-master-volume" min="0" max="2" step="0.01" value="1" title="Master Gain">
                     </div>
-                    <div class="pp-add-track" id="pp-add-track">+ new track</div>
+                    <div class="pp-toolbar-actions">
+                        <div class="pp-add-track" id="pp-add-track">+ new track</div>
+                    </div>
                 </div>
             </div>`
             this.#cellMap.clear()

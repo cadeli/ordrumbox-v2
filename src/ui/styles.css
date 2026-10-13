@@ -574,6 +574,11 @@ body {
 
 /* ---- Pattern Panel ---- */
 #pattern-panel {
+    /* Left column of a track row: .pp-vu + .pp-track-left + .pp-divider +
+       .pp-solo plus the four 4px flex gaps. The toolbar's master box and its
+       action buttons are sized from it so they line up with the grid's first
+       step. Keep in sync with the widths of those four elements. */
+    --pp-header-w: 252px;
     position: fixed;
     left: 0;
     top: 64px;
@@ -807,8 +812,12 @@ body {
     background: var(--color-warning);
     border-color: var(--color-warning);
 }
-#pattern-panel .pp-add-track {
-    flex-shrink: 0;
+#pattern-panel .pp-add-track,
+#pattern-panel .pp-delete-track {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 200px;
+    box-sizing: border-box;
     text-align: center;
     padding: 6px 0;
     font-size: var(--fs-md);
@@ -816,26 +825,10 @@ body {
     cursor: pointer;
     border: 1px dashed rgba(255, 255, 255, 0.15);
     border-radius: 4px;
-    margin: auto 8px auto 204px;
-    max-width: 200px;
-    width: 100%;
 }
 #pattern-panel .pp-add-track:hover {
     color: var(--accent);
     border-color: var(--accent);
-}
-#pattern-panel .pp-delete-track {
-    flex-shrink: 0;
-    text-align: center;
-    padding: 6px 0;
-    font-size: var(--fs-md);
-    color: var(--muted);
-    cursor: pointer;
-    border: 1px dashed rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-    margin: auto 8px auto 204px;
-    max-width: 200px;
-    width: 100%;
 }
 #pattern-panel .pp-delete-track:hover {
     background: rgba(255, 80, 80, 0.15);
@@ -994,6 +987,16 @@ body {
     gap: 4px;
     margin: 4px 0;
 }
+/* Holds "+ new track" and "- delete track" on one line, left-aligned on the
+   grid's first step: the master box is exactly --pp-header-w minus this row's
+   4px gap wide, so this container starts where .pp-beats does. */
+#pattern-panel .pp-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
 #pattern-panel .pp-master-track {
     display: flex;
     align-items: center;
@@ -1005,7 +1008,9 @@ body {
     background: var(--bg);
     border: 1px solid var(--line);
     padding: 2px 6px;
-    min-width: 208px;
+    box-sizing: border-box;
+    width: calc(var(--pp-header-w) - 4px);
+    flex-shrink: 0;
 }
 #pattern-panel .pp-master-track:hover {
     background: rgba(255, 255, 255, 0.08);
@@ -1031,6 +1036,9 @@ body {
 #pattern-panel.pp-vus-hidden .pp-vu,
 #pattern-panel.pp-vus-hidden .pp-waveform-overlay {
     display: none;
+}
+#pattern-panel.pp-vus-hidden {
+    --pp-header-w: 240px; /* .pp-vu takes no space */
 }
 
 #pattern-panel .pp-beats {
