@@ -388,23 +388,7 @@ body {
     justify-content: center;
     padding: 0;
 }
-#tb .tb-auto-gen {
-    background: var(--border-subtle);
-    border-color: var(--line);
-    color: var(--muted);
-    font-weight: bold;
-}
-#tb .tb-auto-gen:hover {
-    background: var(--border-subtle);
-}
-#tb .tb-auto-gen.active {
-    background: var(--color-success-dark);
-    border-color: var(--color-success-dark);
-    color: var(--text);
-}
-#tb .tb-auto-gen.active:hover {
-    background: var(--color-success-dark);
-}
+
 #tb .tb-tools {
     background: var(--surface-2);
     border-color: var(--line);
@@ -1581,32 +1565,7 @@ body {
     padding-bottom: 4px;
     flex-wrap: nowrap;
 }
-.ne-toggle {
-    font-size: var(--fs-base);
-    padding: 5px 10px;
-    border: 1px solid var(--border-subtle);
-    border-radius: 4px;
-    background: var(--surface-2);
-    color: var(--muted);
-    cursor: pointer;
-    text-transform: uppercase;
-    font-weight: bold;
-    white-space: nowrap;
-    min-width: 44px;
-    text-align: center;
-    transition:
-        background 0.15s,
-        color 0.15s;
-}
-.ne-toggle:hover {
-    border-color: var(--accent);
-    color: var(--muted);
-}
-.ne-toggle.active {
-    background: var(--accent);
-    color: var(--text);
-    border-color: var(--accent-400);
-}
+
 .ne-track {
     color: var(--accent);
     font-weight: bold;
@@ -1929,15 +1888,6 @@ body {
 .ne-row.no-cursor {
     cursor: default;
 }
-.ne-row .ne-input {
-    width: 100px;
-    font-size: var(--fs-base);
-    padding: 2px 4px;
-    background: var(--surface-2);
-    color: var(--text);
-    border: 1px solid var(--line);
-    border-radius: 3px;
-}
 
 /* ---- Dual Range Slider for LFO ---- */
 .ne-range-container {
@@ -2235,14 +2185,7 @@ body {
     overflow-y: auto;
     overflow-x: auto;
 }
-#soft-synth-panel .ss-title {
-    color: var(--accent);
-    font-weight: bold;
-    font-size: var(--fs-md);
-    white-space: nowrap;
-    padding-bottom: 2px;
-    border-bottom: 1px solid var(--border-subtle);
-}
+
 #soft-synth-panel .ss-footer {
     display: flex;
     justify-content: flex-start;
@@ -2272,23 +2215,7 @@ body {
     display: inline-block;
     vertical-align: middle;
 }
-#soft-synth-panel .ss-wave-tab {
-    font-family: var(--font);
-    font-size: var(--fs-xs);
-    padding: 2px 6px;
-    border: none;
-    border-bottom: 2px solid transparent;
-    border-radius: 0;
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    text-transform: uppercase;
-}
-#soft-synth-panel .ss-wave-tab.active {
-    background: transparent;
-    color: var(--black);
-    border-bottom-color: var(--black);
-}
+
 /* Groups row */
 #soft-synth-panel .ss-group-label {
     color: var(--text);
@@ -3365,11 +3292,7 @@ body {
     color: var(--toy-pink);
     text-shadow: 0 0 12px rgba(255, 79, 163, 0.55);
 }
-#soft-synth-panel .ss-title {
-    color: var(--toy-yellow);
-    text-shadow: 0 0 10px rgba(255, 225, 77, 0.5);
-    border-bottom: 1px solid rgba(255, 225, 77, 0.45);
-}
+
 #soft-synth-panel .ss-group-label {
     color: var(--group-c, var(--text));
 }
@@ -3387,7 +3310,6 @@ body {
 .tb-view-btn,
 .tb-undo-btn,
 .ne-btn,
-.ne-toggle,
 .pp-action-btn,
 .te-load-btn,
 .dm-play-btn,
@@ -3409,7 +3331,6 @@ body {
 .tb-view-btn:active,
 .tb-undo-btn:active,
 .ne-btn:active,
-.ne-toggle:active,
 .pp-action-btn:active,
 .te-load-btn:active,
 .dm-play-btn:active,
@@ -3463,16 +3384,7 @@ select option {
     color: var(--black);
     border-color: var(--black);
 }
-#tb .tb-auto-gen {
-    background: color-mix(in srgb, var(--toy-violet) 24%, transparent);
-    border-color: rgba(0, 0, 0, 0.55);
-    color: var(--toy-violet);
-}
-#tb .tb-auto-gen.active {
-    background: var(--toy-violet);
-    border-color: var(--black);
-    color: var(--black);
-}
+
 .tb-undo-btn {
     background: color-mix(in srgb, var(--toy-violet) 45%, var(--surface));
     border: 1px solid rgba(0, 0, 0, 0.55);
@@ -3565,20 +3477,7 @@ select option {
     border-color: var(--black);
     color: var(--black);
 }
-.ne-toggle {
-    background: color-mix(in srgb, var(--toy-violet) 22%, var(--surface-2));
-    border: 1px solid rgba(0, 0, 0, 0.55);
-    color: var(--text);
-}
-.ne-toggle:hover {
-    border-color: var(--toy-cyan);
-    color: var(--toy-cyan);
-}
-.ne-toggle.active {
-    background: var(--toy-cyan);
-    border-color: var(--black);
-    color: var(--black);
-}
+
 .ne-tab-btn:hover {
     color: var(--toy-cyan);
 }
@@ -3587,10 +3486,7 @@ select option {
     border-bottom-color: var(--toy-yellow);
     background: linear-gradient(to top, rgba(255, 225, 77, 0.2), transparent);
 }
-#soft-synth-panel .ss-wave-tab.active {
-    color: var(--toy-yellow);
-    border-bottom-color: var(--toy-yellow);
-}
+
 .ne-tab-bar,
 .ne-tab-panel {
     background: color-mix(in srgb, var(--surface-2) 92%, transparent);
@@ -3667,7 +3563,6 @@ select option {
     box-shadow: 0 0 12px rgba(183, 255, 60, 0.8);
 }
 .ne-row select,
-.ne-row .ne-input,
 #soft-synth-panel select,
 #soft-synth-panel .ss-preset-select,
 .sg-modal-select {

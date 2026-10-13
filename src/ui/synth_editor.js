@@ -328,7 +328,6 @@ export default class SynthEditor {
         try {
             const { target } = e
             if (this.#handlePowerBtn(target, e)) return
-            if (this.#handleWaveTab(target)) return
             if (this.#handleBooleanBtn(target)) return
             if (this.#handleIconBtn(target)) return
             if (this.#handleAction(target)) return
@@ -367,15 +366,6 @@ export default class SynthEditor {
         this.#waveform.draw()
         this.#updateLfoIndicators()
         this.#model.commit()
-        return true
-    }
-
-    #handleWaveTab(target) {
-        const waveTab = target.closest('[data-wave-tab]')
-        if (!waveTab) return false
-        this.panel.querySelectorAll('[data-wave-tab]').forEach((t) => t.classList.remove('active'))
-        waveTab.classList.add('active')
-        this.#waveform.setWaveTab(waveTab.dataset.waveTab)
         return true
     }
 
@@ -627,7 +617,6 @@ export default class SynthEditor {
         this.#stopLfoWatch()
         this.#model.clearSession()
         this.#presets.resetLoadState()
-        this.#waveform.resetTab()
     }
 
     // ─── Public API ───────────────────────────────────────────────────────

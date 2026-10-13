@@ -260,9 +260,8 @@ describe('Sequencer', () => {
         expect(fakeTransport.audioCtx).toBe(serviceRegistry.audioCtx)
     })
 
-    // Transport arms #tickInFlight as soon as onSchedule hands back a thenable,
-    // and that guard lets ONE tick through per 25 ms poll — a tick lasts 15.6 ms
-    // at 120 BPM, so the lookahead could never catch up and playback ran slow.
+    // onSchedule hands nothing back so no promise floats: Transport only catches
+    // synchronous throws, and Sequencer reports async failures itself.
     it('onSchedule does not return a thenable', () => {
         serviceRegistry.transport = null
         serviceRegistry.audioEngine = { playNotes: vi.fn(async () => {}) }

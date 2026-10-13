@@ -50,12 +50,10 @@ export default class Sequencer {
         if (!this.serviceRegistry.transport) {
             this.serviceRegistry.transport = new Transport(this.serviceRegistry.audioCtx)
             this.serviceRegistry.transport.onSchedule = (tick, time) => {
-                // The promise is deliberately NOT handed back: Transport arms
-                // #tickInFlight when onSchedule returns a thenable, and that
-                // guard lets ONE tick through per 25 ms poll — at 120 BPM a
-                // tick lasts 15.6 ms, so the lookahead could never catch up and
-                // playback ran slow. The rejection is handled right here so a
-                // failed tick is reported instead of floating unhandled.
+                // The promise is deliberately NOT handed back: Transport only
+                // catches synchronous throws, so an async failure has to be
+                // handled right here to be reported to the user instead of
+                // floating unhandled. Returning it would double-log.
                 const result = this.serviceRegistry.audioEngine?.playNotes(tick, time)
                 if (result && typeof result.catch === 'function') {
                     result.catch((err) => {

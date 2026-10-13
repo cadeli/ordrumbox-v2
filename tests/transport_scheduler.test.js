@@ -34,19 +34,15 @@ describe('Transport scheduler', () => {
         const ctx = { currentTime: opts.audioTime ?? 0 }
         const t = new Transport(ctx)
         t.setBpm(opts.bpm ?? 120)
-        t.scheduleAheadTime = opts.scheduleAhead ?? 1.0
+        t.scheduleAheadSeconds = opts.scheduleAhead ?? 0.1
         t.isRunning = true
         t.tick = 0
         t.nextStepTime = opts.audioTime ?? 0
         return t
     }
 
-    // The three tests below only ever see one tick per pass: the single-flight
-    // guard stops the loop as soon as onSchedule returns a promise, whatever the
-    // lookahead. This one covers the unblocked path, where the density matters.
-
-    it('fills the lookahead with consecutive ticks when nothing is in flight', () => {
-        const t = makeRunningTransport({ scheduleAhead: 0.1 })
+    it('fills the lookahead with consecutive ticks', () => {
+        const t = makeRunningTransport()
         t.onSchedule = vi.fn()
 
         t.scheduler()
@@ -62,84 +58,15 @@ describe('Transport scheduler', () => {
         expect(Math.max(...times)).toBeLessThanOrEqual(0.1)
     })
 
-    it('does not advance tick when #tickInFlight blocks onSchedule', () => {
+    it('keeps scheduling when onSchedule throws synchronously', () => {
         const t = makeRunningTransport()
-
-        let resolveFlight
-        const flightPromise = new Promise((r) => {
-            resolveFlight = r
-        })
-        t.onSchedule = vi.fn(() => flightPromise)
-
-        t.scheduler()
-        expect(t.onSchedule).toHaveBeenCalledTimes(1)
-        expect(t.onSchedule).toHaveBeenCalledWith(0, expect.any(Number))
-        // advanceTick was called once after onSchedule → tick = 1
-        expect(t.tick).toBe(1)
-
-        // Second scheduler call — #tickInFlight is set, should not call onSchedule or advance
-        t.scheduler()
-        expect(t.onSchedule).toHaveBeenCalledTimes(1)
-        expect(t.tick).toBe(1)
-
-        resolveFlight()
-    })
-
-    it('resumes scheduling after #tickInFlight resolves', async () => {
-        const t = makeRunningTransport({ scheduleAhead: 10.0 })
-
-        let resolveFirst
-        const firstPromise = new Promise((r) => {
-            resolveFirst = r
+        t.onSchedule = vi.fn(() => {
+            throw new Error('boom')
         })
 
-        t.onSchedule = vi.fn((tick) => {
-            if (tick === 0) return firstPromise
-            return null
-        })
-
-        // First scheduler call — tick=0 fires, returns promise
-        t.scheduler()
-        expect(t.onSchedule).toHaveBeenCalledTimes(1)
-        expect(t.onSchedule).toHaveBeenCalledWith(0, expect.any(Number))
-
-        // Second call — blocked by #tickInFlight
-        t.scheduler()
-        expect(t.onSchedule).toHaveBeenCalledTimes(1)
-
-        // Resolve the first promise
-        resolveFirst()
-        await new Promise((r) => setTimeout(r, 0))
-
-        // After resolving, onSchedule should be callable again (no more blocking)
-        // Third call — tick=1 should now fire (among others scheduled ahead)
-        const callsBefore = t.onSchedule.mock.calls.length
-        t.scheduler()
-        expect(t.onSchedule.mock.calls.length).toBeGreaterThan(callsBefore)
-        // tick=1 was among the calls
-        const tickValues = t.onSchedule.mock.calls.map((c) => c[0])
-        expect(tickValues).toContain(1)
-    })
-
-    it('tick is never skipped when scheduler runs while blocked', () => {
-        const t = makeRunningTransport({ scheduleAhead: 10.0 })
-
-        let resolveFlight
-        const flightPromise = new Promise((r) => {
-            resolveFlight = r
-        })
-        t.onSchedule = vi.fn(() => flightPromise)
-
-        // Run scheduler multiple times while blocked
-        t.scheduler()
-        t.scheduler()
-        t.scheduler()
-        t.scheduler()
-
-        // Only tick 0 should have been scheduled (1 call)
-        expect(t.onSchedule).toHaveBeenCalledTimes(1)
-        expect(t.tick).toBe(1)
-
-        resolveFlight()
+        expect(() => t.scheduler()).not.toThrow()
+        // the tick still advanced, so one bad tick cannot freeze playback
+        expect(t.onSchedule.mock.calls.length).toBeGreaterThan(1)
+        expect(t.tick).toBeGreaterThan(0)
     })
 })

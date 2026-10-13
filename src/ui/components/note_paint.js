@@ -2,7 +2,7 @@
 // Pure note-painting helpers shared by the pattern grid and the piano roll.
 
 /** Default velocity a note is painted with when it carries none. */
-export const NOTE_DEFAULT_VELOCITY = 0.8
+const NOTE_DEFAULT_VELOCITY = 0.8
 
 /**
  * Opacity a note is drawn at for a given velocity — the alpha both grids use,

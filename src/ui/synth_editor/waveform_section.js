@@ -11,7 +11,6 @@ const FM_DEPTH_SCALE = 0.08
 export default class WaveformSection {
     #model
     #root
-    #waveTab
 
     /**
      * @param {import('./synth_preset_model.js').default} model edit-session state
@@ -20,18 +19,6 @@ export default class WaveformSection {
     constructor(model, deps) {
         this.#model = model
         this.#root = deps.root
-        this.#waveTab = 'wave'
-    }
-
-    /** Selects the waveform tab ('wave' or 'custom') and redraws. */
-    setWaveTab(tabId) {
-        this.#waveTab = tabId
-        this.draw()
-    }
-
-    /** Resets the waveform tab to its default (panel is being reset). */
-    resetTab() {
-        this.#waveTab = 'wave'
     }
 
     /** Draw all canvases (waveform + ADSR + filter curve). */
@@ -60,9 +47,7 @@ export default class WaveformSection {
         ctx.lineTo(w, mid)
         ctx.stroke()
 
-        if (this.#waveTab === 'wave') {
-            this.#drawOscillators(ctx, w, mid)
-        }
+        this.#drawOscillators(ctx, w, mid)
         this.#updateModuleTrace()
     }
 

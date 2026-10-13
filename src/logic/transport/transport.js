@@ -5,8 +5,6 @@ import { logger } from '../../core/logger.js'
 import { reportUserError } from '../../core/notify.js'
 
 export default class Transport {
-    #tickInFlight
-
     constructor(audioCtx) {
         this.audioCtx = audioCtx
         this.isRunning = false
@@ -19,7 +17,6 @@ export default class Transport {
         this.clockInterval = 60 / (this.bpm * 24)
         this.timerWorker = null
         this.onSchedule = null // Callback(tick, time)
-        this.#tickInFlight = null // single-flight guard for async onSchedule
     }
 
     ensureTimerWorker = () => {
@@ -83,29 +80,20 @@ export default class Transport {
         }
 
         // Schedule Ticks
-        // Only advance the tick when onSchedule was actually called.
-        // If #tickInFlight is true, the previous async onSchedule has not
-        // completed — skipping the call here and NOT advancing ensures the
-        // tick is retried next time instead of being permanently lost.
+        // onSchedule runs synchronously and the tick is advanced right after it:
+        // the poll fires every 25 ms while a tick lasts ~15.6 ms at 120 BPM, so
+        // anything that holds the loop open (an awaited promise, a single-flight
+        // guard) would let the lookahead fall behind and playback run slow.
+        // Async failures are handled by the caller itself — see Sequencer.
         while (this.nextStepTime < audioNow + this.scheduleAheadSeconds) {
-            if (this.isRunning && this.onSchedule && !this.#tickInFlight) {
-                let result
+            if (this.isRunning && this.onSchedule) {
                 try {
-                    result = this.onSchedule(this.tick, this.nextStepTime)
+                    this.onSchedule(this.tick, this.nextStepTime)
                 } catch (err) {
-                    // Only async rejections were handled: a synchronous throw
-                    // escaped into the worker onmessage and froze playback.
+                    // A synchronous throw used to escape into the worker
+                    // onmessage and freeze playback.
                     logger.error('Transport', 'onSchedule threw', err)
                     reportUserError('Transport.onSchedule', 'Playback tick failed — audio may drop out', { cause: err })
-                    this.advanceTick()
-                    continue
-                }
-                if (result && typeof result.catch === 'function') {
-                    this.#tickInFlight = result
-                        .catch((err) => logger.error('Transport', 'onSchedule error', err))
-                        .finally(() => {
-                            this.#tickInFlight = null
-                        })
                 }
                 this.advanceTick()
             } else {
