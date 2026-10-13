@@ -219,3 +219,74 @@ describe('Functional: Auto-assign sounds', () => {
         expect(track.sampleId).toBe(originalSampleId)
     })
 })
+
+describe('Functional: substitution chain never lands on a melodic instrument', () => {
+    let cmd, autoAssign
+
+    beforeEach(() => {
+        cmd = new Commander()
+        autoAssign = new AutoAssign()
+    })
+
+    /**
+     * A one-kit registry whose sound keys are the given instrument ids.
+     * @param {string} kitName
+     * @param {string[]} keys
+     */
+    const useKit = (kitName, keys) => {
+        soundRegistry.reset()
+        appState.reset()
+        soundRegistry.sounds = Object.fromEntries(
+            keys.map((key) => [`snd_${key.toLowerCase()}`, { key, kitName, url: `kits/${kitName}/${key}.wav` }]),
+        )
+        soundRegistry.drumkitList = [{ name: kitName, instruments: [] }]
+        appState.selectedDrumkitIdx = 0
+        autoAssign = new AutoAssign()
+    }
+
+    // detectTrackType() has no rule for TOM, GUITAR, BRASS or STRING: they all
+    // answer PERC. So a "same coarse type" match for a tom could return a guitar
+    // — and the first such fuzzy hit used to short-circuit the chain before
+    // MTOM (a real replacement of TOM, and the tom of the "real" kit) was tried.
+    it('prefers an exact replacement over a fuzzy same-type hit', () => {
+        useKit('test', ['MTOM', 'GUITAR', 'BRASS', 'STRING', 'CRASH'])
+
+        expect(autoAssign.findSoundEquivalence(AutoAssign.NOT_FOUND, 'test', 'TOM')).toBe('snd_mtom')
+    })
+
+    it('a drum substitute is never a drum:false instrument, whatever the draw', () => {
+        useKit('test', ['MTOM', 'GUITAR', 'BRASS', 'STRING', 'CRASH'])
+        const track = cmd.createTrack(4, 'TOM', 4)
+        track.useAutoAssignSound = true
+
+        for (let i = 0; i < 50; i++) {
+            autoAssign.autoAssignTrackSounds(track)
+            expect(track.sampleId).toBe('snd_mtom')
+        }
+    })
+
+    it('keeps walking the chain instead of accepting a melodic fuzzy hit', () => {
+        // TOM substitutes HI_TOM -> MTOM -> CHH. Only CHH is present, and CHH is
+        // a drum: the chain must reach it rather than draw one of the melodic
+        // PERC keys sitting next to it.
+        useKit('test', ['GUITAR', 'BRASS', 'STRING', 'CHH'])
+
+        expect(autoAssign.findSoundEquivalence(AutoAssign.NOT_FOUND, 'test', 'TOM')).toBe('snd_chh')
+    })
+
+    it('answers NOT_FOUND when only melodic instruments share the type', () => {
+        useKit('test', ['GUITAR', 'BRASS', 'PIANO', 'ORGAN', 'BASS'])
+
+        expect(autoAssign.findSoundEquivalence(AutoAssign.NOT_FOUND, 'test', 'TOM')).toBe(AutoAssign.NOT_FOUND)
+    })
+
+    it('a melodic target keeps its loose bucket', () => {
+        // MELO substitutes PIANO -> SYNTH -> TOM, none of which is present.
+        // MELO is itself melodic, so its same-type fallback is NOT narrowed to
+        // drums: the bucket stays as loose as it used to be.
+        useKit('test', ['GUITAR', 'MTOM'])
+
+        const result = autoAssign.findSoundEquivalence(AutoAssign.NOT_FOUND, 'test', 'MELO')
+        expect(['snd_guitar', 'snd_mtom']).toContain(result)
+    })
+})

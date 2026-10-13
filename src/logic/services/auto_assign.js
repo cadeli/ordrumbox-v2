@@ -204,30 +204,47 @@ export default class AutoAssign {
 
         const instData = InstrumentsManager.DATA?.instruments?.find((i) => i.id === trackName)
         const replacements = instData?.subst ? Object.values(instData.subst) : null
+        if (!replacements) return notFoundId
 
-        if (replacements) {
-            for (const targetKey of replacements) {
-                let candidateId = this.getSampleIdFromTrackname(targetKey, selectedDrumkitName)
-                if (candidateId !== NOT_FOUND) {
-                    return candidateId
+        // ── pass 1 : every replacement as an EXACT sound key, chain order ──
+        // Every replacement is tried as an exact key before any of them may fall
+        // back to the loose "same coarse type" match below. Without this the
+        // first fuzzy hit short-circuits the chain and hides a replacement the
+        // kit really has: TOM substitutes HI_TOM → MTOM → CHH, and for a kit
+        // whose tom is keyed MTOM the fuzzy HI_TOM hit won first and drew
+        // GUITAR, BRASS or STRING — melodic instruments that all fall into the
+        // PERC catch-all of detectTrackType().
+        for (const targetKey of replacements) {
+            for (const scope of [{ kitName: selectedDrumkitName }, {}]) {
+                const ids = this.#findExactSoundIds([normalizeName(targetKey)], scope)
+                if (ids.length > 0) {
+                    return pickRandom(ids)
                 }
-                candidateId = this.getSampleIdFromTrackname(targetKey)
-                if (candidateId !== NOT_FOUND) {
-                    return candidateId
-                }
+            }
+        }
 
-                // Try matching via instrument synonyms (e.g., RIMSHOT has "CL" which matches "CLAP")
-                const targetInst = InstrumentsManager.DATA?.instruments?.find((i) => i.id === targetKey)
-                if (targetInst?.synonyms?.length) {
-                    for (const syn of targetInst.synonyms) {
-                        // Use simple string synonyms (not regex patterns)
-                        if (!syn.includes('.') && !syn.includes('*') && !syn.includes('^') && !syn.includes('$')) {
-                            // Check if any sound key includes this synonym (reverse direction)
-                            candidateId = this.getSampleIdByKeyContaining(selectedDrumkitName, syn)
-                            if (candidateId !== NOT_FOUND) return candidateId
-                            candidateId = this.getSampleIdByKeyContaining(null, syn)
-                            if (candidateId !== NOT_FOUND) return candidateId
-                        }
+        // ── pass 2 : loose fallback, same chain order ──────────────────────
+        for (const targetKey of replacements) {
+            let candidateId = this.getSampleIdFromTrackname(targetKey, selectedDrumkitName)
+            if (candidateId !== NOT_FOUND) {
+                return candidateId
+            }
+            candidateId = this.getSampleIdFromTrackname(targetKey)
+            if (candidateId !== NOT_FOUND) {
+                return candidateId
+            }
+
+            // Try matching via instrument synonyms (e.g., RIMSHOT has "CL" which matches "CLAP")
+            const targetInst = InstrumentsManager.DATA?.instruments?.find((i) => i.id === targetKey)
+            if (targetInst?.synonyms?.length) {
+                for (const syn of targetInst.synonyms) {
+                    // Use simple string synonyms (not regex patterns)
+                    if (!syn.includes('.') && !syn.includes('*') && !syn.includes('^') && !syn.includes('$')) {
+                        // Check if any sound key includes this synonym (reverse direction)
+                        candidateId = this.getSampleIdByKeyContaining(selectedDrumkitName, syn)
+                        if (candidateId !== NOT_FOUND) return candidateId
+                        candidateId = this.getSampleIdByKeyContaining(null, syn)
+                        if (candidateId !== NOT_FOUND) return candidateId
                     }
                 }
             }
@@ -257,7 +274,8 @@ export default class AutoAssign {
      *
      * Exact key matches win: when at least one sound has the key `trackName`,
      * the pick is among those. Otherwise it is among every sound of the same
-     * coarse type (detectTrackType).
+     * coarse type (detectTrackType) — drums only, when `trackName` is itself a
+     * drum instrument.
      *
      * @param {string} trackName
      * @param {string|null} [drumkitName] null searches every kit
@@ -266,12 +284,33 @@ export default class AutoAssign {
     getSampleIdFromTrackname = (trackName, drumkitName = null) => {
         const trackType = detectTrackType(trackName)
         const wanted = normalizeName(trackName)
+        // A drum substitute must be a drum: detectTrackType() has no rule for
+        // TOM/HI_TOM/GUITAR/BRASS/STRING, so they all share the PERC catch-all
+        // and a "same type" match for a tom could return a guitar. A melodic
+        // target keeps the loose bucket — nothing better is known about it.
+        const drumsOnly = instrumentsManager.findById(trackName).drum === true
         const exact = []
         const sameType = []
         for (const [key, sound] of this.#entriesInScope(drumkitName)) {
             if (normalizeName(sound.key) === wanted) exact.push(key)
-            else if (detectTrackType(sound.key) === trackType) sameType.push(key)
+            else if (detectTrackType(sound.key) === trackType && (!drumsOnly || this.#isDrumSound(sound.key))) {
+                sameType.push(key)
+            }
         }
         return pickRandom(exact.length > 0 ? exact : sameType) ?? NOT_FOUND
+    }
+
+    /**
+     * True when a sound key maps to a drum instrument.
+     *
+     * A key with no instrument entry (a custom kit label) is kept: nothing says
+     * it is melodic, and dropping it would empty the bucket for such kits.
+     *
+     * @param {string} soundKey
+     * @returns {boolean}
+     */
+    #isDrumSound(soundKey) {
+        const inst = instrumentsManager.findById(soundKey)
+        return inst.id === NOT_FOUND ? true : inst.drum === true
     }
 }
