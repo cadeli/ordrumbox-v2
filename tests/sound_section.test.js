@@ -198,11 +198,12 @@ describe('SoundSection', () => {
     })
 
     describe('onInstrumentChange()', () => {
-        it('calls changeTrackName with new name', async () => {
-            const editor = makeMockEditor()
+        it('does not rename the track (name is the auto-assign key)', async () => {
+            const editor = makeMockEditor({ track: { name: 'CRASH' } })
             section = new SoundSection(editor)
             await section.onInstrumentChange({ value: 'SNARE' })
-            expect(editor.serviceRegistry.cmd.changeTrackName).toHaveBeenCalledWith(editor.track, 'SNARE')
+            expect(editor.serviceRegistry.cmd.changeTrackName).not.toHaveBeenCalled()
+            expect(editor.track.name).toBe('CRASH')
         })
 
         it('loads sample if buffer is missing', async () => {

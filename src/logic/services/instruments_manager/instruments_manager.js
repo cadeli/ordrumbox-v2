@@ -67,7 +67,10 @@ export default class InstrumentsManager {
         for (const m of this.matchers) {
             if (m.pattern.test(name)) return m.instrument
         }
-        logger.warn('Instrument', `findByName: no match for "${name}"`)
+        // A custom track name ("T2", "MY LOOP") matching nothing is the normal
+        // case, and every caller falls back on NOT_FOUND — so this is an
+        // expected outcome, not a problem.
+        logger.info('Instrument', `findByName: no match for "${name}"`)
         return new Instrument()
     }
 

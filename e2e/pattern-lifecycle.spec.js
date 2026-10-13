@@ -523,7 +523,9 @@ test.describe.serial('Full session lifecycle', () => {
             const instr2 = instrOptions.find((v) => v !== currentInstr) ?? instrOptions[0]
             t2Instrument = instr2
             await instrSel.selectOption(instr2)
-            await expectVal(() => trackField(page, 1, 'name'), instr2)
+            // The track name is the auto-assign key: the instrument row must not
+            // rewrite it, or the auto LED would resolve against the wrong name.
+            await expectVal(() => trackField(page, 1, 'name'), 'T2')
             await expectVal(() => trackField(page, 1, 'useAutoAssignSound'), false)
 
             const sampleSel = page.locator('#te-panel select[data-sound="sample"]')
@@ -560,7 +562,7 @@ test.describe.serial('Full session lifecycle', () => {
                 instrOptions.find((v) => v !== currentInstr) ??
                 instrOptions[0]
             await instrSel.selectOption(instr3)
-            await expectVal(() => trackField(page, 2, 'name'), instr3)
+            await expectVal(() => trackField(page, 2, 'name'), 'T3')
             await expectVal(() => trackField(page, 2, 'useAutoAssignSound'), false)
 
             const sampleSel = page.locator('#te-panel select[data-sound="sample"]')

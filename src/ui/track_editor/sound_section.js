@@ -130,12 +130,16 @@ export default class SoundSection {
 
     // ── Event handlers ─────────────────────────────────────────────
 
+    /**
+     * Picking an instrument picks a sample for it. `track.name` is NEVER rewritten
+     * here: it is the identity the auto-assign algorithm keys on, so renaming it
+     * would silently retarget the auto LED.
+     */
     async onInstrumentChange(target) {
         const editor = this.#editor
         const track = editor.track
-        const newName = target.value
-        editor.serviceRegistry.cmd.changeTrackName(track, newName)
-        const firstSample = getPreferredSampleForInstrument(editor, newName)
+        const instrumentId = target.value
+        const firstSample = getPreferredSampleForInstrument(editor, instrumentId)
         if (firstSample) {
             if (!editor.soundRegistry.sounds[firstSample.url]?.buffer) {
                 await editor.serviceRegistry.resourcesLoader.loadSample(firstSample, firstSample.kitName)
