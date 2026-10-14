@@ -112,7 +112,19 @@ test('the track editor scrolls in mobile landscape', async ({ page }) => {
 
     // Tall tab content, so the middle column really overflows.
     await page.locator('#te-panel .ne-tab-btn', { hasText: /^gen$/ }).first().click()
+    // Groove/Engine only exist while Auto is on, and they are what makes this
+    // tab tall — switch it on so the scroller genuinely has content to reach.
+    await page.locator('#te-panel [data-tab-panel="gen"] button[data-key="auto"]').first().click()
+    await expect(page.locator('#te-panel [data-tab-panel="gen"] .te-subtabs').first()).toBeVisible()
     await page.setViewportSize({ width: 667, height: 375 })
+    await expect(page.locator('#te-panel')).toHaveClass(/te-mobile-landscape/, { timeout: 3_000 })
+
+    // How tall this tab is depends on which Auto group it is showing, so size
+    // the column from its own content instead of a magic viewport height: the
+    // scroller has to be shorter than its content for there be anything to scroll.
+    const genPanel = page.locator('#te-panel [data-tab-panel="gen"]')
+    const content = await genPanel.evaluate((el) => el.scrollHeight)
+    await page.setViewportSize({ width: 667, height: content + 20 })
     await expect(page.locator('#te-panel')).toHaveClass(/te-mobile-landscape/, { timeout: 3_000 })
 
     // The 3-column grid is stylesheet-driven — an inline display shadows it.

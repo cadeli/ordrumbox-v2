@@ -72,6 +72,7 @@ const TRACK_KEYS = [
     'prob_retrig',
     'prob_euclid',
     'prob_note',
+    'prob_note_depth',
     'prob_arp',
     'pitch_range',
     'pitch_scale_lock',
@@ -348,13 +349,24 @@ test.describe.serial('Full session lifecycle', () => {
         await test.step('phase 3f — gen tab: basic, groove and engine props', async () => {
             await page.locator('#te-panel button[data-ne-tab="gen"]').click()
             const gen = page.locator('#te-panel [data-tab-panel="gen"]')
-            await gen.locator('button[data-key="auto"]').click()
-            await expectVal(() => trackField(page, 0, 'auto'), true)
+            const subtabs = gen.locator('.te-subtabs')
+
+            // The manual props belong to auto OFF: visible before the switch,
+            // together with no Groove/Engine tab bar at all.
+            await expect(subtabs).toBeHidden()
             await fillInput(gen.locator('input[data-key="variation"]'), 40)
             await fillInput(gen.locator('input[data-key="variation2"]'), 65)
             await fillInput(gen.locator('input[data-key="probability"]'), 0.7)
 
+            await gen.locator('button[data-key="auto"]').click()
+            await expectVal(() => trackField(page, 0, 'auto'), true)
+
+            // auto ON swaps the two groups over.
+            await expect(gen.locator('input[data-key="variation"]')).toBeHidden()
+            await expect(subtabs).toBeVisible()
+
             const groove = page.locator('#te-panel [data-gen-panel="groove"]')
+            await expect(groove).toBeVisible()
             await fillInput(groove.locator('input[data-key="prob_pitch"]'), 70)
             await fillInput(groove.locator('input[data-key="prob_velocity"]'), 30)
             await fillInput(groove.locator('input[data-key="prob_silence"]'), 60)
@@ -369,6 +381,7 @@ test.describe.serial('Full session lifecycle', () => {
             await fillInput(engine.locator('input[data-key="prob_retrig"]'), 55)
             await fillInput(engine.locator('input[data-key="prob_euclid"]'), 65)
             await fillInput(engine.locator('input[data-key="prob_note"]'), 35)
+            await fillInput(engine.locator('input[data-key="prob_note_depth"]'), 40)
             await fillInput(engine.locator('input[data-key="prob_arp"]'), 75)
             await engine.locator('select[data-key="auto_variant"]').selectOption('fill')
             await fillInput(engine.locator('input[data-key="auto_density"]'), 0.4)
@@ -386,6 +399,7 @@ test.describe.serial('Full session lifecycle', () => {
                 prob_retrig: 55,
                 prob_euclid: 65,
                 prob_note: 35,
+                prob_note_depth: 40,
                 prob_arp: 75,
                 auto_density: 0.4,
             }

@@ -1652,6 +1652,9 @@ body {
 .gen-tab-panel-hidden {
     display: none !important;
 }
+.gen-auto-hidden {
+    display: none !important;
+}
 .ss-body-empty {
     padding: 20px;
     color: var(--line);

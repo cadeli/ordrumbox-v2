@@ -197,27 +197,38 @@ export default class AutoGenerator {
     }
 
     /**
-     * Turns on the two variation layers for a generated track.
+     * Picks the variation amounts a generated track runs on.
      *
-     * They are OFF by default (track.variation = variation2 = 0), and
-     * TrackVariation.apply()/computeNoteVariation() return immediately at 0 — so a
-     * generated line played the exact same notes, at the exact same velocities, on
-     * every loop. Melodic parts get more than percussion: a bass line is a handful
-     * of notes repeated for minutes, which is where repetition shows.
+     * They are stored on auto_variation/auto_variation2 rather than on
+     * variation/variation2: the Var Pos / Var Prop sliders belong to the manual
+     * group, they are hidden while track.auto is on, so a value the user set
+     * there must not drive the auto layer — and must survive untouched for the
+     * moment auto is switched off again.
      *
-     * Only fills the defaults: a NON-ZERO value the user set is never
-     * overwritten — the guard is `if (!track.variation)`, so an explicit 0 is
-     * refilled.
+     * They default to 0, and TrackVariation.apply()/computeNoteVariation()
+     * return immediately at 0 — so a generated line played the exact same notes,
+     * at the exact same velocities, on every loop. Melodic parts get more than
+     * percussion: a bass line is a handful of notes repeated for minutes, which
+     * is where repetition shows.
+     *
+     * Only fills what has not been picked yet: the guard is
+     * `if (track.auto_variation == null)`, so an explicit 0 — a track the user
+     * (or a script) deliberately wants without an auto budget — is left alone
+     * rather than silently refilled.
      *
      * @param {any} track
      * @param {string} type detectTrackType() result
      */
     #applyVariation = (track, type) => {
         const melodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
-        const range = melodic ? [20, 40] : [10, 25]
+        // These buy operations out of a 16-unit scale at 100, so the old
+        // [20,40]/[10,25] landed at 3-6 and 2-4 operations — barely a nudge on
+        // a line that repeats for minutes. Melodic parts still get more than
+        // percussion, which is where repetition shows.
+        const range = melodic ? [50, 85] : [30, 60]
         const pickIn = (min, max) => min + Math.floor(Math.random() * (max - min + 1))
-        if (!track.variation) track.variation = pickIn(...range)
-        if (!track.variation2) track.variation2 = pickIn(Math.round(range[0] / 2), range[1])
+        if (track.auto_variation == null) track.auto_variation = pickIn(...range)
+        if (track.auto_variation2 == null) track.auto_variation2 = pickIn(Math.round(range[0] / 2), range[1])
     }
 
     #applyGenreSwing = (track, pattern) => {

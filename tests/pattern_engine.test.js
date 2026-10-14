@@ -143,6 +143,37 @@ describe('isProbabilityTriggered', () => {
     })
 })
 
+// ─── track.probability ───────────────────────────────────────────
+
+// While auto is on the Groove/Engine gates ARE honoured, so closing them all
+// leaves both variation layers inert and the note count below reflects nothing
+// but track.probability.
+const GATES_CLOSED = {
+    prob_fill: 0,
+    prob_ghost: 0,
+    prob_silence: 0,
+    prob_velocity: 0,
+    prob_pitch: 0,
+    prob_retrig: 0,
+    prob_euclid: 0,
+    prob_note: 0,
+    prob_arp: 0,
+}
+
+describe('track.probability', () => {
+    // Prob sits in the manual group: it is hidden while auto is on, so it must
+    // not gate the notes the Engine panel has just randomized.
+    it('drops every note at probability 0 while auto is off', () => {
+        const pattern = buildPattern({}, { probability: 0 })
+        expect(countNotes(pattern, 0)).toBe(0)
+    })
+
+    it('keeps every note at probability 0 while auto is on', () => {
+        const pattern = buildPattern({}, { probability: 0, auto: true, ...GATES_CLOSED })
+        expect(countNotes(pattern, 0)).toBe(1)
+    })
+})
+
 // ─── retriggerCount / rate Tests ───────────────────────────────────────
 
 describe('retriggerCount / rate', () => {

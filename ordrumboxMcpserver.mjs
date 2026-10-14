@@ -584,6 +584,10 @@ export const tools = [
                                 'prob_arp',
                             ].map((key) => [key, num(key, 'Generation weight (%)')]),
                         ),
+                        prob_note_depth: num(
+                            'prob_note_depth',
+                            'Stretch of the note-probability draw (0-100, 0 leaves the note alone)',
+                        ),
                         pitch_range: int('pitch_range', 'Generation pitch range (semitones)'),
                         pitch_scale_lock: bool('Lock generated pitches to the scale'),
                         auto_variant: {

@@ -238,14 +238,15 @@ export function recomputeFlatNotes(pattern, loop = 0, tick = TICK) {
 
         const resolver = createStepResolver(track)
 
+        // Prob is a manual-group control: it is hidden while track.auto is on,
+        // so only note.prob (shaped by the Engine panel) gates the notes there.
+        const trackProbability = track.auto ? 1 : (track.probability ?? 1)
+
         for (const sourceNote of Object.values(track.notes)) {
             const note = variedNotes?.get(sourceNote) ?? sourceNote
             const pos = note.pos ?? 0
             const every = note.every ?? 1
-            if (
-                !isTriggered(pos, every, loop) ||
-                !isProbabilityTriggered((track.probability ?? 1) * (note.prob ?? 1))
-            ) {
+            if (!isTriggered(pos, every, loop) || !isProbabilityTriggered(trackProbability * (note.prob ?? 1))) {
                 continue
             }
 

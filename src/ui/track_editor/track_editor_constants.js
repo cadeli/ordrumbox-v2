@@ -90,9 +90,9 @@ export const GROUPS = [
         label: 'Basic / Transport',
         props: withRange([
             { key: 'auto', label: 'Auto', type: 'boolean' },
-            { key: 'variation', label: 'Var Pos', step: 1 },
-            { key: 'variation2', label: 'Var Prop', step: 1 },
-            { key: 'probability', label: 'Prob', min: 0, max: 1, step: 0.01 },
+            { key: 'variation', label: 'Var Pos', step: 1, manualOnly: true },
+            { key: 'variation2', label: 'Var Prop', step: 1, manualOnly: true },
+            { key: 'probability', label: 'Prob', min: 0, max: 1, step: 0.01, manualOnly: true },
         ]),
     },
     {
@@ -149,6 +149,7 @@ export const GEN_ENGINE_PROPS = withRange([
     { key: 'prob_retrig', label: 'Retrig', step: 1 },
     { key: 'prob_euclid', label: 'Euclid', step: 1 },
     { key: 'prob_note', label: 'Note Prob', step: 1 },
+    { key: 'prob_note_depth', label: 'Depth', step: 1 },
     { key: 'prob_arp', label: 'Arp', step: 1 },
     {
         key: 'auto_variant',

@@ -879,6 +879,8 @@ export default class TrackEditor extends BasePanel {
         btn.textContent = this.#track[key] ? 'ON' : 'OFF'
         btn.classList.toggle('active', this.#track[key])
         this.#emitTrackChange()
+        // Auto swaps which half of the gen tab is visible (manual props vs Groove/Engine).
+        if (key === 'auto') this.sync()
     }
 
     onLoopSlider(key, value) {

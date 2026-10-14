@@ -29,7 +29,8 @@ import { valueOrFallback } from '../core/logger.js'
  * @property {Object|null} panLfo           - LFO modulating pan. Default: null
  * @property {boolean} solo                 - Solo mode. Default: false
  * @property {boolean} mute                 - Mute mode. Default: false
- * @property {boolean} auto                 - Auto mode. Default: false
+ * @property {boolean} auto                 - Auto mode: shows Groove/Engine, hides Var Pos/Var Prop/Prob.
+ *                                            Only the visible group is read by the variation engine. Default: false
  * @property {boolean} useSoftSynth         - Use built-in synth instead of sample. Default: false
  * @property {boolean} mono                 - Mono mode. Default: false
  * @property {number}  variation            - Track variation amount (0-100). Default: 0
@@ -60,7 +61,8 @@ import { valueOrFallback } from '../core/logger.js'
  * @property {number}  prob_ghost            - Per-note chance of a ghost note (0-100). Default: 50
  * @property {number}  prob_retrig           - Per-note chance of retriggers (0-100). Default: 50
  * @property {number}  prob_euclid           - Per-note chance of the euclidean variant (0-100). Default: 50
- * @property {number}  prob_note             - Per-note chance the note is kept at all (0-100). Default: 50
+ * @property {number}  prob_note             - Per-note chance the note's play probability is randomized (0-100). Default: 50
+ * @property {number}  prob_note_depth       - Stretch of that draw (0-100): 100 reaches down to 0.2, 0 leaves the note alone. Default: 100
  * @property {number}  prob_arp              - Per-note chance of an arpeggio (0-100). Default: 50
  * @property {number}  pitch_range           - Semitone span of pitch randomization (1-24). Default: 12
  * @property {boolean} pitch_scale_lock      - Restrict pitch randomization to the scale. Default: false
@@ -98,6 +100,7 @@ export const TRACK_DEFAULTS = {
     prob_retrig: 50,
     prob_euclid: 50,
     prob_note: 50,
+    prob_note_depth: 100,
     prob_arp: 50,
     pitch_range: 12,
     pitch_scale_lock: false,
@@ -170,6 +173,7 @@ export const TRACK_VALUE_RANGES = {
     prob_retrig: { min: 0, max: 100 },
     prob_euclid: { min: 0, max: 100 },
     prob_note: { min: 0, max: 100 },
+    prob_note_depth: { min: 0, max: 100 },
     prob_arp: { min: 0, max: 100 },
     pitch_range: { min: 1, max: 24 },
     auto_density: { min: -1, max: 1 },

@@ -23,12 +23,23 @@ import { emitTrackChanged } from '../../state/event_bus.js'
  * @property {Function} [format]
  * @property {Function} [normalize]
  * @property {Function} [denormalize]
+ * @property {boolean} [manualOnly] - Row is only shown while track.auto is off.
  */
+
+const SUBTAB_BAR_CLASS = 'te-subtabs'
 
 export default class GenerationSection {
     #editor
     #genSubTab
     #container
+    /**
+     * Groove/Engine tab bar + the two panels, captured in mount() so sync()
+     * can gate them on track.auto without restructuring the DOM.
+     * @type {HTMLElement|null}
+     */
+    #genBar = null
+    /** @type {HTMLElement[]} */
+    #genPanels = []
     /**
      * One entry per built row: the prop def, the row element, and the
      * interactive child (OrSlider / boolean button / select) when there is one.
@@ -43,7 +54,7 @@ export default class GenerationSection {
             tabs: GEN_SUBTAB_DEFS,
             defaultTab: 'groove',
             css: {
-                bar: 'te-subtabs',
+                bar: SUBTAB_BAR_CLASS,
                 btn: 'te-subtab',
                 panel: 'gen-tab-panel',
                 hidden: 'gen-tab-panel-hidden',
@@ -73,11 +84,18 @@ export default class GenerationSection {
         this.#buildProps(GROUPS[0].props, container)
         container.insertAdjacentHTML('beforeend', this.#genSubTab.renderBar())
         this.#genSubTab.bindTo(container)
-        for (const [id, props] of [['groove', GEN_GROOVE_PROPS], ['engine', GEN_ENGINE_PROPS]]) {
+        // .te-subtabs spans the panel grid (grid-column: 1 / -1): gate it and
+        // the panels individually instead of wrapping them, or the layout breaks.
+        this.#genBar = /** @type {HTMLElement|null} */ (container.querySelector(`.${SUBTAB_BAR_CLASS}`))
+        for (const [id, props] of [
+            ['groove', GEN_GROOVE_PROPS],
+            ['engine', GEN_ENGINE_PROPS],
+        ]) {
             const panel = document.createElement('div')
             panel.className = `gen-tab-panel${this.#genSubTab.isHidden(id) ? ' gen-tab-panel-hidden' : ''}`
             panel.dataset.genPanel = id
             container.appendChild(panel)
+            this.#genPanels.push(panel)
             this.#buildProps(props, panel)
         }
     }
@@ -86,10 +104,17 @@ export default class GenerationSection {
     sync(track) {
         if (!track) return
         const editor = this.#editor
+        const autoOn = !!track.auto
+        // Groove/Engine exist only while auto is on, the manual props only while
+        // it is off. The Auto switch itself is never gated — it has to stay
+        // reachable to turn the mode back.
+        this.#genBar?.classList.toggle('gen-auto-hidden', !autoOn)
+        for (const p of this.#genPanels) p.classList.toggle('gen-auto-hidden', !autoOn)
         for (const r of this.#rows) {
             const p = r.prop
             const val = track[p.key]
             r.row.classList.toggle('selected', editor.selectedPropKey === p.key)
+            if (p.manualOnly) r.row.classList.toggle('gen-auto-hidden', autoOn)
             if (r.control) {
                 r.control.setValue(val ?? p.min)
                 r.control.setHasLfo(!!(p.lfoKey && track[p.lfoKey]))
@@ -107,6 +132,15 @@ export default class GenerationSection {
     destroy() {
         for (const r of this.#rows) r.control?.destroy()
         this.#rows = []
+        this.#genPanels = []
+        this.#genBar = null
+    }
+
+    /** Row label for the controls that do not draw one themselves. */
+    #labelFor(prop) {
+        const label = document.createElement('label')
+        label.textContent = prop.label
+        return label
     }
 
     /** Build slider / boolean / select rows for a prop group. */
@@ -116,11 +150,9 @@ export default class GenerationSection {
             const row = document.createElement('div')
             row.className = 'ne-row'
             row.dataset.prop = p.key
-            const label = document.createElement('label')
-            label.textContent = p.label
-            row.appendChild(label)
 
             if (p.type === 'boolean') {
+                row.appendChild(this.#labelFor(p))
                 const btn = document.createElement('button')
                 btn.className = 'ne-btn'
                 btn.dataset.key = p.key
@@ -128,12 +160,15 @@ export default class GenerationSection {
                 row.appendChild(btn)
                 this.#rows.push({ prop: p, row, btn })
             } else if (p.type === 'select') {
+                row.appendChild(this.#labelFor(p))
                 const sel = document.createElement('select')
                 sel.dataset.key = p.key
                 sel.innerHTML = renderOptions(p.options, TRACK_DEFAULTS[p.key] ?? '', { labels: p.labels })
                 row.appendChild(sel)
                 this.#rows.push({ prop: p, row, sel })
             } else {
+                // OrSlider renders its own <label> inside its row: adding one
+                // here as well would print the prop name twice.
                 const dflt = TRACK_DEFAULTS[p.key] ?? p.min
                 const s = new OrSlider({
                     key: p.key,

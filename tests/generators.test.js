@@ -729,7 +729,7 @@ describe('Generators', () => {
             if (appState.patterns.length === 0) cmd.addPattern('TestPattern')
         })
 
-        it('generatePattern gives every track a non-zero variation', async () => {
+        it('generatePattern gives every track a non-zero auto variation', async () => {
             const autoGen = new AutoGenerator()
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
@@ -737,9 +737,9 @@ describe('Generators', () => {
             const tracks = Object.values(pattern.tracks)
             expect(tracks.length).toBeGreaterThan(0)
             for (const track of tracks) {
-                expect(track.variation, track.name).toBeGreaterThan(0)
-                expect(track.variation, track.name).toBeLessThanOrEqual(100)
-                expect(track.variation2, track.name).toBeGreaterThan(0)
+                expect(track.auto_variation, track.name).toBeGreaterThan(0)
+                expect(track.auto_variation, track.name).toBeLessThanOrEqual(100)
+                expect(track.auto_variation2, track.name).toBeGreaterThan(0)
             }
         })
 
@@ -750,18 +750,42 @@ describe('Generators', () => {
 
             const bass = Object.values(pattern.tracks).find((t) => detectTrackType(t.name) === 'BASS')
             const kick = Object.values(pattern.tracks).find((t) => detectTrackType(t.name) === 'KICK')
-            if (bass && kick) expect(bass.variation).toBeGreaterThan(kick.variation)
+            if (bass && kick) expect(bass.auto_variation).toBeGreaterThan(kick.auto_variation)
         })
 
-        it('a variation the user set is never overwritten', async () => {
+        it('the manual Var Pos / Var Prop sliders are never touched by the generator', async () => {
             const autoGen = new AutoGenerator()
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
             const track = Object.values(pattern.tracks)[0]
             track.variation = 77
+            track.variation2 = 33
             await autoGen.generateTrack(track, 'basic', 1, pattern, { root: 0, scale: null })
             expect(track.variation).toBe(77)
+            expect(track.variation2).toBe(33)
+        })
+
+        it('an auto variation already picked is never overwritten', async () => {
+            const autoGen = new AutoGenerator()
+            const pattern = appState.patterns[appState.selectedPatternIdx]
+            await autoGen.generatePattern()
+
+            const track = Object.values(pattern.tracks)[0]
+            track.auto_variation = 77
+            await autoGen.generateTrack(track, 'basic', 1, pattern, { root: 0, scale: null })
+            expect(track.auto_variation).toBe(77)
+        })
+
+        it('an auto variation of 0 is a real off, not an unset value', async () => {
+            const autoGen = new AutoGenerator()
+            const pattern = appState.patterns[appState.selectedPatternIdx]
+            await autoGen.generatePattern()
+
+            const track = Object.values(pattern.tracks)[0]
+            track.auto_variation = 0
+            await autoGen.generateTrack(track, 'basic', 1, pattern, { root: 0, scale: null })
+            expect(track.auto_variation).toBe(0)
         })
     })
 
