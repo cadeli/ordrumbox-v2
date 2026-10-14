@@ -392,6 +392,57 @@ describe('Generators', () => {
             const uniquePitches = [...new Set(track.notes.map((n) => n.pitch))]
             expect(uniquePitches.length).toBeGreaterThan(1)
         })
+
+        // A flat metronomic arp: noteSpacing 1 fills every step, no jitter, no
+        // random velocity spread — so rests and the fade are all that can shape it.
+        const arpConfig = (overrides = {}) => ({
+            mode: 'arpeggio',
+            scaleName: 'pentatonic minor',
+            rootNote: 0,
+            rootPattern: [0],
+            contour: 'up',
+            noteSpacing: 1,
+            spacingJitter: 0,
+            phraseLength: 4,
+            startDegree: 0,
+            loopBeats: 2,
+            velocity: { base: 0.8, accentOnBeat: 0, variationBoost: 0, randomSpread: 0, clampMin: 0, clampMax: 1 },
+            ...overrides,
+        })
+
+        const arpNotes = (overrides) => {
+            const gen = new BassGenerator()
+            const track = makeTrack('BASS', [], { beatCount: 2, stepsPerBeat: 4 })
+            gen.generateBassArpeggioVariant(track, gen.getScaleSteps('pentatonic minor'), arpConfig(overrides), 1, 0)
+            return track.notes
+        }
+
+        it('a restChance of 0 keeps every step of the arpeggio', () => {
+            const notes = arpNotes({ restChance: 0 })
+            expect(notes.length).toBe(8)
+            expect(new Set(notes.map((n) => n.beatStep))).toEqual(new Set([0, 1, 2, 3]))
+        })
+
+        it('a restChance of 1 drops every note but the downbeat', () => {
+            const notes = arpNotes({ restChance: 1 })
+            expect(notes.length).toBe(2)
+            expect(notes.every((n) => n.beatStep === 0)).toBe(true)
+        })
+
+        it('the arpeggio velocity fades across the beat and resets on the downbeat', () => {
+            const notes = arpNotes({ restChance: 0, phraseDecay: 0.5 })
+            const firstBeat = notes.filter((n) => n.beat === 0).sort((a, b) => a.beatStep - b.beatStep)
+            expect(firstBeat.map((n) => n.beatStep)).toEqual([0, 1, 2, 3])
+            for (let i = 1; i < firstBeat.length; i++) {
+                expect(firstBeat[i].velocity, `step ${firstBeat[i].beatStep}`).toBeLessThan(firstBeat[i - 1].velocity)
+            }
+        })
+
+        it('a phraseDecay of 0 leaves the arpeggio level', () => {
+            const notes = arpNotes({ restChance: 0, phraseDecay: 0 })
+            const velocities = new Set(notes.map((n) => n.velocity))
+            expect(velocities.size).toBe(1)
+        })
     })
 
     // ── Perc Generator ─────────────────────────────────────────────
@@ -718,6 +769,54 @@ describe('Generators', () => {
             for (const genre of SongStructure.GENRES) {
                 const allowed = SongStructure.BASS_VARIANTS_BY_GENRE[genre]
                 for (let i = 0; i < 200; i++) expect(allowed).toContain(SongStructure.randomBassVariant(genre))
+            }
+        })
+
+        it('a hand-picked bass variant survives an auto-generate', async () => {
+            const autoGen = new AutoGenerator()
+            const pattern = appState.patterns[appState.selectedPatternIdx]
+            await autoGen.generatePattern({ genre: 'house' })
+
+            const bass = bassOf(pattern)
+            expect(bass, 'a BASS track was generated').toBeTruthy()
+            const list = SongStructure.BASS_VARIANTS_BY_GENRE.house
+            const pick = list[1] ?? list[0]
+            bass.auto_variant = pick
+
+            const spy = vi.spyOn(autoGen.bassGen, 'generateNewBass')
+            try {
+                for (let i = 0; i < 8; i++) {
+                    await autoGen.generateTrack(bass, 'basic', 1, pattern, { root: 0, scale: null })
+                    expect(spy.mock.calls.at(-1)[1], 'the variant passed to the bass generator').toBe(pick)
+                }
+            } finally {
+                spy.mockRestore()
+            }
+        })
+
+        it('a BASS track with no pick still draws from the genre list', async () => {
+            const autoGen = new AutoGenerator()
+            const pattern = appState.patterns[appState.selectedPatternIdx]
+            await autoGen.generatePattern({ genre: 'house' })
+
+            const bass = bassOf(pattern)
+            expect(bass, 'a BASS track was generated').toBeTruthy()
+            bass.auto_variant = ''
+
+            const spy = vi.spyOn(autoGen.bassGen, 'generateNewBass')
+            try {
+                const drawn = new Set()
+                for (let i = 0; i < 20; i++) {
+                    await autoGen.generateTrack(bass, 'basic', 1, pattern, { root: 0, scale: null })
+                    drawn.add(spy.mock.calls.at(-1)[1])
+                }
+                const genre = pattern._autoGenGenre ?? 'house'
+                for (const variant of drawn) {
+                    expect(SongStructure.BASS_VARIANTS_BY_GENRE[genre], genre).toContain(variant)
+                }
+                expect(drawn.size, 'the fallback must still vary').toBeGreaterThan(1)
+            } finally {
+                spy.mockRestore()
             }
         })
     })

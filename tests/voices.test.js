@@ -601,6 +601,29 @@ describe('WorkletSynthVoice parameter coverage', () => {
         const msg = lastPostByType('update')
         expect(msg.lfo1Target).toBe(0) // unknown → NOT
     })
+
+    it.each([
+        [4, 0.125],
+        [8, 0.0625],
+        [2, 0.25],
+    ])('auto-release lasts one step of stepsPerBeat %i (%fs at 120bpm)', async (stepsPerBeat, stepSeconds) => {
+        const ctx = createMockAudioCtx()
+        const strip = createMockStrip()
+        const voice = new WorkletSynthVoice(ctx, strip, makeGeneratedSound(), 'test')
+        const flatNote = makeFlatNote()
+        flatNote.track.useSoftSynth = true
+        flatNote.track.stepsPerBeat = stepsPerBeat
+        await voice.setup(flatNote, 1.0)
+
+        const previousTransport = serviceRegistry.transport
+        serviceRegistry.transport = { bpm: 120 }
+        try {
+            voice.start(2.0)
+            expect(lastPostByType('release').releaseTime).toBeCloseTo(2 + stepSeconds, 6)
+        } finally {
+            serviceRegistry.transport = previousTransport
+        }
+    })
 })
 
 // ─── VoiceFactory ─────────────────────────────────────────────────────────────

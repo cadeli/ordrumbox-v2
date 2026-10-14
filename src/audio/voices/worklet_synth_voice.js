@@ -98,6 +98,8 @@ export default class WorkletSynthVoice extends BaseVoice {
     #autoReleaseTimer
     #synthNodePool
     #lastPan
+    /** Grid subdivision the note was built for; one step is the note length. */
+    #stepsPerBeat = 4
 
     constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null, synthNodePool = null) {
         super(audioCtx, strip, nodePool)
@@ -118,6 +120,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             const ctx = this.audioCtx
             const gs = this.generatedSound
             this.noteRatio = computeNoteRatio(flatNote.fpitch)
+            this.#stepsPerBeat = Math.max(1, toFiniteNumber(flatNote.track?.stepsPerBeat, 4))
 
             // Normalize velocity by total VCO gain so output level matches SampleVoice
             const totalVcoGain =
@@ -153,14 +156,15 @@ export default class WorkletSynthVoice extends BaseVoice {
             // setup() computed no matter when it was last cleared.
             this.#sendUpdate(gs, this.#lastPan)
 
-            // Auto-release after one step (a 16th note = a quarter of a beat).
-            // Send a deferred release directly to the worklet processor instead of
+            // Auto-release after one grid step, so the note length follows the
+            // track's subdivision instead of always being a 16th. Send a
+            // deferred release directly to the worklet processor instead of
             // relying on setTimeout. The processor checks `releaseTime` against
             // `currentTime` in its per-sample loop, so this works correctly in
             // both real-time and OfflineAudioContext (export).
             if (this.#autoReleaseTimer) clearTimeout(this.#autoReleaseTimer)
             const bpm = serviceRegistry.transport?.bpm ?? 120
-            const stepDuration = 0.25 * (60 / bpm)
+            const stepDuration = 60 / bpm / this.#stepsPerBeat
             const autoReleaseTime = time + stepDuration
             postRelease(this.workletNode, autoReleaseTime)
 

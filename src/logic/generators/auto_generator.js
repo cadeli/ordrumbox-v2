@@ -154,11 +154,11 @@ export default class AutoGenerator {
         const type = detectTrackType(track.name)
         this.#applyGenreSwing(track, pattern)
         this.#applyVariation(track, type)
-        // The BASS draw is UNCONDITIONAL: randomBassVariant() never returns
-        // nullish, so it also overrides a track.auto_variant the user (or a
-        // previous loop) had set. That is deliberate — a hand-picked bass
-        // variant would otherwise never survive an auto-generate.
-        const variant = type === 'BASS' ? SongStructure.randomBassVariant(pattern?._autoGenGenre) : config
+        // A hand-picked bass variant always wins: the genre draw is only the
+        // fallback for a track that has not chosen one, so a deliberate pick
+        // survives an auto-generate instead of being replaced on every run.
+        const variant =
+            type === 'BASS' ? track.auto_variant || SongStructure.randomBassVariant(pattern?._autoGenGenre) : config
         if (variant !== config) {
             logger.info(
                 AutoGenerator.TAG,

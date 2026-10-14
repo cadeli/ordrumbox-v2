@@ -49,6 +49,24 @@ export default class BaseGenerator {
         track.notes = []
     }
 
+    /**
+     * Velocity for one generated note.
+     *
+     * `context.scale` multiplies the whole sum before clamping, so a caller can
+     * shape a phrase (an arpeggio fading across the beat, for instance) without
+     * fighting the configured floor and ceiling.
+     *
+     * @param {{base?: number, accentOnBeat?: number, ghost?: number, variationBoost?: number, randomSpread?: number, clampMin?: number, clampMax?: number}} [velocityConfig]
+     * @param {object} [context]
+     * @param {boolean} [context.accent] - add `accentOnBeat`
+     * @param {boolean} [context.ghost] - add `ghost`
+     * @param {boolean} [context.isVariation] - add `variationBoost`
+     * @param {number} [context.velocityBase] - overrides `velocityConfig.base`
+     * @param {number} [context.step] - step within the beat (callers pass it, this function does not read it)
+     * @param {boolean} [context.toFixed] - round to 2 decimals (default true)
+     * @param {number} [context.scale] - multiplier applied before the clamp (default 1)
+     * @returns {number}
+     */
     computeVelocity = (velocityConfig = {}, context = {}) => {
         const base = context.velocityBase ?? velocityConfig.base ?? 0.75
         const accent = context.accent ? (velocityConfig.accentOnBeat ?? 0) : 0
@@ -58,7 +76,8 @@ export default class BaseGenerator {
         const randomOffset = (Math.random() * 2 - 1) * randomSpread
         const min = velocityConfig.clampMin ?? 0.25
         const max = velocityConfig.clampMax ?? 1
-        const result = clamp(base + accent + ghost + variationBoost + randomOffset, min, max)
+        const scale = context.scale ?? 1
+        const result = clamp((base + accent + ghost + variationBoost + randomOffset) * scale, min, max)
         return context.toFixed !== false ? Number(result.toFixed(2)) : result
     }
 

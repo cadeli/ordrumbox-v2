@@ -3,6 +3,7 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import ResourcesLoader from '../../loader/resources_loader.js'
 import { logger } from '../../core/logger.js'
 import { pickRandom } from '../../core/random.js'
+import { clamp } from '../../core/numbers.js'
 
 export default class BassGenerator extends BaseGenerator {
     static BASS_GENERATION_CONFIGS = Object.freeze({
@@ -165,6 +166,10 @@ export default class BassGenerator extends BaseGenerator {
             phraseLength: 6,
             startDegree: 0,
             loopBeats: 4,
+            // Off-beat notes are the ones that can drop out, and the velocity
+            // fades across the beat: without both the line sits flat on the grid.
+            restChance: 0.18,
+            phraseDecay: 0.22,
             velocity: {
                 base: 0.74,
                 accentOnBeat: 0.14,
@@ -385,6 +390,11 @@ export default class BassGenerator extends BaseGenerator {
         const contourSequence = this.buildContour(scale, phraseLength, contour, config.startDegree ?? 0, [0])
         const averageSpacing = Math.max(1, config.noteSpacing ?? 2)
         const spacingJitter = Math.max(0, config.spacingJitter ?? 0)
+        // Rests and the fade are what stop an arpeggio from reading as a
+        // metronome: the downbeat is the anchor, so it never rests and it
+        // restarts the fade, while the notes after it can drop out and soften.
+        const restChance = clamp(config.restChance ?? 0.15, 0, 1)
+        const phraseDecay = clamp(config.phraseDecay ?? 0.2, 0, 1)
 
         for (let beat = 0; beat < (bassTrack.beatCount ?? 1); beat++) {
             const rootPitch = rootPattern[beat % rootPattern.length] + rootNote
@@ -395,7 +405,9 @@ export default class BassGenerator extends BaseGenerator {
                 const absoluteStep = beat * stepsPerBeat + step
                 if (absoluteStep >= loopPointAbsolute) break
 
-                if (Math.random() < density) {
+                const isDownbeat = step === 0
+                const rests = !isDownbeat && Math.random() < restChance
+                if (!rests && Math.random() < density) {
                     const degree = contourSequence[noteIndex % contourSequence.length] ?? 0
                     const pitch = rootPitch + degree
                     this.addNote(
@@ -405,8 +417,12 @@ export default class BassGenerator extends BaseGenerator {
                         pitch,
                         this.computeVelocity(config.velocity, {
                             step,
-                            accent: step % 4 === 0,
+                            accent: isDownbeat,
                             isVariation: noteIndex % contourSequence.length !== 0,
+                            // The fade runs across the beat and snaps back on
+                            // the downbeat, which is the push-pull that keeps
+                            // an arpeggio from sitting flat on the grid.
+                            scale: isDownbeat ? 1 : 1 - phraseDecay * (step / stepsPerBeat),
                         }),
                     )
                 }
