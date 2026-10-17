@@ -69,6 +69,10 @@ import { valueOrFallback } from '../core/logger.js'
  * @property {string}  auto_variant          - Per-loop variation id applied by auto mode ("" = none). Default: ""
  * @property {number}  auto_density          - Per-loop density offset (-1-1), -1 = auto. Default: -1
  */
+/**
+ * A track in a pattern (runtime object). Same shape as TrackDefaults.
+ * @typedef {TrackDefaults} Track
+ */
 export const TRACK_DEFAULTS = {
     name: '',
     useAutoAssignSound: true,

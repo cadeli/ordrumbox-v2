@@ -28,7 +28,7 @@ export function filterEmptyMelodicTracks(tracks) {
  * Compute how many steps a track spans: its declared beatCount × stepsPerBeat,
  * widened to the last note when that reaches further.
  *
- * @param {any} track
+ * @param {{stepsPerBeat?: number, beatCount?: number, notes?: any, loopAtStep?: number}} track
  * @returns {number}
  */
 export function getTrackStepLength(track) {
@@ -49,7 +49,7 @@ export function getTrackStepLength(track) {
  * The step the track loops at: its `loopAtStep` when set, its full length
  * otherwise — `loopAtStep` is the single source of truth for the loop.
  *
- * @param {any} track
+ * @param {{stepsPerBeat?: number, beatCount?: number, notes?: any, loopAtStep?: number}} track
  * @returns {number}
  */
 export function getTrackLoopAtStep(track) {
@@ -66,7 +66,7 @@ export function getTrackLoopAtStep(track) {
  * truncated to `loopAtStep` — the test `addLoopToTrackIfPossible` uses to find
  * the shortest real loop instead of storing a duplicate of the pattern length.
  *
- * @param {any} track
+ * @param {{stepsPerBeat?: number, beatCount?: number, notes?: any[], loopAtStep?: number, [key: string]: any}} track
  * @param {number} loopAtStep
  * @param {number} [trackSteps] - defaults to the track length
  * @returns {boolean}
@@ -95,7 +95,7 @@ export function trackNotesMatchLoop(track, loopAtStep, trackSteps = getTrackStep
 /**
  * Shorten a track to its shortest repeating loop, when it has one.
  *
- * @param {any} track - mutated in place (notes filtered, loopAtStep written)
+ * @param {{stepsPerBeat?: number, beatCount?: number, notes?: any[], loopAtStep?: number}} track - mutated in place (notes filtered, loopAtStep written)
  * @returns {{changed: boolean, reason: string, loopAtStep: number|null, removedNotes: number}}
  */
 export function addLoopToTrackIfPossible(track) {
@@ -157,7 +157,7 @@ export function addLoopToTrackIfPossible(track) {
  * When any track has solo=true, only soloed tracks play.
  * Otherwise, all non-muted tracks play.
  *
- * @param {any} track       - track object with mute/solo properties
+ * @param {{mute?: boolean, solo?: boolean, [key: string]: any}} track       - track object with mute/solo properties
  * @param {boolean} anySolo - whether any track in the pattern has solo=true
  * @returns {boolean}
  */

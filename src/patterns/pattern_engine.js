@@ -90,7 +90,7 @@ export function getArpNoteCount(note) {
     return Number.isFinite(totalNotes) ? clamp(totalNotes, 1, 16) : 1
 }
 
-/** @param {any} note @param {any} track @param {number} [tick] @returns {number} */
+/** @param {{beat?: number, beatStep?: number, [key: string]: any}} note @param {{stepsPerBeat?: number, [key: string]: any}} track @param {number} [tick] @returns {number} */
 export function computeTickForNote(note, track, tick = TICK) {
     return stepToTick(getNoteAbsoluteStep(note, track.stepsPerBeat), track.stepsPerBeat, tick)
 }
@@ -107,7 +107,7 @@ export function computeTickCountForPattern(beatCount, tick = TICK) {
  * track's own length, so a track with no loop point loops over beatCount beats
  * rather than not at all.
  */
-/** @param {any} track @param {number} [tick] @returns {number} */
+/** @param {{stepsPerBeat?: number, beatCount?: number, loopAtStep?: number, [key: string]: any}} track @param {number} [tick] @returns {number} */
 export function computeTickCountForLoop(track, tick = TICK) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
     const declared = Number(track.loopAtStep)
@@ -137,7 +137,7 @@ export function computeTickSpacing(track, rate, tick = TICK) {
     return Math.round((tick / track.stepsPerBeat) * getStepSpacing(rate))
 }
 
-/** @param {number} tick @param {any} track @param {any} note @param {number} semitoneOffset @returns {any} */
+/** @param {number} tick @param {{stepsPerBeat?: number, [key: string]: any}} track @param {{pitch?: number, [key: string]: any}} note @param {number} semitoneOffset @returns {any} */
 export function createArpFlatNote(tick, track, note, semitoneOffset) {
     const arpNote = {
         ...note,

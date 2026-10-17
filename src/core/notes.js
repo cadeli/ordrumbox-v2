@@ -49,7 +49,7 @@ export function stepToTick(step, stepsPerBeat, tick) {
  * (array or indexed object) — a bare `(track.notes ?? []).filter(...)`
  * breaks on the object form.
  *
- * @param {any} track
+ * @param {{notes?: any, stepsPerBeat?: number}} track
  * @param {number} beat
  * @param {number} beatStep
  * @returns {any[]}

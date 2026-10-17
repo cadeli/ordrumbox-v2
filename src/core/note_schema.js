@@ -94,6 +94,10 @@ const NOTE_KEY_ORDER = [
  *                                          which pass fires first. Not sub-step
  *                                          micro-timing. Default: 0
  */
+/**
+ * A note in a track (runtime object). Same shape as NoteDefaults.
+ * @typedef {NoteDefaults} Note
+ */
 export const NOTE_DEFAULTS = {
     velocity: 0.8,
     beat: 0,

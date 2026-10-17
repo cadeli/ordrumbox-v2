@@ -327,7 +327,7 @@ test.describe('Generation sliders — individual effect', () => {
             expect(none(base, (n) => !velocities.has(n.velocity))).toBe(true)
 
             await fillInput(groove(page).locator('input[data-key="prob_ghost"]'), 100)
-            const varied = await rollMany(page, trackIdx, 8)
+            const varied = await rollMany(page, trackIdx, 24)
             expect(any(varied, (n) => !velocities.has(n.velocity))).toBe(true)
         })
 
