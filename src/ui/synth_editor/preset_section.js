@@ -16,6 +16,7 @@ export default class PresetSection {
      * @param {import('./synth_preset_model.js').default} model edit-session state
      * @param {{ soundRegistry: object, serviceRegistry: object }} deps
      */
+    /** @param {any} model @param {any} deps */
     constructor(model, deps) {
         this.#model = model
         this.#soundRegistry = deps.soundRegistry

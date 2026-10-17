@@ -17,16 +17,18 @@ export default class ToolsPanel extends BasePanel {
     #midi
     #cache
 
-    /** The delay/repeat slider widget of the export section (not a count). */
+    /** The delay/repeat slider widget of the export section (not a count).
+     *  @returns {any} */
     get wavLoopsSlider() {
         return this.#export.wavLoopsSlider
     }
 
+    /** @returns {any} */
     get exportWavBtn() {
         return this.#export.wavBtn
     }
 
-    constructor() {
+        constructor() {
         super('tools-panel')
         this.#pattern = new PatternSection(this)
         this.#export = new ExportSection(this)

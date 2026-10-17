@@ -58,6 +58,7 @@ export default class PatternSettingsPanel {
     }
 
     /** Releases every DOM listener bound through listen() and every bus sub. */
+    /** @returns {void} */
     destroy() {
         this.#life.destroy()
         this.container?.remove()
@@ -68,6 +69,7 @@ export default class PatternSettingsPanel {
      * Idempotent: a second init() tears down the previous cycle first, so the
      * document never carries two panels and handlers are never bound twice.
      */
+    /** @returns {void} */
     init() {
         this.#beginInit()
         this.#createDOM()

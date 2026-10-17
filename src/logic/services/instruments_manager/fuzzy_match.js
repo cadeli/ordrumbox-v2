@@ -2,6 +2,7 @@
  * Count common alphanumeric words between two strings (case-insensitive).
  * Used for fuzzy filename → instrument matching.
  */
+/** @param {string} s1 @param {string} s2 @returns {number} */
 export function countCommonWords(s1, s2) {
     if (!s1 || !s2) return 0
     const getWords = (s) =>

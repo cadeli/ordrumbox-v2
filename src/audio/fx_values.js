@@ -55,3 +55,9 @@ export function getDelayTimeInSeconds(delayTimeValue, bpm) {
     }
     return (60 / bpm) * num
 }
+Object.freeze(WAVE_TYPES)
+Object.freeze(FILTER_TYPES)
+Object.freeze(WAVE_TO_INT)
+Object.freeze(FILTER_TO_INT)
+Object.freeze(DELAY_TIME_VALUES)
+Object.freeze(DELAY_TIME_LABELS)

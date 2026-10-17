@@ -23,6 +23,7 @@ export default class CacheSection {
     #jsonModalCleanup
 
     /** @param {import('../tools_panel.js').default} panel */
+    /** @param {any} panel */
     constructor(panel) {
         this.#panel = panel
         this.#jsonModalCleanup = null

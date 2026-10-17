@@ -30,10 +30,12 @@ export default class MidiManager extends EventTarget {
         this.clockStartTime = null
     }
 
+    /** @returns {boolean} */
     isSupported = () => {
         return isMidiSupported()
     }
 
+    /** @returns {Promise<boolean>} */
     init = async () => {
         if (this.isReady) {
             return true
@@ -70,6 +72,7 @@ export default class MidiManager extends EventTarget {
         return this.initPromise
     }
 
+    /** @returns {void} */
     disable = () => {
         if (this.midiAccess) {
             this.midiAccess.removeEventListener('statechange', this.onStateChange)
@@ -89,6 +92,7 @@ export default class MidiManager extends EventTarget {
         this.dispatchEvent(new Event('statusChange'))
     }
 
+    /** @returns {string} */
     getButtonLabel = () => {
         if (this.isInitializing) {
             return 'Enabling MIDI...'
@@ -99,6 +103,7 @@ export default class MidiManager extends EventTarget {
         return 'Enable MIDI'
     }
 
+    /** @returns {any} */
     getStatus = () => {
         return {
             supported: this.isSupported(),
@@ -109,10 +114,12 @@ export default class MidiManager extends EventTarget {
         }
     }
 
+    /** @returns {void} */
     onStateChange = () => {
         this.refreshPorts()
     }
 
+    /** @returns {void} */
     refreshPorts = () => {
         if (!this.midiAccess) {
             this.dispatchEvent(new Event('statusChange'))
@@ -149,10 +156,12 @@ export default class MidiManager extends EventTarget {
         this.dispatchEvent(new Event('statusChange'))
     }
 
+    /** @param {string} id */
     setSelectedOutput = (id) => {
         this.selectedOutputId = id
     }
 
+    /** @param {number[]} data @param {number} [timestamp] */
     sendMidiMessage = (data, timestamp) => {
         if (!this.isReady || !this.selectedOutputId) return
         const output = this.outputs.find((o) => o.id === this.selectedOutputId)
@@ -169,11 +178,13 @@ export default class MidiManager extends EventTarget {
         }
     }
 
+    /** @param {number} channel @param {number} note @param {number} velocity @param {number} [timestamp] */
     sendNoteOn = (channel, note, velocity, timestamp) => {
         const status = 0x90 | clamp(channel, 0, 15)
         this.sendMidiMessage([status, note, velocity], timestamp)
     }
 
+    /** @param {number} channel @param {number} note @param {number} [timestamp] */
     sendNoteOff = (channel, note, timestamp) => {
         const status = 0x80 | clamp(channel, 0, 15)
         this.sendMidiMessage([status, note, 0], timestamp)

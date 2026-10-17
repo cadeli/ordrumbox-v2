@@ -45,6 +45,7 @@ export default class AutoGenerator {
      * Find matching config from structure for a given track type.
      * Prefers exact name match, falls back to first config of same type.
      */
+    /** @param {any} structure @param {any} track @returns {any} */
     #findTrackConfig(structure, track) {
         const type = detectTrackType(track.name)
         const trackNameUpper = track.name.toUpperCase()
@@ -66,6 +67,7 @@ export default class AutoGenerator {
      * centre and scale (randomized once per generated pattern) so every
      * generation lands in a different key while staying internally coherent.
      */
+    /** @param {any} pattern @param {string} genre @param {string} sectionName @param {number} [loopInElement] @returns {any} */
     #resolveHarmony = (pattern, genre, sectionName, loopInElement = 0) => {
         const base = this.structureGen.resolveHarmony(genre, sectionName, loopInElement)
         const offset = pattern?._autoGenKeyOffset ?? 0
@@ -77,6 +79,7 @@ export default class AutoGenerator {
      * Per-track density jitter: core tracks stay close to full density while
      * optional parts vary a lot between generations.
      */
+    /** @param {any} track @returns {number} */
     #randomDensity = (track) => {
         const type = detectTrackType(track.name)
         const min = type === 'KICK' || type === 'SNARE' || type === 'BASS' ? 0.85 : 0.6
@@ -84,6 +87,7 @@ export default class AutoGenerator {
         return Number((min + Math.random() * (max - min)).toFixed(2))
     }
 
+    /** @param {any} [options] @returns {Promise<any>} */
     generatePattern = async (options = {}) => {
         try {
             let pattern = appState.selectedPattern
@@ -150,6 +154,7 @@ export default class AutoGenerator {
         }
     }
 
+    /** @param {any} track @param {any} config @param {number} [density] @param {any} [pattern] @param {any} [harmony] @returns {Promise<void>} */
     generateTrack = async (track, config, density = 1, pattern = null, harmony = { root: 0, scale: null }) => {
         const type = detectTrackType(track.name)
         this.#applyGenreSwing(track, pattern)

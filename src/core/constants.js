@@ -96,6 +96,7 @@ const MOBILE_MAX_HEIGHT = 480
  *  - viewport size (a narrow desktop window keeps the compact layout so
  *    the CSS never breaks — same criterion the CSS `.is-compact` class uses)
  */
+/** @returns {boolean} */
 export function isMobileViewport() {
     if (typeof window === 'undefined') return false
     return isCompactDevice() || window.innerWidth <= MOBILE_MAX_WIDTH || window.innerHeight <= MOBILE_MAX_HEIGHT

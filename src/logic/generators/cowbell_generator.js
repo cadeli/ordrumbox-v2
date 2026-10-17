@@ -81,6 +81,7 @@ export default class CowbellGenerator extends BaseGenerator {
         super('COWBELL', CowbellGenerator.COWBELL_GENERATION_CONFIGS)
     }
 
+    /** @param {any} track @param {string|null} [variantName] @param {number} [density] */
     generateNewCowbell = async (track, variantName = null, density = 1) => {
         const variant = this.resolveVariantName(variantName)
         const config = this.configs[variant] ?? this.configs.basic

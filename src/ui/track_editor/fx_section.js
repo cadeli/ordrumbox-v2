@@ -34,6 +34,7 @@ export default class FxSection {
     #knobRows = []
 
     /** @param {import('../track_editor.js').default} editor */
+    /** @param {any} editor */
     constructor(editor) {
         this.#editor = editor
     }

@@ -44,7 +44,7 @@ class Midi {
      * @param {{id?: string, drum?: boolean, pan?: number, synonyms?: string[], subst?: object, midi?: object[]}} [data]
      */
     /**
-     * @param {{channel?: number, name?: string, key?: number | string | null, program?: number | string | null, keyBased?: any}} [data]
+     * @param {{channel?: number, name?: string, key?: number | null, program?: number | null, keyBased?: any}} [data]
      */
     constructor(data = {}) {
         this.channel = data.channel ?? 9

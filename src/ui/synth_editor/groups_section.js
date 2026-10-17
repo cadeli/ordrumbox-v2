@@ -48,6 +48,7 @@ export default class GroupsSection {
     #model
 
     /** @param {import('./synth_preset_model.js').default} model edit-session state */
+    /** @param {any} model */
     constructor(model) {
         this.#model = model
     }

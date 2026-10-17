@@ -2,10 +2,12 @@ import { safeDisconnect } from './math.js'
 
 const DISPOSABLE = new Set(['OscillatorNode', 'BufferSourceNode'])
 
+/** Pool of reusable Web Audio nodes to reduce GC pressure. */
 export default class NodePool {
     #pools
     #activeCount
 
+    /** @param {BaseAudioContext} audioCtx */
     constructor(audioCtx) {
         this.audioCtx = audioCtx
         this.#pools = {}
@@ -16,6 +18,7 @@ export default class NodePool {
         return this.#activeCount
     }
 
+    /** @param {string} type @returns {any} */
     acquire(type) {
         let pool = this.#pools[type]
         if (!pool) pool = this.#pools[type] = []
@@ -25,6 +28,7 @@ export default class NodePool {
         return node
     }
 
+    /** @param {any} node */
     release(node) {
         if (!node) return
         safeDisconnect(node)
@@ -36,6 +40,7 @@ export default class NodePool {
         pool.push(node)
     }
 
+    /** @param {any} node @param {string} type */
     resetNode(node, type) {
         if (!node) return
         safeDisconnect(node)

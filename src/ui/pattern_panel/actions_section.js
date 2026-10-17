@@ -10,6 +10,7 @@ export default class ActionsSection {
     #editor
 
     /** @param {import('../pattern_panel.js').default} editor */
+    /** @param {any} editor */
     constructor(editor) {
         this.#editor = editor
     }

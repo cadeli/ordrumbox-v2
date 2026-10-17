@@ -67,6 +67,7 @@ export default class KickGenerator extends BaseGenerator {
         super('KICK', KickGenerator.KICK_GENERATION_CONFIGS)
     }
 
+    /** @param {any} kickTrack @param {string|null} [variantName] @param {number} [density] */
     generateNewKick = (kickTrack, variantName = null, density = 1) => {
         const resolvedVariantName = this.resolveVariantName(variantName)
         const config = this.configs[resolvedVariantName] ?? this.configs.basic
@@ -99,6 +100,7 @@ export default class KickGenerator extends BaseGenerator {
         this.applyLoopPoint(kickTrack, config)
     }
 
+    /** @returns {string} */
     getRndVariantName = () => {
         const variants = Object.keys(this.configs).filter((v) => v !== 'break')
         return pickRandom(variants) ?? 'basic'

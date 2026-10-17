@@ -16,10 +16,12 @@ export default class NoteCommands {
     #host
 
     /** @param {import('./commander.js').CommanderHost} host */
+    /** @param {any} host */
     constructor(host) {
         this.#host = host
     }
 
+    /** @param {any} track @param {any} selectedNote */
     deleteNote(track, selectedNote) {
         const values = Object.values(track.notes)
         for (let i = values.length - 1; i >= 0; i--) {
@@ -60,6 +62,7 @@ export default class NoteCommands {
         }
     }
 
+    /** @param {any} track @param {number} beat @param {number} beatStep @param {number} [pitch] @returns {any} */
     addNote(track, beat, beatStep, pitch = 0) {
         // Defensive: addTrack already normalises, but a direct field write can
         // still leave the grid. Clamp + rescale (and say so) instead of
@@ -115,6 +118,7 @@ export default class NoteCommands {
      *   this note into ONE undo step (continuous sliders/knobs)
      * @returns {object} the note
      */
+    /** @param {any} track @param {any} note @param {any} updates @param {any} [opts] @returns {any} */
     updateNote(track, note, updates, { desc, coalesce = false } = {}) {
         if (!note || !updates || typeof updates !== 'object') return note
 
@@ -147,6 +151,7 @@ export default class NoteCommands {
         return note
     }
 
+    /** @param {any} track @param {number} beat @param {number} beatStep @param {any[]} sourceNotes */
     pasteStepNotes(track, beat, beatStep, sourceNotes) {
         if (!track || !Array.isArray(sourceNotes)) return
         const spb = track.stepsPerBeat ?? 4

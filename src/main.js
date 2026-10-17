@@ -32,6 +32,8 @@ function primeColorScheme() {
         })
 }
 
+/** Bootstrap the application after the Start button click.
+ * @returns {void} */
 export function init() {
     primeColorScheme()
     // The 'c' shortcut cycles soundRegistry.settings.colorScheme and emits;

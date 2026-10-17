@@ -98,6 +98,7 @@ export default class ClapGenerator extends BaseGenerator {
         super('CLAP', ClapGenerator.CLAP_GENERATION_CONFIGS)
     }
 
+    /** @param {any} clapTrack @param {string|null} [variantName] @param {number} [density] */
     generateNewClap = (clapTrack, variantName = null, density = 1) => {
         const resolvedVariantName = this.resolveVariantName(variantName)
         const config = this.configs[resolvedVariantName] ?? this.configs.sparse

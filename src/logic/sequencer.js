@@ -24,6 +24,7 @@ export default class Sequencer {
     /** Whether the transport was last anchored in the song view's mode. */
     #anchoredSongMode = false
 
+    /** @param {any} [options] */
     constructor(options = {}) {
         this.serviceRegistry = options.serviceRegistry ?? serviceRegistry
         this.appState = options.appState ?? appState
@@ -46,6 +47,7 @@ export default class Sequencer {
         return this.#songCursorMeasure
     }
 
+    /** @returns {void} */
     ensureTransport = () => {
         if (!this.serviceRegistry.transport) {
             this.serviceRegistry.transport = new Transport(this.serviceRegistry.audioCtx)

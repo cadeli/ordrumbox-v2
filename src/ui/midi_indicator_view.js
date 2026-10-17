@@ -9,10 +9,12 @@ export default class MidiIndicatorView {
     #onActivity
     #onStatusChange
 
+    /** @returns {void} */
     flashActivity() {
         this.#flashActivity()
     }
 
+    /** @param {HTMLElement} container */
     constructor(container) {
         this.#container = container
         this.#midiManager = null
@@ -22,6 +24,7 @@ export default class MidiIndicatorView {
         this.#onActivity = () => this.#flashActivity()
     }
 
+    /** @param {any} midiManager */
     connect(midiManager) {
         if (this.#midiManager === midiManager) return
         this.disconnect()
@@ -32,6 +35,7 @@ export default class MidiIndicatorView {
         }
     }
 
+    /** @returns {void} */
     disconnect() {
         if (this.#midiManager) {
             this.#midiManager.removeEventListener('statusChange', this.#onStatusChange)

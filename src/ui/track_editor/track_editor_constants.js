@@ -17,6 +17,7 @@ const fmtPitch = (v) => {
     return (n >= 0 ? '+' : '') + String(Math.abs(n)).padStart(2, '0')
 }
 
+/** @param {string} key @param {any} v @returns {string} */
 export const fmtVal = (key, v) => {
     if (key === 'filterFreq') return fmtFreq(v)
     if (key === 'filterQ') return v.toFixed(2)
@@ -169,3 +170,4 @@ export const GEN_ENGINE_PROPS = withRange([
 
 export const ALL_TRACK_PROPS = [...GROUPS.flatMap((g) => g.props), ...FILTER_PROPS]
 export const PROP_BY_KEY = new Map(ALL_TRACK_PROPS.map((p) => [p.key, p]))
+Object.freeze(FILTER_TYPE_ICONS)

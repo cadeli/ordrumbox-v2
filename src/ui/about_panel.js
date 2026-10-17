@@ -12,10 +12,11 @@ export default class AboutPanel extends BasePanel {
     #deferredPrompt = null
     #installBtn = null
 
-    constructor() {
+        constructor() {
         super('about-panel')
     }
 
+    /** @returns {void} */
     init() {
         super.init()
         this.#registerInstallPrompt()
@@ -37,6 +38,7 @@ export default class AboutPanel extends BasePanel {
         })
     }
 
+    /** @returns {void} */
     createDOM() {
         super.createDOM()
         this.container.innerHTML = `
@@ -110,6 +112,7 @@ export default class AboutPanel extends BasePanel {
 
     subscribe() {}
 
+    /** @returns {void} */
     show() {
         super.show()
         this.#detectPwaStatus()

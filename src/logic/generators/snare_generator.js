@@ -105,6 +105,7 @@ export default class SnareGenerator extends BaseGenerator {
         super('SNARE', SnareGenerator.SNARE_GENERATION_CONFIGS)
     }
 
+    /** @param {any} snareTrack @param {string|null} [variantName] @param {number} [density] */
     generateNewSnare = (snareTrack, variantName = null, density = 1) => {
         const resolvedVariantName = this.resolveVariantName(variantName)
         const config = this.configs[resolvedVariantName] ?? this.configs.basic
@@ -140,6 +141,7 @@ export default class SnareGenerator extends BaseGenerator {
         this.applyLoopPoint(snareTrack, config)
     }
 
+    /** @param {any} snareTrack @param {any} config */
     generateSnareRollVariant = (snareTrack, config) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 1)
         const stepsPerBeat = snareTrack.stepsPerBeat ?? 4
@@ -177,6 +179,7 @@ export default class SnareGenerator extends BaseGenerator {
         }
     }
 
+    /** @param {any} snareTrack @param {any} config @param {number} [density] */
     generateSnareFillVariant = (snareTrack, config, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 2)
         const stepsPerBeat = snareTrack.stepsPerBeat ?? 4
@@ -204,6 +207,7 @@ export default class SnareGenerator extends BaseGenerator {
         }
     }
 
+    /** @param {any} snareTrack @param {any} config */
     generateBreakCrescendo = (snareTrack, config) => {
         const stepsPerBeat = snareTrack.stepsPerBeat ?? 4
         const beatCount = snareTrack.beatCount ?? 1

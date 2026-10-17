@@ -14,6 +14,11 @@ export default class BaseVoice {
      */
     onEnded
 
+    /**
+     * @param {BaseAudioContext} audioCtx
+     * @param {any} strip
+     * @param {any} [nodePool]
+     */
     constructor(audioCtx, strip, nodePool = null) {
         this.audioCtx = audioCtx
         this.strip = strip
@@ -23,18 +28,22 @@ export default class BaseVoice {
         this.#pooledNodes = []
     }
 
+    /** @param {any} _flatNote @param {number} _time */
     setup(_flatNote, _time) {
         throw new Error('setup() must be implemented by subclass')
     }
 
+    /** @param {number} _time */
     start(_time) {
         throw new Error('start() must be implemented by subclass')
     }
 
+    /** @param {number} _time */
     stop(_time) {
         this.stopped = true
     }
 
+    /** @returns {void} */
     cleanup() {
         const count = this.nodes.length
         this.nodes.forEach((node) => {
@@ -54,12 +63,14 @@ export default class BaseVoice {
         BaseVoice.#activeNodeCount = Math.max(0, BaseVoice.#activeNodeCount - count)
     }
 
+    /** @param {any} node @returns {any} */
     registerNode(node) {
         this.nodes.push(node)
         BaseVoice.#activeNodeCount++
         return node
     }
 
+    /** @param {string} type @returns {any} */
     acquireNode(type) {
         if (this.nodePool) {
             const node = this.nodePool.acquire(type)
@@ -84,6 +95,7 @@ export default class BaseVoice {
         }
     }
 
+    /** @param {any} sourceNode */
     connectToStripInput(sourceNode) {
         if (!sourceNode || !this.strip) return
         const entry = this.strip.voicesInput ?? this.strip.filter1

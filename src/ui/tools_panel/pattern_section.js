@@ -10,6 +10,8 @@ export default class PatternSection {
     #panel
 
     /** @param {import('../tools_panel.js').default} panel */
+    /** @param {any} panel */
+    /** @param {any} panel */
     constructor(panel) {
         this.#panel = panel
     }

@@ -8,6 +8,7 @@ export const LFO_MAP = [
     { lfoKey: 'filterQLfo', resultKey: 'filterQ' },
 ]
 
+/** @param {any} track @param {number} tick @param {number} tickCount @param {number} bpm @returns {Record<string, number>} */
 export function computeTrackLfoValues(track, tick, tickCount, bpm) {
     const values = {}
     for (const { lfoKey, resultKey } of LFO_MAP) {

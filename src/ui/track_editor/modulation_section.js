@@ -20,6 +20,7 @@ export default class ModulationSection {
     #subtabs = []
 
     /** @param {import('../track_editor.js').default} editor */
+    /** @param {any} editor */
     constructor(editor) {
         this.#editor = editor
         editor.selectedLfoTarget = null

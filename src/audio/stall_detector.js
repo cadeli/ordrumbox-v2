@@ -34,6 +34,7 @@ export default class StallDetector {
         this.#onCtxStateChangeBound = this.#onCtxStateChange.bind(this)
     }
 
+    /** @returns {void} */
     start() {
         if (this.#timerId) return
 
@@ -45,6 +46,7 @@ export default class StallDetector {
         this.#timerId = setInterval(() => this.#check(), this.#checkIntervalMs)
     }
 
+    /** @returns {void} */
     stop() {
         if (this.#timerId) {
             clearInterval(this.#timerId)

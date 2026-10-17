@@ -118,6 +118,7 @@ export class Exporter {
         return cleaned
     }
 
+    /** @param {any} pattern @returns {any} */
     static export(pattern) {
         const cleaned = this.cleanPattern(pattern)
         return {

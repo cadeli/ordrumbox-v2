@@ -14,6 +14,7 @@ export default class Sound {
     #activeVoiceSet
     #stripParamCache
 
+    /** @param {BaseAudioContext} audioCtx @param {any} mixer @param {Record<string,any>} sounds @param {Record<string,any>} generatedSounds @param {boolean} [isOffline] */
     constructor(audioCtx, mixer, sounds, generatedSounds, isOffline = false) {
         this.audioCtx = audioCtx
         this.mixer = mixer
@@ -55,17 +56,20 @@ export default class Sound {
         this.#stripParamCache = new Map()
     }
 
+    /** @param {any} sourceNode @param {any} strip */
     connectToStripInput = (sourceNode, strip) => {
         if (!sourceNode || !strip) return
         const entry = strip.voicesInput ?? strip.filter1
         sourceNode.connect(entry)
     }
 
+    /** @param {any} track @param {any} voice */
     registerVoice = (track, voice) => {
         if (!track?.mono || !voice) return
         this.monoVoiceByTrack.set(track, voice)
     }
 
+    /** @param {any} voice */
     registerSynthVoice = (voice) => {
         if (!voice || typeof voice.updateGeneratedSound !== 'function') return
         this.activeSynthVoices.add(voice)
@@ -76,6 +80,7 @@ export default class Sound {
         }
     }
 
+    /** @param {any} voice @param {number} time */
     stopVoice = (voice, time) => {
         if (!voice || typeof voice.stop !== 'function') return
         voice.stop(time)
@@ -91,6 +96,7 @@ export default class Sound {
         }
     }
 
+    /** @param {any} track @param {number} time */
     stopPreviousVoice = (track, time) => {
         if (!track?.mono) return
         const previousVoice = this.monoVoiceByTrack.get(track)
@@ -100,6 +106,7 @@ export default class Sound {
         }
     }
 
+    /** @param {any} flatNote @param {number} time @returns {Promise<any>} */
     play = async (flatNote, time) => {
         if (!flatNote || !this.mixer) return
         // Re-initialise bus nodes if they were torn down by mixer.stop()
@@ -115,6 +122,7 @@ export default class Sound {
         }
     }
 
+    /** @param {any} flatNote @param {number} time @param {any} [opts] @returns {Promise<any>} */
     #playVoice = async (flatNote, time, opts = {}) => {
         try {
             const strip = await this.mixer.getOrCreateStrip(flatNote.track.name)
@@ -180,11 +188,13 @@ export default class Sound {
         }
     }
 
+    /** @param {any} flatNote @param {number} time @returns {Promise<any>} */
     playSample = async (flatNote, time) => {
         if (!flatNote) return
         return await this.#playVoice(flatNote, time)
     }
 
+    /** @param {any} flatNote @param {number} time @returns {Promise<any>} */
     playGenerated = async (flatNote, time) => {
         try {
             if (Object.keys(this.generatedSounds).length === 0) {

@@ -23,6 +23,7 @@ export default class SynthPresetModel {
     /**
      * @param {{ soundRegistry: object, serviceRegistry: object }} deps
      */
+    /** @param {any} deps */
     constructor(deps) {
         this.#soundRegistry = deps.soundRegistry
         this.#serviceRegistry = deps.serviceRegistry

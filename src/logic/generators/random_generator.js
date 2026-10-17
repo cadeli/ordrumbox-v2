@@ -16,6 +16,7 @@ export default class RandomGenerator extends BaseGenerator {
         super('RANDOM', {})
     }
 
+    /** @param {any} track @param {any} [pattern] */
     generateRandom = (track, pattern = null) => {
         const config = RandomGenerator.RANDOM_CONFIG
 

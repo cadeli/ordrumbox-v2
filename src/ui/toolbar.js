@@ -34,7 +34,7 @@ export default class Toolbar {
     #ro
     #checkOverflow
 
-    constructor() {
+        constructor() {
         this.container = null
 
         this.#transport = new TransportControls()

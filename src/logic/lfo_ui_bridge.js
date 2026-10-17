@@ -13,6 +13,7 @@ export default class LfoUiBridge {
     #nextId = 1
     #fallback = false
 
+    /** @param {AudioContext} audioCtx */
     constructor(audioCtx) {
         if (!audioCtx || !WorkletLoader.isSupported(audioCtx)) {
             this.#fallback = true
@@ -25,6 +26,7 @@ export default class LfoUiBridge {
         })
     }
 
+    /** @returns {boolean} */
     get fallback() {
         return this.#fallback
     }
@@ -46,6 +48,7 @@ export default class LfoUiBridge {
         }
     }
 
+    /** @param {any} track @param {number} tick @param {number} tickCount @returns {any} */
     compute(track, tick, tickCount) {
         const lfos = {}
         for (const { lfoKey, resultKey } of LFO_MAP) {
@@ -87,6 +90,7 @@ export default class LfoUiBridge {
         })
     }
 
+    /** @returns {void} */
     destroy() {
         if (this.#node) {
             this.#node.port.onmessage = null

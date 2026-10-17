@@ -14,11 +14,13 @@ export default class PatternCommands {
     #host
 
     /** @param {import('./commander.js').CommanderHost} host */
+    /** @param {any} host */
     constructor(host) {
         this.#host = host
     }
 
     /** Ids already used by the library, so a new pattern cannot collide. */
+    /** @returns {Set<string>} */
     #takenIds() {
         return new Set(appState.patterns.map((p) => p?.id).filter(Boolean))
     }
@@ -31,11 +33,13 @@ export default class PatternCommands {
      * @param {{ id?: string, name?: string }} pattern
      * @returns {string} the new id
      */
+    /** @param {any} pattern */
     refreshPatternId(pattern) {
         pattern.id = ''
         return ensurePatternId(pattern, this.#takenIds())
     }
 
+    /** @param {string} [name] @returns {any} */
     addPattern(name) {
         const pattern = this.createPattern(name)
         const patternIdx = appState.patterns.length
@@ -59,6 +63,7 @@ export default class PatternCommands {
         return pattern
     }
 
+    /** @param {number} idx */
     removePattern(idx) {
         if (appState.patterns.length <= 1) return false
         const removedPattern = appState.patterns[idx]
@@ -86,6 +91,7 @@ export default class PatternCommands {
         return true
     }
 
+    /** @param {number} idx @param {string} newName */
     renamePattern(idx, newName) {
         const pat = appState.patterns[idx]
         if (!pat) return
@@ -107,6 +113,7 @@ export default class PatternCommands {
         })
     }
 
+    /** @param {string} name @returns {any} */
     getPatternByName(name) {
         const normalizedName = String(name ?? '')
             .trim()
@@ -114,6 +121,7 @@ export default class PatternCommands {
         return appState.patterns.find((pattern) => pattern?.name?.toUpperCase() === normalizedName) ?? null
     }
 
+    /** @param {any} pattern @param {number} bpm */
     setPatternBpm(pattern, bpm) {
         const bpmValue = Number(bpm)
         const oldBpm = pattern.bpm
@@ -148,6 +156,7 @@ export default class PatternCommands {
      * @param {number} beatCount - target length in beats (1..MAX_BEATS)
      * @returns {any} the pattern
      */
+    /** @param {any} pattern @param {number} beatCount */
     setPatternBeatCount(pattern, beatCount) {
         const requested = Math.round(Number(beatCount))
         const appliedBeatCount =
@@ -204,6 +213,7 @@ export default class PatternCommands {
         return pattern
     }
 
+    /** @param {any} pattern @param {string} description */
     setPatternDescription(pattern, description) {
         const oldDescription = pattern.description
         pattern.description = String(description ?? '')
@@ -225,6 +235,7 @@ export default class PatternCommands {
         return pattern
     }
 
+    /** @param {any} sourcePattern @returns {any} */
     importPatternFromJson(sourcePattern) {
         const result = importPatternFromJson(
             sourcePattern,
@@ -236,6 +247,7 @@ export default class PatternCommands {
         return result
     }
 
+    /** @param {string} [name] @returns {any} */
     createPattern(name) {
         name ??= `NewPat_${appState.patterns.length}`
         const pattern = { name, description: '', tracks: [], bpm: 120, beatCount: 4 }

@@ -43,12 +43,13 @@ export default class OutputPanel extends BasePanel {
     #hicut = null
     #bgColor = null
 
-    constructor() {
+        constructor() {
         super('output-panel')
         /** @type {HTMLCanvasElement|null} */
         this.canvas = null
     }
 
+    /** @returns {void} */
     createDOM() {
         super.createDOM()
         this.container.innerHTML = `

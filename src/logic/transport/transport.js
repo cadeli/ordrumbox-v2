@@ -5,6 +5,7 @@ import { logger } from '../../core/logger.js'
 import { reportUserError } from '../../core/notify.js'
 
 export default class Transport {
+    /** @param {BaseAudioContext} audioCtx */
     constructor(audioCtx) {
         this.audioCtx = audioCtx
         this.isRunning = false
@@ -19,6 +20,7 @@ export default class Transport {
         this.onSchedule = null // Callback(tick, time)
     }
 
+    /** @returns {void} */
     ensureTimerWorker = () => {
         if (this.timerWorker) return
 
@@ -34,6 +36,7 @@ export default class Transport {
         this.timerWorker.postMessage({ interval: this.schedulerPollIntervalMs })
     }
 
+    /** @returns {void} */
     start = () => {
         this.isRunning = true
         this.tick = 0
@@ -50,6 +53,7 @@ export default class Transport {
         }
     }
 
+    /** @returns {void} */
     stop = () => {
         this.isRunning = false
         this.timerWorker?.postMessage('stop')
@@ -59,6 +63,7 @@ export default class Transport {
         }
     }
 
+    /** @param {number} bpm */
     setBpm = (bpm) => {
         this.bpm = bpm
         this.clockInterval = 60 / (this.bpm * 24)
@@ -66,6 +71,7 @@ export default class Transport {
         logger.info('Transport', 'Transport::setBpm new bpm is ', bpm)
     }
 
+    /** @returns {void} */
     scheduler = () => {
         const audioNow = this.audioCtx.currentTime
         const perfNow = performance.now()
@@ -108,6 +114,7 @@ export default class Transport {
      * what sounds a tick. (It used to be called nextNote, which claims an effect
      * this method does not have.)
      */
+    /** @returns {void} */
     advanceTick = () => {
         this.nextStepTime += appState.secondsPerTick
         this.tick++

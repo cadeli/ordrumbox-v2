@@ -135,6 +135,7 @@ export default class MelodyGenerator extends BaseGenerator {
         super('MELODY', MelodyGenerator.MELODY_GENERATION_CONFIGS)
     }
 
+    /** @param {any} melodyTrack @param {string|null} [variantName] @param {number} [density] @param {any} [pattern] @param {any} [harmony] */
     generateNewMelody = (
         melodyTrack,
         variantName = null,
@@ -233,6 +234,7 @@ export default class MelodyGenerator extends BaseGenerator {
         return basePitch + pitchBias
     }
 
+    /** @param {any} melodyTrack @param {any} scale @param {any} config @param {number} [density] @param {number} [pitchBias] */
     generateMelodyGrooveVariant = (melodyTrack, scale, config, density = 1, pitchBias = 0) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(melodyTrack, config, 2)
         const stepsPerBeat = melodyTrack.stepsPerBeat ?? 4
@@ -277,6 +279,7 @@ export default class MelodyGenerator extends BaseGenerator {
         }
     }
 
+    /** @param {any} melodyTrack @param {any} scale @param {any} config @param {number} [density] @param {number} [pitchBias] */
     generateMelodyArpeggioVariant = (melodyTrack, scale, config, density = 1, pitchBias = 0) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(melodyTrack, config, 2)
         const stepsPerBeat = melodyTrack.stepsPerBeat ?? 4

@@ -12,6 +12,13 @@ import {
 } from '../../core/constants.js'
 
 export default class SampleVoice extends BaseVoice {
+    /**
+     * @param {BaseAudioContext} audioCtx
+     * @param {any} strip
+     * @param {AudioBuffer} buffer
+     * @param {any} [nodePool]
+     * @param {any} [sample]
+     */
     constructor(audioCtx, strip, buffer, nodePool = null, sample = null) {
         super(audioCtx, strip, nodePool)
         this.buffer = buffer
@@ -22,6 +29,7 @@ export default class SampleVoice extends BaseVoice {
         this.noteVelo = 1
     }
 
+    /** @param {any} flatNote @param {number} time @param {any} [lfoContext] */
     setup(flatNote, time, lfoContext = null) {
         const track = flatNote.track
 
@@ -62,11 +70,13 @@ export default class SampleVoice extends BaseVoice {
         this.duration = GAIN_ATTACK_RAMP + safeDecay
     }
 
+    /** @param {number} time */
     start(time) {
         this.snd.start(time)
         this.snd.stop(time + this.duration + RELEASE_TIME)
     }
 
+    /** @param {number} time */
     stop(time) {
         if (this.stopped) return
         super.stop(time)

@@ -178,6 +178,7 @@ export default class HatGenerator extends BaseGenerator {
         super('HAT', HatGenerator.HAT_GENERATION_CONFIGS)
     }
 
+    /** @param {any} hatTrack @param {string|null} [variantName] @param {number} [density] */
     generateNewHat = (hatTrack, variantName = null, density = 1) => {
         const trackType = this.getHatTrackType(hatTrack)
         const resolvedVariantName = this.resolveHatVariantName(trackType, variantName)
@@ -226,6 +227,7 @@ export default class HatGenerator extends BaseGenerator {
         this.applyLoopPoint(hatTrack, config)
     }
 
+    /** @param {any} hatTrack @param {any} config @param {number} [_density] */
     generateHatLockedVariant = (hatTrack, config, _density = 1) => {
         this.withTemporaryStepsPerBeat(hatTrack, 16, () => {
             const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 1)
@@ -257,10 +259,12 @@ export default class HatGenerator extends BaseGenerator {
         })
     }
 
+    /** @param {any} hatTrack @param {any} config @param {number} [density] */
     generateHatShakerVariant = (hatTrack, config, density = 1) => {
         this.#generateHatVelocityVariant(hatTrack, config, density, { defaultPatternVelocity: 0.5 })
     }
 
+    /** @param {any} hatTrack @param {any} config @param {number} [density] */
     generateHatRideVariant = (hatTrack, config, density = 1) => {
         this.#generateHatVelocityVariant(hatTrack, config, density, { defaultPatternVelocity: 0.55, hasBell: true })
     }
@@ -305,6 +309,7 @@ export default class HatGenerator extends BaseGenerator {
         }
     }
 
+    /** @param {any} hatTrack @param {any} config @param {any} trackType */
     generateHatTransitionVariant = (hatTrack, config, trackType) => {
         const lastBeat = Math.max(0, (hatTrack.beatCount ?? 1) - (config.startBeatOffset ?? 1))
         const stepsPerBeat = hatTrack.stepsPerBeat ?? 4
@@ -335,6 +340,7 @@ export default class HatGenerator extends BaseGenerator {
         }
     }
 
+    /** @param {any} hatTrack @param {any} config */
     generateHatRollVariant = (hatTrack, config) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 4)
         const stepsPerBeat = hatTrack.stepsPerBeat ?? 4

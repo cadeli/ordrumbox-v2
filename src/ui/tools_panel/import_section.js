@@ -9,6 +9,8 @@ export default class ImportSection {
     #midiImportService
 
     /** @param {import('../tools_panel.js').default} panel */
+    /** @param {any} panel */
+    /** @param {any} panel */
     constructor(panel) {
         this.#panel = panel
         this.#midiImportService = new MidiImportService()

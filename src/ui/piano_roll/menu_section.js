@@ -19,6 +19,7 @@ export default class MenuSection {
     #sequenceIdx = 0
 
     /** @param {import('../piano_roll_panel.js').default} editor */
+    /** @param {any} editor */
     constructor(editor) {
         this.#editor = editor
     }

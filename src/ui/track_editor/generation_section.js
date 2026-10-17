@@ -48,6 +48,7 @@ export default class GenerationSection {
     #rows = []
 
     /** @param {import('../track_editor.js').default} editor */
+    /** @param {any} editor */
     constructor(editor) {
         this.#editor = editor
         this.#genSubTab = new OrTab({

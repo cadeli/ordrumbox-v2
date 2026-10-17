@@ -196,3 +196,12 @@ export const CARD_BYPASS_FLAGS = {
     fm: 'bypassFm',
     modEnvelope: 'bypassModEnv',
 }
+Object.freeze(WAVE_ICONS)
+Object.freeze(FILTER_ICONS)
+Object.freeze(FM_ALGO_ICONS)
+Object.freeze(FM_ALGO_LABELS)
+Object.freeze(SYNTH_GROUP_DEFAULTS)
+Object.freeze(SYNTH_GROUP_MERGE)
+Object.freeze(SYNTH_GROUP_LABELS)
+Object.freeze(LFO_TARGET_SCALE)
+Object.freeze(CARD_BYPASS_FLAGS)

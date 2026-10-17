@@ -18,6 +18,7 @@ import { serviceRegistry } from '../state/service_registry.js'
  * Construction order matters: noteEditor/trackEditor cross-wiring requires
  * trackEditor.init() first so neContainer exists.
  */
+/** @returns {any} */
 export function createAndInitPanels() {
     const toolbar = new Toolbar()
     const patternPanel = new PatternPanel()

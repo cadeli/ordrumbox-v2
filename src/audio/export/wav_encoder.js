@@ -1,4 +1,5 @@
 import { clamp } from '../../core/numbers.js'
+/** @param {AudioBuffer} abuffer @returns {Blob} */
 export function bufferToWav(abuffer) {
     const channelCount = abuffer.numberOfChannels,
         length = abuffer.length * channelCount * 2 + 44,

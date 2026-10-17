@@ -340,3 +340,4 @@ export function normalizeNote(note) {
         ...note,
     }
 }
+Object.freeze(NOTE_DEFAULTS)

@@ -13,6 +13,7 @@ export default class AudioImportService {
      * @param {FileList} files - files from webkitdirectory input
      * @returns {Promise<{kitName: string, fileCount: number, warning?: string}>}
      */
+    /** @param {FileList|File[]} files @returns {Promise<any>} */
     async importDirectory(files) {
         const audioFiles = Array.from(files).filter((f) => /\.(wav|flac|mp3|aac)$/i.test(f.name))
         if (audioFiles.length === 0) {
@@ -70,6 +71,7 @@ export default class AudioImportService {
         return { kitName, fileCount: audioFiles.length }
     }
 
+    /** @returns {Promise<any>} */
     async autoAssignSounds() {
         const pattern = appState.selectedPattern
         if (!pattern) {

@@ -101,6 +101,14 @@ export default class WorkletSynthVoice extends BaseVoice {
     /** Grid subdivision the note was built for; one step is the note length. */
     #stepsPerBeat = 4
 
+    /**
+     * @param {BaseAudioContext} audioCtx
+     * @param {any} strip
+     * @param {any} generatedSound
+     * @param {string|null} [soundKey]
+     * @param {any} [nodePool]
+     * @param {any} [synthNodePool]
+     */
     constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null, synthNodePool = null) {
         super(audioCtx, strip, nodePool)
         this.generatedSound = generatedSound
@@ -161,7 +169,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             // deferred release directly to the worklet processor instead of
             // relying on setTimeout. The processor checks `releaseTime` against
             // `currentTime` in its per-sample loop, so this works correctly in
-            // both real-time and OfflineAudioContext (export).
+            // both real-time and OfflineBaseAudioContext (export).
             if (this.#autoReleaseTimer) clearTimeout(this.#autoReleaseTimer)
             const bpm = serviceRegistry.transport?.bpm ?? 120
             const stepDuration = 60 / bpm / this.#stepsPerBeat

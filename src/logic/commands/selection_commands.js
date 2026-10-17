@@ -13,6 +13,7 @@ import { EVENTS } from '../../core/events.js'
 export default class SelectionCommands {
     // no host access needed: every member works through appState/serviceRegistry
 
+    /** @param {number} num */
     async setSelectedDrumkitIdx(num) {
         const previousIdx = appState.selectedDrumkitIdx
         try {
@@ -29,6 +30,7 @@ export default class SelectionCommands {
         }
     }
 
+    /** @returns {Promise<void>} */
     async autoAssignSoundsForNewDrumkit() {
         try {
             const selectedPattern = appState.selectedPattern
@@ -43,6 +45,7 @@ export default class SelectionCommands {
         }
     }
 
+    /** @param {number} num */
     async setSelectedPatternIdx(num) {
         const previousIdx = appState.selectedPatternIdx
         try {
@@ -86,23 +89,28 @@ export default class SelectionCommands {
         }
     }
 
+    /** @param {number} num */
     setSelectedTrackIdx(num) {
         appState.selectedTrackIdx = num
     }
 
+    /** @param {number} page */
     setCurrentPage(page) {
         const n = Number.isFinite(page) ? Math.max(0, Math.floor(page)) : 0
         appState.currentPage = n
     }
 
+    /** @returns {void} */
     resetPage() {
         appState.currentPage = 0
     }
 
+    /** @param {string} view */
     setCurrentView(view) {
         if (typeof view === 'string') appState.currentView = view
     }
 
+    /** @returns {void} */
     toggleShowVus() {
         appState.showVus = !appState.showVus
         playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, null)

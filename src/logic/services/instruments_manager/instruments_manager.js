@@ -24,7 +24,7 @@ export default class InstrumentsManager {
             for (const m of inst.midi) {
                 if (m.keyBased === true && m.key == null) {
                     const key = GM_DRUM_KEY_BY_NAME[m.name]
-                    if (key != null) m.key = String(key)
+                    if (key != null) m.key = key
                 } else if (m.keyBased === false && m.program == null) {
                     // stored 0-BASED, like GM_PROGRAM_NUM_BY_NAME and like the
                     // Program Change byte it ends up in. It used to be stored +1
@@ -33,7 +33,7 @@ export default class InstrumentsManager {
                     // program too high for every melodic instrument.
                     const program = GM_PROGRAM_NUM_BY_NAME[m.name]
                     if (program != null) {
-                        m.program = String(program)
+                        m.program = program
                     }
                 }
             }

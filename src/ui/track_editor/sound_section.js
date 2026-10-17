@@ -23,6 +23,7 @@ export default class SoundSection {
     #autoBtn
 
     /** @param {import('../track_editor.js').default} editor */
+    /** @param {any} editor */
     constructor(editor) {
         this.#editor = editor
     }

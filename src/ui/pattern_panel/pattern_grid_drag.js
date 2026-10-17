@@ -17,6 +17,7 @@ export default class PatternGridDrag {
     #trackIdx = -1
 
     /** @param {import('../pattern_panel.js').default} editor */
+    /** @param {any} editor */
     constructor(editor) {
         this.#editor = editor
         this.#drag = new NoteDrag({

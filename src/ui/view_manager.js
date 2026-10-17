@@ -50,6 +50,7 @@ export default class ViewManager {
     /** Owns every bus sub bound through #life — released by destroy(). */
     #life = new Lifecycle()
 
+    /** @param {any} config */
     constructor({
         trackEditor,
         synthEditor,
@@ -83,6 +84,7 @@ export default class ViewManager {
     /**
      * Idempotent: a second init() drops the previous subscriptions first.
      */
+    /** @returns {void} */
     init() {
         this.#life.reset()
 
@@ -101,10 +103,12 @@ export default class ViewManager {
     }
 
     /** Unsubscribes every handler bound in init(). */
+    /** @returns {void} */
     destroy() {
         this.#life.destroy()
     }
 
+    /** @returns {string|null} */
     get currentView() {
         return this.#currentView
     }

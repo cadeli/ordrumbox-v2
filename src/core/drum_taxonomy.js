@@ -84,3 +84,4 @@ export function detectTrackType(name) {
 export function isMelodicTrack(track) {
     return MELODIC_TYPES.has(detectTrackType(track?.name))
 }
+Object.freeze(TRACK_KINDS)

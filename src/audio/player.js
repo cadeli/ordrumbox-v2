@@ -39,6 +39,7 @@ export default class Player {
         this.#patternsById = null
     }
 
+    /** @param {any} config */
     constructor(config) {
         this.audioCtx = config.audioCtx
         this.mixer = config.mixer

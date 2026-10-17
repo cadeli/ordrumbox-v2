@@ -29,6 +29,7 @@ export default class SynthVoicePool {
     #silentGain
     #activeCount = 0
 
+    /** @param {BaseAudioContext} audioCtx @param {number} [maxSize] */
     constructor(audioCtx, maxSize = DEFAULT_MAX_POOL_SIZE) {
         this.#audioCtx = audioCtx
         this.#maxSize = maxSize
@@ -43,6 +44,7 @@ export default class SynthVoicePool {
         return this.#silentGain
     }
 
+    /** @returns {Promise<AudioWorkletNode>} */
     async acquire() {
         while (this.#pool.length > 0) {
             const node = this.#pool.pop()
@@ -64,6 +66,7 @@ export default class SynthVoicePool {
         }
     }
 
+    /** @param {AudioWorkletNode} node */
     release(node) {
         if (!node) return
         this.#activeCount = Math.max(0, this.#activeCount - 1)
@@ -92,6 +95,7 @@ export default class SynthVoicePool {
         }
     }
 
+    /** @returns {void} */
     destroy() {
         for (const node of this.#pool) {
             safeDisconnect(node)

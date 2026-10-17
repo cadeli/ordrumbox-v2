@@ -357,6 +357,7 @@ async function handleKeyboardShortcut(event) {
     await shortcut()
 }
 
+/** @returns {void} */
 export function initKeyboardShortcuts() {
     document.addEventListener(
         'keydown',

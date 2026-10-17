@@ -15,16 +15,19 @@ import { createStepResolver } from './step_resolver.js'
  * @param {number} loop   the pass being played (pattern loop index)
  * @returns {boolean}
  */
+/** @param {number} pos @param {number} every @param {number} loop @returns {boolean} */
 export function isTriggered(pos, every, loop) {
     pos %= every
     return (loop + pos) % every === 0
 }
 
+/** @param {number} [prob] @param {Function} [random] @returns {boolean} */
 export function isProbabilityTriggered(prob = 1, random = Math.random) {
     const probability = clamp(Number(prob), 0, 1)
     return probability >= 1 || random() < probability
 }
 
+/** @param {any} arp @returns {any} */
 export function normalizeArp(arp) {
     let intervals
     let mode = 'up'
@@ -81,15 +84,18 @@ export function normalizeArp(arp) {
     return { sequence }
 }
 
+/** @param {any} note @returns {number} */
 export function getArpNoteCount(note) {
     const totalNotes = parseInt(note.retriggerCount ?? 1)
     return Number.isFinite(totalNotes) ? clamp(totalNotes, 1, 16) : 1
 }
 
+/** @param {any} note @param {any} track @param {number} [tick] @returns {number} */
 export function computeTickForNote(note, track, tick = TICK) {
     return stepToTick(getNoteAbsoluteStep(note, track.stepsPerBeat), track.stepsPerBeat, tick)
 }
 
+/** @param {number} beatCount @param {number} [tick] @returns {number} */
 export function computeTickCountForPattern(beatCount, tick = TICK) {
     return tick * beatCount
 }
@@ -101,6 +107,7 @@ export function computeTickCountForPattern(beatCount, tick = TICK) {
  * track's own length, so a track with no loop point loops over beatCount beats
  * rather than not at all.
  */
+/** @param {any} track @param {number} [tick] @returns {number} */
 export function computeTickCountForLoop(track, tick = TICK) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
     const declared = Number(track.loopAtStep)
@@ -109,6 +116,7 @@ export function computeTickCountForLoop(track, tick = TICK) {
     return Math.floor((loopSteps / stepsPerBeat) * tick)
 }
 
+/** @param {number} baseTick @param {number} tickCountForLoop @param {number} tickCountForPattern @returns {number[]} */
 export function expandLoopOccurrences(baseTick, tickCountForLoop, tickCountForPattern) {
     if (baseTick >= tickCountForLoop) {
         return [baseTick]
@@ -124,10 +132,12 @@ export function expandLoopOccurrences(baseTick, tickCountForLoop, tickCountForPa
     return occurrences
 }
 
+/** @param {any} track @param {number} rate @param {number} [tick] @returns {number} */
 export function computeTickSpacing(track, rate, tick = TICK) {
     return Math.round((tick / track.stepsPerBeat) * getStepSpacing(rate))
 }
 
+/** @param {number} tick @param {any} track @param {any} note @param {number} semitoneOffset @returns {any} */
 export function createArpFlatNote(tick, track, note, semitoneOffset) {
     const arpNote = {
         ...note,
@@ -147,6 +157,7 @@ function addFlatNote(flatNotes, tick, flatNote) {
     flatNotes.get(tick).push(flatNote)
 }
 
+/** @param {any} flatNotes @param {number} baseTick @param {any} track @param {any} note @param {number} tickCountForPattern @param {number} [tick] */
 export function generateSubNotes(flatNotes, baseTick, track, note, tickCountForPattern, tick = TICK) {
     const arpConfig = normalizeArp(note.arp)
     const rate = note.rate ?? 1
@@ -181,6 +192,7 @@ export function generateSubNotes(flatNotes, baseTick, track, note, tickCountForP
     }
 }
 
+/** @param {any} flatNotes @param {number} baseTick @param {any} track @param {any} note @param {number} tickCountForPattern @param {any} [computeNextStep] @param {number} [tick] */
 export function generateSubNotesWithEuclidean(
     flatNotes,
     baseTick,
@@ -226,6 +238,7 @@ export function generateSubNotesWithEuclidean(
     }
 }
 
+/** @param {any} pattern @param {number} [loop] @param {number} [tick] @returns {any} */
 export function recomputeFlatNotes(pattern, loop = 0, tick = TICK) {
     const flatNotes = new Map()
     const tickCountForPattern = computeTickCountForPattern(pattern.beatCount, tick)

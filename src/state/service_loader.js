@@ -17,6 +17,7 @@ const LAZY_SERVICES = Object.freeze({
  */
 const pendingServices = new Map()
 
+/** @param {string} key @returns {Promise<any>} */
 async function lazyService(key) {
     const factory = LAZY_SERVICES[key]
     if (!factory) throw new Error(`Unknown lazy service: ${key}`)

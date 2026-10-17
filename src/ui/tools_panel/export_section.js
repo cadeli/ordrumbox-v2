@@ -14,6 +14,8 @@ export default class ExportSection {
     #songBtn
 
     /** @param {import('../tools_panel.js').default} panel */
+    /** @param {any} panel */
+    /** @param {any} panel */
     constructor(panel) {
         this.#panel = panel
         this.#wavLoopsSlider = null

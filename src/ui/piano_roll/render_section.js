@@ -21,6 +21,7 @@ export default class RenderSection {
     #editor
 
     /** @param {import('../piano_roll_panel.js').default} editor */
+    /** @param {any} editor */
     constructor(editor) {
         this.#editor = editor
     }

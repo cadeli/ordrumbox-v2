@@ -66,6 +66,7 @@ function mapStripEnum(map, value, label, fallback) {
 export default class Strip {
     static TAG = 'Strip'
 
+    /** @param {string} name @param {BaseAudioContext} audioCtx @param {any} mixer */
     constructor(name, audioCtx, mixer) {
         this.name = name
         this.audioCtx = audioCtx

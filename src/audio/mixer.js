@@ -13,6 +13,7 @@ export default class Mixer {
 
     #pendingStrips = new Map()
 
+    /** @param {BaseAudioContext} audioCtx */
     constructor(audioCtx) {
         this.audioCtx = audioCtx
         this.strips = {}

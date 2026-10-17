@@ -12,6 +12,7 @@ const TAG = 'DrumkitService'
 
 class DrumkitService {
     /** Every loaded sound, whatever kit it belongs to. */
+    /** @returns {any[]} */
     getAllSounds() {
         return Object.entries(soundRegistry.sounds).map(([url, s]) => ({ url, ...s }))
     }
@@ -22,15 +23,18 @@ class DrumkitService {
      * This used to return every kit's sounds, so the drumkit manager listed foreign
      * samples under the current kit and pre-selected one of them.
      */
+    /** @returns {any[]} */
     getCurrentKitSounds() {
         const kit = this.currentKitName()
         return this.getAllSounds().filter((sound) => sound.kitName === kit)
     }
 
+    /** @returns {string} */
     currentKitName() {
         return soundRegistry.drumkitList[appState.selectedDrumkitIdx]?.name ?? null
     }
 
+    /** @returns {any} */
     exportCurrentKit() {
         const name = this.currentKitName()
         if (!name) return null
@@ -53,6 +57,7 @@ class DrumkitService {
         return { name, instruments }
     }
 
+    /** @param {any} data @returns {Promise<void>} */
     async restoreDrumkit(data) {
         if (!data || typeof data.name !== 'string' || !Array.isArray(data.instruments)) {
             throw new Error('Missing drumkit name or instruments')
@@ -99,6 +104,7 @@ class DrumkitService {
         return kit.name
     }
 
+    /** @param {string} soundKey @param {string} newKitName */
     moveToKit(soundKey, newKitName) {
         const sound = soundRegistry.sounds[soundKey]
         if (!sound) return null
@@ -136,6 +142,7 @@ class DrumkitService {
         return sound.display_name
     }
 
+    /** @param {string} soundKey @param {string} instrumentKey */
     setInstrument(soundKey, instrumentKey) {
         const sound = soundRegistry.sounds[soundKey]
         if (!sound || !instrumentKey || sound.key === instrumentKey) return false
@@ -155,6 +162,8 @@ class DrumkitService {
         return sound.display_name
     }
 
+    /** @param {string} soundKey */
+    /** @param {string} soundKey @returns {any} */
     removeSample(soundKey) {
         const sound = soundRegistry.sounds[soundKey]
         if (!sound) return null
@@ -175,6 +184,7 @@ class DrumkitService {
         return sound.display_name
     }
 
+    /** @param {string} soundKey @param {AudioBuffer} buffer @param {string} [displayName] @returns {Promise<boolean>} */
     async replaceSampleBuffer(soundKey, buffer, displayName) {
         const oldSound = soundRegistry.sounds[soundKey]
         if (!oldSound) return false
@@ -188,6 +198,7 @@ class DrumkitService {
         return true
     }
 
+    /** @param {File} file @param {AudioBuffer} buffer @returns {Promise<{fileName: string, kitName: any}>} */
     async addSample(file, buffer) {
         const instrument = instrumentsManager.findInstrumentFromFileName(file.name)
         const key = instrument.id

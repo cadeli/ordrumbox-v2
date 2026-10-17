@@ -27,6 +27,7 @@ export default class Engine {
     #workletReady
     #silentBuffer
 
+    /** @param {any} config */
     constructor(config) {
         this.audioCtx = config.audioCtx
         this.sounds = config.sounds

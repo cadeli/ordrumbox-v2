@@ -304,6 +304,7 @@ function varyNotes(sourceNotes, budget, track) {
 }
 
 export default class TrackVariation {
+    /** @param {any} flatNotes @param {any} track @param {number} tickCountForLoop @param {number} tickCountForPattern @param {number} tick @param {any} [variationOverride] */
     static apply(flatNotes, track, tickCountForLoop, tickCountForPattern, tick, variationOverride = null) {
         const variation = variationOverride ?? variationBudget(track)
         if (variation <= 0) return

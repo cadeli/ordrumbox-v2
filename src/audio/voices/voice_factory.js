@@ -3,7 +3,16 @@ import WorkletSynthVoice from './worklet_synth_voice.js'
 import { logger } from '../../core/logger.js'
 import { reportUserError } from '../../core/notify.js'
 
+/** Factory creating voices (sample or synth) for a flat note. */
 export default class VoiceFactory {
+    /**
+     * @param {BaseAudioContext} audioCtx
+     * @param {any} mixer
+     * @param {Record<string, any>} sounds
+     * @param {Record<string, any>} generatedSounds
+     * @param {any} [nodePool]
+     * @param {any} [synthNodePool]
+     */
     constructor(audioCtx, mixer, sounds, generatedSounds, nodePool = null, synthNodePool = null) {
         this.audioCtx = audioCtx
         this.mixer = mixer
@@ -13,6 +22,7 @@ export default class VoiceFactory {
         this.synthNodePool = synthNodePool
     }
 
+    /** @param {any} flatNote @returns {Promise<any>} */
     async createVoice(flatNote) {
         const track = flatNote.track
         const strip = await this.mixer?.getOrCreateStrip(track?.name)

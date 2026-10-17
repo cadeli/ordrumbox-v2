@@ -16,6 +16,7 @@ export default class WaveformSection {
      * @param {import('./synth_preset_model.js').default} model edit-session state
      * @param {{ root: () => HTMLElement|null }} deps element hosting the canvases
      */
+    /** @param {any} model @param {any} deps */
     constructor(model, deps) {
         this.#model = model
         this.#root = deps.root

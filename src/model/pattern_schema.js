@@ -22,3 +22,4 @@ export const PATTERN_DEFAULTS = {
     tags: [],
     tracks: [],
 }
+Object.freeze(PATTERN_DEFAULTS)
