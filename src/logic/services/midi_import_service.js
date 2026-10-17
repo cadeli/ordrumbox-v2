@@ -59,10 +59,10 @@ export default class MidiImportService {
         if (trackDefs.length === 0) {
             logger.warn('MidiImport', 'no matching instruments — dumping channel/note summary:')
             for (const [channel, chNotes] of channelNotes) {
-                const noteNums = [...new Set(chNotes.map((n) => n.note))].sort((a, b) => a - b)
+                const midiNotes = [...new Set(chNotes.map((n) => n.note))].sort((a, b) => a - b)
                 logger.warn(
                     'MidiImport',
-                    `  ch${channel}: notes [${noteNums.join(', ')}], program=${channelPrograms.get(channel) ?? 'none'}, count=${chNotes.length}`,
+                    `  ch${channel}: notes [${midiNotes.join(', ')}], program=${channelPrograms.get(channel) ?? 'none'}, count=${chNotes.length}`,
                 )
             }
             return { trackCount: 0, patternCount: 0, warning: 'No matching instruments found in MIDI file' }

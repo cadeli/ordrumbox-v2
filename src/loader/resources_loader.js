@@ -64,6 +64,7 @@ export default class ResourcesLoader {
 
     #audioCtx
     #autoPersistEnabled
+    #loadGeneration = 0
 
     constructor(audioCtx = null) {
         this.#audioCtx = audioCtx
@@ -180,6 +181,7 @@ export default class ResourcesLoader {
     }
 
     async loadDrumkitList(file) {
+        const gen = ++this.#loadGeneration
         let jsonDrumkits = await getCachedDrumkits()
         if (!jsonDrumkits) {
             jsonDrumkits = await this.loadJsonResource(file)
@@ -187,6 +189,7 @@ export default class ResourcesLoader {
         } else {
             logger.debug('ResourcesLoader', 'Drumkit list loaded from IDB cache')
         }
+        if (this.#loadGeneration !== gen) return
         soundRegistry.drumkitList.length = 0
         Object.values(jsonDrumkits).forEach((drumkit) => {
             soundRegistry.drumkitList.push(drumkit)
@@ -200,6 +203,7 @@ export default class ResourcesLoader {
     }
 
     async loadGeneratedSounds(file) {
+        const gen = ++this.#loadGeneration
         let generatedSounds = await getCachedGeneratedSounds()
         if (!generatedSounds) {
             generatedSounds = await this.loadJsonResource(file)
@@ -207,6 +211,7 @@ export default class ResourcesLoader {
         } else {
             logger.debug('ResourcesLoader', 'Generated sounds loaded from IDB cache')
         }
+        if (this.#loadGeneration !== gen) return
         Object.assign(soundRegistry.generatedSounds, generatedSounds)
     }
 
@@ -387,6 +392,7 @@ export default class ResourcesLoader {
             }
             return this.#patternsLoadingPromise
         }
+        const gen = ++this.#loadGeneration
         let json = await getCachedPatterns()
         if (!json) {
             json = await this.loadJsonResource(file)
@@ -398,6 +404,7 @@ export default class ResourcesLoader {
         } else {
             logger.debug('ResourcesLoader', 'Patterns loaded from IDB cache')
         }
+        if (this.#loadGeneration !== gen) return
         const patterns = json.patterns ?? json
         appState.songInfos = {
             name: json.infos?.name ?? '',

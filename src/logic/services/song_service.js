@@ -30,6 +30,8 @@ const SONGS_STORE = 'songs'
  */
 
 class SongService {
+    #loadGeneration = 0
+
     /**
      * Build the serializable song data from current appState.
      * @param {string} songName
@@ -86,6 +88,7 @@ class SongService {
      */
     async applyToAppState(data, fallbackName) {
         const name = data.name ?? fallbackName
+        const gen = ++this.#loadGeneration
 
         // One undoable history entry for the whole song load/import.
         // Awaited: setSelectedPatternIdx is async (samples + auto-assign) and
@@ -122,6 +125,7 @@ class SongService {
             serviceRegistry.cmd.resetPage()
         })
 
+        if (this.#loadGeneration !== gen) return name
         return name
     }
 

@@ -88,7 +88,7 @@ export default class SnareGenerator extends BaseGenerator {
             mode: 'breakCrescendo',
             loopBeats: 4,
             stepsBack: 16,
-            retriggerNumMax: 8,
+            retriggerCountMax: 8,
             rate: 16,
             velocity: {
                 base: 0.7,
@@ -214,7 +214,7 @@ export default class SnareGenerator extends BaseGenerator {
         const patternLength = beatCount * stepsPerBeat
         const stepsBack = config.stepsBack ?? 16
         const startStep = Math.max(0, patternLength - stepsBack)
-        const retriggerNumMax = config.retriggerNumMax ?? 0
+        const retriggerCountMax = config.retriggerCountMax ?? 0
         const rate = config.rate ?? 1
 
         for (let absStep = startStep; absStep < patternLength; absStep++) {
@@ -235,8 +235,8 @@ export default class SnareGenerator extends BaseGenerator {
                 }),
             )
             note.prob = Number(prob.toFixed(2))
-            if (retriggerNumMax > 1) {
-                const ratchetCount = Math.max(1, Math.round(1 + (retriggerNumMax - 1) * prob))
+            if (retriggerCountMax > 1) {
+                const ratchetCount = Math.max(1, Math.round(1 + (retriggerCountMax - 1) * prob))
                 if (ratchetCount > 1) {
                     note.retriggerCount = ratchetCount
                     note.rate = rate
