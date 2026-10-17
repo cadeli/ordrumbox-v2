@@ -192,6 +192,7 @@ export class OrSlider extends BaseControl {
         this.commitValue(this.#toDenorm(norm))
     }
 
+    /** @param {any} e */
     #onInput(e) {
         this.handleInput(e)
     }
@@ -224,6 +225,7 @@ export class OrSlider extends BaseControl {
         return true
     }
 
+    /** @param {any} e */
     #onKeydown(e) {
         this.handleKeydown(e)
     }

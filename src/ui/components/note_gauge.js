@@ -112,6 +112,7 @@ export default class NoteGauge {
         return this.#el?.style.display === 'block'
     }
 
+    /** @param {any} container */
     #ensureEl(container) {
         if (!this.#el || !container.contains(this.#el)) {
             this.#el?.remove()
@@ -151,6 +152,7 @@ export default class NoteGauge {
         this.#markedTitle = null
     }
 
+    /** @param {any} el @param {any} container @param {any} anchor */
     #position(el, container, anchor) {
         const anchorRect = anchor.getBoundingClientRect()
         const containerRect = container.getBoundingClientRect()
@@ -169,6 +171,7 @@ export default class NoteGauge {
         el.style.top = `${top}px`
     }
 
+    /** @param {any} el @param {any} anchor */
     #keepAlive(el, anchor) {
         this.#clearTimers()
         this.#markAnchor(anchor)

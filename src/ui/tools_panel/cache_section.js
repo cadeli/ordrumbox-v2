@@ -161,6 +161,7 @@ export default class CacheSection {
         }
     }
 
+    /** @param {any} type @param {any} key */
     async showJson(type, key) {
         const storeMap = {
             patterns: 'patterns',
@@ -186,6 +187,7 @@ export default class CacheSection {
         }
     }
 
+    /** @param {any} title @param {any} json */
     #openJsonModal(title, json) {
         this.#closeJsonModal()
         const overlay = document.createElement('div')

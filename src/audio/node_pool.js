@@ -18,7 +18,7 @@ export default class NodePool {
         return this.#activeCount
     }
 
-    /** @param {string} type @returns {any} */
+    /** @param {any} type @returns {any} */
     acquire(type) {
         let pool = this.#pools[type]
         if (!pool) pool = this.#pools[type] = []
@@ -40,7 +40,7 @@ export default class NodePool {
         pool.push(node)
     }
 
-    /** @param {any} node @param {string} type */
+    /** @param {any} node @param {any} type */
     resetNode(node, type) {
         if (!node) return
         safeDisconnect(node)

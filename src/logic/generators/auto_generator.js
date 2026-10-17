@@ -222,7 +222,7 @@ export default class AutoGenerator {
      * rather than silently refilled.
      *
      * @param {any} track
-     * @param {string} type detectTrackType() result
+     * @param {any} type detectTrackType() result
      */
     #applyVariation = (track, type) => {
         const melodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'

@@ -59,7 +59,7 @@ function ensureStyles() {
 /**
  * Shows a toast notification.
  * @param {string} message  Text to display
- * @param {string} [type]   'info' | 'success' | 'error' | 'warning'
+ * @param {any} type   'info' | 'success' | 'error' | 'warning'
  * @param {Object} [opts]
  * @param {Array<{label:string, onClick:Function}>} [opts.actions]  Action buttons (disables auto-dismiss)
  * @param {boolean} [opts.dismissible]  Show a × close button (disables auto-dismiss)

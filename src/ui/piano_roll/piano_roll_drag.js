@@ -59,6 +59,7 @@ export default class PianoRollDrag {
         emitNotePicked({ bus: playbackEvents, track, trackIdx: this.#editor.selectedTrackIdx, note })
     }
 
+    /** @param {any} note @param {any} axis @param {any} value @param {any} dir */
     #apply(note, axis, value, dir) {
         const track = this.#editor.track
         const changed = applyNoteEdit({

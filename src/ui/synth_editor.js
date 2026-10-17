@@ -217,6 +217,7 @@ export default class SynthEditor {
         })
     }
 
+    /** @param {any} pathStr @param {any} value */
     #onKnobChange(pathStr, value) {
         this.#setValue(pathStr, Number.isNaN(value) ? 0 : value, true)
         this.#updateLfoIndicators()
@@ -324,6 +325,7 @@ export default class SynthEditor {
         this.#delegationBound = true
     }
 
+    /** @param {any} e */
     #handleClick(e) {
         try {
             const { target } = e
@@ -337,6 +339,7 @@ export default class SynthEditor {
         }
     }
 
+    /** @param {any} target @param {any} e */
     #handlePowerBtn(target, e) {
         const powerBtn = target.closest('[data-power-card]')
         if (!powerBtn) return false
@@ -369,6 +372,7 @@ export default class SynthEditor {
         return true
     }
 
+    /** @param {any} target */
     #handleBooleanBtn(target) {
         if (target.dataset.synthType !== 'boolean') return false
         const next = !this.#getValue(target.dataset.synthPath)
@@ -380,6 +384,7 @@ export default class SynthEditor {
         return true
     }
 
+    /** @param {any} target */
     #handleIconBtn(target) {
         const waveIcon = target.closest('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon')
         if (!waveIcon) return false
@@ -395,6 +400,7 @@ export default class SynthEditor {
         return true
     }
 
+    /** @param {any} target */
     #handleAction(target) {
         const action = target.dataset.action
         if (action === 'synth-revert') this.#revertPreset()
@@ -409,6 +415,7 @@ export default class SynthEditor {
         return true
     }
 
+    /** @param {any} target */
     #handlePresetNav(target) {
         const nav = target.closest('[data-preset-nav]')
         if (!nav) return
@@ -587,6 +594,7 @@ export default class SynthEditor {
         input.click()
     }
 
+    /** @param {any} shouldSave */
     #closeEditor(shouldSave) {
         try {
             const model = this.#model

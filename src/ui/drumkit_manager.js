@@ -62,9 +62,11 @@ export default class DrumkitManager extends BasePanel {
         this.#selectedSoundKey = v
     }
 
+    /** @param {any} sound @param {any} key @param {any} value */
     onKnobChange(sound, key, value) {
         this.#onKnobChange(sound, key, value)
     }
+    /** @param {any} key */
     selectSound(key) {
         this.#selectSound(key)
     }
@@ -183,6 +185,7 @@ export default class DrumkitManager extends BasePanel {
         showToast(`Saved drumkit "${kit.name}"`, 'success')
     }
 
+    /** @param {any} e */
     async #onLoadKitFile(e) {
         const file = e.target.files?.[0]
         if (!file) return
@@ -201,6 +204,7 @@ export default class DrumkitManager extends BasePanel {
         }
     }
 
+    /** @param {any} e */
     async #onImportDir(e) {
         const files = e.target.files
         if (!files || files.length === 0) return
@@ -252,6 +256,7 @@ export default class DrumkitManager extends BasePanel {
         }
     }
 
+    /** @param {any} key */
     #selectSound(key) {
         this.#selectedSoundKey = key
         this.#listEl.querySelectorAll('.dm-list-item').forEach((el) => {
@@ -260,6 +265,7 @@ export default class DrumkitManager extends BasePanel {
         this.#renderDetail(key)
     }
 
+    /** @param {any} key */
     #renderDetail(key) {
         const sound = soundRegistry.sounds[key]
         if (!sound) {
@@ -375,6 +381,7 @@ export default class DrumkitManager extends BasePanel {
     // looks and behaves like the rest of the app instead of raw <input
     // type="range"> sliders.
 
+    /** @param {any} sound */
     #syncKnobs(sound) {
         const values = { gain: sound.gainDb ?? 0, tune: sound.tune ?? 0, decay: sound.decay ?? 0 }
         this.#knobs = [
@@ -390,6 +397,7 @@ export default class DrumkitManager extends BasePanel {
         ]
     }
 
+    /** @param {any} sound @param {any} key @param {any} value */
     #onKnobChange(sound, key, value) {
         if (key === 'gain') sound.gainDb = value
         else if (key === 'tune') sound.tune = value
@@ -410,6 +418,7 @@ export default class DrumkitManager extends BasePanel {
     // the same decay-cutoff marker line, so a sample looks the same whether
     // it's being tuned from a track or from the drumkit manager.
 
+    /** @param {any} sound @param {any} analysis @param {any} config */
     #drawWaveform(sound, analysis, { resize = false } = {}) {
         const canvas = this.#detailEl.querySelector('#dm-waveform')
         if (!canvas || !analysis?.envelope?.length) return
@@ -438,6 +447,7 @@ export default class DrumkitManager extends BasePanel {
         }
     }
 
+    /** @param {string} url */
     #audition(url) {
         const ctx = serviceRegistry.audioCtx
         if (!ctx) return
@@ -454,6 +464,7 @@ export default class DrumkitManager extends BasePanel {
         source.start()
     }
 
+    /** @param {any} soundKey */
     #removeSample(soundKey) {
         const displayName = drumkitService.removeSample(soundKey)
         if (displayName) {
@@ -463,6 +474,7 @@ export default class DrumkitManager extends BasePanel {
         }
     }
 
+    /** @param {any} soundKey @param {any} e */
     async #onReplaceSample(soundKey, e) {
         const file = e.target.files?.[0]
         if (!file) return
@@ -487,6 +499,7 @@ export default class DrumkitManager extends BasePanel {
         e.target.value = ''
     }
 
+    /** @param {any} e */
     async #onAddSample(e) {
         const file = e.target.files?.[0]
         if (!file) return

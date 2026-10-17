@@ -33,6 +33,7 @@ export default class KeyboardSection {
         }
     }
 
+    /** @param {any} e */
     onKeyDown(e) {
         const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return
@@ -221,6 +222,7 @@ export default class KeyboardSection {
         return true
     }
 
+    /** @param {any} track */
     handleNoteEnter(track) {
         if (!track) return
         const pattern = this.#editor.appState.selectedPattern
@@ -283,6 +285,7 @@ export default class KeyboardSection {
         }
     }
 
+    /** @param {any} tracks */
     handleNoteDelete(tracks) {
         const track = tracks[this.#editor.focusRowIdx]
         if (!track) return

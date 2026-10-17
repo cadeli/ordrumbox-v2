@@ -34,6 +34,7 @@ export default class ImportSection {
         importMidiFile.addEventListener('change', (e) => this.onImportMidiFile(e))
     }
 
+    /** @param {any} e */
     async onImportMidiFile(e) {
         const file = e.target.files[0]
         if (!file) return

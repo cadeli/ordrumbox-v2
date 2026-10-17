@@ -26,7 +26,7 @@ let lastClampWarnAt = 0
 /**
  * Clamp `value` into `[min, max]` — the canonical bound check for the whole app.
  *
- * @param {number} value
+ * @param {any} value
  * @param {number} min
  * @param {number} max
  * @returns {number}

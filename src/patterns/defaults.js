@@ -13,19 +13,19 @@ export default class Defaults {
     static normalizeNote = normalizeNote
 
     /** note[key], falling back to NOTE_DEFAULTS.
-     *  @param {any} note @param {string} key @returns {any} */
+     *  @param {any} note @param {any} key @returns {any} */
     static getNoteProp(note, key) {
         return note?.[key] ?? NOTE_DEFAULTS[key]
     }
 
     /** track[key], falling back to TRACK_DEFAULTS.
-     *  @param {any} track @param {string} key @returns {any} */
+     *  @param {any} track @param {any} key @returns {any} */
     static getTrackProp(track, key) {
         return track?.[key] ?? TRACK_DEFAULTS[key]
     }
 
     /** pattern[key], falling back to PATTERN_DEFAULTS.
-     *  @param {any} pattern @param {string} key @returns {any} */
+     *  @param {any} pattern @param {any} key @returns {any} */
     static getPatternProp(pattern, key) {
         return pattern?.[key] ?? PATTERN_DEFAULTS[key]
     }

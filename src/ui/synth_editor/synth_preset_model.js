@@ -125,7 +125,7 @@ export default class SynthPresetModel {
 
     /**
      * Loads a preset into the draft, flushing any pending commit first.
-     * @param {string} key preset key
+     * @param {any} key preset key
      * @returns {boolean} whether the preset was loaded
      */
     loadPreset(key) {

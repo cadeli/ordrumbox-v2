@@ -83,6 +83,7 @@ export default class NoteDrag {
         this.#reset()
     }
 
+    /** @param {any} e */
     #onMove(e) {
         const note = this.#note
         if (!note) return

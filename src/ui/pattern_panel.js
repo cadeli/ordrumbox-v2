@@ -279,6 +279,7 @@ export default class PatternPanel extends BasePanel {
         })
     }
 
+    /** @param {any} idx */
     resolveTrack(idx) {
         const pattern = this.#appState.selectedPattern
         const tracks = getTracksArray(pattern)
@@ -297,6 +298,7 @@ export default class PatternPanel extends BasePanel {
         this.#selection.applySelection()
     }
 
+    /** @param {number} trackIdx @param {any} track @param {any} pattern */
     updateTrackCellsInPlace(trackIdx, track, pattern) {
         if (!this.container || !track || this.#cellMap.size === 0) {
             this.sync()
@@ -315,6 +317,7 @@ export default class PatternPanel extends BasePanel {
         )
     }
 
+    /** @param {any} pattern @param {any} tracks */
     #syncCellsInPlace(pattern, tracks) {
         const { startBeat, endBeatPage } = pageBeatWindow(this.#appState.currentPage)
 

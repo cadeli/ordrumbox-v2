@@ -105,7 +105,7 @@ export default class SelectionCommands {
         appState.currentPage = 0
     }
 
-    /** @param {string} view */
+    /** @param {any} view */
     setCurrentView(view) {
         if (typeof view === 'string') appState.currentView = view
     }

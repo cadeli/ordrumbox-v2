@@ -254,6 +254,7 @@ export default class Toolbar {
         })
     }
 
+    /** @param {any} e */
     #handleKeyboard(e) {
         if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
             e.preventDefault()

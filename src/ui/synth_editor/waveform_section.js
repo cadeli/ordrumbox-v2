@@ -70,6 +70,7 @@ export default class WaveformSection {
         }
     }
 
+    /** @param {any} ctx @param {any} w @param {any} mid */
     #drawOscillators(ctx, w, mid) {
         const vcos = this.#buildVcoArray()
         const draft = this.#model.draft
@@ -256,6 +257,7 @@ export default class WaveformSection {
         this.#drawAdsrEnvelope(ctx, w, mid)
     }
 
+    /** @param {any} ctx @param {any} pts @param {any} scaleX @param {any} scaleY */
     #drawAdsrPath(ctx, pts, scaleX, scaleY) {
         ctx.moveTo(scaleX(pts[0].t), scaleY(pts[0].v))
         for (let i = 1; i < pts.length; i++) {
@@ -263,6 +265,7 @@ export default class WaveformSection {
         }
     }
 
+    /** @param {any} ctx @param {any} w @param {any} mid */
     #drawAdsrEnvelope(ctx, w, mid) {
         const { attack = 0, decay = 0.12, sustain = 1, release = 0.05 } = this.#model.draft.envelope ?? {}
         const totalTime = Math.max(attack + decay + 0.3 + release, 0.5)

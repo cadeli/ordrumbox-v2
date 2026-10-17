@@ -53,6 +53,7 @@ export default class MidiIndicatorView {
         }
     }
 
+    /** @param {any} midiManager */
     sync(midiManager) {
         if (midiManager) {
             const s = midiManager.getStatus()
@@ -74,6 +75,7 @@ export default class MidiIndicatorView {
         }
     }
 
+    /** @param {any} ledId @param {any} isOn @param {any} label */
     #setLedState(ledId, isOn, label) {
         const led = this.#container.querySelector(`#${ledId}`)
         const text = this.#container.querySelector(`#${ledId.replace('Led', 'Label')}`)

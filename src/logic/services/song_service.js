@@ -69,7 +69,7 @@ class SongService {
 
     /**
      * Load a song from IndexedDB by key.
-     * @param {string} key
+     * @param {any} key
      * @returns {Promise<SongRecord|null>}
      */
     async load(key) {

@@ -24,6 +24,7 @@ export default class MenuSection {
         this.#editor = editor
     }
 
+    /** @param {any} e */
     onContextMenu(e) {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd
@@ -55,6 +56,7 @@ export default class MenuSection {
         this.#showGridContextMenu({ beat, beatStep, relativePitch, hit }, e.clientX, e.clientY)
     }
 
+    /** @param {any} tonic @param {any} keyLabel @param {number} x @param {number} y */
     #showKeyboardContextMenu(tonic, keyLabel, x, y) {
         this.#contextMenu.hide()
         const track = this.#editor.track
@@ -68,6 +70,7 @@ export default class MenuSection {
         this.#contextMenu.show(header, actions, x, y)
     }
 
+    /** @param {any} ctx @param {number} x @param {number} y */
     #showGridContextMenu(ctx, x, y) {
         this.#contextMenu.hide()
         const track = this.#editor.track
@@ -97,6 +100,7 @@ export default class MenuSection {
         this.#contextMenu.show(header, actions, x, y)
     }
 
+    /** @param {number} beat @param {number} beatStep @param {any} relativePitch */
     #menuAddNote(beat, beatStep, relativePitch) {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd
@@ -121,6 +125,7 @@ export default class MenuSection {
         showToast(`Added note (pitch ${relativePitch}) — ${track.name} @ ${beatLabel(beat, beatStep)}`, 'success')
     }
 
+    /** @param {any} hit @param {number} beat @param {number} beatStep */
     #menuDeleteNote(hit, beat, beatStep) {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd
@@ -132,6 +137,7 @@ export default class MenuSection {
         showToast(`Deleted note — ${track.name} @ ${beatLabel(beat, beatStep)}`, 'success')
     }
 
+    /** @param {number} beat @param {number} beatStep @param {any} rootPitch @param {any} intervals @param {any} quality */
     #menuAddChord(beat, beatStep, rootPitch, intervals, quality) {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd
@@ -183,6 +189,7 @@ export default class MenuSection {
         showToast(`Cleared notes on "${track.name}"`, 'success')
     }
 
+    /** @param {any} tonic */
     #menuAddSequence(tonic) {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd

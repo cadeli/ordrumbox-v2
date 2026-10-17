@@ -156,7 +156,7 @@ export default class MidiManager extends EventTarget {
         this.dispatchEvent(new Event('statusChange'))
     }
 
-    /** @param {string} id */
+    /** @param {any} id */
     setSelectedOutput = (id) => {
         this.selectedOutputId = id
     }

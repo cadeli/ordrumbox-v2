@@ -20,6 +20,7 @@ export default class ContextMenuSection {
         this.#contextMenu = new ContextMenu()
     }
 
+    /** @param {any} e */
     onContextMenu(e) {
         const trackEl = e.target.closest('.pp-track:not(.pp-master-track)')
         if (!trackEl) {
@@ -45,6 +46,7 @@ export default class ContextMenuSection {
         this.#showContextMenu(trackIdx, e.clientX, e.clientY)
     }
 
+    /** @param {number} trackIdx @param {number} beat @param {number} beatStep @param {number} x @param {number} y */
     #showCellContextMenu(trackIdx, beat, beatStep, x, y) {
         this.#contextMenu.hide()
         const pattern = this.#editor.appState.selectedPattern
@@ -73,6 +75,7 @@ export default class ContextMenuSection {
         this.#contextMenu.show(header, actions, x, y)
     }
 
+    /** @param {number} trackIdx @param {number} x @param {number} y */
     #showContextMenu(trackIdx, x, y) {
         this.#contextMenu.hide()
         const pattern = this.#editor.appState.selectedPattern
@@ -98,6 +101,7 @@ export default class ContextMenuSection {
         this.#contextMenu.show(track.name ?? 'Track', actions, x, y)
     }
 
+    /** @param {any} track */
     #menuRenameTrack(track) {
         const input = prompt('Rename track:', track.name ?? '')
         if (input === null) return
@@ -109,12 +113,14 @@ export default class ContextMenuSection {
         showToast(`Renamed track to "${newName}"`, 'success')
     }
 
+    /** @param {any} tracks @param {number} trackIdx */
     #menuCopyTrack(tracks, trackIdx) {
         this.#editor.gridTrackIdx = trackIdx
         this.#editor.focusRowIdx = trackIdx
         this.#editor.clipboardSection.copyTrack(tracks)
     }
 
+    /** @param {any} pattern @param {any} tracks @param {number} trackIdx */
     #menuPasteTrack(pattern, tracks, trackIdx) {
         if (!this.#editor.clipboard || this.#editor.clipboard.type !== 'track') {
             showToast('Clipboard does not contain a track', 'info')
@@ -124,6 +130,7 @@ export default class ContextMenuSection {
         this.#editor.clipboardSection.pasteTrack(pattern, tracks)
     }
 
+    /** @param {any} pattern @param {any} tracks @param {number} trackIdx */
     #menuDuplicateTrack(pattern, tracks, trackIdx) {
         const source = tracks[trackIdx]
         if (!source) return
@@ -133,6 +140,7 @@ export default class ContextMenuSection {
         showToast(`Duplicated track as "${clone.name}"`, 'success')
     }
 
+    /** @param {any} pattern @param {any} tracks @param {number} trackIdx */
     #menuDeleteTrack(pattern, tracks, trackIdx) {
         if (tracks.length <= 1) {
             showToast('Cannot delete the last track', 'warning')
@@ -147,6 +155,7 @@ export default class ContextMenuSection {
         showToast('Track deleted', 'success')
     }
 
+    /** @param {any} track @param {any} pattern */
     #menuRandomizeTrack(track, pattern) {
         this.#editor.serviceRegistry.cmd.randomizeTrack(track, pattern)
         this.#editor.serviceRegistry.audioEngine?.invalidateCache()
@@ -156,6 +165,7 @@ export default class ContextMenuSection {
         showToast(`Randomized "${track.name}"`, 'success')
     }
 
+    /** @param {any} track @param {any} pattern @param {number} trackIdx */
     #menuClearTrackNotes(track, pattern, trackIdx) {
         this.#editor.serviceRegistry.cmd.cleanTrack(track)
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
@@ -163,6 +173,7 @@ export default class ContextMenuSection {
         showToast(`Cleared notes on "${track.name}"`, 'success')
     }
 
+    /** @param {any} tracks @param {number} trackIdx @param {number} beat @param {number} beatStep */
     #menuCopyNotes(tracks, trackIdx, beat, beatStep) {
         const track = tracks[trackIdx]
         if (!track) return
@@ -180,6 +191,7 @@ export default class ContextMenuSection {
         )
     }
 
+    /** @param {any} pattern @param {any} tracks @param {number} trackIdx @param {number} beat @param {number} beatStep */
     #menuPasteNotes(pattern, tracks, trackIdx, beat, beatStep) {
         if (
             !this.#editor.clipboard ||
@@ -203,6 +215,7 @@ export default class ContextMenuSection {
         showToast(`Pasted ${notesLabel(notes.length)} — ${track.name} @ ${at}`, 'success')
     }
 
+    /** @param {any} pattern @param {any} tracks @param {number} trackIdx @param {number} beat @param {number} beatStep */
     #menuDeleteNote(pattern, tracks, trackIdx, beat, beatStep) {
         const track = tracks[trackIdx]
         if (!track) return
@@ -228,6 +241,7 @@ export default class ContextMenuSection {
         showToast(`Deleted ${notesLabel(notes.length)} — ${track.name} @ ${at}`, 'success')
     }
 
+    /** @param {any} pattern @param {any} tracks @param {number} trackIdx @param {number} beat @param {number} beatStep */
     #menuAddRndNote(pattern, tracks, trackIdx, beat, beatStep) {
         const track = tracks[trackIdx]
         if (!track) return

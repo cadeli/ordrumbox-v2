@@ -95,6 +95,7 @@ export default class MobileTabBar {
         }
     }
 
+    /** @param {any} tab */
     #onTabClick(tab) {
         if (tab === this.#currentTab) return
 

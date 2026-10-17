@@ -23,13 +23,13 @@ const loadedProcessors = new WeakMap() // audioCtx -> Set of loaded processor na
 const pendingLoads = new WeakMap() // audioCtx -> Map<name, in-flight load Promise>
 
 export default class WorkletLoader {
-    /** @param {any} audioCtx @returns {boolean} */
+    /** @param {BaseAudioContext} audioCtx @returns {boolean} */
     static isSupported(audioCtx) {
         if (!audioCtx) return false
         return typeof audioCtx.audioWorklet !== 'undefined' && typeof audioCtx.audioWorklet.addModule === 'function'
     }
 
-    /** @param {string} name @param {string} sourceCode */
+    /** @param {any} name @param {string} sourceCode */
     static register(name, sourceCode) {
         if (typeof name !== 'string' || !name) {
             throw new Error('WorkletLoader.register: name must be a non-empty string')
@@ -40,7 +40,7 @@ export default class WorkletLoader {
         registry.set(name, sourceCode)
     }
 
-    /** @param {string} name @returns {boolean} */
+    /** @param {any} name @returns {boolean} */
     static has(name) {
         return registry.has(name)
     }
@@ -50,7 +50,7 @@ export default class WorkletLoader {
         return Array.from(registry.keys())
     }
 
-    /** @param {string} name */
+    /** @param {any} name */
     static unregister(name) {
         registry.delete(name)
     }
@@ -60,7 +60,7 @@ export default class WorkletLoader {
         registry.clear()
     }
 
-    /** @param {any} audioCtx @returns {Promise<boolean>} */
+    /** @param {BaseAudioContext} audioCtx @returns {Promise<boolean>} */
     static async ensureLoaded(audioCtx) {
         if (!this.isSupported(audioCtx)) return false
 
@@ -130,7 +130,7 @@ export default class WorkletLoader {
         return true
     }
 
-    /** @param {any} audioCtx @param {string} name @param {any} [options] @returns {AudioWorkletNode} */
+    /** @param {BaseAudioContext} audioCtx @param {any} name @param {any} [options] @returns {AudioWorkletNode} */
     static createNode(audioCtx, name, options = {}) {
         if (!this.isSupported(audioCtx)) {
             throw new Error(`WorkletLoader.createNode: AudioWorklet not supported on this context`)
@@ -148,7 +148,7 @@ export default class WorkletLoader {
         return new AudioWorkletNode(audioCtx, name, options)
     }
 
-    /** @param {any} audioCtx @returns {boolean} */
+    /** @param {BaseAudioContext} audioCtx @returns {boolean} */
     static isContextReady(audioCtx) {
         const contextLoadedSet = loadedProcessors.get(audioCtx)
         if (!contextLoadedSet) return false

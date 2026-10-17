@@ -224,6 +224,7 @@ export default class ArrangementSection {
         }
     }
 
+    /** @param {any} patternId */
     #patternName(patternId) {
         return this.#rows.find((p) => p.id === patternId)?.name ?? patternId
     }
@@ -357,6 +358,7 @@ export default class ArrangementSection {
         return rows
     }
 
+    /** @param {any} id */
     #rowIdx(id) {
         return this.#rows.findIndex((p) => p.id === id)
     }

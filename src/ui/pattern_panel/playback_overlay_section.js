@@ -95,6 +95,7 @@ export default class PlaybackOverlaySection {
         this.#vuElCache = null
     }
 
+    /** @param {any} mixer */
     #updateVus(mixer) {
         if (appState.showVus === false) return
         if (!this.#vuElCache) {

@@ -19,6 +19,7 @@ export default class ClipboardSection {
         this.#editor = editor
     }
 
+    /** @param {any} tracks */
     copyStep(tracks) {
         const editor = this.#editor
         const track = tracks[editor.focusRowIdx]
@@ -34,6 +35,7 @@ export default class ClipboardSection {
         )
     }
 
+    /** @param {any} tracks */
     copyTrack(tracks) {
         const editor = this.#editor
         const idx =
@@ -49,6 +51,7 @@ export default class ClipboardSection {
         showToast(`Copied track "${track.name}" (${notesLabel(noteCount)})`, 'success')
     }
 
+    /** @param {any} pattern @param {any} tracks */
     pasteClipboard(pattern, tracks) {
         const editor = this.#editor
         if (!this.clipboard) {
@@ -80,6 +83,7 @@ export default class ClipboardSection {
         )
     }
 
+    /** @param {any} pattern @param {any} tracks */
     pasteTrack(pattern, tracks) {
         const editor = this.#editor
         if (!this.clipboard || this.clipboard.type !== 'track') return

@@ -277,6 +277,7 @@ export default class SongPanel extends BasePanel {
         }
     }
 
+    /** @param {any} nameEl @param {any} idx */
     #startRename(nameEl, idx) {
         const pat = appState.patterns[idx]
         const currentName = pat.name ?? `Pattern ${idx}`
@@ -344,6 +345,7 @@ export default class SongPanel extends BasePanel {
         })
     }
 
+    /** @param {any} idx */
     #selectPattern(idx) {
         serviceRegistry.cmd.setSelectedPatternIdx(idx)
         serviceRegistry.cmd.resetPage()

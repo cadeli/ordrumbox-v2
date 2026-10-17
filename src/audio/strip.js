@@ -45,7 +45,7 @@ const enumWarned = new Set()
  * substituting a default (an unknown reverbType used to resolve to "none",
  * i.e. the reverb was quietly switched off).
  * @param {object} map
- * @param {string} value
+ * @param {any} value
  * @param {string} label
  * @param {string} fallback
  * @returns {string}
@@ -66,7 +66,7 @@ function mapStripEnum(map, value, label, fallback) {
 export default class Strip {
     static TAG = 'Strip'
 
-    /** @param {string} name @param {BaseAudioContext} audioCtx @param {any} mixer */
+    /** @param {any} name @param {BaseAudioContext} audioCtx @param {any} mixer */
     constructor(name, audioCtx, mixer) {
         this.name = name
         this.audioCtx = audioCtx

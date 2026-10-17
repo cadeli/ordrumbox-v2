@@ -83,7 +83,7 @@ export default class TrackCommands {
         return before
     }
 
-    /** @param {any} pattern @param {string} type @param {number} [stepsPerBeat] @returns {any} */
+    /** @param {any} pattern @param {any} type @param {number} [stepsPerBeat] @returns {any} */
     addTrack(pattern, type, stepsPerBeat = 4) {
         const track = this.createTrack(pattern.beatCount, type, stepsPerBeat)
         // Clamp here rather than at first note: an out-of-grid track must be
@@ -178,7 +178,7 @@ export default class TrackCommands {
         return clone
     }
 
-    /** @param {number} beatCount @param {string} name @param {number} [stepsPerBeat] @returns {any} */
+    /** @param {number} beatCount @param {any} name @param {number} [stepsPerBeat] @returns {any} */
     createTrack(beatCount, name, stepsPerBeat = 4) {
         const newTrack = normalizeTrack({
             name,
@@ -196,12 +196,12 @@ export default class TrackCommands {
      * - notes: stepPercent (absolute position) is preserved → beatStep rescaled
      * - loopAtStep is clamped to the new beat length
      * @param {any} track
-     * @param {number} value - target steps per beat
+     * @param {any} value - target steps per beat
      * @param {object} [opts]
      * @param {boolean} [opts.coalesce] - merge rapid changes into one undo step
      * @returns {boolean} true when a change was applied
      */
-    /** @param {any} track @param {number} value @param {any} [opts] */
+    /** @param {any} track @param {any} value @param {any} [opts] */
     setStepsPerBeat(track, value, { coalesce = false } = {}) {
         const range = TRACK_VALUE_RANGES.stepsPerBeat
         const target = Math.round(clamp(value, range.min, range.max))

@@ -10,7 +10,7 @@ import { logger } from '../../core/logger.js'
 const TAG = 'AutoAssign'
 
 /**
- * @param {string} name
+ * @param {any} name
  * @returns {string} trimmed, upper-cased name — how sound keys are compared
  */
 const normalizeName = (name) => String(name ?? '').trim().toUpperCase()

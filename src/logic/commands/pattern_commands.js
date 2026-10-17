@@ -39,7 +39,7 @@ export default class PatternCommands {
         return ensurePatternId(pattern, this.#takenIds())
     }
 
-    /** @param {string} [name] @returns {any} */
+    /** @param {any} name @returns {any} */
     addPattern(name) {
         const pattern = this.createPattern(name)
         const patternIdx = appState.patterns.length
@@ -63,7 +63,7 @@ export default class PatternCommands {
         return pattern
     }
 
-    /** @param {number} idx */
+    /** @param {any} idx */
     removePattern(idx) {
         if (appState.patterns.length <= 1) return false
         const removedPattern = appState.patterns[idx]
@@ -91,7 +91,7 @@ export default class PatternCommands {
         return true
     }
 
-    /** @param {number} idx @param {string} newName */
+    /** @param {any} idx @param {string} newName */
     renamePattern(idx, newName) {
         const pat = appState.patterns[idx]
         if (!pat) return
@@ -113,7 +113,7 @@ export default class PatternCommands {
         })
     }
 
-    /** @param {string} name @returns {any} */
+    /** @param {any} name @returns {any} */
     getPatternByName(name) {
         const normalizedName = String(name ?? '')
             .trim()
@@ -247,7 +247,7 @@ export default class PatternCommands {
         return result
     }
 
-    /** @param {string} [name] @returns {any} */
+    /** @param {any} name @returns {any} */
     createPattern(name) {
         name ??= `NewPat_${appState.patterns.length}`
         const pattern = { name, description: '', tracks: [], bpm: 120, beatCount: 4 }

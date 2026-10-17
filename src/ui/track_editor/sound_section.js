@@ -150,6 +150,7 @@ export default class SoundSection {
         this.#afterSoundChange()
     }
 
+    /** @param {any} target */
     async onSampleChange(target) {
         const editor = this.#editor
         const track = editor.track
@@ -172,6 +173,7 @@ export default class SoundSection {
         emitTrackChanged(track, editor.playbackEvents)
     }
 
+    /** @param {any} target */
     async onGeneratedChange(target) {
         const editor = this.#editor
         const track = editor.track

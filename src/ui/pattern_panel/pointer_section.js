@@ -32,6 +32,7 @@ export default class PointerSection {
         if (this.#tooltip) this.#tooltip.style.display = 'none'
     }
 
+    /** @param {any} e */
     onMouseOver(e) {
         const cell = e.target.closest('.pp-cell.filled')
         if (!cell) return
@@ -66,12 +67,14 @@ export default class PointerSection {
         this.#tooltip.style.top = `${rect.top - containerRect.top - this.#tooltip.offsetHeight - 4}px`
     }
 
+    /** @param {any} e */
     onMouseOut(e) {
         const cell = e.target.closest('.pp-cell.filled')
         if (!cell) return
         if (this.#tooltip) this.#tooltip.style.display = 'none'
     }
 
+    /** @param {number} trackIdx @param {number} beat @param {number} beatStep */
     #resolveNotesAtStep(trackIdx, beat, beatStep) {
         const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return null
@@ -82,6 +85,7 @@ export default class PointerSection {
         return { track, notesAtStep: stepNotes, pattern }
     }
 
+    /** @param {any} idx @param {any} prop */
     #toggleTrackProp(idx, prop) {
         const track = this.#editor.resolveTrack(idx)
         if (!track) return
@@ -110,6 +114,7 @@ export default class PointerSection {
         emitTrackChanged(track, this.#editor.playbackEvents)
     }
 
+    /** @param {any} e */
     onClick(e) {
         // A cell drag ends over the cell it started on, and clicking an already
         // selected note deletes it: that click is not a click.
@@ -252,6 +257,7 @@ export default class PointerSection {
         this.#editor.serviceRegistry.seq?.simpleBeep(trackIdx, newNote)
     }
 
+    /** @param {any} e */
     onInput(e) {
         const volSlider = e.target.closest('.pp-volume')
         if (volSlider) {

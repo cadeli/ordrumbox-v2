@@ -214,5 +214,5 @@ export function clampStepsPerBeat(track) {
     }
     return true
 }
-Object.freeze(TRACK_VALUE_RANGES)
 Object.freeze(TRACK_DEFAULTS)
+Object.freeze(TRACK_VALUE_RANGES)

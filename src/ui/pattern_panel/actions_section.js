@@ -15,6 +15,7 @@ export default class ActionsSection {
         this.#editor = editor
     }
 
+    /** @param {string} action */
     async run(action) {
         const editor = this.#editor
         const idx = editor.appState.selectedPatternIdx

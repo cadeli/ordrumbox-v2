@@ -141,7 +141,7 @@ export function semiToneToPitch(semiTone) {
  * UI curve for a knob/slider value: the first octave is linear up to 8, then
  * one step per unit, so low values stay usable.
  *
- * @param {number} value
+ * @param {any} value
  * @returns {number}
  */
 export function getStepSpacing(value) {

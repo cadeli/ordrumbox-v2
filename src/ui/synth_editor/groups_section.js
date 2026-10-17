@@ -126,6 +126,7 @@ export default class GroupsSection {
         return tabBar + body + '<div class="ss-module-trace" data-ss-module-trace></div>'
     }
 
+    /** @param {any} groupName @param {any} knobConfigs @param {any} draft */
     #renderGroupCard(groupName, knobConfigs, draft) {
         const content = this.#buildGroupContent(groupName, knobConfigs)
         const label = this.getGroupLabel(groupName)

@@ -220,6 +220,7 @@ export default class NoteEditor extends BasePanel {
         this.sync()
     }
 
+    /** @param {any} data */
     async #initData(data) {
         this.#track = data.track
         this.#note = data.note
@@ -228,6 +229,7 @@ export default class NoteEditor extends BasePanel {
         await loadScales()
     }
 
+    /** @param {any} data */
     async #initEmptyData(data) {
         this.#track = data.track
         this.#beat = data.beat ?? 0
@@ -290,6 +292,7 @@ export default class NoteEditor extends BasePanel {
         return `<div data-or-control="${p.key}"></div>`
     }
 
+    /** @param {any} p @param {any} arpState */
     #resolveSelectValue(p, arpState) {
         if (p.key === 'arpScale') return this.#note._arpScale ?? arpState.scale
         if (p.key === 'arpType') return this.#note._arpType ?? arpState.type
@@ -397,6 +400,7 @@ export default class NoteEditor extends BasePanel {
         return range > 0 ? { intervals: getScaleIntervals(scale, range), mode: type } : null
     }
 
+    /** @param {any} key @param {any} val */
     #onSlider(key, val) {
         if (!this.#note || !this.#track) return
         // arpRange is not a field: the range lives in arp.intervals.length
@@ -409,6 +413,7 @@ export default class NoteEditor extends BasePanel {
         emitNotesChanged(this.#track)
     }
 
+    /** @param {any} sel */
     #onSelect(sel) {
         if (!this.#note || !this.#track) return
         const key = sel.dataset.key

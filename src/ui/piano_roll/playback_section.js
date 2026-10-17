@@ -100,6 +100,7 @@ export default class PlaybackSection {
         this.illuminateStep(absStep, transport.tick)
     }
 
+    /** @param {any} absStep @param {any} rawTick */
     illuminateStep(absStep, rawTick) {
         if (rawTick === this.#prevLitTick) return
         for (const el of this.#litNoteEls) el.classList.remove('playing')

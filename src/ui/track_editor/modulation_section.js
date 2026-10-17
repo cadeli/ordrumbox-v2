@@ -42,6 +42,7 @@ export default class ModulationSection {
         return props.find((p) => p.key === editor.selectedLfoTarget) ?? props[0]
     }
 
+    /** @param {any} prop @param {any} type */
     #getDefaultLfo(prop, type = 'sine') {
         return { type, freq: 1, min: prop.min, max: prop.max, phase: 0 }
     }
@@ -178,10 +179,12 @@ export default class ModulationSection {
 
     // ── Event handlers ─────────────────────────────────────────────
 
+    /** @param {any} targetKey */
     onSelectBtn(targetKey) {
         this.#editor.selectedLfoTarget = targetKey
     }
 
+    /** @param {any} targetKey */
     onToggleBtn(targetKey) {
         this.#editor.selectedLfoTarget = targetKey
         return this.toggleLfoForTarget(targetKey)

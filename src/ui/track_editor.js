@@ -207,7 +207,7 @@ export default class TrackEditor extends BasePanel {
     /**
      * Live value control (slider or knob) for a track key, or null.
      * Generation sliders win over FX knobs for the shared FX keys.
-     * @param {string} key
+     * @param {any} key
      * @returns {import('./components/or_slider.js').OrSlider|import('./components/or_knob.js').OrKnob|null}
      */
     getControl(key) {
@@ -216,6 +216,7 @@ export default class TrackEditor extends BasePanel {
 
     // ── Lifecycle ──────────────────────────────────────────────────
 
+    /** @param {any} editor */
     setNoteEditor(editor) {
         this.#noteEditor = editor
     }
@@ -325,6 +326,7 @@ export default class TrackEditor extends BasePanel {
         })
     }
 
+    /** @param {any} track @param {number} trackIdx */
     showNoteEditorForTrack(track, trackIdx) {
         if (!this.#noteEditor) return
         this.#noteEditor.container.style.display = 'block'
@@ -436,6 +438,7 @@ export default class TrackEditor extends BasePanel {
         }
     }
 
+    /** @param {number} tick */
     #lfoValuesForTick(tick) {
         if (!this.#track) return null
         const pattern = this.#appState.selectedPattern
@@ -445,6 +448,7 @@ export default class TrackEditor extends BasePanel {
         return this.#lfoBridge.compute(this.#track, tick, tickCount)
     }
 
+    /** @param {any} lfoValues */
     #applyLfoValues(lfoValues) {
         if (!lfoValues || !this.#track) return
         ALL_TRACK_PROPS.forEach((p) => {
@@ -475,7 +479,7 @@ export default class TrackEditor extends BasePanel {
 
     // ── Show / Sync / Hide ─────────────────────────────────────────
 
-    show({ track, trackIdx }) {
+        show({ track, trackIdx }) {
         this.#track = track
         this.#selectedTrackIdx = trackIdx
         this.#applyContainerDisplay()
@@ -636,6 +640,7 @@ export default class TrackEditor extends BasePanel {
         if (input) /** @type {HTMLElement} */ (input).click()
     }
 
+    /** @param {any} e */
     async #onSampleFileSelected(e) {
         const file = /** @type {HTMLInputElement} */ (e.target).files?.[0]
         if (!file || !this.#track) return
@@ -671,6 +676,7 @@ export default class TrackEditor extends BasePanel {
         input.value = ''
     }
 
+    /** @param {any} key */
     #toggleFxByKey(key) {
         const updates = this.#fxSection.toggleFxByKey(key)
         if (updates) {
@@ -682,6 +688,7 @@ export default class TrackEditor extends BasePanel {
         this.#emitTrackChange()
     }
 
+    /** @param {any} target */
     #onFxIcon(target) {
         const updates = this.#fxSection.onFxIcon(target)
         if (updates) {
@@ -693,22 +700,26 @@ export default class TrackEditor extends BasePanel {
         this.#emitTrackChange()
     }
 
+    /** @param {any} fxTabId */
     #onFxTab(fxTabId) {
         this.#fxSection.onFxTab(fxTabId)
     }
 
+    /** @param {any} genTabId */
     #onGenTab(genTabId) {
         if (!genTabId) return
         this.#genSection.subTab.setActive(genTabId)
         this.sync()
     }
 
+    /** @param {any} k */
     #onLfoSelectBtn(k) {
         this.#modSection.onSelectBtn(k)
         this.sync()
         this.#emitTrackChange()
     }
 
+    /** @param {any} k */
     #onLfoToggleBtn(k) {
         const res = this.#modSection.onToggleBtn(k)
         if (res) {
@@ -720,6 +731,7 @@ export default class TrackEditor extends BasePanel {
         this.#emitTrackChange()
     }
 
+    /** @param {any} input */
     #onLfoSlider(input) {
         const res = this.#modSection.onSlider(input)
         if (res) {
@@ -732,6 +744,7 @@ export default class TrackEditor extends BasePanel {
         this.#emitTrackChange()
     }
 
+    /** @param {any} sel */
     #onLfoSelect(sel) {
         const res = this.#modSection.onSelect(sel)
         if (res) {
@@ -846,11 +859,13 @@ export default class TrackEditor extends BasePanel {
         })
     }
 
+    /** @param {any} propKey */
     #onRowClick(propKey) {
         this.#selectedPropKey = propKey
         this.sync()
     }
 
+    /** @param {any} sel */
     #onSelect(sel) {
         if (!this.#track) return
         const key = sel.dataset.key
@@ -866,6 +881,7 @@ export default class TrackEditor extends BasePanel {
         this.#emitTrackChange()
     }
 
+    /** @param {any} btn */
     #onToggle(btn) {
         if (!this.#track) return
         const key = btn.dataset.key
@@ -883,6 +899,7 @@ export default class TrackEditor extends BasePanel {
         if (key === 'auto') this.sync()
     }
 
+    /** @param {any} key @param {any} value */
     onLoopSlider(key, value) {
         if (!this.#track) return
         const track = this.#track

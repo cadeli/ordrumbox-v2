@@ -70,7 +70,7 @@ export default class BaseVoice {
         return node
     }
 
-    /** @param {string} type @returns {any} */
+    /** @param {any} type @returns {any} */
     acquireNode(type) {
         if (this.nodePool) {
             const node = this.nodePool.acquire(type)

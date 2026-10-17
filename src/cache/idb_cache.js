@@ -181,7 +181,7 @@ export async function getCachedGeneratedSounds() {
 
 /**
  * Deletes one cache entry.
- * @param {string} type one of the STORE_BY_TYPE keys (getCacheStats reports all of
+ * @param {any} type one of the STORE_BY_TYPE keys (getCacheStats reports all of
  *   them, and the Tools panel offers a delete button for each)
  * @param {IDBValidKey} key
  * @returns {Promise<boolean>} false when `type` is not a cache store

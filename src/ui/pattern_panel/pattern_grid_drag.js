@@ -84,6 +84,7 @@ export default class PatternGridDrag {
         })
     }
 
+    /** @param {any} note @param {any} axis @param {any} value @param {any} dir */
     #apply(note, axis, value, dir) {
         const track = this.#editor.resolveTrack(this.#trackIdx)
         const trackIdx = this.#trackIdx

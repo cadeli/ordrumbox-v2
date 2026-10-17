@@ -101,6 +101,7 @@ export default class RenderSection {
         this.#renderLoopPoint(gridEl)
     }
 
+    /** @param {any} [gridEl] */
     #renderLoopPoint(gridEl) {
         if (!gridEl) gridEl = this.#editor.container?.querySelector('#pp-piano-grid')
         if (!gridEl) return

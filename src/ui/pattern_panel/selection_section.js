@@ -15,6 +15,7 @@ export default class SelectionSection {
         this.#editor = editor
     }
 
+    /** @param {number} trackIdx */
     selectTrack(trackIdx) {
         const track = this.#editor.resolveTrack(trackIdx)
         if (!track) return
@@ -45,11 +46,13 @@ export default class SelectionSection {
         }
     }
 
+    /** @param {any} track @param {number} beat @param {number} beatStep */
     #fracPos(track, beat, beatStep) {
         const spb = track?.stepsPerBeat ?? 4
         return beat + beatStep / spb
     }
 
+    /** @param {any} tracks */
     #getRangeInfo(tracks) {
         if (!this.#editor.rangeAnchor || this.#editor.focusRowIdx === -1) return null
         const a = this.#editor.rangeAnchor
@@ -67,6 +70,7 @@ export default class SelectionSection {
         }
     }
 
+    /** @param {number} trackIdx @param {number} beat @param {number} beatStep @param {any} track @param {any} info */
     #cellInInfoRange(trackIdx, beat, beatStep, track, info) {
         if (trackIdx < info.trackMin || trackIdx > info.trackMax) return false
         const frac = this.#fracPos(track, beat, beatStep)
@@ -74,6 +78,7 @@ export default class SelectionSection {
         return frac >= info.fracMin - eps && frac <= info.fracMax + eps
     }
 
+    /** @param {any} tracks @param {any} pattern */
     handleRangeDelete(tracks, pattern) {
         const info = this.#getRangeInfo(tracks)
         this.#editor.rangeAnchor = null
@@ -97,6 +102,7 @@ export default class SelectionSection {
         this.#editor.applySelection()
     }
 
+    /** @param {any} tracks */
     #applyRangeClasses(tracks) {
         const info = this.#getRangeInfo(tracks)
         if (!info) return

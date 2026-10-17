@@ -115,6 +115,7 @@ export default class ViewManager {
 
     // ── Slot panel logic ──────────────────────────────────────────────────
 
+    /** @param {any} show @param {any} name @param {any} panel */
     #toggleSlotPanel(show, name, panel) {
         if (!panel) return
         if (show) {
@@ -138,6 +139,7 @@ export default class ViewManager {
         }
     }
 
+    /** @param {any} exceptName */
     #hideOtherSlotPanels(exceptName) {
         for (const [name, { panel }] of this.#slots) {
             if (name !== exceptName && panel?.isVisible) panel.hide()
@@ -146,6 +148,7 @@ export default class ViewManager {
 
     // ── View switching ────────────────────────────────────────────────────
 
+    /** @param {any} view */
     #switchTo(view) {
         if (view === this.#currentView) return
         const prev = this.#currentView
