@@ -16,6 +16,11 @@ import { EVENTS } from '../core/events.js'
  * patterns/step_resolver.js for the pass-scoped cache strategy), so nothing
  * has to be invalidated here.
  */
+/**
+ * @param {any} pattern
+ * @param {number} [loop=0]
+ * @returns {any}
+ */
 export function applyFlatNotes(pattern, loop = 0) {
     const flatNotes = recomputeFlatNotes(pattern, loop, TICK)
     appState.flatNotes = flatNotes

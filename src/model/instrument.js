@@ -1,8 +1,15 @@
 import { NOT_FOUND } from '../core/constants.js'
 
+/**
+ * An instrument (drum or melodic) resolved from the kit data, with its GM
+ * MIDI mappings.
+ */
 export default class Instrument {
     static NOT_FOUND = NOT_FOUND
 
+    /**
+     * @param {{id?: string, drum?: boolean, pan?: number, synonyms?: string[], subst?: object, midi?: object[]}} [data]
+     */
     constructor(data = {}) {
         this.id = data.id ?? Instrument.NOT_FOUND
         this.drum = data.drum === true
@@ -31,7 +38,14 @@ export default class Instrument {
     }
 }
 
+/** A General MIDI mapping attached to an instrument. */
 class Midi {
+    /**
+     * @param {{id?: string, drum?: boolean, pan?: number, synonyms?: string[], subst?: object, midi?: object[]}} [data]
+     */
+    /**
+     * @param {{channel?: number, name?: string, key?: number | string | null, program?: number | string | null, keyBased?: any}} [data]
+     */
     constructor(data = {}) {
         this.channel = data.channel ?? 9
         this.name = data.name ?? ''
