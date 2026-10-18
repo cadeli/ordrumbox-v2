@@ -241,7 +241,7 @@ export default class SongPanel extends BasePanel {
     #renderList() {
         const patterns = appState.patterns
         if (!patterns.length) {
-            this.#listEl.innerHTML = '<div class="pp-empty">No patterns</div>'
+            this.#listEl.textContent = 'No patterns'
             return
         }
 
