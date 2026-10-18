@@ -118,7 +118,7 @@ export function getUnloadedSamplesFromDrumkits(drumkits, existingSounds) {
  * import `model` directly (tests/module_graph.test.js), while `patterns` may.
  * @param {any} rawSongs
  * @param {any[]} fixedPatterns patterns after fixPatterns()
- * @returns {{ songs: object[], dropped: Array<{pattern: string, reason: string}> }}
+ * @returns {{ songs: import('../model/song_schema.js').Song[], dropped: Array<{pattern: string, reason: string}> }}
  */
 export function fixSongs(rawSongs, fixedPatterns) {
     const ids = new Set(fixedPatterns.map((p) => p?.id).filter(Boolean))

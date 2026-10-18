@@ -68,6 +68,8 @@ import { valueOrFallback } from '../core/logger.js'
  * @property {boolean} pitch_scale_lock      - Restrict pitch randomization to the scale. Default: false
  * @property {string}  auto_variant          - Per-loop variation id applied by auto mode ("" = none). Default: ""
  * @property {number}  auto_density          - Per-loop density offset (-1-1), -1 = auto. Default: -1
+ * @property {boolean} [_toolbarAuto]        - Legacy auto flag kept for patterns saved by
+ *                                             older versions (read as `auto || _toolbarAuto`).
  */
 /**
  * A track in a pattern (runtime object). Same shape as TrackDefaults.

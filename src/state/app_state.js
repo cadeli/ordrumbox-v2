@@ -1,5 +1,18 @@
 import { isMobileViewport } from '../core/constants.js'
 
+/**
+ * Domain shapes shared across engine, UI and persistence. Import()-typed so a
+ * contract drift (e.g. a persisted key rename) surfaces at typecheck.
+ *
+ * @typedef {import('../model/pattern_schema.js').Pattern} Pattern
+ * @typedef {import('../model/song_schema.js').Song} Song
+ * @typedef {import('../model/song_schema.js').SongClip} SongClip
+ * @typedef {import('../model/flat_note.js').default} FlatNote
+ * @typedef {{ name: string, description: string, date: string }} SongInfos
+ * @typedef {{ basic: boolean, filters: boolean, effects: boolean, sound: boolean, loop: boolean, lfo: boolean }} TrackEditorVisibility
+ * @typedef {{ triggers: boolean, retrig: boolean, arp: boolean }} NoteEditorVisibility
+ */
+
 function buildDefaultVisibility() {
     const isMobile = isMobileViewport()
     return {
@@ -44,7 +57,7 @@ class AppState {
     }
 
     // Declared for TypeScript consumers (Object.assign is not modelled by tsc).
-    /** @type {any[]} */
+    /** @type {Pattern[]} */
     patterns
     /** @type {number} */
     selectedPatternIdx
@@ -66,21 +79,21 @@ class AppState {
     textInput
     /** @type {number} */
     secondsPerTick
-    /** @type {any} */
+    /** @type {Map<number, FlatNote[]>|null} */
     flatNotes
     /** @type {string} */
     workletStatus
     /** @type {boolean} */
     showVus
-    /** @type {any} */
+    /** @type {SongInfos} */
     songInfos
-    /** @type {any[]} */
+    /** @type {Song[]} */
     songs
     /** @type {number} */
     selectedSongIdx
-    /** @type {any} */
+    /** @type {TrackEditorVisibility} */
     trackEditorVisibility
-    /** @type {any} */
+    /** @type {NoteEditorVisibility} */
     noteEditorVisibility
 
     constructor() {
@@ -95,7 +108,7 @@ class AppState {
      * `getSelectedPatternIdx()` by injection so an offline export can render a
      * pattern other than the selected one (see wav_exporter.js).
      *
-     * @returns {any|undefined} undefined when the index points outside `patterns`
+     * @returns {Pattern|undefined} undefined when the index points outside `patterns`
      */
     get selectedPattern() {
         return this.patterns[this.selectedPatternIdx]

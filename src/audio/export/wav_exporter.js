@@ -79,7 +79,8 @@ export default class WavExporter {
         if (savedTransport) {
             savedTransport.bpm = bpm
         } else {
-            serviceRegistry.transport = { bpm }
+            // stand-in: only bpm is readable during the offline render
+            serviceRegistry.transport = /** @type {any} */ ({ bpm })
         }
         try {
             return await fn()

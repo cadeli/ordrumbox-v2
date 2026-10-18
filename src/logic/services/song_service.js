@@ -22,7 +22,9 @@ const SONGS_STORE = 'songs'
  * @property {string} [date]
  * @property {number} [savedAt]
  * @property {number} [exportedAt]
- * @property {Array<object & {id?: string}>} patterns
+ * @property {import('../../model/pattern_schema.js').Pattern[]} patterns the .odbox
+ *           patterns, pushed as-is (an app export is already normalized; see
+ *           applyToAppState for why fixPattern must NOT run here)
  * @property {import('../../model/song_schema.js').Song[]} songs
  * @property {number} [selectedPatternIdx]
  * @property {number} [selectedPatternNum] former name of selectedPatternIdx
