@@ -61,7 +61,9 @@ test.describe('Song playback mode follows the visible view', () => {
         await page.locator('.tb-view-btn[data-view="song"]').click()
         await startPlayback(page)
         await spyOnFlatNotes(page)
-        await page.waitForTimeout(1200)
+        // the engine resolves flat notes on every scheduled tick: that is the
+        // transport actually running, no fixed sleep needed
+        await expect.poll(async () => (await resolvedPatterns(page)).length).toBeGreaterThan(0)
 
         const m = await mode(page)
         expect(m.view).toBe('song')
@@ -79,11 +81,8 @@ test.describe('Song playback mode follows the visible view', () => {
 
         for (const view of ['proll', 'edit', 'synth']) {
             await page.locator(`.tb-view-btn[data-view="${view}"]`).click()
-            await page.waitForTimeout(400)
-            const m = await mode(page)
-            expect(m.view, view).toBe(view)
-            expect(m.songMode, `${view} must loop the pattern`).toBe(false)
-            expect(m.tempo, `${view} has no arrangement tempo`).toBeNull()
+            // view flips synchronously, songMode/tempo on the player's next pass
+            await expect.poll(async () => mode(page)).toMatchObject({ view, songMode: false, tempo: null })
         }
 
         await page.evaluate(() => window.__e2e.serviceRegistry.seq.toggleStartStop?.())
@@ -96,10 +95,7 @@ test.describe('Song playback mode follows the visible view', () => {
 
         const measure = () => page.evaluate(() => window.__e2e.serviceRegistry.audioEngine.player.currentSongMeasure)
         const first = await measure()
-        await page.waitForTimeout(1200)
-        const later = await measure()
-
-        expect(later).toBeGreaterThan(first)
+        await expect.poll(() => measure()).toBeGreaterThan(first)
         await page.evaluate(() => window.__e2e.serviceRegistry.seq.toggleStartStop?.())
     })
 
@@ -111,14 +107,20 @@ test.describe('Song playback mode follows the visible view', () => {
         await stackClipOnMeasure(page, 0)
         await startPlayback(page)
         await spyOnFlatNotes(page)
-        await page.waitForTimeout(600)
-
-        const patterns = await resolvedPatterns(page)
         const expected = await page.evaluate(() => {
             const song = window.__e2e.appState.songs[0]
             return [...new Set(song.clips.filter((c) => c.startMeasure === 0).map((c) => c.pattern))]
         })
         expect(expected.length).toBeGreaterThan(1)
+        // every clip on measure 0 must be resolved by the song resolver, at least once
+        await expect
+            .poll(async () => {
+                const patterns = await resolvedPatterns(page)
+                return expected.every((id) => patterns.includes(id))
+            })
+            .toBe(true)
+
+        const patterns = await resolvedPatterns(page)
         for (const id of expected) {
             expect(patterns, `${id} must sound with the others`).toContain(id)
         }
@@ -132,7 +134,7 @@ test.describe('Song playback mode follows the visible view', () => {
         await bootApp(page)
         await startPlayback(page)
         await spyOnFlatNotes(page)
-        await page.waitForTimeout(700)
+        await expect.poll(async () => (await resolvedPatterns(page)).length).toBeGreaterThan(0)
 
         const patterns = await resolvedPatterns(page)
         expect(patterns.length).toBeGreaterThan(0)
@@ -153,7 +155,11 @@ test.describe('Song playback mode follows the visible view', () => {
         await bootApp(page)
         await page.locator('.tb-view-btn[data-view="song"]').click()
         await startPlayback(page)
-        await page.waitForTimeout(1200)
+        // one full beat of scheduling: long enough for every track to ask the
+        // voice factory for its sample (where "No soundBuffer" used to fire)
+        await expect
+            .poll(async () => page.evaluate(() => window.__e2e.serviceRegistry.transport?.tick ?? 0))
+            .toBeGreaterThan(32)
 
         const broken = await page.evaluate(() => {
             const { appState, soundRegistry } = window.__e2e

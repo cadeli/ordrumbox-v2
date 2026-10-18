@@ -45,7 +45,12 @@ async function spyOnPreviews(page) {
         window.__previews = []
         const orig = seq.simpleBeep.bind(seq)
         seq.simpleBeep = (trackIdx, note) => {
-            window.__previews.push({ trackIdx, velocity: note?.velocity ?? null, pitch: note?.pitch ?? null })
+            window.__previews.push({
+                trackIdx,
+                velocity: note?.velocity ?? null,
+                pitch: note?.pitch ?? null,
+                at: Date.now(),
+            })
             return orig(trackIdx, note)
         }
     })
@@ -64,7 +69,12 @@ async function dragNote(page, cell, dx, dy) {
     for (let i = 1; i <= 6; i++) await page.mouse.move(x + (dx * i) / 6, y + (dy * i) / 6)
 }
 
-/** Drags a filled cell through several offsets, pausing like a human hand. */
+/**
+ * Drags a filled cell through several offsets, one throttled preview per move.
+ *
+ * The preview is throttled (90ms) and synchronous with the move: waiting for the
+ * throttle window to be open before each move guarantees it is not dropped.
+ */
 async function dragNoteSlow(page, cell, offsets) {
     const box = await cell.boundingBox()
     const x = box.x + box.width / 2
@@ -72,10 +82,21 @@ async function dragNoteSlow(page, cell, offsets) {
     await page.mouse.move(x, y)
     await page.mouse.down()
     for (const dy of offsets) {
+        // delta computed in the browser: the Node clock is a different context
+        await expect
+            .poll(() =>
+                page.evaluate(() => {
+                    const last = window.__previews.at(-1)?.at ?? 0
+                    return Date.now() - last
+                }),
+            )
+            .toBeGreaterThanOrEqual(90)
         await page.mouse.move(x, y + dy)
-        await page.waitForTimeout(120) // longer than the preview throttle
     }
     await page.mouse.up()
+    // the beep is synchronous with the move: every effective (unclamped) move
+    // has already recorded one — clamped no-ops correctly stay silent, which
+    // is why the test asserts "more than one", not "one per move"
 }
 
 test.describe('Pattern grid note drag', () => {
@@ -184,8 +205,10 @@ test.describe('Pattern grid note drag', () => {
         await expect(hover).toBeHidden()
         await page.mouse.up()
 
-        // back once the gauge is gone (a mouseover is needed to re-open it)
-        await page.waitForTimeout(900)
+        // back once the gauge is gone (a mouseover is needed to re-open it):
+        // the gauge fades after its lifetime (700ms + 150ms fade), toBeHidden
+        // auto-retries until display:none
+        await expect(gauge).toBeHidden()
         await page.mouse.move(4, 4)
         await page.mouse.move(cx, cy)
         await expect(hover).toBeVisible()
@@ -195,6 +218,10 @@ test.describe('Pattern grid note drag', () => {
         await bootApp(page)
         const { cell, beat, step } = await noteCell(page)
         await spyOnPreviews(page)
+        // the create-click may have armed the module throttle (private state the
+        // spy cannot see): reset it so every drag move is guaranteed a beep.
+        // Vite resolves this to the same module instance the app uses.
+        await page.evaluate(() => import('/src/ui/components/note_preview.js').then((m) => m.resetNotePreviewThrottle()))
 
         await dragNoteSlow(page, cell, [-20, -40, -60])
         const during = await previews(page)

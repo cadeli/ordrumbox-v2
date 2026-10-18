@@ -31,7 +31,9 @@ test.describe('Playback tempo follows the visible view', () => {
         await page.evaluate(() => window.__e2e.serviceRegistry.seq.setBpm(140))
 
         await page.locator('button.tb-start').click()
-        await page.waitForTimeout(400)
+        // the transport resets tick to 0 on start and advances on every schedule
+        // pass: tick > 0 means the player is actually running and applied the view
+        await expect.poll(async () => (await transportState(page)).tick).toBeGreaterThan(0)
 
         const s = await transportState(page)
         expect(s.view).toBe('edit')
@@ -46,12 +48,12 @@ test.describe('Playback tempo follows the visible view', () => {
         await page.locator('button.tb-start').click()
         // same path as the BPM slider while playing
         await page.evaluate(() => window.__e2e.serviceRegistry.seq.setBpm(140))
-        await page.waitForTimeout(1000)
+        await expect.poll(async () => (await transportState(page)).tick).toBeGreaterThan(0)
         const before = await transportState(page)
         expect(before.bpm).toBe(140)
 
         await page.locator('.tb-view-btn[data-view="synth"]').click()
-        await page.waitForTimeout(300)
+        await expect.poll(async () => (await transportState(page)).view).toBe('synth')
 
         const after = await transportState(page)
         expect(after.view).toBe('synth')
@@ -67,13 +69,16 @@ test.describe('Playback tempo follows the visible view', () => {
 
         await page.locator('.tb-view-btn[data-view="song"]').click()
         await page.locator('button.tb-start').click()
-        await page.waitForTimeout(400)
+        // start keeps the current bpm; the arrangement's bpm is applied on the
+        // player's first pass in song mode — poll on the value under test
+        await expect.poll(async () => (await transportState(page)).bpm).toBe(120)
         const song = await transportState(page)
         expect(song.view).toBe('song')
         expect(song.bpm, "the arrangement's bpm wins in the song view").toBe(120)
 
         await page.locator('.tb-view-btn[data-view="edit"]').click()
-        await page.waitForTimeout(300)
+        // same: the pattern bpm is restored on the player's next pass
+        await expect.poll(async () => (await transportState(page)).bpm).toBe(140)
         const pattern = await transportState(page)
         expect(pattern.view).toBe('edit')
         expect(pattern.bpm, 'back to the pattern bpm').toBe(140)

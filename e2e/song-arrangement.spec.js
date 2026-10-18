@@ -344,9 +344,7 @@ test.describe('Song arrangement context menus', () => {
 
         await page.evaluate(() => window.__e2e.serviceRegistry.history.undo())
         await page.evaluate(() => window.__e2e.playbackEvents.emit('patternStructureChange'))
-        await page.waitForTimeout(300)
-
-        expect(await clips(page)).toBe(before)
+        await expect.poll(() => clips(page)).toBe(before)
     })
 })
 
@@ -381,9 +379,8 @@ test.describe('Song arrangement cursor', () => {
         await expect(head(page)).toBeVisible()
 
         const first = await px(page)
-        await page.waitForTimeout(900)
-        const later = await px(page)
-        expect(later).toBeGreaterThan(first)
+        // the cursor is painted in a rAF off the live tick: poll until it moved
+        await expect.poll(() => px(page)).toBeGreaterThan(first)
 
         // stopping does not lose the cursor: it falls back on the marker, so the
         // next play starts where the user aimed it
@@ -474,22 +471,25 @@ test.describe('Song arrangement cursor', () => {
         await start(page)
         await expect(head(page)).toBeVisible()
 
-        // the cursor is only painted once the loop runs, so the first sample can
-        // still be unpainted
+        // the cursor is only painted once the loop runs, so the first samples can
+        // still be unpainted: sample until the wrap is observed (the decrease IS
+        // the assertion), instead of always burning 22 x 250ms
         const seen = []
-        for (let i = 0; i < 22; i++) {
-            const value = await px(page)
-            if (value !== null) seen.push(value)
-            await page.waitForTimeout(250)
-        }
+        await expect
+            .poll(
+                async () => {
+                    const value = await px(page)
+                    if (value !== null) seen.push(value)
+                    return seen.some((value, i) => i > 0 && value < seen[i - 1])
+                },
+                { timeout: 20_000 },
+            )
+            .toBe(true)
         await start(page)
 
         // never past the loop, it comes back near its start...
         expect(Math.max(...seen)).toBeLessThanOrEqual(2 * MEASURE_WIDTH)
         expect(Math.min(...seen)).toBeLessThan(MEASURE_WIDTH)
-        // ...so the cursor went backwards at least once instead of only creeping
-        // right for the whole sample window
-        expect(seen.some((value, i) => i > 0 && value < seen[i - 1])).toBe(true)
     })
 
     test('does not run a loop after leaving the view', async ({ page }) => {
@@ -498,8 +498,8 @@ test.describe('Song arrangement cursor', () => {
         await expect(head(page)).toBeVisible()
 
         await page.locator('.tb-view-btn[data-view="edit"]').click()
-        await page.waitForTimeout(600)
         // transport still running, but the hidden panel must not keep painting
+        // (toBeHidden auto-retries, no fixed wait needed)
         await expect(head(page)).toBeHidden()
 
         await start(page)
