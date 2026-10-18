@@ -21,7 +21,7 @@ export default class RenderSection {
     #editor
 
     /** @param {import('../piano_roll_panel.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../piano_roll_panel.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }
@@ -101,7 +101,7 @@ export default class RenderSection {
         this.#renderLoopPoint(gridEl)
     }
 
-    /** @param {any} [gridEl] */
+    /** @param {HTMLElement} [gridEl] */
     #renderLoopPoint(gridEl) {
         if (!gridEl) gridEl = this.#editor.container?.querySelector('#pp-piano-grid')
         if (!gridEl) return

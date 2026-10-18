@@ -166,7 +166,7 @@ export default class TrackEditor extends BasePanel {
     get selectedPropKey() {
         return this.#selectedPropKey
     }
-    /** @param {any} v */
+    /** @param {string|null} v */
     set selectedPropKey(v) {
         this.#selectedPropKey = v
     }
@@ -214,7 +214,7 @@ export default class TrackEditor extends BasePanel {
      * Live value control (slider or knob) for a track key, or null.
      * Generation sliders win over FX knobs for the shared FX keys; the knob
      * bar (velocity / pan / pitch / decay) is the last fallback.
-     * @param {any} key
+     * @param {string} key
      * @returns {import('./components/or_slider.js').OrSlider|import('./components/or_knob.js').OrKnob|null}
      */
     getControl(key) {
@@ -228,7 +228,7 @@ export default class TrackEditor extends BasePanel {
 
     // ── Lifecycle ──────────────────────────────────────────────────
 
-    /** @param {any} editor */
+    /** @param {import('./note_editor.js').default} editor */
     setNoteEditor(editor) {
         this.#noteEditor = editor
     }
@@ -292,7 +292,7 @@ export default class TrackEditor extends BasePanel {
         }
     }
 
-    /** @param {any} track @param {number} trackIdx */
+    /** @param {import('../model/track_schema.js').Track} track @param {number} trackIdx */
     showNoteEditorForTrack(track, trackIdx) {
         if (!this.#noteEditor) return
         this.#noteEditor.container.style.display = 'block'
@@ -452,7 +452,7 @@ export default class TrackEditor extends BasePanel {
         this.#applyContainerDisplay()
     }
 
-    /** @param {any} key @param {any} value */
+    /** @param {string} key @param {number} value */
     onLoopSlider(key, value) {
         if (!this.#track) return
         const track = this.#track

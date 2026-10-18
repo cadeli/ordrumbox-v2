@@ -17,7 +17,7 @@ const fmtPitch = (v) => {
     return (n >= 0 ? '+' : '') + String(Math.abs(n)).padStart(2, '0')
 }
 
-/** @param {any} key @param {any} v @returns {string} */
+/** @param {string} key @param {number} v @returns {string|number} */
 export const fmtVal = (key, v) => {
     if (key === 'filterFreq') return fmtFreq(v)
     if (key === 'filterQ') return v.toFixed(2)

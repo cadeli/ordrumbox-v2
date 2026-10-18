@@ -16,7 +16,6 @@ export default class PresetSection {
      * @param {import('./synth_preset_model.js').default} model edit-session state
      * @param {{ soundRegistry: object, serviceRegistry: object }} deps
      */
-    /** @param {any} model @param {any} deps */
     constructor(model, deps) {
         this.#model = model
         this.#soundRegistry = deps.soundRegistry
@@ -80,7 +79,7 @@ export default class PresetSection {
 
     // ─── Preset actions ────────────────────────────────────────────────
 
-    /** @param {any} dir */
+    /** @param {number} dir */
     navigatePreset(dir) {
         const keys = this.getGeneratedSoundKeys()
         if (keys.length === 0) return
@@ -89,7 +88,7 @@ export default class PresetSection {
         this.#model.loadPreset(keys[next])
     }
 
-    /** @param {any} key */
+    /** @param {string} key */
     selectPreset(key) {
         if (!key || key === this.#model.editKey) return
         this.#model.loadPreset(key)

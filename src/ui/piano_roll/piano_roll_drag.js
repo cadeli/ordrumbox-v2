@@ -14,7 +14,7 @@ export default class PianoRollDrag {
     #drag
 
     /** @param {import('../piano_roll_panel.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../piano_roll_panel.js').default} editor */
     constructor(editor) {
         this.#editor = editor
         this.#drag = new NoteDrag({
@@ -59,7 +59,7 @@ export default class PianoRollDrag {
         emitNotePicked({ bus: playbackEvents, track, trackIdx: this.#editor.selectedTrackIdx, note })
     }
 
-    /** @param {any} note @param {any} axis @param {any} value @param {any} dir */
+    /** @param {import('../../core/note_schema.js').Note} note @param {string} axis @param {number} value @param {number} dir */
     #apply(note, axis, value, dir) {
         const track = this.#editor.track
         const changed = applyNoteEdit({

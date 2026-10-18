@@ -62,11 +62,11 @@ export default class DrumkitManager extends BasePanel {
         this.#selectedSoundKey = v
     }
 
-    /** @param {any} sound @param {any} key @param {any} value */
+    /** @param {import('../state/sound_registry.js').SoundEntry} sound @param {string} key @param {number} value */
     onKnobChange(sound, key, value) {
         this.#onKnobChange(sound, key, value)
     }
-    /** @param {any} key */
+    /** @param {string} key */
     selectSound(key) {
         this.#selectSound(key)
     }
@@ -256,7 +256,7 @@ export default class DrumkitManager extends BasePanel {
         }
     }
 
-    /** @param {any} key */
+    /** @param {string} key */
     #selectSound(key) {
         this.#selectedSoundKey = key
         this.#listEl.querySelectorAll('.dm-list-item').forEach((el) => {
@@ -265,7 +265,7 @@ export default class DrumkitManager extends BasePanel {
         this.#renderDetail(key)
     }
 
-    /** @param {any} key */
+    /** @param {string} key */
     #renderDetail(key) {
         const sound = soundRegistry.sounds[key]
         if (!sound) {
@@ -381,7 +381,7 @@ export default class DrumkitManager extends BasePanel {
     // looks and behaves like the rest of the app instead of raw <input
     // type="range"> sliders.
 
-    /** @param {any} sound */
+    /** @param {import('../state/sound_registry.js').SoundEntry} sound */
     #syncKnobs(sound) {
         const values = { gain: sound.gainDb ?? 0, tune: sound.tune ?? 0, decay: sound.decay ?? 0 }
         this.#knobs = [
@@ -397,7 +397,7 @@ export default class DrumkitManager extends BasePanel {
         ]
     }
 
-    /** @param {any} sound @param {any} key @param {any} value */
+    /** @param {import('../state/sound_registry.js').SoundEntry} sound @param {string} key @param {number} value */
     #onKnobChange(sound, key, value) {
         if (key === 'gain') sound.gainDb = value
         else if (key === 'tune') sound.tune = value
@@ -418,7 +418,7 @@ export default class DrumkitManager extends BasePanel {
     // the same decay-cutoff marker line, so a sample looks the same whether
     // it's being tuned from a track or from the drumkit manager.
 
-    /** @param {any} sound @param {any} analysis @param {any} config */
+    /** @param {import('../state/sound_registry.js').SoundEntry} sound @param {{envelope?: number[]}} analysis @param {{resize?: boolean}} config */
     #drawWaveform(sound, analysis, { resize = false } = {}) {
         const canvas = this.#detailEl.querySelector('#dm-waveform')
         if (!canvas || !analysis?.envelope?.length) return
@@ -464,7 +464,7 @@ export default class DrumkitManager extends BasePanel {
         source.start()
     }
 
-    /** @param {any} soundKey */
+    /** @param {string} soundKey */
     #removeSample(soundKey) {
         const displayName = drumkitService.removeSample(soundKey)
         if (displayName) {
@@ -474,9 +474,10 @@ export default class DrumkitManager extends BasePanel {
         }
     }
 
-    /** @param {any} soundKey @param {any} e */
+    /** @param {string} soundKey @param {Event} e */
     async #onReplaceSample(soundKey, e) {
-        const file = e.target.files?.[0]
+        const input = /** @type {HTMLInputElement} */ (e.target)
+        const file = input.files?.[0]
         if (!file) return
 
         const ctx = serviceRegistry.audioCtx
@@ -496,12 +497,13 @@ export default class DrumkitManager extends BasePanel {
             logger.warn(TAG, `Replace failed: ${err.message}`)
             showToast('Failed to decode WAV: ' + err.message, 'error')
         }
-        e.target.value = ''
+        input.value = ''
     }
 
-    /** @param {any} e */
+    /** @param {Event} e */
     async #onAddSample(e) {
-        const file = e.target.files?.[0]
+        const addInput = /** @type {HTMLInputElement} */ (e.target)
+        const file = addInput.files?.[0]
         if (!file) return
 
         const ctx = serviceRegistry.audioCtx
@@ -517,7 +519,7 @@ export default class DrumkitManager extends BasePanel {
             logger.warn(TAG, `Add sample failed: ${err.message}`)
             showToast('Failed to decode WAV: ' + err.message, 'error')
         }
-        e.target.value = ''
+        addInput.value = ''
     }
 
     async #onAutoDetectAll() {

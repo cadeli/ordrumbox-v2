@@ -14,7 +14,7 @@ export default class GridSection {
     #editor
 
     /** @param {import('../pattern_panel.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../pattern_panel.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }
@@ -118,7 +118,7 @@ export default class GridSection {
 
     /**
      * @param {any[]} tracks
-     * @param {any} pattern
+     * @param {import('../../model/pattern_schema.js').Pattern} pattern
      * @param {{startBeat: number, endBeatPage: number, effectiveTrackIdx: number, cachedPage?: any, cachedVersion?: any, trackDataDirty?: any, trackDataCache: Map<number, any>}} opts
      * @returns {string} tracks HTML (including toolbar row + waveform canvas)
      */

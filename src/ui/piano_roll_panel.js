@@ -588,7 +588,7 @@ export default class PianoRollPanel extends BasePanel {
     ensurePlayhead() {
         this.#playback.ensurePlayhead()
     }
-    /** @param {any} note @param {any} track @param {any} totalSteps */
+    /** @param {Partial<import('../core/note_schema.js').Note>} note @param {import('../model/track_schema.js').Track} track @param {number} totalSteps */
     getSubPositions(note, track, totalSteps) {
         return getNoteSubPositions(note, track, totalSteps)
     }

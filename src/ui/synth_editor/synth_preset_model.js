@@ -23,7 +23,6 @@ export default class SynthPresetModel {
     /**
      * @param {{ soundRegistry: object, serviceRegistry: object }} deps
      */
-    /** @param {any} deps */
     constructor(deps) {
         this.#soundRegistry = deps.soundRegistry
         this.#serviceRegistry = deps.serviceRegistry
@@ -125,7 +124,7 @@ export default class SynthPresetModel {
 
     /**
      * Loads a preset into the draft, flushing any pending commit first.
-     * @param {any} key preset key
+     * @param {string} key preset key
      * @returns {boolean} whether the preset was loaded
      */
     loadPreset(key) {
@@ -222,7 +221,7 @@ export default class SynthPresetModel {
     /**
      * Computes the LFO modulation amount for a synth LFO config.
      * Mirrors the worklet's #lfoValue() + getLfoWaveformValue() math.
-     * @param {any} lfo  LFO config { target, wave, freq, depth, sync }
+     * @param {{target?: string, wave?: string, freq?: number, depth?: number, sync?: boolean}} lfo  LFO config
      * @param {number} [audioTime]  AudioContext.currentTime (defaults to the audio context time)
      * @returns {number} modulation amount in the target's display units
      */

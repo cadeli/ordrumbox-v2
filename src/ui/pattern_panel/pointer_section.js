@@ -12,7 +12,7 @@ export default class PointerSection {
     #tooltip = null
 
     /** @param {import('../pattern_panel.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../pattern_panel.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }
@@ -85,7 +85,7 @@ export default class PointerSection {
         return { track, notesAtStep: stepNotes, pattern }
     }
 
-    /** @param {any} idx @param {any} prop */
+    /** @param {number} idx @param {string} prop */
     #toggleTrackProp(idx, prop) {
         const track = this.#editor.resolveTrack(idx)
         if (!track) return

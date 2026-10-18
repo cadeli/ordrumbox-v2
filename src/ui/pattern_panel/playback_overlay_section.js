@@ -9,6 +9,13 @@ import { color } from '../theme.js'
 import { emitPageChanged } from '../../state/event_bus.js'
 import { reportUserError } from '../../core/notify.js'
 
+/**
+ * A `.pp-vu` element carrying its cached child/index expandos (written on
+ * first use).
+ * @typedef {HTMLElement & {_trackIdx?: number, _fill?: HTMLElement|null, _lastPct?: number}} VuEl
+ */
+
+
 export default class PlaybackOverlaySection {
     /** @type {import('../pattern_panel.js').default} */
     #editor
@@ -20,11 +27,10 @@ export default class PlaybackOverlaySection {
     #prevLoopTick
     /** @type {HTMLCanvasElement | null} */
     #waveformCanvas
-    /** @type {any} */
+    /** @type {NodeListOf<VuEl>|null} */
     #vuElCache
 
     /** @param {import('../pattern_panel.js').default} editor */
-    /** @param {any} editor */
     constructor(editor) {
         this.#editor = editor
         this.#rafId = null
@@ -63,7 +69,7 @@ export default class PlaybackOverlaySection {
         const editor = this.#editor
         this.#waveformCanvas = editor.container?.querySelector('.pp-waveform-overlay')
         if (this.#waveformCanvas) this.#waveformCanvas.style.display = ''
-        this.#vuElCache = editor.container?.querySelectorAll('.pp-vu')
+        this.#vuElCache = /** @type {NodeListOf<VuEl>|null} */ (editor.container?.querySelectorAll('.pp-vu'))
 
         const loop = () => {
             const transport = editor.serviceRegistry.transport
@@ -95,11 +101,11 @@ export default class PlaybackOverlaySection {
         this.#vuElCache = null
     }
 
-    /** @param {any} mixer */
+    /** @param {import('../../audio/mixer.js').default} mixer */
     #updateVus(mixer) {
         if (appState.showVus === false) return
         if (!this.#vuElCache) {
-            this.#vuElCache = this.#editor.container?.querySelectorAll('.pp-vu')
+            this.#vuElCache = /** @type {NodeListOf<VuEl>|null} */ (this.#editor.container?.querySelectorAll('.pp-vu'))
             if (!this.#vuElCache) return
         }
         const strips = mixer.strips
@@ -147,10 +153,10 @@ export default class PlaybackOverlaySection {
     #resetVuAndWaveform() {
         const editor = this.#editor
         if (!editor.container) return
-        const vuEls = this.#vuElCache ?? editor.container.querySelectorAll('.pp-vu')
+        const vuEls = this.#vuElCache ?? /** @type {NodeListOf<VuEl>} */ (editor.container.querySelectorAll('.pp-vu'))
         for (const vuEl of vuEls) {
             vuEl._lastPct = 0
-            const fill = vuEl.querySelector('.pp-vu-fill')
+            const fill = /** @type {HTMLElement|null} */ (vuEl.querySelector('.pp-vu-fill'))
             if (fill) {
                 fill.style.height = '0%'
             }

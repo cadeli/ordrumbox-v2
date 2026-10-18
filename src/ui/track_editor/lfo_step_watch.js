@@ -15,7 +15,7 @@ export default class LfoStepWatch {
     #lfoBridge
 
     /** @param {import('../track_editor.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../track_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
         this.#rafId = null
@@ -69,7 +69,7 @@ export default class LfoStepWatch {
         return this.#lfoBridge.compute(track, tick, tickCount)
     }
 
-    /** @param {any} lfoValues */
+    /** @param {Record<string, number>} lfoValues */
     #applyLfoValues(lfoValues) {
         const track = this.#editor.track
         if (!lfoValues || !track) return

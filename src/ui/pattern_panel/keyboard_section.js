@@ -15,7 +15,7 @@ export default class KeyboardSection {
     #editor
 
     /** @param {import('../pattern_panel.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../pattern_panel.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }
@@ -222,7 +222,7 @@ export default class KeyboardSection {
         return true
     }
 
-    /** @param {any} track */
+    /** @param {import('../../model/track_schema.js').Track} track */
     handleNoteEnter(track) {
         if (!track) return
         const pattern = this.#editor.appState.selectedPattern
@@ -285,7 +285,7 @@ export default class KeyboardSection {
         }
     }
 
-    /** @param {any} tracks */
+    /** @param {import('../../model/track_schema.js').Track[]} tracks */
     handleNoteDelete(tracks) {
         const track = tracks[this.#editor.focusRowIdx]
         if (!track) return

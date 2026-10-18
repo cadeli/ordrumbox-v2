@@ -23,7 +23,7 @@ export default class SoundSection {
     #autoBtn
 
     /** @param {import('../track_editor.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../track_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }
@@ -150,7 +150,7 @@ export default class SoundSection {
         this.#afterSoundChange()
     }
 
-    /** @param {any} target */
+    /** @param {HTMLInputElement} target */
     async onSampleChange(target) {
         const editor = this.#editor
         const track = editor.track
@@ -173,7 +173,7 @@ export default class SoundSection {
         emitTrackChanged(track, editor.playbackEvents)
     }
 
-    /** @param {any} target */
+    /** @param {HTMLInputElement} target */
     async onGeneratedChange(target) {
         const editor = this.#editor
         const track = editor.track

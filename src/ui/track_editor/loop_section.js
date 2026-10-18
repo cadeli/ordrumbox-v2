@@ -13,7 +13,7 @@ export default class LoopSection {
     #sliders = new Map()
 
     /** @param {import('../track_editor.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../track_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }

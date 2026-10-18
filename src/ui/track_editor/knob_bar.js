@@ -21,7 +21,7 @@ export default class KnobBar {
      * @param {() => void} [options.onDecayChange] repaint hook — the decay
      *   marker lives on the sample waveform, outside this module
      */
-    /** @param {any} editor @param {{onDecayChange?: () => void}} [options] */
+    /** @param {import('../track_editor.js').default} editor @param {{onDecayChange?: () => void}} [options] */
     constructor(editor, options = {}) {
         this.#editor = editor
         this.#onDecayChange = options.onDecayChange ?? (() => {})
@@ -92,8 +92,8 @@ export default class KnobBar {
 
     /**
      * Push LFO values into the knobs whose LFO is armed on the track.
-     * @param {any} lfoValues
-     * @param {any} track
+     * @param {Record<string, number>} lfoValues
+     * @param {import('../../model/track_schema.js').Track} track
      */
     applyLfo(lfoValues, track) {
         for (const p of KNOB_PROPS) {

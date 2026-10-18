@@ -17,7 +17,7 @@ export default class PatternGridDrag {
     #trackIdx = -1
 
     /** @param {import('../pattern_panel.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../pattern_panel.js').default} editor */
     constructor(editor) {
         this.#editor = editor
         this.#drag = new NoteDrag({
@@ -84,7 +84,7 @@ export default class PatternGridDrag {
         })
     }
 
-    /** @param {any} note @param {any} axis @param {any} value @param {any} dir */
+    /** @param {import('../../core/note_schema.js').Note} note @param {string} axis @param {number} value @param {number} dir */
     #apply(note, axis, value, dir) {
         const track = this.#editor.resolveTrack(this.#trackIdx)
         const trackIdx = this.#trackIdx

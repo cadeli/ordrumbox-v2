@@ -20,7 +20,7 @@ export default class ModulationSection {
     #subtabs = []
 
     /** @param {import('../track_editor.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../track_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
         editor.selectedLfoTarget = null
@@ -42,7 +42,7 @@ export default class ModulationSection {
         return props.find((p) => p.key === editor.selectedLfoTarget) ?? props[0]
     }
 
-    /** @param {any} prop @param {any} type */
+    /** @param {{min: number, max: number}} prop @param {string} type */
     #getDefaultLfo(prop, type = 'sine') {
         return { type, freq: 1, min: prop.min, max: prop.max, phase: 0 }
     }
@@ -179,12 +179,12 @@ export default class ModulationSection {
 
     // ── Event handlers ─────────────────────────────────────────────
 
-    /** @param {any} targetKey */
+    /** @param {string} targetKey */
     onSelectBtn(targetKey) {
         this.#editor.selectedLfoTarget = targetKey
     }
 
-    /** @param {any} targetKey */
+    /** @param {string} targetKey */
     onToggleBtn(targetKey) {
         this.#editor.selectedLfoTarget = targetKey
         return this.toggleLfoForTarget(targetKey)

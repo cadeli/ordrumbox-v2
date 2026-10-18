@@ -19,7 +19,7 @@ export default class MenuSection {
     #sequenceIdx = 0
 
     /** @param {import('../piano_roll_panel.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../piano_roll_panel.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }
@@ -56,7 +56,7 @@ export default class MenuSection {
         this.#showGridContextMenu({ beat, beatStep, relativePitch, hit }, e.clientX, e.clientY)
     }
 
-    /** @param {any} tonic @param {any} keyLabel @param {number} x @param {number} y */
+    /** @param {number} tonic @param {string} keyLabel @param {number} x @param {number} y */
     #showKeyboardContextMenu(tonic, keyLabel, x, y) {
         this.#contextMenu.hide()
         const track = this.#editor.track
@@ -70,7 +70,7 @@ export default class MenuSection {
         this.#contextMenu.show(header, actions, x, y)
     }
 
-    /** @param {any} ctx @param {number} x @param {number} y */
+    /** @param {{beat: number, beatStep: number, relativePitch: number, hit: import('../../core/note_schema.js').Note|null}} ctx @param {number} x @param {number} y */
     #showGridContextMenu(ctx, x, y) {
         this.#contextMenu.hide()
         const track = this.#editor.track
@@ -100,7 +100,7 @@ export default class MenuSection {
         this.#contextMenu.show(header, actions, x, y)
     }
 
-    /** @param {number} beat @param {number} beatStep @param {any} relativePitch */
+    /** @param {number} beat @param {number} beatStep @param {number} relativePitch */
     #menuAddNote(beat, beatStep, relativePitch) {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd
@@ -125,7 +125,7 @@ export default class MenuSection {
         showToast(`Added note (pitch ${relativePitch}) — ${track.name} @ ${beatLabel(beat, beatStep)}`, 'success')
     }
 
-    /** @param {any} hit @param {number} beat @param {number} beatStep */
+    /** @param {import('../../core/note_schema.js').Note|null} hit @param {number} beat @param {number} beatStep */
     #menuDeleteNote(hit, beat, beatStep) {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd
@@ -137,7 +137,7 @@ export default class MenuSection {
         showToast(`Deleted note — ${track.name} @ ${beatLabel(beat, beatStep)}`, 'success')
     }
 
-    /** @param {number} beat @param {number} beatStep @param {any} rootPitch @param {any} intervals @param {any} quality */
+    /** @param {number} beat @param {number} beatStep @param {number} rootPitch @param {number[]} intervals @param {string} quality */
     #menuAddChord(beat, beatStep, rootPitch, intervals, quality) {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd
@@ -189,7 +189,7 @@ export default class MenuSection {
         showToast(`Cleared notes on "${track.name}"`, 'success')
     }
 
-    /** @param {any} tonic */
+    /** @param {number} tonic */
     #menuAddSequence(tonic) {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd

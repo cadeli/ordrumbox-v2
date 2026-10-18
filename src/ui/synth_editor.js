@@ -217,7 +217,7 @@ export default class SynthEditor {
         })
     }
 
-    /** @param {any} pathStr @param {any} value */
+    /** @param {string} pathStr @param {number} value */
     #onKnobChange(pathStr, value) {
         this.#setValue(pathStr, Number.isNaN(value) ? 0 : value, true)
         this.#updateLfoIndicators()
@@ -339,9 +339,9 @@ export default class SynthEditor {
         }
     }
 
-    /** @param {any} target @param {any} e */
+    /** @param {HTMLElement} target @param {Event} e */
     #handlePowerBtn(target, e) {
-        const powerBtn = target.closest('[data-power-card]')
+        const powerBtn = /** @type {HTMLElement|null} */ (target.closest('[data-power-card]'))
         if (!powerBtn) return false
         e.stopPropagation()
         const groupName = powerBtn.dataset.powerCard
@@ -372,7 +372,7 @@ export default class SynthEditor {
         return true
     }
 
-    /** @param {any} target */
+    /** @param {HTMLElement} target */
     #handleBooleanBtn(target) {
         if (target.dataset.synthType !== 'boolean') return false
         const next = !this.#getValue(target.dataset.synthPath)
@@ -384,14 +384,14 @@ export default class SynthEditor {
         return true
     }
 
-    /** @param {any} target */
+    /** @param {HTMLElement} target */
     #handleIconBtn(target) {
-        const waveIcon = target.closest('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon')
+        const waveIcon = /** @type {HTMLElement|null} */ (target.closest('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon'))
         if (!waveIcon) return false
         const path = waveIcon.dataset.synthPath
         const val = waveIcon.dataset.waveVal
         this.#setValue(path, val)
-        const scope = waveIcon.closest('.ne-row') ?? waveIcon.closest('.ss-group')
+        const scope = /** @type {HTMLElement|null} */ (waveIcon.closest('.ne-row') ?? waveIcon.closest('.ss-group'))
         scope
             ?.querySelectorAll('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon')
             .forEach((b) => b.classList.remove('selected'))
@@ -400,7 +400,7 @@ export default class SynthEditor {
         return true
     }
 
-    /** @param {any} target */
+    /** @param {HTMLElement} target */
     #handleAction(target) {
         const action = target.dataset.action
         if (action === 'synth-revert') this.#revertPreset()
@@ -415,9 +415,9 @@ export default class SynthEditor {
         return true
     }
 
-    /** @param {any} target */
+    /** @param {HTMLElement} target */
     #handlePresetNav(target) {
-        const nav = target.closest('[data-preset-nav]')
+        const nav = /** @type {HTMLElement|null} */ (target.closest('[data-preset-nav]'))
         if (!nav) return
         const dir = parseInt(nav.dataset.presetNav, 10)
         // Without this guard a malformed dataset value reaches navigatePreset
@@ -594,7 +594,7 @@ export default class SynthEditor {
         input.click()
     }
 
-    /** @param {any} shouldSave */
+    /** @param {boolean} shouldSave */
     #closeEditor(shouldSave) {
         try {
             const model = this.#model

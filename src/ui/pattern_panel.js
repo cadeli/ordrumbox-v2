@@ -302,7 +302,7 @@ export default class PatternPanel extends BasePanel {
         this.#selection.applySelection()
     }
 
-    /** @param {number} trackIdx @param {any} track @param {any} pattern */
+    /** @param {number} trackIdx @param {import('../model/track_schema.js').Track} track @param {Partial<import('../model/pattern_schema.js').Pattern>} pattern */
     updateTrackCellsInPlace(trackIdx, track, pattern) {
         if (!this.container || !track || this.#cellMap.size === 0) {
             this.sync()
@@ -321,7 +321,7 @@ export default class PatternPanel extends BasePanel {
         )
     }
 
-    /** @param {any} pattern @param {any} tracks */
+    /** @param {Partial<import('../model/pattern_schema.js').Pattern>} pattern @param {import('../model/track_schema.js').Track[]} tracks */
     #syncCellsInPlace(pattern, tracks) {
         const { startBeat, endBeatPage } = pageBeatWindow(this.#appState.currentPage)
 

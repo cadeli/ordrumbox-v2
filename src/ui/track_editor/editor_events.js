@@ -17,13 +17,12 @@ export default class EditorEvents {
     /**
      * @param {import('../track_editor.js').default} editor
      * @param {object} deps
-     * @param {any} deps.fxSection
-     * @param {any} deps.modSection
-     * @param {any} deps.sndSection
-     * @param {any} deps.genSection
-     * @param {any} deps.sampleBar
+     * @param {import('./fx_section.js').default} deps.fxSection
+     * @param {import('./modulation_section.js').default} deps.modSection
+     * @param {import('./sound_section.js').default} deps.sndSection
+     * @param {import('./generation_section.js').default} deps.genSection
+     * @param {import('./sample_bar.js').default} deps.sampleBar
      */
-    /** @param {any} editor @param {any} deps */
     constructor(editor, deps) {
         this.#editor = editor
         this.#fxSection = deps.fxSection
@@ -53,7 +52,7 @@ export default class EditorEvents {
             if (target.closest('#ne-container')) return
             if (/** @type {HTMLInputElement} */ (target).type === 'range') this.#isDragging = true
             if (target.dataset.lfoKey) {
-                this.#onLfoSlider(target)
+                this.#onLfoSlider(/** @type {HTMLInputElement} */ (target))
             }
         })
 
@@ -81,8 +80,8 @@ export default class EditorEvents {
                 return
             }
             if (target.tagName === 'SELECT') {
-                if (target.dataset.key) this.#onSelect(target)
-                else if (target.dataset.lfoTypeSelect) this.#onLfoSelect(target)
+                if (target.dataset.key) this.#onSelect(/** @type {HTMLSelectElement} */ (target))
+                else if (target.dataset.lfoTypeSelect) this.#onLfoSelect(/** @type {HTMLSelectElement} */ (target))
                 else if (target.dataset.sound) {
                     const soundType = target.dataset.sound
                     const p =
@@ -144,19 +143,19 @@ export default class EditorEvents {
         })
     }
 
-    /** @param {any} propKey */
+    /** @param {string} propKey */
     #onRowClick(propKey) {
         this.#editor.selectedPropKey = propKey
         this.#editor.sync()
     }
 
-    /** @param {any} sel */
+    /** @param {HTMLSelectElement} sel */
     #onSelect(sel) {
         const track = this.#editor.track
         if (!track) return
         const key = sel.dataset.key
-        let val = sel.value
-        if (key === 'delayTime') val = parseFloat(val)
+        let val = /** @type {string|number} */ (sel.value)
+        if (key === 'delayTime') val = parseFloat(/** @type {string} */ (val))
         this.#editor.serviceRegistry.cmd?.updateTrack(
             track,
             { [key]: val },
@@ -167,7 +166,7 @@ export default class EditorEvents {
         this.#editor.emitTrackChange()
     }
 
-    /** @param {any} btn */
+    /** @param {HTMLButtonElement} btn */
     #onToggle(btn) {
         const track = this.#editor.track
         if (!track) return
@@ -186,7 +185,7 @@ export default class EditorEvents {
         if (key === 'auto') this.#editor.sync()
     }
 
-    /** @param {any} key */
+    /** @param {string} key */
     #toggleFxByKey(key) {
         const track = this.#editor.track
         const updates = this.#fxSection.toggleFxByKey(key)
@@ -199,7 +198,7 @@ export default class EditorEvents {
         this.#editor.emitTrackChange()
     }
 
-    /** @param {any} target */
+    /** @param {HTMLElement} target */
     #onFxIcon(target) {
         const track = this.#editor.track
         const updates = this.#fxSection.onFxIcon(target)
@@ -212,26 +211,26 @@ export default class EditorEvents {
         this.#editor.emitTrackChange()
     }
 
-    /** @param {any} fxTabId */
+    /** @param {string} fxTabId */
     #onFxTab(fxTabId) {
         this.#fxSection.onFxTab(fxTabId)
     }
 
-    /** @param {any} genTabId */
+    /** @param {string} genTabId */
     #onGenTab(genTabId) {
         if (!genTabId) return
         this.#genSection.subTab.setActive(genTabId)
         this.#editor.sync()
     }
 
-    /** @param {any} k */
+    /** @param {string} k */
     #onLfoSelectBtn(k) {
         this.#modSection.onSelectBtn(k)
         this.#editor.sync()
         this.#editor.emitTrackChange()
     }
 
-    /** @param {any} k */
+    /** @param {string} k */
     #onLfoToggleBtn(k) {
         const res = this.#modSection.onToggleBtn(k)
         if (res) {
@@ -243,7 +242,7 @@ export default class EditorEvents {
         this.#editor.emitTrackChange()
     }
 
-    /** @param {any} input */
+    /** @param {HTMLInputElement} input */
     #onLfoSlider(input) {
         const res = this.#modSection.onSlider(input)
         if (res) {
@@ -256,7 +255,7 @@ export default class EditorEvents {
         this.#editor.emitTrackChange()
     }
 
-    /** @param {any} sel */
+    /** @param {HTMLSelectElement} sel */
     #onLfoSelect(sel) {
         const res = this.#modSection.onSelect(sel)
         if (res) {

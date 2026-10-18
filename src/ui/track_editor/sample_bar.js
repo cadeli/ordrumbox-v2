@@ -19,7 +19,7 @@ export default class SampleBar {
     #waveObservedCanvas = null
 
     /** @param {import('../track_editor.js').default} editor */
-    /** @param {any} editor */
+    /** @param {import('../track_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }
@@ -34,7 +34,7 @@ export default class SampleBar {
         this.#waveCanvas = root.querySelector('canvas.te-waveform')
     }
 
-    /** Toggle the sample bar and refresh its analysis text. @param {any} track */
+    /** Toggle the sample bar and refresh its analysis text. @param {import('../../model/track_schema.js').Track} track */
     sync(track) {
         const sound = track.useSoftSynth ? null : this.#editor.soundRegistry.sounds[track.sampleId ?? '']
         if (!sound?.buffer) {
@@ -49,7 +49,7 @@ export default class SampleBar {
         this.#sampleInfoEl.textContent = `${pitchStr} · ${durStr} · ${peakStr}`
     }
 
-    /** Redraw the envelope and decay marker. @param {any} track */
+    /** Redraw the envelope and decay marker. @param {import('../../model/track_schema.js').Track} track */
     draw(track) {
         const canvas = this.#waveCanvas
         if (!canvas || !track) return

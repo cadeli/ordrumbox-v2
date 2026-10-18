@@ -220,7 +220,7 @@ export default class NoteEditor extends BasePanel {
         this.sync()
     }
 
-    /** @param {any} data */
+    /** @param {{track: import('../model/track_schema.js').Track, note: import('../core/note_schema.js').Note, beat: number, beatStep: number}} data */
     async #initData(data) {
         this.#track = data.track
         this.#note = data.note
@@ -229,7 +229,7 @@ export default class NoteEditor extends BasePanel {
         await loadScales()
     }
 
-    /** @param {any} data */
+    /** @param {{track: import('../model/track_schema.js').Track, beat?: number, beatStep?: number}} data */
     async #initEmptyData(data) {
         this.#track = data.track
         this.#beat = data.beat ?? 0
@@ -400,7 +400,7 @@ export default class NoteEditor extends BasePanel {
         return range > 0 ? { intervals: getScaleIntervals(scale, range), mode: type } : null
     }
 
-    /** @param {any} key @param {any} val */
+    /** @param {string} key @param {number} val */
     #onSlider(key, val) {
         if (!this.#note || !this.#track) return
         // arpRange is not a field: the range lives in arp.intervals.length
@@ -413,7 +413,7 @@ export default class NoteEditor extends BasePanel {
         emitNotesChanged(this.#track)
     }
 
-    /** @param {any} sel */
+    /** @param {HTMLSelectElement} sel */
     #onSelect(sel) {
         if (!this.#note || !this.#track) return
         const key = sel.dataset.key
