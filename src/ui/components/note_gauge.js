@@ -112,7 +112,7 @@ export default class NoteGauge {
         return this.#el?.style.display === 'block'
     }
 
-    /** @param {any} container */
+    /** @param {HTMLElement} container */
     #ensureEl(container) {
         if (!this.#el || !container.contains(this.#el)) {
             this.#el?.remove()
@@ -134,6 +134,7 @@ export default class NoteGauge {
      * down for the duration: two readouts for the same note (native title in
      * the piano roll, hover bubble in the pattern grid) would fight on screen.
      */
+    /** @param {Element} anchor */
     #markAnchor(anchor) {
         if (this.#marked && this.#marked !== anchor) this.#unmarkAnchor()
         if (!this.#marked) {
@@ -152,7 +153,7 @@ export default class NoteGauge {
         this.#markedTitle = null
     }
 
-    /** @param {any} el @param {any} container @param {any} anchor */
+    /** @param {HTMLElement} el @param {HTMLElement} container @param {Element} anchor */
     #position(el, container, anchor) {
         const anchorRect = anchor.getBoundingClientRect()
         const containerRect = container.getBoundingClientRect()
@@ -171,7 +172,7 @@ export default class NoteGauge {
         el.style.top = `${top}px`
     }
 
-    /** @param {any} el @param {any} anchor */
+    /** @param {HTMLElement} el @param {Element} anchor */
     #keepAlive(el, anchor) {
         this.#clearTimers()
         this.#markAnchor(anchor)

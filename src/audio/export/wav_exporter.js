@@ -80,7 +80,7 @@ export default class WavExporter {
             savedTransport.bpm = bpm
         } else {
             // stand-in: only bpm is readable during the offline render
-            serviceRegistry.transport = /** @type {any} */ ({ bpm })
+            serviceRegistry.transport = /** @type {import('../../logic/transport/transport.js').default} */ ({ bpm })
         }
         try {
             return await fn()

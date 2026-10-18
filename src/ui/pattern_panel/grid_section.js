@@ -117,7 +117,7 @@ export default class GridSection {
     }
 
     /**
-     * @param {any[]} tracks
+     * @param {import('../../model/track_schema.js').Track[]} tracks
      * @param {import('../../model/pattern_schema.js').Pattern} pattern
      * @param {{startBeat: number, endBeatPage: number, effectiveTrackIdx: number, cachedPage?: any, cachedVersion?: any, trackDataDirty?: any, trackDataCache: Map<number, any>}} opts
      * @returns {string} tracks HTML (including toolbar row + waveform canvas)

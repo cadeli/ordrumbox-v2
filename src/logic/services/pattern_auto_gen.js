@@ -48,7 +48,8 @@ class PatternAutoGen {
 
         const types =
             typeOrTypes instanceof Set ? typeOrTypes : new Set(Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes])
-        const isAutoOn = (/** @type {any} */ t) => Boolean(t.auto || t._toolbarAuto)
+        const isAutoOn = (/** @type {import('../../model/track_schema.js').Track} */ t) =>
+            Boolean(t.auto || t._toolbarAuto)
         const hasAuto = (pattern.tracks ?? []).some((t) => isAutoOn(t) && types.has(detectTrackType(t.name)))
 
         if (hasAuto) {

@@ -570,8 +570,8 @@ export default class ResourcesLoader {
      * Validate the arrangements against the pattern ids that were just fixed and
      * hand them to appState. Clips pointing at a pattern id that no longer exists
      * are dropped and reported rather than failing the whole song load.
-     * @param {any} rawSongs the `songs` array from the file, if any
-     * @param {any[]} fixedPatterns patterns after fixPatterns()
+     * @param {unknown} rawSongs the `songs` array from the file, if any
+     * @param {import('../model/pattern_schema.js').Pattern[]} fixedPatterns patterns after fixPatterns()
      */
     applySongs(rawSongs, fixedPatterns) {
         const { songs, dropped } = fixSongs(rawSongs, fixedPatterns)

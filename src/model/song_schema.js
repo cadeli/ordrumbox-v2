@@ -142,7 +142,7 @@ export function songBpm(song, fallbackBpm = SONG_DEFAULTS.bpm) {
  * mapped first, in place — raw is either a freshly parsed file or an
  * already-normalized song, where the mapping is a no-op.
  *
- * @param {any} raw
+ * @param {Record<string, any>} raw - validated to a non-array object by the guard below
  * @param {Map<string, object>|Set<string>} knownPatternIds library ids, or a Map id→pattern
  * @returns {{ ok: boolean, song?: Song, error?: string, dropped?: DroppedClip[] }}
  */
@@ -198,7 +198,7 @@ export function normalizeSong(raw, knownPatternIds) {
 
 /**
  * Normalize a whole `songs` array, de-duplicating song ids on the way.
- * @param {any} raw
+ * @param {unknown} raw - the file's `songs` value: Array.isArray() below is the gate
  * @param {Map<string, object>|Set<string>} knownPatternIds
  * @returns {{ songs: Song[], dropped: DroppedClip[] }}
  */

@@ -116,8 +116,8 @@ export function getUnloadedSamplesFromDrumkits(drumkits, existingSounds) {
  * Validate the arrangements of a song file against the pattern ids of the
  * library it will be loaded with. Exposed here because the loader layer may not
  * import `model` directly (tests/module_graph.test.js), while `patterns` may.
- * @param {any} rawSongs
- * @param {any[]} fixedPatterns patterns after fixPatterns()
+ * @param {unknown} rawSongs - raw `songs` array straight from a file
+ * @param {import('../model/pattern_schema.js').Pattern[]} fixedPatterns patterns after fixPatterns()
  * @returns {{ songs: import('../model/song_schema.js').Song[], dropped: Array<{pattern: string, reason: string}> }}
  */
 export function fixSongs(rawSongs, fixedPatterns) {

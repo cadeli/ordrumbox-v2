@@ -142,7 +142,7 @@ export class OrKnob extends BaseControl {
         this.#bind(rowEl)
     }
 
-    /** @param {any} rowEl */
+    /** @param {HTMLElement} rowEl */
     #bind(rowEl) {
         this.#unbindKeys()
         this.unbindGestures()

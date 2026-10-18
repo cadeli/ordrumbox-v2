@@ -146,7 +146,7 @@ export const emitPageChanged = (bus = playbackEvents) =>
  * The "pattern structure changed" pair (a track was added, removed, renamed or
  * the pattern list itself moved). An empty/omitted `tracks` is what
  * PATTERN_CHANGE treats as "the whole pattern" (see core/events.js).
- * @param {any[]} [tracks] tracks that changed
+ * @param {import('../model/track_schema.js').Track[]} [tracks] tracks that changed
  * @param {{batch: Function, emit: Function}} [bus] injected bus (DI)
  */
 export const emitStructureChanged = (tracks = [], bus = playbackEvents) =>

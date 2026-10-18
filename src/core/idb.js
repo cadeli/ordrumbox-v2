@@ -20,7 +20,7 @@ const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples', 'gen
  * Walks the shapes actually stored: a song ({patterns: [...]}) or a bare
  * pattern, each pattern and each of its tracks. Returns true when something
  * moved.
- * @param {any} node
+ * @param {Record<string, any>} node
  * @returns {boolean}
  */
 function renameNbBeats(node) {
@@ -69,13 +69,13 @@ function walkStores(db, tx, transform) {
  * Both shapes have to be handled: the `songs` store holds raw song blobs, the
  * `patterns` cache holds `{data, savedAt, ...}` envelopes. Ids are only minted
  * when absent, so re-running this is harmless.
- * @param {any} value
+ * @param {Record<string, any>} value
  * @returns {boolean} whether anything changed
  */
 function assignPatternIds(value) {
     if (!value || typeof value !== 'object') return false
     const taken = new Set()
-    /** @param {any} node @returns {boolean} */
+    /** @param {Record<string, any>} node @returns {boolean} */
     const walk = (node) => {
         if (!node || typeof node !== 'object') return false
         let changed = false
@@ -97,7 +97,7 @@ function assignPatternIds(value) {
  * Rewrite the legacy spelling of a note key (LEGACY_NOTE_KEY_ALIASES) across a
  * stored record. Handles the three shapes the stores carry: a raw song
  * ({patterns}), a bare pattern ({tracks}) and a `{data}` envelope around either.
- * @param {any} value
+ * @param {Record<string, any>} value
  * @returns {boolean} whether anything changed
  */
 function migrateStoredNoteKeys(value) {
@@ -116,7 +116,7 @@ function migrateStoredNoteKeys(value) {
  * migrateLegacyPatternKeys(), plus — on a raw song — `loopBars` and the clip
  * keys, through migrateLegacySongKeys(). The same three shapes as
  * migrateStoredNoteKeys() (raw song / bare pattern / `{data}` envelope).
- * @param {any} value
+ * @param {Record<string, any>} value
  * @returns {boolean} whether anything changed
  */
 function migrateStoredLegacyKeys(value) {
