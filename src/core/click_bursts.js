@@ -14,6 +14,8 @@ const LIFETIME_MS = 700
 
 let active = 0
 let installed = false
+/** @type {Set<ReturnType<typeof setTimeout>>} */
+const pendingBursts = new Set()
 
 function spawn(x, y) {
     if (active >= MAX_ACTIVE) return
@@ -25,10 +27,12 @@ function spawn(x, y) {
 
     document.body.appendChild(el)
     active++
-    setTimeout(() => {
+    const timer = setTimeout(() => {
         el.remove()
         active--
+        pendingBursts.delete(timer)
     }, LIFETIME_MS)
+    pendingBursts.add(timer)
 }
 
 function onPointerDown(event) {
@@ -43,4 +47,10 @@ export function initClickBursts() {
     if (installed || typeof document === 'undefined') return
     installed = true
     document.addEventListener('pointerdown', onPointerDown, { passive: true })
+}
+
+/** Cancel any pending burst cleanup timers. */
+export function cancelPendingBursts() {
+    for (const t of pendingBursts) clearTimeout(t)
+    pendingBursts.clear()
 }
