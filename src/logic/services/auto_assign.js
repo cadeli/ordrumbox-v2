@@ -7,10 +7,12 @@ import { getTracksArray } from '../../core/tracks.js'
 import { NOT_FOUND } from '../../core/constants.js'
 import { logger } from '../../core/logger.js'
 
+/** @typedef {import('../../model/track_schema.js').Track} Track */
+
 const TAG = 'AutoAssign'
 
 /**
- * @param {any} name
+ * @param {unknown} name
  * @returns {string} trimmed, upper-cased name — how sound keys are compared
  */
 const normalizeName = (name) => String(name ?? '').trim().toUpperCase()
@@ -24,8 +26,8 @@ export default class AutoAssign {
 
     /**
      * @param {object} [deps]
-     * @param {any} [deps.appState]
-     * @param {any} [deps.soundRegistry]
+     * @param {typeof import('../../state/app_state.js').appState} [deps.appState]
+     * @param {typeof import('../../state/sound_registry.js').soundRegistry} [deps.soundRegistry]
      */
     constructor({ appState, soundRegistry } = {}) {
         this.#appState = appState ?? _appState
@@ -63,7 +65,7 @@ export default class AutoAssign {
      * (so an explicit choice is never overwritten), and otherwise picks one AT
      * RANDOM — the same last resort the drum path uses when nothing matches.
      *
-     * @param {any} track
+     * @param {Track} track
      * @returns {string|null} the patch key the track ends up with
      */
     assignSynthPatch = (track) => {
@@ -168,7 +170,7 @@ export default class AutoAssign {
      *
      * @param {string|null} [kitName] keep only this kit
      * @param {string|null} [excludeKitName] drop this kit
-     * @returns {Array<[string, any]>}
+     * @returns {Array<[string, import('../../state/sound_registry.js').SoundEntry]>}
      */
     #entriesInScope(kitName = null, excludeKitName = null) {
         return Object.entries(this.#soundRegistry.sounds).filter(([, sound]) => {
