@@ -10,7 +10,7 @@ import { logger } from '../core/logger.js'
  * Render `pattern` for `loopCount` loops in an OfflineAudioContext and encode WAV.
  *
  * @param {object} deps
- * @param {AudioContext} deps.audioCtx - live ctx (sampleRate source only)
+ * @param {BaseAudioContext} deps.audioCtx - live ctx (sampleRate source only)
  * @param {Record<string, import('../state/sound_registry.js').SoundEntry>} deps.sounds
  * @param {Record<string, object>} deps.generatedSounds
  * @param {number} deps.TICK

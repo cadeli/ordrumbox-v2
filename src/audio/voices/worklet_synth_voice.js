@@ -70,6 +70,7 @@ const SYNTH_VOICE_OPTIONS = Object.freeze({
     outputChannelCount: [2],
 })
 
+/** @param {BaseAudioContext} audioCtx @returns {Promise<AudioWorkletNode>} */
 async function createSynthVoiceNode(audioCtx) {
     await WorkletLoader.ensureLoaded(audioCtx)
     return WorkletLoader.createNode(audioCtx, 'synth-voice', SYNTH_VOICE_OPTIONS)
@@ -103,11 +104,11 @@ export default class WorkletSynthVoice extends BaseVoice {
 
     /**
      * @param {BaseAudioContext} audioCtx
-     * @param {any} strip
-     * @param {any} generatedSound
+     * @param {import('../sound.js').StripLike} strip
+     * @param {Record<string, any>} generatedSound synth preset - free-form JSON with no model yet
      * @param {string|null} [soundKey]
-     * @param {any} [nodePool]
-     * @param {any} [synthNodePool]
+     * @param {import('../node_pool.js').default|null} [nodePool]
+     * @param {import('./synth_voice_pool.js').default|null} [synthNodePool]
      */
     constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null, synthNodePool = null) {
         super(audioCtx, strip, nodePool)

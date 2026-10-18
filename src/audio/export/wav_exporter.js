@@ -188,7 +188,7 @@ export default class WavExporter {
      *
      * @param {import('../../model/song_schema.js').Song} song a normalized song
      * @param {object} [opts]
-     * @param {Array<{id?: string, bpm?: number}>} [opts.patterns] the pattern library (defaults to appState)
+     * @param {import('../../model/pattern_schema.js').Pattern[]} [opts.patterns] the pattern library (defaults to appState)
      * @param {number} [opts.loopMeasureCount] override the arrangement length
      * @returns {Promise<Blob>}
      */

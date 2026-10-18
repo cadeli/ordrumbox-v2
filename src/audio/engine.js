@@ -27,7 +27,24 @@ export default class Engine {
     #workletReady
     #silentBuffer
 
-    /** @param {any} config */
+    /**
+     * Injection bag for the engine. Every key is optional: offline/test
+     * constructors provide a subset and the fallbacks below fill the rest.
+     * @param {{
+     *   audioCtx?: AudioContext|OfflineAudioContext,
+     *   sounds?: Record<string, import('./sound.js').SoundEntry>,
+     *   generatedSounds?: Record<string, any>,
+     *   patterns?: import('../model/pattern_schema.js').Pattern[],
+     *   getSelectedPatternIdx?: () => number,
+     *   getCurrentView?: () => string,
+     *   getSongs?: () => import('../model/song_schema.js').Song[],
+     *   getSelectedSongIdx?: () => number,
+     *   getAutoGenerator?: () => Promise<import('../state/service_registry.js').AutoGeneratorService>,
+     *   TICK?: number,
+     *   secondsPerTick?: number,
+     *   isOffline?: boolean,
+     * }} config
+     */
     constructor(config) {
         this.audioCtx = config.audioCtx
         this.sounds = config.sounds
@@ -262,7 +279,7 @@ export default class Engine {
         await this.#workletReady
         if (!this.player) return
         if (this.audioCtx?.state === 'suspended') {
-            await this.audioCtx.resume()
+            await (/** @type {AudioContext} */ (this.audioCtx)).resume()
         }
 
         await this.player.simpleBeep(trackIdx, note)

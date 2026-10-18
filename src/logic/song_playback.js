@@ -23,7 +23,7 @@ export const PLAYBACK_MODE = Object.freeze({ PATTERN: 'pattern', SONG: 'song' })
 
 /**
  * @typedef {object} SongSource
- * @property {object} pattern       the pattern to sound
+ * @property {import('../model/pattern_schema.js').Pattern} pattern       the pattern to sound
  * @property {import('../model/song_schema.js').SongClip} clip the clip that placed it
  * @property {number} clipIndex     index of that clip in the song
  * @property {number} loop          pattern-cycle counter, drives `every`/variation
@@ -40,7 +40,7 @@ export function tickToSongMeasures(tick, tickPerMeasure) {
  * Patterns sounding at `tick` under `song`.
  *
  * @param {import('../model/song_schema.js').Song|null|undefined} song a normalized song
- * @param {Map<string, {beatCount?: number, bpm?: number}>|Record<string, {beatCount?: number, bpm?: number}>} patternsById
+ * @param {Map<string, import('../model/pattern_schema.js').Pattern>|Record<string, import('../model/pattern_schema.js').Pattern>} patternsById
  * @param {number} tick transport tick (monotonic; never reset by this module)
  * @param {number} ticksPerBeat 32
  * @param {number} [loopMeasureCount] overrides the song's own loop length

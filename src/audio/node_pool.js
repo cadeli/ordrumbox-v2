@@ -2,8 +2,16 @@ import { safeDisconnect } from './math.js'
 
 const DISPOSABLE = new Set(['OscillatorNode', 'BufferSourceNode'])
 
+/**
+ * A pooled node: an AudioNode plus the params/properties resetNode() and the
+ * voices touch. Members are optional because the pool is heterogeneous (a
+ * GainNode has no `frequency`, a BufferSource no `gain`).
+ * @typedef {AudioNode & {gain?: AudioParam, frequency?: AudioParam, Q?: AudioParam, pan?: AudioParam, detune?: AudioParam, type?: string, buffer?: AudioBuffer|null, playbackRate?: AudioParam}} PooledNode
+ */
+
 /** Pool of reusable Web Audio nodes to reduce GC pressure. */
 export default class NodePool {
+    /** @type {Record<string, PooledNode[]>} */
     #pools
     #activeCount
 
@@ -18,7 +26,7 @@ export default class NodePool {
         return this.#activeCount
     }
 
-    /** @param {any} type @returns {any} */
+    /** @param {string} type @returns {PooledNode} */
     acquire(type) {
         let pool = this.#pools[type]
         if (!pool) pool = this.#pools[type] = []
@@ -28,7 +36,7 @@ export default class NodePool {
         return node
     }
 
-    /** @param {any} node */
+    /** @param {PooledNode} node */
     release(node) {
         if (!node) return
         safeDisconnect(node)
@@ -40,7 +48,7 @@ export default class NodePool {
         pool.push(node)
     }
 
-    /** @param {any} node @param {any} type */
+    /** @param {PooledNode} node @param {string} type */
     resetNode(node, type) {
         if (!node) return
         safeDisconnect(node)
@@ -76,6 +84,7 @@ export default class NodePool {
         return result
     }
 
+    /** @param {string} type */
     #create(type) {
         switch (type) {
             case 'GainNode':

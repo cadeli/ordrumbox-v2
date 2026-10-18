@@ -27,7 +27,7 @@ export function createMidiMappingResolver() {
  * No-op when MIDI is not ready.
  *
  * @param {object} deps
- * @param {AudioContext} deps.audioCtx
+ * @param {BaseAudioContext} deps.audioCtx
  * @param {Array<{beatCount?: number, tracks: object[]}>} deps.patterns
  * @param {() => number} deps.getSelectedPatternIdx
  * @param {number} deps.TICK

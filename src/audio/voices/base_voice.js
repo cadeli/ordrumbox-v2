@@ -16,8 +16,8 @@ export default class BaseVoice {
 
     /**
      * @param {BaseAudioContext} audioCtx
-     * @param {any} strip
-     * @param {any} [nodePool]
+     * @param {import('../sound.js').StripLike} strip
+     * @param {import('../node_pool.js').default|null} [nodePool]
      */
     constructor(audioCtx, strip, nodePool = null) {
         this.audioCtx = audioCtx
@@ -28,8 +28,8 @@ export default class BaseVoice {
         this.#pooledNodes = []
     }
 
-    /** @param {any} _flatNote @param {number} _time */
-    setup(_flatNote, _time) {
+    /** @param {import('../../model/flat_note.js').default} _flatNote @param {number} _time @param {{tick: number, tickCount: number}|null} [_lfoContext] */
+    setup(_flatNote, _time, _lfoContext) {
         throw new Error('setup() must be implemented by subclass')
     }
 
@@ -63,14 +63,18 @@ export default class BaseVoice {
         BaseVoice.#activeNodeCount = Math.max(0, BaseVoice.#activeNodeCount - count)
     }
 
-    /** @param {any} node @returns {any} */
+    /**
+     * @template {AudioNode} T
+     * @param {T} node
+     * @returns {T}
+     */
     registerNode(node) {
         this.nodes.push(node)
         BaseVoice.#activeNodeCount++
         return node
     }
 
-    /** @param {any} type @returns {any} */
+    /** @param {string} type @returns {import('../node_pool.js').PooledNode} */
     acquireNode(type) {
         if (this.nodePool) {
             const node = this.nodePool.acquire(type)
@@ -82,6 +86,7 @@ export default class BaseVoice {
         return this.registerNode(this.#createNode(type))
     }
 
+    /** @param {string} type */
     #createNode(type) {
         switch (type) {
             case 'GainNode':
@@ -95,7 +100,7 @@ export default class BaseVoice {
         }
     }
 
-    /** @param {any} sourceNode */
+    /** @param {AudioNode} sourceNode */
     connectToStripInput(sourceNode) {
         if (!sourceNode || !this.strip) return
         const entry = this.strip.voicesInput ?? this.strip.filter1

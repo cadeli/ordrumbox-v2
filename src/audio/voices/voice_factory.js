@@ -7,11 +7,11 @@ import { reportUserError } from '../../core/notify.js'
 export default class VoiceFactory {
     /**
      * @param {BaseAudioContext} audioCtx
-     * @param {any} mixer
-     * @param {Record<string, any>} sounds
+     * @param {import('../sound.js').Mixer} mixer
+     * @param {Record<string, import('../sound.js').SoundEntry>} sounds
      * @param {Record<string, any>} generatedSounds
-     * @param {any} [nodePool]
-     * @param {any} [synthNodePool]
+     * @param {import('../node_pool.js').default|null} [nodePool]
+     * @param {import('./synth_voice_pool.js').default|null} [synthNodePool]
      */
     constructor(audioCtx, mixer, sounds, generatedSounds, nodePool = null, synthNodePool = null) {
         this.audioCtx = audioCtx
@@ -22,7 +22,7 @@ export default class VoiceFactory {
         this.synthNodePool = synthNodePool
     }
 
-    /** @param {any} flatNote @returns {Promise<any>} */
+    /** @param {import('../../model/flat_note.js').default} flatNote @returns {Promise<import('./base_voice.js').default|null>} */
     async createVoice(flatNote) {
         const track = flatNote.track
         const strip = await this.mixer?.getOrCreateStrip(track?.name)
@@ -56,8 +56,7 @@ export default class VoiceFactory {
             )
         }
 
-        let sound = this.sounds[flatNote.sampleId]
-        if (!sound?.buffer) sound = this.sounds[track.sampleId]
+        const sound = this.sounds[track.sampleId]
         const soundBuffer = sound?.buffer
         if (!soundBuffer) {
             logger.warn(`VoiceFactory: No soundBuffer for track ${track.name}`)

@@ -14,10 +14,10 @@ import {
 export default class SampleVoice extends BaseVoice {
     /**
      * @param {BaseAudioContext} audioCtx
-     * @param {any} strip
+     * @param {import('../sound.js').StripLike} strip
      * @param {AudioBuffer} buffer
-     * @param {any} [nodePool]
-     * @param {any} [sample]
+     * @param {import('../node_pool.js').default|null} [nodePool]
+     * @param {import('../../state/sound_registry.js').SoundEntry|null} [sample]
      */
     constructor(audioCtx, strip, buffer, nodePool = null, sample = null) {
         super(audioCtx, strip, nodePool)
@@ -29,7 +29,7 @@ export default class SampleVoice extends BaseVoice {
         this.noteVelo = 1
     }
 
-    /** @param {any} flatNote @param {number} time @param {any} [lfoContext] */
+    /** @param {import('../../model/flat_note.js').default} flatNote @param {number} time @param {{tick: number, tickCount: number}|null} [lfoContext] */
     setup(flatNote, time, lfoContext = null) {
         const track = flatNote.track
 

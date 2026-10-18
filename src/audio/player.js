@@ -39,7 +39,27 @@ export default class Player {
         this.#patternsById = null
     }
 
-    /** @param {any} config */
+    /**
+     * Injection bag for the player. Every key is optional: offline/test
+     * constructors provide a subset and the fallbacks above fill the rest.
+     * @param {{
+     *   audioCtx?: AudioContext|OfflineAudioContext,
+     *   mixer?: import('./mixer.js').default,
+     *   sounds?: Record<string, import('./sound.js').SoundEntry>,
+     *   generatedSounds?: Record<string, any>,
+     *   patterns?: import('../model/pattern_schema.js').Pattern[],
+     *   getSelectedPatternIdx?: () => number,
+     *   computeFlatNotes?: (pattern: import('../model/pattern_schema.js').Pattern, loop: number) => Map<number, import('../model/flat_note.js').default[]>|void,
+     *   getAutoGenerator?: () => Promise<import('../state/service_registry.js').AutoGeneratorService>,
+     *   getFlatNotes?: (loop: number) => Map<number, import('../model/flat_note.js').default[]>,
+     *   getFlatNotesForPattern?: (pattern: import('../model/pattern_schema.js').Pattern, loop: number) => Map<number, import('../model/flat_note.js').default[]>,
+     *   getPlaybackMode?: () => string,
+     *   getSong?: () => import('../model/song_schema.js').Song|null,
+     *   TICK?: number,
+     *   secondsPerTick?: number,
+     *   isOffline?: boolean,
+     * }} config
+     */
     constructor(config) {
         this.audioCtx = config.audioCtx
         this.mixer = config.mixer

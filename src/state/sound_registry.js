@@ -15,12 +15,12 @@ import { MASTER_BUS_DEFAULTS, SESSION_DEFAULTS } from '../core/constants.js'
  * @property {number} [index] import order, set when added
  * @property {boolean} [isLoad] sample imported from a file
  * @property {boolean} [playStatus] playback state of the sample
- * @property {any} [decay]
- * @property {any} [duration]
- * @property {any} [gainDb]
- * @property {any} [peakDb]
- * @property {any} [rootMidi]
- * @property {any} [tune]
+ * @property {number|null} [decay]   sample envelope decay, ms
+ * @property {number|null} [duration] sample length, ms
+ * @property {number|null} [gainDb]   kit gain trim, dB
+ * @property {number|null} [peakDb]   measured peak, dB
+ * @property {number|null} [rootMidi] tuning reference key
+ * @property {number|null} [tune]     fine tune, semitones
  */
 
 class SoundRegistry {

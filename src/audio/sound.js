@@ -184,7 +184,8 @@ export default class Sound {
                     this.stopPreviousVoice(flatNote.track, time)
                     this.registerVoice(flatNote.track, voice)
                 }
-                if (opts.registerSynth) this.registerSynthVoice(voice)
+                if (opts.registerSynth)
+                    this.registerSynthVoice(/** @type {import('./voices/worklet_synth_voice.js').default} */ (voice))
                 // Extra guard: if another play() call registered a different
                 // voice for this track while we were awaiting setup(), skip.
                 if (flatNote.track.mono && this.monoVoiceByTrack.get(flatNote.track) !== voice) {
