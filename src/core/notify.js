@@ -121,14 +121,17 @@ export function showToast(message, type = 'info', { actions, dismissible, durati
     container.appendChild(el)
     clampStack(container)
 
+    let fadeTimer = null
+    let dismissTimer = null
     function dismiss() {
+        if (dismissTimer) { clearTimeout(dismissTimer); dismissTimer = null }
         el.style.transition = 'opacity 0.25s'
         el.style.opacity = '0'
-        setTimeout(() => el.remove(), DISMISS_FADE_MS)
+        fadeTimer = setTimeout(() => el.remove(), DISMISS_FADE_MS)
     }
 
     if (!actions && !dismissible) {
-        setTimeout(dismiss, duration ?? DURATIONS[type] ?? DURATIONS.info)
+        dismissTimer = setTimeout(dismiss, duration ?? DURATIONS[type] ?? DURATIONS.info)
     }
 }
 
