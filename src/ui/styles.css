@@ -3666,41 +3666,31 @@ select option {
     background: color-mix(in srgb, var(--surface) 88%, transparent);
     border: 1px solid rgba(0, 0, 0, 0.5);
 }
-#pattern-panel .pp-track:nth-child(6n + 1) .pp-track-name {
-    box-shadow: inset 4px 0 0 var(--toy-pink);
+#pattern-panel .pp-track:nth-child(6n + 1) {
+    --track-color: var(--toy-pink);
 }
-#pattern-panel .pp-track:nth-child(6n + 2) .pp-track-name {
-    box-shadow: inset 4px 0 0 var(--toy-cyan);
+#pattern-panel .pp-track:nth-child(6n + 2) {
+    --track-color: var(--toy-cyan);
 }
-#pattern-panel .pp-track:nth-child(6n + 3) .pp-track-name {
-    box-shadow: inset 4px 0 0 var(--toy-yellow);
+#pattern-panel .pp-track:nth-child(6n + 3) {
+    --track-color: var(--toy-yellow);
 }
-#pattern-panel .pp-track:nth-child(6n + 4) .pp-track-name {
-    box-shadow: inset 4px 0 0 var(--toy-violet);
+#pattern-panel .pp-track:nth-child(6n + 4) {
+    --track-color: var(--toy-violet);
 }
-#pattern-panel .pp-track:nth-child(6n + 5) .pp-track-name {
-    box-shadow: inset 4px 0 0 var(--toy-orange);
+#pattern-panel .pp-track:nth-child(6n + 5) {
+    --track-color: var(--toy-orange);
 }
-#pattern-panel .pp-track:nth-child(6n + 6) .pp-track-name {
-    box-shadow: inset 4px 0 0 var(--toy-lime);
+#pattern-panel .pp-track:nth-child(6n + 6) {
+    --track-color: var(--toy-lime);
 }
-#pattern-panel .pp-track:nth-child(6n + 1) .pp-note-slice {
-    background: var(--toy-pink);
+/* Same (1,3,0) specificity + source position as the old per-child rules, so the
+   override order against pp-trig-rand / pp-cell-multi / pp-triggered is unchanged. */
+#pattern-panel .pp-track .pp-track-name {
+    box-shadow: inset 4px 0 0 var(--track-color);
 }
-#pattern-panel .pp-track:nth-child(6n + 2) .pp-note-slice {
-    background: var(--toy-cyan);
-}
-#pattern-panel .pp-track:nth-child(6n + 3) .pp-note-slice {
-    background: var(--toy-yellow);
-}
-#pattern-panel .pp-track:nth-child(6n + 4) .pp-note-slice {
-    background: var(--toy-violet);
-}
-#pattern-panel .pp-track:nth-child(6n + 5) .pp-note-slice {
-    background: var(--toy-orange);
-}
-#pattern-panel .pp-track:nth-child(6n + 6) .pp-note-slice {
-    background: var(--toy-lime);
+#pattern-panel .pp-track .pp-cell .pp-note-slice {
+    background: var(--track-color);
 }
 #pattern-panel .pp-track-name.selected {
     color: var(--toy-yellow);
