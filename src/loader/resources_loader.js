@@ -106,6 +106,8 @@ export default class ResourcesLoader {
     #patternsLoadingPromise = null
     /** @type {Promise<unknown> | null} In-flight single-flight promise for sample loading */
     #samplesLoadingPromise = null
+    /** @type {Map<string, Promise<any>>} In-flight sample loads keyed by URL (dedup) */
+    #sampleLoadPromises = new Map()
 
     /** @type {Promise<void> | null} In-flight settings hydration */
     #settingsLoadingPromise = null
@@ -518,7 +520,10 @@ export default class ResourcesLoader {
     }
 
     loadSample = async (sample, kitName) => {
-        let arrayBuffer = await getCachedSample(sample.url)
+        const inFlight = this.#sampleLoadPromises.get(sample.url)
+        if (inFlight) return inFlight
+        const build = (async () => {
+            let arrayBuffer = await getCachedSample(sample.url)
         if (!arrayBuffer) {
             const response = await fetch(ResourcesLoader.KITS_PATH + sample.url)
             if (!response.ok) {
@@ -548,6 +553,13 @@ export default class ResourcesLoader {
         }
         soundRegistry.sounds[sample.url] = sound
         return sound
+        })()
+        this.#sampleLoadPromises.set(sample.url, build)
+        try {
+            return await build
+        } finally {
+            this.#sampleLoadPromises.delete(sample.url)
+        }
     }
 
     fix = (patterns) => {
