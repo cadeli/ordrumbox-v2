@@ -226,6 +226,9 @@ export default class PatternPanel extends BasePanel {
         this.#syncPending = false
         this.#drag.cancel()
         this.#gauge?.hide()
+        for (const cell of this.#cellMap.values()) {
+            if (cell._triggerTimer) { clearTimeout(cell._triggerTimer); cell._triggerTimer = null }
+        }
         this.#menuSection?.destroy()
     }
 
