@@ -236,7 +236,7 @@ export default class DrumkitManager extends BasePanel {
     #renderList() {
         const sounds = drumkitService.getCurrentKitSounds()
         if (!sounds.length) {
-            this.#listEl.textContent = 'No samples in this kit'
+            this.#listEl.innerHTML = '<div class="dm-list-empty">No samples in this kit</div>'
             return
         }
 

@@ -368,7 +368,7 @@ export default class ArrangementSection {
         if (this.#titleEl) this.#titleEl.textContent = song ? song.name : ''
 
         if (!song) {
-            this.#listEl.textContent = 'No arrangement — this song has no clips yet.'
+            this.#listEl.innerHTML = '<div class="sa-empty">No arrangement — this song has no clips yet.</div>'
             this.#root?.classList.remove('sa-has-song')
             this.#cursorEl = null
             this.#measureHeads = []
