@@ -21,7 +21,7 @@ export const TRACK_KINDS = {
 }
 
 /** pan slot → stereo position. */
-export const PAN_MAP = [0, 0.3, 0.5, -0.4, 0.4, -0.3, -0.2, 1]
+const PAN_MAP = [0, 0.3, 0.5, -0.4, 0.4, -0.3, -0.2, 1]
 
 /** Coarse types a track can belong to (everything but the melodic ones). */
 export const DRUM_TYPES = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
@@ -30,7 +30,7 @@ export const DRUM_TYPES = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'P
 const MELODIC_TYPES = new Set(['BASS', 'PIANO', 'ORGAN'])
 
 /** name → pan slot, derived from TRACK_KINDS. */
-export const TRACK_NAME_TO_INDEX = Object.fromEntries(
+const TRACK_NAME_TO_INDEX = Object.fromEntries(
     Object.entries(TRACK_KINDS).map(([name, kind]) => [name, kind.panIndex]),
 )
 

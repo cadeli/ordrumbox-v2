@@ -9,7 +9,7 @@
 // (LEGACY_NOTE_KEY_ALIASES) — this module carries the track and song keys.
 
 /** Legacy track key -> its current spelling. @type {Readonly<Record<string, string>>} */
-export const LEGACY_TRACK_KEY_ALIASES = Object.freeze({ soundId: 'sampleId' })
+const LEGACY_TRACK_KEY_ALIASES = Object.freeze({ soundId: 'sampleId' })
 
 /** Legacy song-clip key -> its current spelling. @type {Readonly<Record<string, string>>} */
 const LEGACY_CLIP_KEY_ALIASES = Object.freeze({ startBar: 'startMeasure', bars: 'measureCount' })

@@ -44,7 +44,7 @@ function buildOccupiedSet(track) {
  * @param {Set<number>} occupied - steps built by {@link buildOccupiedSet}
  * @returns {number} absolute step (exclusive end of the span)
  */
-export function resolveSpanEnd(note, track, occupied) {
+function resolveSpanEnd(note, track, occupied) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
     const last = stepsPerBeat * (track.beatCount ?? 4)
     const first = getNoteAbsoluteStep(note, stepsPerBeat)

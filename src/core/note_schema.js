@@ -208,7 +208,7 @@ export function detectUsedKeys(notes) {
  * import (never serialized): app-state notes carry it, so IndexedDB records do.
  * @type {Readonly<Record<string, string>>}
  */
-export const LEGACY_NOTE_KEY_ALIASES = Object.freeze({ retriggerNum: 'retriggerCount', steppc: 'stepPercent' })
+const LEGACY_NOTE_KEY_ALIASES = Object.freeze({ retriggerNum: 'retriggerCount', steppc: 'stepPercent' })
 
 /**
  * Rewrite a note's legacy keys onto their current names, in place. The current
