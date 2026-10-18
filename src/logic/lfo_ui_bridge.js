@@ -10,6 +10,7 @@ WorkletLoader.register('lfo-ui', LFO_UI_SOURCE)
 export default class LfoUiBridge {
     #node = null
     #pending = new Map()
+    #timers = new Map()
     #nextId = 1
     #fallback = false
 
@@ -76,6 +77,7 @@ export default class LfoUiBridge {
                 if (settled) return
                 settled = true
                 clearTimeout(timer)
+                this.#timers.delete(id)
                 this.#pending.delete(id)
                 resolve(values)
             }
@@ -85,6 +87,7 @@ export default class LfoUiBridge {
                 })
                 settle(null)
             }, timeoutMs)
+            this.#timers.set(id, timer)
             this.#pending.set(id, settle)
             this.#node.port.postMessage({ id, lfos, tick, tickCount })
         })
@@ -97,6 +100,8 @@ export default class LfoUiBridge {
             this.#node.disconnect()
             this.#node = null
         }
+        for (const [, timer] of this.#timers) clearTimeout(timer)
+        this.#timers.clear()
         for (const [, resolve] of this.#pending) resolve(null)
         this.#pending.clear()
     }
