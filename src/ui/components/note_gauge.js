@@ -187,6 +187,16 @@ export default class NoteGauge {
         }, LIFETIME_MS)
     }
 
+    /** Drop timers and detach the gauge element. */
+    destroy() {
+        this.#clearTimers()
+        this.#unmarkAnchor()
+        if (this.#el) {
+            this.#el.remove()
+            this.#el = null
+        }
+    }
+
     #clearTimers() {
         if (this.#hideTimer) clearTimeout(this.#hideTimer)
         if (this.#fadeTimer) clearTimeout(this.#fadeTimer)
