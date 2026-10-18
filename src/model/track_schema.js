@@ -72,6 +72,7 @@ import { valueOrFallback } from '../core/logger.js'
  * @property {string}  auto_variant          - Per-loop variation id applied by auto mode ("" = none). Default: ""
  * @property {number|null} [auto_variation]  - Generator-picked budget for the position/velocity/pitch layer (auto mode only; written by auto_generator, not part of the defaults)
  * @property {number|null} [auto_variation2] - Generator-picked budget for the per-note layer (same contract as auto_variation)
+ * @property {number|null} [paramRevision] - Optional bump counter for strip-param caching (read by sound.js; nothing writes it today, hence the fingerprint fallback)
  * @property {number}  auto_density          - Per-loop density offset (-1-1), -1 = auto. Default: -1
  * @property {boolean} [_toolbarAuto]        - Legacy auto flag kept for patterns saved by
  *                                             older versions (read as `auto || _toolbarAuto`).

@@ -11,11 +11,11 @@ import { logger } from '../core/logger.js'
  *
  * @param {object} deps
  * @param {AudioContext} deps.audioCtx - live ctx (sampleRate source only)
- * @param {object} deps.sounds
- * @param {object} deps.generatedSounds
+ * @param {Record<string, import('../state/sound_registry.js').SoundEntry>} deps.sounds
+ * @param {Record<string, object>} deps.generatedSounds
  * @param {number} deps.TICK
- * @param {(pattern: object, loop: number) => Map} deps.computeFlatNotes
- * @param {any} pattern
+ * @param {(pattern: import('../model/pattern_schema.js').Pattern, loop: number) => Map<number, import('../model/flat_note.js').default[]>} deps.computeFlatNotes
+ * @param {import('../model/pattern_schema.js').Pattern} pattern
  * @param {number} loopCount
  * @param {typeof OfflineAudioContext} OfflineAudioContextClass
  * @param {(buffer: AudioBuffer) => Uint8Array} bufferToWavFn

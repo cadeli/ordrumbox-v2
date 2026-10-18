@@ -18,4 +18,11 @@ export default class FlatNote {
         this.pan = 0
         this.fpitch = 1
     }
+
+    /**
+     * Swing offset in seconds, assigned by NoteParams.applyNoteParams before
+     * the playback/export schedulers read it.
+     * @type {number|undefined}
+     */
+    swingTime
 }

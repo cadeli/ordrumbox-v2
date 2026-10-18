@@ -10,11 +10,24 @@ import { TICK } from '../core/constants.js'
 
 const MAX_POLYPHONY = 16
 
+/**
+ * @typedef {import('./mixer.js').default} Mixer
+ * @typedef {import('./strip.js').default} Strip
+ * @typedef {import('./voices/base_voice.js').default} BaseVoice
+ * @typedef {import('../model/flat_note.js').default} FlatNote
+ * @typedef {import('../model/track_schema.js').Track} Track
+ * @typedef {import('../state/sound_registry.js').SoundEntry} SoundEntry
+ * Strip-like: real Strip instances plus duck-typed test doubles that only
+ * carry the entry node.
+ * @typedef {{voicesInput?: AudioNode, filter1?: AudioNode}} StripLike
+ * @typedef {{syncGeneratedSounds?: boolean, registerSynth?: boolean}} PlayVoiceOpts
+ */
+
 export default class Sound {
     #activeVoiceSet
     #stripParamCache
 
-    /** @param {BaseAudioContext} audioCtx @param {any} mixer @param {Record<string,any>} sounds @param {Record<string,any>} generatedSounds @param {boolean} [isOffline] */
+    /** @param {BaseAudioContext} audioCtx @param {Mixer} mixer @param {Record<string, SoundEntry>} sounds @param {Record<string, object>} generatedSounds @param {boolean} [isOffline] */
     constructor(audioCtx, mixer, sounds, generatedSounds, isOffline = false) {
         this.audioCtx = audioCtx
         this.mixer = mixer
@@ -56,20 +69,20 @@ export default class Sound {
         this.#stripParamCache = new Map()
     }
 
-    /** @param {any} sourceNode @param {any} strip */
+    /** @param {AudioNode} sourceNode @param {StripLike} strip */
     connectToStripInput = (sourceNode, strip) => {
         if (!sourceNode || !strip) return
         const entry = strip.voicesInput ?? strip.filter1
         sourceNode.connect(entry)
     }
 
-    /** @param {any} track @param {any} voice */
+    /** @param {Track} track @param {BaseVoice} voice */
     registerVoice = (track, voice) => {
         if (!track?.mono || !voice) return
         this.monoVoiceByTrack.set(track, voice)
     }
 
-    /** @param {any} voice */
+    /** @param {import('./voices/worklet_synth_voice.js').default} voice */
     registerSynthVoice = (voice) => {
         if (!voice || typeof voice.updateGeneratedSound !== 'function') return
         this.activeSynthVoices.add(voice)
@@ -80,7 +93,7 @@ export default class Sound {
         }
     }
 
-    /** @param {any} voice @param {number} time */
+    /** @param {BaseVoice} voice @param {number} time */
     stopVoice = (voice, time) => {
         if (!voice || typeof voice.stop !== 'function') return
         voice.stop(time)
@@ -96,7 +109,7 @@ export default class Sound {
         }
     }
 
-    /** @param {any} track @param {number} time */
+    /** @param {Track} track @param {number} time */
     stopPreviousVoice = (track, time) => {
         if (!track?.mono) return
         const previousVoice = this.monoVoiceByTrack.get(track)
@@ -106,7 +119,7 @@ export default class Sound {
         }
     }
 
-    /** @param {any} flatNote @param {number} time @returns {Promise<any>} */
+    /** @param {FlatNote} flatNote @param {number} time @returns {Promise<void>} */
     play = async (flatNote, time) => {
         if (!flatNote || !this.mixer) return
         // Re-initialise bus nodes if they were torn down by mixer.stop()
@@ -122,7 +135,7 @@ export default class Sound {
         }
     }
 
-    /** @param {any} flatNote @param {number} time @param {any} [opts] @returns {Promise<any>} */
+    /** @param {FlatNote} flatNote @param {number} time @param {PlayVoiceOpts} [opts] @returns {Promise<BaseVoice|null>} */
     #playVoice = async (flatNote, time, opts = {}) => {
         try {
             const strip = await this.mixer.getOrCreateStrip(flatNote.track.name)
@@ -188,13 +201,13 @@ export default class Sound {
         }
     }
 
-    /** @param {any} flatNote @param {number} time @returns {Promise<any>} */
+    /** @param {FlatNote} flatNote @param {number} time @returns {Promise<BaseVoice|null|undefined>} */
     playSample = async (flatNote, time) => {
         if (!flatNote) return
         return await this.#playVoice(flatNote, time)
     }
 
-    /** @param {any} flatNote @param {number} time @returns {Promise<any>} */
+    /** @param {FlatNote} flatNote @param {number} time @returns {Promise<BaseVoice|null>} */
     playGenerated = async (flatNote, time) => {
         try {
             if (Object.keys(this.generatedSounds).length === 0) {
