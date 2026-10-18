@@ -5,6 +5,9 @@ import { logger, valueOrFallback } from '../core/logger.js'
 import InstrumentsManager from '../logic/services/instruments_manager/index.js'
 import { serviceRegistry } from '../state/service_registry.js'
 
+/** @type {Set<ReturnType<typeof setTimeout>>} */
+const pendingMidiTimers = new Set()
+
 /**
  * Memoized trackId → MIDI mapping resolver (first mapping only, as before).
  * @returns {(trackId: string) => object|null}
@@ -108,5 +111,12 @@ export function sendTriggerMidi({ track, note, resolveMapping }) {
     }
     const vel = Math.floor((note?.velocity ?? track.velocity ?? 0.8) * 127)
     midi.sendNoteOn(channel, noteKey, vel)
-    setTimeout(() => midi.sendNoteOff(channel, noteKey), 100)
+    const timer = setTimeout(() => midi.sendNoteOff(channel, noteKey), 100)
+    pendingMidiTimers.add(timer)
+}
+
+/** Cancel any pending MIDI note-off timers. */
+export function cancelPendingMidiTimers() {
+    for (const t of pendingMidiTimers) clearTimeout(t)
+    pendingMidiTimers.clear()
 }
