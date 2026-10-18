@@ -143,7 +143,7 @@ export default class AutoAssign {
             logger.info(TAG, `🔴 ${originalName} [${selectedDrumkitName}] => ${url}  (random, tier4)`)
             track.sampleId = picked
         } else {
-            logger.info(TAG, `🔴 ${originalName} [${selectedDrumkitName}] => NOT_DEFINED  (no match)`)
+            logger.warn(TAG, `🔴 ${originalName} [${selectedDrumkitName}] => NOT_DEFINED  (no match)`)
             track.sampleId = 'NOT_DEFINED'
         }
     }

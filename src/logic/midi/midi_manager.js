@@ -332,13 +332,13 @@ export default class MidiManager extends EventTarget {
     previewMappedTrack = async (noteKey) => {
         const pattern = appState.patterns?.[appState.selectedPatternIdx]
         if (!pattern) {
-            logger.info('MidiManager', `${MidiManager.TAG}: No current pattern available`)
+            logger.warn('MidiManager', `${MidiManager.TAG}: No current pattern available`)
             return
         }
 
         const trackIdx = this.instrumentsManager.findTrackIndexFromMidi(pattern, 9, noteKey)
         if (trackIdx < 0) {
-            logger.info('MidiManager', `${MidiManager.TAG}: No GM track mapped for MIDI note ${noteKey} on channel 9`)
+            logger.warn('MidiManager', `${MidiManager.TAG}: No GM track mapped for MIDI note ${noteKey} on channel 9`)
             return
         }
 
