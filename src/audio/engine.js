@@ -160,7 +160,7 @@ export default class Engine {
      * plus its cycle counter (which drives `every` and variation).
      * @param {{_revision?: number}} pattern
      * @param {number} [loop]
-     * @returns {Map<number, any[]>}
+     * @returns {Map<number, import('../model/flat_note.js').default[]>}
      */
     getFlatNotesForPattern = (pattern, loop = 0) => {
         if (!pattern) return this.flatNotes

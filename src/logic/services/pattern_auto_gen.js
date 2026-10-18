@@ -40,7 +40,7 @@ class PatternAutoGen {
      * together so they can never disagree again.
      *
      * @param {Set<string>|string|string[]} typeOrTypes - track types the button covers
-     * @param {(pattern: any, autoGen: any) => Promise<void>} generate - the "turn on" path
+     * @param {(pattern: import('../../model/pattern_schema.js').Pattern, autoGen: import('../../state/service_registry.js').AutoGeneratorService) => Promise<void>} generate - the "turn on" path
      */
     async toggleAutoGeneration(typeOrTypes, generate) {
         const pattern = appState.selectedPattern

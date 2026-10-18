@@ -12,7 +12,7 @@ const TAG = 'DrumkitService'
 
 class DrumkitService {
     /** Every loaded sound, whatever kit it belongs to. */
-    /** @returns {any[]} */
+    /** @returns {Array<import('../../state/sound_registry.js').SoundEntry & {url: string}>} */
     getAllSounds() {
         return Object.entries(soundRegistry.sounds).map(([url, s]) => ({ url, ...s }))
     }
@@ -23,7 +23,7 @@ class DrumkitService {
      * This used to return every kit's sounds, so the drumkit manager listed foreign
      * samples under the current kit and pre-selected one of them.
      */
-    /** @returns {any[]} */
+    /** @returns {Array<import('../../state/sound_registry.js').SoundEntry & {url: string}>} */
     getCurrentKitSounds() {
         const kit = this.currentKitName()
         return this.getAllSounds().filter((sound) => sound.kitName === kit)
@@ -197,7 +197,7 @@ class DrumkitService {
         return true
     }
 
-    /** @param {File} file @param {AudioBuffer} buffer @returns {Promise<{fileName: string, kitName: any}>} */
+    /** @param {File} file @param {AudioBuffer} buffer @returns {Promise<{fileName: string, kitName: string|null}>} */
     async addSample(file, buffer) {
         const instrument = instrumentsManager.findInstrumentFromFileName(file.name)
         const key = instrument.id
