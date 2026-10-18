@@ -60,6 +60,16 @@ describe('BaseGenerator', () => {
             expect(v).toBeGreaterThan(0.8)
         })
 
+        it('applies a numeric accent as a direct offset', () => {
+            const v = generator.computeVelocity({ base: 0.8 }, { accent: 0.1, toFixed: false })
+            expect(v).toBeCloseTo(0.9, 5)
+        })
+
+        it('applies a negative numeric accent as a direct offset', () => {
+            const v = generator.computeVelocity({ base: 0.8 }, { accent: -0.08, toFixed: false })
+            expect(v).toBeCloseTo(0.72, 5)
+        })
+
         it('adds ghost reduction', () => {
             const v = generator.computeVelocity({ base: 0.8, ghost: -0.3 }, { ghost: true })
             expect(v).toBeLessThan(0.8)

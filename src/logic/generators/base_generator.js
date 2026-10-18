@@ -141,9 +141,13 @@ export default class BaseGenerator {
      * shape a phrase (an arpeggio fading across the beat, for instance) without
      * fighting the configured floor and ceiling.
      *
-     * @param {{base?: number, accentOnBeat?: number, ghost?: number, variationBoost?: number, randomSpread?: number, clampMin?: number, clampMax?: number}} [velocityConfig]
+     * `context.accent` is either a boolean gate (truthy adds `accentOnBeat`)
+     * or a number applied as a direct per-step offset — the shape a variant's
+     * `accentPattern` list feeds (e.g. bass `four_on_floor`).
+     *
+     * @param {VelocityConfig} [velocityConfig]
      * @param {object} [context]
-     * @param {boolean} [context.accent] - add `accentOnBeat`
+     * @param {boolean|number} [context.accent] - number: direct offset; boolean: add `accentOnBeat`
      * @param {boolean} [context.ghost] - add `ghost`
      * @param {boolean} [context.isVariation] - add `variationBoost`
      * @param {number} [context.velocityBase] - overrides `velocityConfig.base`
@@ -154,7 +158,7 @@ export default class BaseGenerator {
      */
     computeVelocity = (velocityConfig = {}, context = {}) => {
         const base = context.velocityBase ?? velocityConfig.base ?? 0.75
-        const accent = context.accent ? (velocityConfig.accentOnBeat ?? 0) : 0
+        const accent = typeof context.accent === 'number' ? context.accent : context.accent ? (velocityConfig.accentOnBeat ?? 0) : 0
         const ghost = context.ghost ? (velocityConfig.ghost ?? 0) : 0
         const variationBoost = context.isVariation ? (velocityConfig.variationBoost ?? 0) : 0
         const randomSpread = velocityConfig.randomSpread ?? 0
