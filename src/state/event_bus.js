@@ -111,7 +111,7 @@ export const playbackEvents = new EventBus()
  * to Engine.syncTrack(), most other handlers ignore the argument — and
  * PATTERN_CHANGE's payload IS a contract (array of changed tracks, empty =
  * the whole pattern, see EVENTS.PATTERN_CHANGE in core/events.js).
- * @param {any} [track]
+ * @param {import('../model/track_schema.js').Track} [track]
  * @param {{batch: Function, emit: Function}} [bus] injected bus (DI)
  */
 export const emitTrackChanged = (track, bus = playbackEvents) =>
@@ -122,7 +122,7 @@ export const emitTrackChanged = (track, bus = playbackEvents) =>
 
 /**
  * The "notes changed" pair (pattern panel context menu, piano roll, note editor).
- * @param {any} [track]
+ * @param {import('../model/track_schema.js').Track} [track]
  * @param {{batch: Function, emit: Function}} [bus] injected bus (DI)
  */
 export const emitNotesChanged = (track, bus = playbackEvents) =>

@@ -71,7 +71,7 @@ export default class KnobBar {
         })
     }
 
-    /** Sync knob bar values in place. @param {any} track */
+    /** Sync knob bar values in place. @param {import('../../model/track_schema.js').Track} track */
     sync(track) {
         for (const def of KNOB_PROPS) {
             const knob = this.getKnob(def.key)

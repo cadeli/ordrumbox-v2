@@ -292,7 +292,7 @@ export default class NoteEditor extends BasePanel {
         return `<div data-or-control="${p.key}"></div>`
     }
 
-    /** @param {any} p @param {any} arpState */
+    /** @param {{key: string, options?: string[]}} p @param {{scale: string, type: string, range: number}} arpState */
     #resolveSelectValue(p, arpState) {
         if (p.key === 'arpScale') return this.#note._arpScale ?? arpState.scale
         if (p.key === 'arpType') return this.#note._arpType ?? arpState.type

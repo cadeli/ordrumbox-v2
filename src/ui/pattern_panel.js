@@ -68,9 +68,9 @@ export default class PatternPanel extends BasePanel {
 
     /**
      * @param {object} [deps]  Optional dependency overrides (DI).
-     * @param {any} [deps.appState]
-     * @param {any} [deps.serviceRegistry]
-     * @param {any} [deps.playbackEvents]
+     * @param {typeof import('../state/app_state.js').appState} [deps.appState]
+     * @param {typeof import('../state/service_registry.js').serviceRegistry} [deps.serviceRegistry]
+     * @param {typeof import('../state/event_bus.js').playbackEvents} [deps.playbackEvents]
      */
     constructor(deps = {}) {
         super('pattern-panel')
@@ -283,7 +283,7 @@ export default class PatternPanel extends BasePanel {
         })
     }
 
-    /** @param {any} idx */
+    /** @param {number} idx */
     resolveTrack(idx) {
         const pattern = this.#appState.selectedPattern
         const tracks = getTracksArray(pattern)
