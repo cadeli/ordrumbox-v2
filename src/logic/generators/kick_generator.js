@@ -1,6 +1,14 @@
 import BaseGenerator from './base_generator.js'
 import { pickRandom } from '../../core/random.js'
 
+/**
+ * @typedef {import('./base_generator.js').GeneratorConfig} GeneratorConfig
+ * @typedef {import('./base_generator.js').Harmony} Harmony
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
+ */
+
+
 export default class KickGenerator extends BaseGenerator {
     static KICK_GENERATION_CONFIGS = Object.freeze({
         basic: {
@@ -67,7 +75,7 @@ export default class KickGenerator extends BaseGenerator {
         super('KICK', KickGenerator.KICK_GENERATION_CONFIGS)
     }
 
-    /** @param {any} kickTrack @param {string|null} [variantName] @param {number} [density] */
+    /** @param {Track} kickTrack @param {string|null} [variantName] @param {number} [density] */
     generateNewKick = (kickTrack, variantName = null, density = 1) => {
         const resolvedVariantName = this.resolveVariantName(variantName)
         const config = this.configs[resolvedVariantName] ?? this.configs.basic

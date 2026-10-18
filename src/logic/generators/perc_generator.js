@@ -1,6 +1,14 @@
 import BaseGenerator from './base_generator.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 
+/**
+ * @typedef {import('./base_generator.js').GeneratorConfig} GeneratorConfig
+ * @typedef {import('./base_generator.js').Harmony} Harmony
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
+ */
+
+
 export default class PercGenerator extends BaseGenerator {
     static PERC_GENERATION_CONFIGS = Object.freeze({
         basic: {
@@ -155,7 +163,7 @@ export default class PercGenerator extends BaseGenerator {
         super('PERC', PercGenerator.PERC_GENERATION_CONFIGS)
     }
 
-    /** @param {any} percTrack @param {string|null} [variantName] @param {number} [density] */
+    /** @param {Track} percTrack @param {string|null} [variantName] @param {number} [density] */
     generateNewPerc = (percTrack, variantName = null, density = 1) => {
         const resolvedVariantName = this.resolveVariantName(variantName)
         const config = this.configs[resolvedVariantName] ?? this.configs.basic
@@ -202,7 +210,7 @@ export default class PercGenerator extends BaseGenerator {
         this.applyLoopPoint(percTrack, config)
     }
 
-    /** @param {any} percTrack @param {any} tones @param {number} pitchBias @param {any} config @param {number} [density] */
+    /** @param {Track} percTrack @param {number[]} tones @param {number} pitchBias @param {GeneratorConfig} config @param {number} [density] */
     generateLockedPercVariant = (percTrack, tones, pitchBias, config, density = 1) => {
         this.withTemporaryStepsPerBeat(percTrack, 16, () => {
             const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 1)
@@ -245,7 +253,7 @@ export default class PercGenerator extends BaseGenerator {
         })
     }
 
-    /** @param {any} percTrack @param {any} tones @param {number} pitchBias @param {any} config @param {number} [density] */
+    /** @param {Track} percTrack @param {number[]} tones @param {number} pitchBias @param {GeneratorConfig} config @param {number} [density] */
     generatePercCallResponseVariant = (percTrack, tones, pitchBias, config, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const stepsPerBeat = percTrack.stepsPerBeat ?? 4
@@ -274,7 +282,7 @@ export default class PercGenerator extends BaseGenerator {
         }
     }
 
-    /** @param {any} percTrack @param {any} tones @param {number} pitchBias @param {any} config */
+    /** @param {Track} percTrack @param {number[]} tones @param {number} pitchBias @param {GeneratorConfig} config */
     generatePercFillVariant = (percTrack, tones, pitchBias, config) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const stepsPerBeat = percTrack.stepsPerBeat ?? 4
@@ -308,7 +316,7 @@ export default class PercGenerator extends BaseGenerator {
         })
     }
 
-    /** @param {any} percTrack @param {any} config */
+    /** @param {Track} percTrack @param {GeneratorConfig} config */
     generateCrashVariant = (percTrack, config) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 1)
         const stepsPerBeat = percTrack.stepsPerBeat ?? 4
@@ -332,7 +340,7 @@ export default class PercGenerator extends BaseGenerator {
         }
     }
 
-    /** @param {any} track @returns {number} */
+    /** @param {Track} track @returns {number} */
     getTrackPitchBias = (track) => {
         const trackName = String(track?.name ?? '').toUpperCase()
         if (trackName.includes('HCONG') || trackName.includes('HI_TOM') || trackName.includes('HIGH')) {

@@ -3,6 +3,14 @@ import { pickRandom } from '../../core/random.js'
 import { getTracksArray } from '../../core/tracks.js'
 import { detectTrackType } from '../../core/drum_taxonomy.js'
 
+/**
+ * @typedef {import('./base_generator.js').GeneratorConfig} GeneratorConfig
+ * @typedef {import('./base_generator.js').Harmony} Harmony
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
+ */
+
+
 export default class MelodyGenerator extends BaseGenerator {
     static MELODY_GENERATION_CONFIGS = Object.freeze({
         chordStab: {
@@ -135,7 +143,7 @@ export default class MelodyGenerator extends BaseGenerator {
         super('MELODY', MelodyGenerator.MELODY_GENERATION_CONFIGS)
     }
 
-    /** @param {any} melodyTrack @param {string|null} [variantName] @param {number} [density] @param {any} [pattern] @param {any} [harmony] */
+    /** @param {Track} melodyTrack @param {string|null} [variantName] @param {number} [density] @param {Partial<Pattern>|null} [pattern] @param {Harmony} [harmony] */
     generateNewMelody = (
         melodyTrack,
         variantName = null,
@@ -234,7 +242,7 @@ export default class MelodyGenerator extends BaseGenerator {
         return basePitch + pitchBias
     }
 
-    /** @param {any} melodyTrack @param {any} scale @param {any} config @param {number} [density] @param {number} [pitchBias] */
+    /** @param {Track} melodyTrack @param {number[]} scale @param {GeneratorConfig} config @param {number} [density] @param {number} [pitchBias] */
     generateMelodyGrooveVariant = (melodyTrack, scale, config, density = 1, pitchBias = 0) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(melodyTrack, config, 2)
         const stepsPerBeat = melodyTrack.stepsPerBeat ?? 4
@@ -279,7 +287,7 @@ export default class MelodyGenerator extends BaseGenerator {
         }
     }
 
-    /** @param {any} melodyTrack @param {any} scale @param {any} config @param {number} [density] @param {number} [pitchBias] */
+    /** @param {Track} melodyTrack @param {number[]} scale @param {GeneratorConfig} config @param {number} [density] @param {number} [pitchBias] */
     generateMelodyArpeggioVariant = (melodyTrack, scale, config, density = 1, pitchBias = 0) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(melodyTrack, config, 2)
         const stepsPerBeat = melodyTrack.stepsPerBeat ?? 4

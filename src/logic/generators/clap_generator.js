@@ -1,5 +1,13 @@
 import BaseGenerator from './base_generator.js'
 
+/**
+ * @typedef {import('./base_generator.js').GeneratorConfig} GeneratorConfig
+ * @typedef {import('./base_generator.js').Harmony} Harmony
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
+ */
+
+
 export default class ClapGenerator extends BaseGenerator {
     static CLAP_GENERATION_CONFIGS = Object.freeze({
         backbeat: {
@@ -98,7 +106,7 @@ export default class ClapGenerator extends BaseGenerator {
         super('CLAP', ClapGenerator.CLAP_GENERATION_CONFIGS)
     }
 
-    /** @param {any} clapTrack @param {string|null} [variantName] @param {number} [density] */
+    /** @param {Track} clapTrack @param {string|null} [variantName] @param {number} [density] */
     generateNewClap = (clapTrack, variantName = null, density = 1) => {
         const resolvedVariantName = this.resolveVariantName(variantName)
         const config = this.configs[resolvedVariantName] ?? this.configs.sparse

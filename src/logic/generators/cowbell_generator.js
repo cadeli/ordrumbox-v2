@@ -1,5 +1,13 @@
 import BaseGenerator from './base_generator.js'
 
+/**
+ * @typedef {import('./base_generator.js').GeneratorConfig} GeneratorConfig
+ * @typedef {import('./base_generator.js').Harmony} Harmony
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
+ */
+
+
 export default class CowbellGenerator extends BaseGenerator {
     static COWBELL_GENERATION_CONFIGS = Object.freeze({
         basic: {
@@ -81,7 +89,7 @@ export default class CowbellGenerator extends BaseGenerator {
         super('COWBELL', CowbellGenerator.COWBELL_GENERATION_CONFIGS)
     }
 
-    /** @param {any} track @param {string|null} [variantName] @param {number} [density] */
+    /** @param {Track} track @param {string|null} [variantName] @param {number} [density] */
     generateNewCowbell = async (track, variantName = null, density = 1) => {
         const variant = this.resolveVariantName(variantName)
         const config = this.configs[variant] ?? this.configs.basic

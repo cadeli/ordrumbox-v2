@@ -14,6 +14,14 @@ import SongStructure from './song_structure.js'
 import { logger } from '../../core/logger.js'
 import AutoAssign from '../services/auto_assign.js'
 
+/**
+ * @typedef {import('./base_generator.js').GeneratorConfig} GeneratorConfig
+ * @typedef {import('./base_generator.js').Harmony} Harmony
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
+ */
+
+
 const SECTION_DENSITY = Object.freeze({
     intro: 0.4,
     verse: 0.7,
@@ -45,7 +53,7 @@ export default class AutoGenerator {
      * Find matching config from structure for a given track type.
      * Prefers exact name match, falls back to first config of same type.
      */
-    /** @param {any} structure @param {any} track @returns {any} */
+    /** @param {Record<string, Record<string, string>>} structure @param {Track} track @returns {string|null} */
     #findTrackConfig(structure, track) {
         const type = detectTrackType(track.name)
         const trackNameUpper = track.name.toUpperCase()
@@ -67,7 +75,7 @@ export default class AutoGenerator {
      * centre and scale (randomized once per generated pattern) so every
      * generation lands in a different key while staying internally coherent.
      */
-    /** @param {any} pattern @param {string} genre @param {string} sectionName @param {number} [loopInElement] @returns {any} */
+    /** @param {Partial<Pattern>} pattern @param {string} genre @param {string} sectionName @param {number} [loopInElement] @returns {Harmony} */
     #resolveHarmony = (pattern, genre, sectionName, loopInElement = 0) => {
         const base = this.structureGen.resolveHarmony(genre, sectionName, loopInElement)
         const offset = pattern?._autoGenKeyOffset ?? 0
@@ -79,7 +87,7 @@ export default class AutoGenerator {
      * Per-track density jitter: core tracks stay close to full density while
      * optional parts vary a lot between generations.
      */
-    /** @param {any} track @returns {number} */
+    /** @param {Track} track @returns {number} */
     #randomDensity = (track) => {
         const type = detectTrackType(track.name)
         const min = type === 'KICK' || type === 'SNARE' || type === 'BASS' ? 0.85 : 0.6
@@ -87,7 +95,7 @@ export default class AutoGenerator {
         return Number((min + Math.random() * (max - min)).toFixed(2))
     }
 
-    /** @param {any} [options] @returns {Promise<any>} */
+    /** @param {{genre?: string, structure?: Record<string, string>, keyOffset?: number, scale?: string}} [options] @returns {Promise<Pattern>} */
     generatePattern = async (options = {}) => {
         try {
             let pattern = appState.selectedPattern
@@ -154,7 +162,7 @@ export default class AutoGenerator {
         }
     }
 
-    /** @param {any} track @param {any} config @param {number} [density] @param {any} [pattern] @param {any} [harmony] @returns {Promise<void>} */
+    /** @param {Track} track @param {string} config variant name @param {number} [density] @param {Partial<Pattern>|null} [pattern] @param {Harmony} [harmony] @returns {Promise<void>} */
     generateTrack = async (track, config, density = 1, pattern = null, harmony = { root: 0, scale: null }) => {
         const type = detectTrackType(track.name)
         this.#applyGenreSwing(track, pattern)
@@ -221,8 +229,8 @@ export default class AutoGenerator {
      * (or a script) deliberately wants without an auto budget — is left alone
      * rather than silently refilled.
      *
-     * @param {any} track
-     * @param {any} type detectTrackType() result
+     * @param {Track} track
+     * @param {string} type detectTrackType() result
      */
     #applyVariation = (track, type) => {
         const melodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
@@ -236,6 +244,7 @@ export default class AutoGenerator {
         if (track.auto_variation2 == null) track.auto_variation2 = pickIn(Math.round(range[0] / 2), range[1])
     }
 
+    /** @param {Track} track @param {Partial<Pattern>|null} pattern */
     #applyGenreSwing = (track, pattern) => {
         const genre = pattern?._autoGenGenre ?? this.structureGen.getRandomGenre()
         const swing = this.structureGen.getGenreSwing(genre)

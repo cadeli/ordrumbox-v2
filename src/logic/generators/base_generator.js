@@ -12,10 +12,95 @@
  */
 
 /**
- * Config sections read by the base generator.
+ * One phrase of a variant's phrase table.
+ * @typedef {object} PhraseConfig
+ * @property {number} [beat]
+ * @property {number|string} [step]  'random' draws a step
+ * @property {number} [pitch]
+ * @property {string} [source]  root|third|fifth|seventh|octave|approach|reuse
+ * @property {string} [alternateSource]
+ * @property {number} [alternateChance]
+ * @property {number} [reuseIndex]
+ * @property {number} [chance]  skip the phrase above this draw
+ * @property {boolean} [accent]
+ * @property {boolean} [ghost]
+ */
+
+/**
+ * Config sections read by the base generator and every variant generator.
+ * All keys optional — each variant reads the handful it needs.
  * @typedef {object} GeneratorConfig
  * @property {number} [loopBeats]  Loop length in beats (converted to loopAtStep)
  * @property {number} [stepsPerBeat]
+ * @property {string} [mode]
+ * @property {string} [scaleName]
+ * @property {number} [rootNote]
+ * @property {number} [beat]
+ * @property {VelocityConfig} [velocity]
+ * @property {number[]} [velocityPattern]
+ * @property {number} [accentEvery]
+ * @property {{velocity?: number}} [bell]
+ * @property {number} [retriggerCount]
+ * @property {number} [retriggerCountMax]
+ * @property {number} [rate]
+ * @property {number} [euclideanFill]
+ * @property {number[]} [steps]
+ * @property {number} [prob]
+ * @property {number} [probability]
+ * @property {number} [startBeatOffset]
+ * @property {number} [rollBeat]
+ * @property {number[]} [strongBeatIntervals]
+ * @property {number} [strongBeatWeight]
+ * @property {number} [density]
+ * @property {string} [contour]
+ * @property {number} [noteSpacing]
+ * @property {number} [spacingJitter]
+ * @property {{intervals: number[], mode?: string}} [arp]
+ * @property {number} [phraseLength]
+ * @property {number} [phraseDecay]
+ * @property {number} [restChance]
+ * @property {number} [startDegree]
+ * @property {number} [maxLeap]
+ * @property {number[]} [rootPattern]
+ * @property {number[]} [pitchPattern]
+ * @property {number[]} [callSteps]
+ * @property {number[]} [responseSteps]
+ * @property {number[]} [probabilities]
+ * @property {number[][]} [probabilitySets]
+ * @property {Array<{beatModulo: number, step: number}>} [requiredSteps]
+ * @property {PhraseConfig[]} [phrases]
+ * @property {PhraseConfig[][]} [phraseSets]
+ * @property {number} [stepsBack]
+ * @property {number} [octaveShift]
+ * @property {(string|number)[]} [approachNotes]
+ * @property {number} [pitchMin]
+ * @property {number} [pitchRange]
+ * @property {number} [velocityMin]
+ * @property {number} [velocitySpread]
+ * @property {number} [maxVelocity]
+ * @property {number} [minVelocity]
+ * @property {number} [densityMin]
+ * @property {number} [densitySpread]
+ * @property {number} [variation]
+ * @property {string} [trackType]
+ */
+
+/**
+ * Velocity shaping for a variant: base level plus accent/ghost/variation boosts.
+ * @typedef {object} VelocityConfig
+ * @property {number} [base]
+ * @property {number} [accentOnBeat]
+ * @property {number} [ghost]
+ * @property {number} [variationBoost]
+ * @property {number} [randomSpread]
+ * @property {number[]} [accentPattern]
+ * @property {number} [clampMin]
+ * @property {number} [clampMax]
+ */
+
+/**
+ * Tonal centre + scale a melodic generator plays in.
+ * @typedef {{root: number, scale: string|null}} Harmony
  */
 import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'

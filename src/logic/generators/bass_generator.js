@@ -5,6 +5,14 @@ import { logger } from '../../core/logger.js'
 import { pickRandom } from '../../core/random.js'
 import { clamp } from '../../core/numbers.js'
 
+/**
+ * @typedef {import('./base_generator.js').GeneratorConfig} GeneratorConfig
+ * @typedef {import('./base_generator.js').Harmony} Harmony
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
+ */
+
+
 export default class BassGenerator extends BaseGenerator {
     static BASS_GENERATION_CONFIGS = Object.freeze({
         basic: {
@@ -252,7 +260,7 @@ export default class BassGenerator extends BaseGenerator {
 
     static TAG = 'BassGenerator'
 
-    /** @param {any} bassTrack @param {string|null} [variantName] @param {number} [density] @param {any} [harmony] */
+    /** @param {Track} bassTrack @param {string|null} [variantName] @param {number} [density] @param {Harmony} [harmony] */
     generateNewBass = (bassTrack, variantName = null, density = 1, harmony = { root: 0, scale: null }) => {
         const resolvedVariantName = this.resolveVariantName(variantName)
         const config = this.configs[resolvedVariantName] ?? this.configs.basic
@@ -296,7 +304,7 @@ export default class BassGenerator extends BaseGenerator {
         this.applyLoopPoint(bassTrack, config)
     }
 
-    /** @param {any} bassTrack @param {any} tones @param {any} config @param {number} [density] @param {number} [rootNote] */
+    /** @param {Track} bassTrack @param {number[]} tones @param {GeneratorConfig} config @param {number} [density] @param {number} [rootNote] */
     generateBassStepGridVariant = (bassTrack, tones, config, density = 1, rootNote = 0) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
         const stepsPerBeat = bassTrack.stepsPerBeat ?? 4
@@ -332,7 +340,7 @@ export default class BassGenerator extends BaseGenerator {
         }
     }
 
-    /** @param {any} bassTrack @param {any} scale @param {any} config @param {number} [density] @param {number} [rootNote] */
+    /** @param {Track} bassTrack @param {number[]} scale @param {GeneratorConfig} config @param {number} [density] @param {number} [rootNote] */
     generateBassGrooveVariant = (bassTrack, scale, config, density = 1, rootNote = 0) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
         const stepsPerBeat = bassTrack.stepsPerBeat ?? 4
@@ -384,7 +392,7 @@ export default class BassGenerator extends BaseGenerator {
         }
     }
 
-    /** @param {any} bassTrack @param {any} scale @param {any} config @param {number} [density] @param {number} [rootNote] */
+    /** @param {Track} bassTrack @param {number[]} scale @param {GeneratorConfig} config @param {number} [density] @param {number} [rootNote] */
     generateBassArpeggioVariant = (bassTrack, scale, config, density = 1, rootNote = 0) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
         const stepsPerBeat = bassTrack.stepsPerBeat ?? 4

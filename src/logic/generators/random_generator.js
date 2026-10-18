@@ -2,6 +2,14 @@ import BaseGenerator from './base_generator.js'
 import { NOTE_DEFAULTS } from '../../core/note_schema.js'
 import { stepToBeat } from '../../core/notes.js'
 
+/**
+ * @typedef {import('./base_generator.js').GeneratorConfig} GeneratorConfig
+ * @typedef {import('./base_generator.js').Harmony} Harmony
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
+ */
+
+
 export default class RandomGenerator extends BaseGenerator {
     static RANDOM_CONFIG = Object.freeze({
         densityMin: 0.15,
@@ -16,7 +24,7 @@ export default class RandomGenerator extends BaseGenerator {
         super('RANDOM', {})
     }
 
-    /** @param {any} track @param {any} [pattern] */
+    /** @param {Track} track @param {Partial<Pattern>|null} [pattern] */
     generateRandom = (track, pattern = null) => {
         const config = RandomGenerator.RANDOM_CONFIG
 
