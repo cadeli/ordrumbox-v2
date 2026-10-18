@@ -1,6 +1,10 @@
 import { getNoteAbsoluteStep } from '../core/notes.js'
 
 /**
+ * @typedef {import('../model/track_schema.js').Track} Track
+ * @typedef {import('../core/note_schema.js').Note} Note
+ */
+/**
  * Single source of truth for "where does a note's sub-note span end?" —
  * used by the flat-note recompute (audio, WAV export, MIDI export) and by
  * the pattern grid / piano roll ghost rendering.
@@ -19,7 +23,7 @@ import { getNoteAbsoluteStep } from '../core/notes.js'
 
 /**
  * Absolute steps occupied by the track notes (array or map form).
- * @param {any} track
+ * @param {Partial<Track>} track
  * @returns {Set<number>}
  */
 function buildOccupiedSet(track) {
@@ -39,8 +43,8 @@ function buildOccupiedSet(track) {
  * track, clamped by the loop point when it falls inside the span, otherwise
  * the end of the track.
  *
- * @param {object} note
- * @param {any} track
+ * @param {Partial<Note>} note
+ * @param {Partial<Track>} track
  * @param {Set<number>} occupied - steps built by {@link buildOccupiedSet}
  * @returns {number} absolute step (exclusive end of the span)
  */
@@ -66,8 +70,8 @@ function resolveSpanEnd(note, track, occupied) {
  * Pass-scoped resolver: snapshot the track once, then resolve any number of
  * notes in O(1) each. Build it at the start of a pass, never keep it longer.
  *
- * @param {any} track
- * @returns {(note: object) => number} end step of the note's sub-note span
+ * @param {Partial<Track>} track
+ * @returns {(note: Partial<Note>) => number} end step of the note's sub-note span
  */
 export function createStepResolver(track) {
     const occupied = buildOccupiedSet(track)

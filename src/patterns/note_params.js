@@ -32,8 +32,8 @@ export default class NoteParams {
     static computePan(flatNote) {
         const notePan = Defaults.getNoteProp(flatNote.note, 'pan')
         const trackPan = Defaults.getTrackProp(flatNote.track, 'pan')
-        const n = parseFloat(notePan)
-        const t = parseFloat(trackPan)
+        const n = parseFloat(String(notePan))
+        const t = parseFloat(String(trackPan))
         if (!Number.isFinite(n) || !Number.isFinite(t)) {
             logger.warn('NoteParams', 'NaN pan value', { notePan, trackPan })
             return 0

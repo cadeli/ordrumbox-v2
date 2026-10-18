@@ -200,7 +200,7 @@ export default class MidiExporter {
      * Uses the real pattern engine for every loop iteration so that
      * every, retrigger, arpeggio and loop expansion are all respected.
      *
-     * @param {{bpm?: number, beatCount?: number, tracks?: object[], name?: string}} pattern
+     * @param {Partial<import('../../model/pattern_schema.js').Pattern>} pattern
      * @param {{ loops?: number }} [options]
      * @returns {Uint8Array}
      */

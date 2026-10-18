@@ -304,7 +304,7 @@ function varyNotes(sourceNotes, budget, track) {
 }
 
 export default class TrackVariation {
-    /** @param {any} flatNotes @param {any} track @param {number} tickCountForLoop @param {number} tickCountForPattern @param {number} tick @param {any} [variationOverride] */
+    /** @param {Map<number, import('../model/flat_note.js').default[]>} flatNotes @param {import('../model/track_schema.js').Track} track @param {number} tickCountForLoop @param {number} tickCountForPattern @param {number} tick @param {number|null} [variationOverride] */
     static apply(flatNotes, track, tickCountForLoop, tickCountForPattern, tick, variationOverride = null) {
         const variation = variationOverride ?? variationBudget(track)
         if (variation <= 0) return
@@ -396,6 +396,7 @@ export default class TrackVariation {
      * variation2 layer for a track's source notes — COMPUTES, mutates nothing.
      * Not to be confused with {@link TrackVariation.apply}, which rewrites the
      * flat-note map in place.
+     * @param {import('../model/track_schema.js').Track} track
      * @returns {Map<object, object>|null} Map<sourceNote, variedClone>, or
      * null when variation2 is disabled. Source notes are never modified.
      */

@@ -9,6 +9,11 @@ import { computeEuclideanFillPositions } from '../core/euclidean.js'
 import { createStepResolver } from './step_resolver.js'
 
 /**
+ * @typedef {import('../model/pattern_schema.js').Pattern} Pattern
+ * @typedef {import('../model/track_schema.js').Track} Track
+ * @typedef {import('../core/note_schema.js').Note} Note
+ */
+/**
  * Does the note fire on this pass of the pattern?
  * @param {number} pos    note phase offset inside the cycle (note.pos)
  * @param {number} every  cycle length in pattern passes (note.every)
@@ -27,7 +32,7 @@ export function isProbabilityTriggered(prob = 1, random = Math.random) {
     return probability >= 1 || random() < probability
 }
 
-/** @param {any} arp @returns {any} */
+/** @param {Note['arp']} arp @returns {{sequence: number[]}|null} */
 export function normalizeArp(arp) {
     let intervals
     let mode = 'up'
@@ -84,9 +89,9 @@ export function normalizeArp(arp) {
     return { sequence }
 }
 
-/** @param {any} note @returns {number} */
+/** @param {Partial<Note>} note @returns {number} */
 export function getArpNoteCount(note) {
-    const totalNotes = parseInt(note.retriggerCount ?? 1)
+    const totalNotes = Number(note.retriggerCount ?? 1)
     return Number.isFinite(totalNotes) ? clamp(totalNotes, 1, 16) : 1
 }
 
@@ -132,7 +137,7 @@ export function expandLoopOccurrences(baseTick, tickCountForLoop, tickCountForPa
     return occurrences
 }
 
-/** @param {any} track @param {number} rate @param {number} [tick] @returns {number} */
+/** @param {Partial<Track>} track @param {number} rate @param {number} [tick] @returns {number} */
 export function computeTickSpacing(track, rate, tick = TICK) {
     return Math.round((tick / track.stepsPerBeat) * getStepSpacing(rate))
 }
@@ -157,7 +162,7 @@ function addFlatNote(flatNotes, tick, flatNote) {
     flatNotes.get(tick).push(flatNote)
 }
 
-/** @param {any} flatNotes @param {number} baseTick @param {any} track @param {any} note @param {number} tickCountForPattern @param {number} [tick] */
+/** @param {Map<number, import('../model/flat_note.js').default[]>} flatNotes @param {number} baseTick @param {Track} track @param {Note} note @param {number} tickCountForPattern @param {number} [tick] */
 export function generateSubNotes(flatNotes, baseTick, track, note, tickCountForPattern, tick = TICK) {
     const arpConfig = normalizeArp(note.arp)
     const rate = note.rate ?? 1
@@ -192,7 +197,7 @@ export function generateSubNotes(flatNotes, baseTick, track, note, tickCountForP
     }
 }
 
-/** @param {any} flatNotes @param {number} baseTick @param {any} track @param {any} note @param {number} tickCountForPattern @param {any} [computeNextStep] @param {number} [tick] */
+/** @param {Map<number, import('../model/flat_note.js').default[]>} flatNotes @param {number} baseTick @param {Track} track @param {Note} note @param {number} tickCountForPattern @param {((note: object, track?: object) => number)|null} [computeNextStep] @param {number} [tick] */
 export function generateSubNotesWithEuclidean(
     flatNotes,
     baseTick,
@@ -238,7 +243,7 @@ export function generateSubNotesWithEuclidean(
     }
 }
 
-/** @param {any} pattern @param {number} [loop] @param {number} [tick] @returns {any} */
+/** @param {Partial<Pattern>} pattern @param {number} [loop] @param {number} [tick] @returns {Map<number, import('../model/flat_note.js').default[]>} */
 export function recomputeFlatNotes(pattern, loop = 0, tick = TICK) {
     const flatNotes = new Map()
     const tickCountForPattern = computeTickCountForPattern(pattern.beatCount, tick)

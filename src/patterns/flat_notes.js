@@ -15,11 +15,10 @@ import { EVENTS } from '../core/events.js'
  * The step resolver is rebuilt per track inside recomputeFlatNotes() (see
  * patterns/step_resolver.js for the pass-scoped cache strategy), so nothing
  * has to be invalidated here.
- */
-/**
- * @param {any} pattern
+ *
+ * @param {import('../model/pattern_schema.js').Pattern} pattern
  * @param {number} [loop=0]
- * @returns {any}
+ * @returns {Map<number, import('../model/flat_note.js').default[]>}
  */
 export function applyFlatNotes(pattern, loop = 0) {
     const flatNotes = recomputeFlatNotes(pattern, loop, TICK)

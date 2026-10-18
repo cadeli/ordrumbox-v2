@@ -118,7 +118,7 @@ export class Exporter {
         return cleaned
     }
 
-    /** @param {any} pattern @returns {any} */
+    /** @param {import('../model/pattern_schema.js').Pattern} pattern @returns {Partial<import('../model/pattern_schema.js').Pattern> & {application: string, url: string}} */
     static export(pattern) {
         const cleaned = this.cleanPattern(pattern)
         return {
