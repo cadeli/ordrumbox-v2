@@ -49,7 +49,12 @@ export default class LfoUiBridge {
         }
     }
 
-    /** @param {any} track @param {number} tick @param {number} tickCount @returns {any} */
+    /**
+     * @param {import('../model/track_schema.js').Track} track
+     * @param {number} tick
+     * @param {number} tickCount
+     * @returns {Promise<Record<string, number>>|Record<string, number>|null}
+     */
     compute(track, tick, tickCount) {
         const lfos = {}
         for (const { lfoKey, resultKey } of LFO_MAP) {

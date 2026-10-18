@@ -238,7 +238,7 @@ export default class Toolbar {
         // Lit ⇔ PatternAutoGen would toggle OFF on click: the button reflects
         // `auto` (the runtime truth) with `_toolbarAuto` for older saved
         // patterns where the two flags could drift apart.
-        const isAutoOn = (/** @type {any} */ t) => Boolean(t.auto || t._toolbarAuto)
+        const isAutoOn = (t) => Boolean(t.auto || t._toolbarAuto)
         this.#viewSwitch.sync({
             canUndo: history?.canUndo ?? false,
             canRedo: history?.canRedo ?? false,

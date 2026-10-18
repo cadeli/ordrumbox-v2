@@ -6,11 +6,13 @@ import { isMelodicTrack } from './drum_taxonomy.js'
  * the original format (Array or indexed object).
  *
  * @param {{tracks?: object|object[]}} pattern
- * @returns {any[]}
+ * @returns {import('../model/track_schema.js').Track[]}
  */
 export function getTracksArray(pattern) {
     if (!pattern?.tracks) return []
-    return Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)
+    return /** @type {import('../model/track_schema.js').Track[]} */ (
+        Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)
+    )
 }
 
 /**
