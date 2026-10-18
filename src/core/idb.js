@@ -40,6 +40,29 @@ function renameNbBeats(node) {
     return changed
 }
 
+
+/**
+ * Shared cursor walk over the `songs` and `patterns` stores: invokes `transform`
+ * on each record and calls cursor.update() when it returns truthy. Keeps the
+ * versionchange transaction alive via cursor.continue().
+ * @param {IDBDatabase} db
+ * @param {IDBTransaction|null} tx
+ * @param {(value: any) => boolean} transform
+ */
+function walkStores(db, tx, transform) {
+    if (!tx) return
+    for (const storeName of ['songs', 'patterns']) {
+        if (!db.objectStoreNames.contains(storeName)) continue
+        const store = tx.objectStore(storeName)
+        const request = store.openCursor()
+        request.onsuccess = () => {
+            const cursor = request.result
+            if (!cursor) return
+            if (transform(cursor.value)) cursor.update(cursor.value)
+            cursor.continue()
+        }
+    }
+}
 /**
  * Give every pattern in a stored song or pattern-cache entry a stable id.
  *
@@ -124,25 +147,7 @@ export const MIGRATIONS = {
      * @param {IDBDatabase} db
      * @param {IDBTransaction|null} tx
      */
-    5: (db, tx) => {
-        if (!tx) return
-        for (const storeName of ['songs', 'patterns']) {
-            if (!db.objectStoreNames.contains(storeName)) continue
-            const store = tx.objectStore(storeName)
-            const request = store.openCursor()
-            request.onsuccess = () => {
-                const cursor = request.result
-                if (!cursor) return
-                // Cached patterns are stored as {data, savedAt, ...} envelopes;
-                // saved songs are stored raw.
-                const value = cursor.value
-                if (renameNbBeats(value) || (value?.data && renameNbBeats(value.data))) {
-                    cursor.update(value)
-                }
-                cursor.continue()
-            }
-        }
-    },
+    5: (db, tx) => walkStores(db, tx, (value) => renameNbBeats(value) || (value?.data && renameNbBeats(value.data))),
 
     /**
      * v6: stable pattern ids + an (empty) `songs` array.
@@ -153,20 +158,7 @@ export const MIGRATIONS = {
      * @param {IDBDatabase} db
      * @param {IDBTransaction|null} tx
      */
-    6: (db, tx) => {
-        if (!tx) return
-        for (const storeName of ['songs', 'patterns']) {
-            if (!db.objectStoreNames.contains(storeName)) continue
-            const store = tx.objectStore(storeName)
-            const request = store.openCursor()
-            request.onsuccess = () => {
-                const cursor = request.result
-                if (!cursor) return
-                if (assignPatternIds(cursor.value)) cursor.update(cursor.value)
-                cursor.continue()
-            }
-        }
-    },
+    6: (db, tx) => walkStores(db, tx, (value) => assignPatternIds(value)),
 
     /**
      * v7: `retriggerNum` → `retriggerCount`, in the notes of every song and
@@ -178,20 +170,7 @@ export const MIGRATIONS = {
      * @param {IDBDatabase} db
      * @param {IDBTransaction|null} tx
      */
-    7: (db, tx) => {
-        if (!tx) return
-        for (const storeName of ['songs', 'patterns']) {
-            if (!db.objectStoreNames.contains(storeName)) continue
-            const store = tx.objectStore(storeName)
-            const request = store.openCursor()
-            request.onsuccess = () => {
-                const cursor = request.result
-                if (!cursor) return
-                if (migrateStoredNoteKeys(cursor.value)) cursor.update(cursor.value)
-                cursor.continue()
-            }
-        }
-    },
+    7: (db, tx) => walkStores(db, tx, (value) => migrateStoredNoteKeys(value)),
 
     /**
      * v8: the measure rename of persisted keys — `track.soundId` → `sampleId`
@@ -205,20 +184,7 @@ export const MIGRATIONS = {
      * @param {IDBDatabase} db
      * @param {IDBTransaction|null} tx
      */
-    8: (db, tx) => {
-        if (!tx) return
-        for (const storeName of ['songs', 'patterns']) {
-            if (!db.objectStoreNames.contains(storeName)) continue
-            const store = tx.objectStore(storeName)
-            const request = store.openCursor()
-            request.onsuccess = () => {
-                const cursor = request.result
-                if (!cursor) return
-                if (migrateStoredLegacyKeys(cursor.value)) cursor.update(cursor.value)
-                cursor.continue()
-            }
-        }
-    },
+    8: (db, tx) => walkStores(db, tx, (value) => migrateStoredLegacyKeys(value)),
 }
 
 /** Creates missing stores, then runs every migration in (oldVersion, newVersion]. */
