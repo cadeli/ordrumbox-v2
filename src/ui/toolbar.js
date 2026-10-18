@@ -32,6 +32,7 @@ export default class Toolbar {
     #nextUndoDesc
     #nextRedoDesc
     #ro
+    #overflowTimer
     #checkOverflow
 
         constructor() {
@@ -185,6 +186,8 @@ export default class Toolbar {
         this.#life.destroy()
         this.#ro?.disconnect()
         this.#ro = null
+        if (this.#overflowTimer) clearTimeout(this.#overflowTimer)
+        this.#overflowTimer = null
         this.#transport.destroy()
         this.#patternNav.destroy()
         this.#viewSwitch.destroy()
@@ -320,7 +323,7 @@ export default class Toolbar {
         }
         this.#life.listen(window, 'resize', check)
         this.#checkOverflow = check
-        setTimeout(check, 0)
+        this.#overflowTimer = setTimeout(check, 0)
     }
 
     checkOverflow() {
