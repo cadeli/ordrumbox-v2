@@ -8,13 +8,17 @@ import { PATTERN_DEFAULTS } from '../../model/pattern_schema.js'
 import { ensurePatternId } from '../../model/song_schema.js'
 
 /**
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ */
+
+/**
  * Pattern commands — sub-module of the Commander (see CommanderHost in ./commander.js).
  */
 export default class PatternCommands {
     #host
 
     /** @param {import('./commander.js').CommanderHost} host */
-    /** @param {any} host */
     constructor(host) {
         this.#host = host
     }
@@ -33,13 +37,12 @@ export default class PatternCommands {
      * @param {{ id?: string, name?: string }} pattern
      * @returns {string} the new id
      */
-    /** @param {any} pattern */
     refreshPatternId(pattern) {
         pattern.id = ''
         return ensurePatternId(pattern, this.#takenIds())
     }
 
-    /** @param {any} name @returns {any} */
+    /** @param {string} name @returns {Pattern} */
     addPattern(name) {
         const pattern = this.createPattern(name)
         const patternIdx = appState.patterns.length
@@ -63,7 +66,7 @@ export default class PatternCommands {
         return pattern
     }
 
-    /** @param {any} idx */
+    /** @param {number} idx */
     removePattern(idx) {
         if (appState.patterns.length <= 1) return false
         const removedPattern = appState.patterns[idx]
@@ -91,7 +94,7 @@ export default class PatternCommands {
         return true
     }
 
-    /** @param {any} idx @param {string} newName */
+    /** @param {number} idx @param {string} newName */
     renamePattern(idx, newName) {
         const pat = appState.patterns[idx]
         if (!pat) return
@@ -113,7 +116,7 @@ export default class PatternCommands {
         })
     }
 
-    /** @param {any} name @returns {any} */
+    /** @param {string} name @returns {Pattern|null} */
     getPatternByName(name) {
         const normalizedName = String(name ?? '')
             .trim()
@@ -121,7 +124,7 @@ export default class PatternCommands {
         return appState.patterns.find((pattern) => pattern?.name?.toUpperCase() === normalizedName) ?? null
     }
 
-    /** @param {any} pattern @param {number} bpm */
+    /** @param {Pattern} pattern @param {number} bpm */
     setPatternBpm(pattern, bpm) {
         const bpmValue = Number(bpm)
         const oldBpm = pattern.bpm
@@ -152,11 +155,11 @@ export default class PatternCommands {
     /**
      * Set the pattern length in beats and resync every track: track beatCount
      * follow the pattern, loop points clamp to the new length.
-     * @param {any} pattern
+     * @param {Pattern} pattern
      * @param {number} beatCount - target length in beats (1..MAX_BEATS)
-     * @returns {any} the pattern
+     * @returns {Pattern} the pattern
      */
-    /** @param {any} pattern @param {number} beatCount */
+    /** @param {Pattern} pattern @param {number} beatCount */
     setPatternBeatCount(pattern, beatCount) {
         const requested = Math.round(Number(beatCount))
         const appliedBeatCount =
@@ -213,7 +216,7 @@ export default class PatternCommands {
         return pattern
     }
 
-    /** @param {any} pattern @param {string} description */
+    /** @param {Pattern} pattern @param {string} description */
     setPatternDescription(pattern, description) {
         const oldDescription = pattern.description
         pattern.description = String(description ?? '')
@@ -235,7 +238,7 @@ export default class PatternCommands {
         return pattern
     }
 
-    /** @param {any} sourcePattern @returns {any} */
+    /** @param {object} sourcePattern @returns {Pattern} */
     importPatternFromJson(sourcePattern) {
         const result = importPatternFromJson(
             sourcePattern,
@@ -247,10 +250,13 @@ export default class PatternCommands {
         return result
     }
 
-    /** @param {any} name @returns {any} */
+    /** @param {string} name @returns {Pattern} */
     createPattern(name) {
         name ??= `NewPat_${appState.patterns.length}`
-        const pattern = { name, description: '', tracks: [], bpm: 120, beatCount: 4 }
+        // Explicit literal (not a PATTERN_DEFAULTS spread): the spread would
+        // share the defaults' tracks array by reference, and freeze() is
+        // shallow — a pushed track would mutate the defaults themselves.
+        const pattern = { id: '', name, description: '', tags: [], tracks: [], bpm: 120, beatCount: 4 }
         ensurePatternId(pattern, this.#takenIds())
         return pattern
     }

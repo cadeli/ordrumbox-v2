@@ -153,7 +153,7 @@ function copyNoteProps(note, sourceNote, track) {
  * @param {Function} addPattern  - fn(name) => pattern  (creates + registers)
  * @param {Function} addTrack    - fn(pattern, name) => track
  * @param {Function} addNote     - fn(track, beat, beatStep, pitch) => note
- * @returns {object} the imported pattern
+ * @returns {import('../../model/pattern_schema.js').Pattern} the imported pattern
  */
 export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNote) {
     // Files written before a note-key rename still carry the old spelling, in

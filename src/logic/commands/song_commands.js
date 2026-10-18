@@ -25,6 +25,13 @@ import { clamp } from '../../core/numbers.js'
  */
 
 /**
+ * @typedef {import('../../model/song_schema.js').Song} Song
+ * @typedef {import('../../model/song_schema.js').SongClip} SongClip
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
+ * @typedef {{ song: Song, index: number }} SongAt
+ */
+
+/**
  * Song commands — sub-module of the Commander (see CommanderHost in ./commander.js).
  *
  * A song (an arrangement) is an ordered list of clips placing patterns on the measure timeline
@@ -54,13 +61,12 @@ export default class SongCommands {
     #host
 
     /** @param {import('./commander.js').CommanderHost} host */
-    /** @param {any} host */
     constructor(host) {
         this.#host = host
     }
 
     /** The song a command applies to, or null when there is none. */
-    /** @param {number} [songIdx] @returns {any} */
+    /** @param {number} [songIdx] @returns {SongAt|null} */
     #song(songIdx) {
         const index = songIdx ?? appState.selectedSongIdx ?? 0
         const song = appState.songs?.[index]
@@ -68,7 +74,7 @@ export default class SongCommands {
     }
 
     /** The song to modify, or a user-visible report when there is none. */
-    /** @param {number} [songIdx] @returns {any} */
+    /** @param {number} [songIdx] @returns {SongAt|null} */
     #requireSong(songIdx) {
         const found = this.#song(songIdx)
         if (!found) {
@@ -82,10 +88,9 @@ export default class SongCommands {
 
     /**
      * Resolve a library pattern from an id or a name (case-insensitive, trimmed).
-     * @param {any} ref
-     * @returns {any|null}
+     * @param {string|number} ref
+     * @returns {Pattern|null}
      */
-    /** @param {any} ref @returns {any} */
     #patternByRef(ref) {
         const needle = String(ref ?? '').trim()
         if (!needle) return null
@@ -117,10 +122,9 @@ export default class SongCommands {
      * loop onto the content: a `loopMeasureCount` written by a song file is honoured when
      * it loads, but it stops being a promise once the arrangement is edited.
      *
-     * @param {import('../../model/song_schema.js').Song} song
+     * @param {Song} song
      * @returns {number} the loop length now in force, 0 when nothing is placed
      */
-    /** @param {any} song */
     #followContent(song) {
         const measures = songContentMeasures(song)
         this.#setLoop(song, measures)
@@ -130,10 +134,9 @@ export default class SongCommands {
     /**
      * Set the loop length, or drop the field when there is none: an arrangement
      * with no clip has no loop, and a stored 0 would be meaningless.
-     * @param {import('../../model/song_schema.js').Song} song
+     * @param {Song} song
      * @param {number|null|undefined} measures
      */
-    /** @param {any} song @param {number} measures */
     #setLoop(song, measures) {
         if (measures == null || !(measures > 0)) delete song.loopMeasureCount
         else song.loopMeasureCount = measures
@@ -141,10 +144,9 @@ export default class SongCommands {
 
     /**
      * Place a pattern on the measure timeline of a song. One undo step.
-     * @param {{pattern: string, startMeasure: number, measureCount: number}} clip
+     * @param {SongClip} clip
      * @param {number} [songIdx] defaults to the selected song
      */
-    /** @param {any} clip @param {number} [songIdx] */
     addSongClip(clip, songIdx) {
         const found = this.#song(songIdx)
         if (!found || !clip?.pattern) return false
@@ -237,12 +239,11 @@ export default class SongCommands {
      * the UI show, the id is what a clip stores. The clip lasts as long as the
      * pattern itself unless `measureCount` says otherwise.
      *
-     * @param {any} patternRef pattern id or name
+     * @param {string|number} patternRef pattern id or name
      * @param {number} [startMeasure] 0-based measure (default 0)
      * @param {SongClipOptions} [options]
-     * @returns {import('../../model/song_schema.js').SongClip|null} the clip added
+     * @returns {SongClip|null} the clip added
      */
-    /** @param {any} patternRef @param {number} [startMeasure] @param {any} [opts] */
     addPatternAtMeasure(patternRef, startMeasure = 0, { measureCount, songIdx } = {}) {
         const found = this.#requireSong(songIdx)
         if (!found) return null
@@ -271,9 +272,8 @@ export default class SongCommands {
      *
      * @param {number} startMeasure measure of the clip to repeat
      * @param {SongClipOptions} [options]
-     * @returns {import('../../model/song_schema.js').SongClip|null} the new clip
+     * @returns {SongClip|null} the new clip
      */
-    /** @param {number} startMeasure @param {any} [opts] */
     repeatPatternAtMeasure(startMeasure, { songIdx } = {}) {
         const found = this.#song(songIdx)
         if (!found) {
@@ -305,9 +305,8 @@ export default class SongCommands {
      * @param {number} startMeasure 0-based measure
      * @param {object} [options]
      * @param {number} [options.songIdx]
-     * @returns {import('../../model/song_schema.js').SongClip[]} the clips removed (empty when there was nothing to remove)
+     * @returns {SongClip[]} the clips removed (empty when there was nothing to remove)
      */
-    /** @param {number} startMeasure @param {any} [opts] */
     removePatternAtMeasure(startMeasure, { songIdx } = {}) {
         const found = this.#requireSong(songIdx)
         if (!found) return []
@@ -337,12 +336,11 @@ export default class SongCommands {
      * Takes a name or an id; an id the library no longer knows is accepted on
      * purpose, so an orphaned row left by a deleted pattern can be cleaned up.
      *
-     * @param {any} patternRef pattern id or name
+     * @param {string|number} patternRef pattern id or name
      * @param {object} [options]
      * @param {number} [options.songIdx]
-     * @returns {import('../../model/song_schema.js').SongClip[]} the clips removed (empty when there was nothing to remove)
+     * @returns {SongClip[]} the clips removed (empty when there was nothing to remove)
      */
-    /** @param {any} patternRef @param {any} [opts] */
     removePatternClips(patternRef, { songIdx } = {}) {
         const found = this.#requireSong(songIdx)
         if (!found) return []
@@ -371,9 +369,8 @@ export default class SongCommands {
      * addPatternAtMeasure() right after. One undo step.
      *
      * @param {SongSpec} [spec]
-     * @returns {import('../../model/song_schema.js').Song|null} the new arrangement
+     * @returns {Song|null} the new arrangement
      */
-    /** @param {any} [spec] @returns {any} */
     addSong(spec = {}) {
         const name = String(spec.name ?? '').trim() || 'Untitled'
         const taken = new Set((appState.songs ?? []).map((song) => song?.id).filter(Boolean))

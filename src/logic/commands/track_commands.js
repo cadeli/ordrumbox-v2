@@ -10,6 +10,11 @@ import RandomGenerator from '../generators/random_generator.js'
 const TRACK_STATE_KEYS = ['notes', 'loopAtStep']
 
 /**
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
+ */
+
+/**
  * Track commands — sub-module of the Commander (see CommanderHost in ./commander.js).
  */
 export default class TrackCommands {
@@ -17,12 +22,11 @@ export default class TrackCommands {
     #randomGen = new RandomGenerator()
 
     /** @param {import('./commander.js').CommanderHost} host */
-    /** @param {any} host */
     constructor(host) {
         this.#host = host
     }
 
-    /** @param {any} track @param {string[]} keys @returns {any} */
+    /** @param {Track} track @param {string[]} keys @returns {Partial<Track>} */
     #snapshotTrack(track, keys) {
         const snap = {}
         for (const key of keys) {
@@ -32,7 +36,7 @@ export default class TrackCommands {
         return snap
     }
 
-    /** @param {any} track @param {any} snap @param {string[]} keys */
+    /** @param {Track} track @param {Partial<Track>} snap @param {string[]} keys */
     #restoreTrack(track, snap, keys) {
         for (const key of keys) track[key] = snap[key]
         this.#host.persist()
@@ -47,13 +51,12 @@ export default class TrackCommands {
      * The changed keys (before → after) are recorded as meta.params/prev so
      * the undo/redo report toast can show exactly what this command touched.
      *
-     * @param {any} track
+     * @param {Track} track
      * @param {string[]} keys
      * @param {string} desc
      * @param {() => false | void} mutate
      * @param {{persist?: boolean, coalesceKey?: string}} [opts]
      */
-    /** @param {any} track @param {string[]} keys @param {string} desc @param {Function} mutate @param {any} [opts] */
     #withUndo(track, keys, desc, mutate, { persist = false, coalesceKey } = {}) {
         const before = this.#snapshotTrack(track, keys)
         const recordable = mutate() !== false
@@ -83,7 +86,7 @@ export default class TrackCommands {
         return before
     }
 
-    /** @param {any} pattern @param {any} type @param {number} [stepsPerBeat] @returns {any} */
+    /** @param {Pattern} pattern @param {string} type @param {number} [stepsPerBeat] @returns {Track} */
     addTrack(pattern, type, stepsPerBeat = 4) {
         const track = this.createTrack(pattern.beatCount, type, stepsPerBeat)
         // Clamp here rather than at first note: an out-of-grid track must be
@@ -112,7 +115,7 @@ export default class TrackCommands {
         return track
     }
 
-    /** @param {any} pattern @param {number} trackIdx */
+    /** @param {Pattern} pattern @param {number} trackIdx */
     removeTrack(pattern, trackIdx) {
         if (!Array.isArray(pattern.tracks)) {
             pattern.tracks = getTracksArray(pattern)
@@ -139,7 +142,7 @@ export default class TrackCommands {
         })
     }
 
-    /** @param {any} pattern @param {number} insertIdx @param {any} sourceTrack */
+    /** @param {Pattern} pattern @param {number} insertIdx @param {Track} sourceTrack */
     pasteTrack(pattern, insertIdx, sourceTrack) {
         if (!pattern || !sourceTrack) return null
         if (!Array.isArray(pattern.tracks)) {
@@ -178,7 +181,7 @@ export default class TrackCommands {
         return clone
     }
 
-    /** @param {number} beatCount @param {any} name @param {number} [stepsPerBeat] @returns {any} */
+    /** @param {number} beatCount @param {string} name @param {number} [stepsPerBeat] @returns {Track} */
     createTrack(beatCount, name, stepsPerBeat = 4) {
         const newTrack = normalizeTrack({
             name,
@@ -195,13 +198,12 @@ export default class TrackCommands {
      * notes / loop point proportionally:
      * - notes: stepPercent (absolute position) is preserved → beatStep rescaled
      * - loopAtStep is clamped to the new beat length
-     * @param {any} track
-     * @param {any} value - target steps per beat
+     * @param {Track} track
+     * @param {number} value - target steps per beat
      * @param {object} [opts]
      * @param {boolean} [opts.coalesce] - merge rapid changes into one undo step
      * @returns {boolean} true when a change was applied
      */
-    /** @param {any} track @param {any} value @param {any} [opts] */
     setStepsPerBeat(track, value, { coalesce = false } = {}) {
         const range = TRACK_VALUE_RANGES.stepsPerBeat
         const target = Math.round(clamp(value, range.min, range.max))
@@ -240,7 +242,7 @@ export default class TrackCommands {
     }
 
     /** One step up on the subdivision cycle, wrapping 8 → 1. */
-    /** @param {any} track */
+    /** @param {Track} track */
     incrStepsPerBeat(track) {
         // Cyclic wrap: 8 → 1 (intentional, not a bug)
         const next = track.stepsPerBeat >= 8 ? 1 : track.stepsPerBeat + 1
@@ -248,7 +250,7 @@ export default class TrackCommands {
     }
 
     /** Moves the loop point BACK by one step, wrapping to the track end. */
-    /** @param {any} track */
+    /** @param {Track} track */
     decrLoopPoint(track) {
         this.#withUndo(
             track,
@@ -264,14 +266,14 @@ export default class TrackCommands {
         )
     }
 
-    /** @param {any} pattern */
+    /** @param {Pattern} pattern */
     cleanPattern(pattern) {
         getTracksArray(pattern).forEach((track) => {
             this.cleanTrack(track)
         })
     }
 
-    /** @param {any} track */
+    /** @param {Track} track */
     cleanTrack(track) {
         this.#withUndo(track, TRACK_STATE_KEYS, `Clean ${track.name}`, () => {
             track.notes = []
@@ -279,7 +281,7 @@ export default class TrackCommands {
         })
     }
 
-    /** @param {any} track */
+    /** @param {Track} track */
     compactTrack(track) {
         const before = this.#snapshotTrack(track, TRACK_STATE_KEYS)
         const result = addLoopToTrackIfPossible(track)
@@ -295,14 +297,14 @@ export default class TrackCommands {
         return result
     }
 
-    /** @param {any} track @param {any} pattern */
+    /** @param {Track} track @param {Pattern} pattern */
     randomizeTrack(track, pattern) {
         this.#withUndo(track, TRACK_STATE_KEYS, `Randomize ${track.name}`, () => {
             this.#randomGen.generateRandom(track, pattern)
         })
     }
 
-    /** @param {any} track @param {string} sampleId */
+    /** @param {Track} track @param {string} sampleId */
     changeTrackSound(track, sampleId) {
         this.#withUndo(
             track,
@@ -317,7 +319,7 @@ export default class TrackCommands {
         )
     }
 
-    /** @param {any} track @param {string} newName */
+    /** @param {Track} track @param {string} newName */
     changeTrackName(track, newName) {
         this.#withUndo(
             track,

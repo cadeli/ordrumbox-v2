@@ -5,6 +5,11 @@ import { appState } from '../../state/app_state.js'
 import { clampStepsPerBeat } from '../../model/track_schema.js'
 import { reportUserError } from '../../core/notify.js'
 
+/**
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ * @typedef {import('../../core/note_schema.js').Note} Note
+ */
+
 function findPatternForTrack(track) {
     return appState.patterns.find((p) => getTracksArray(p).includes(track))
 }
@@ -16,12 +21,11 @@ export default class NoteCommands {
     #host
 
     /** @param {import('./commander.js').CommanderHost} host */
-    /** @param {any} host */
     constructor(host) {
         this.#host = host
     }
 
-    /** @param {any} track @param {any} selectedNote */
+    /** @param {Track} track @param {Note} selectedNote */
     deleteNote(track, selectedNote) {
         const values = Object.values(track.notes)
         for (let i = values.length - 1; i >= 0; i--) {
@@ -62,7 +66,7 @@ export default class NoteCommands {
         }
     }
 
-    /** @param {any} track @param {number} beat @param {number} beatStep @param {number} [pitch] @returns {any} */
+    /** @param {Track} track @param {number} beat @param {number} beatStep @param {number} [pitch] @returns {Note} */
     addNote(track, beat, beatStep, pitch = 0) {
         // Defensive: addTrack already normalises, but a direct field write can
         // still leave the grid. Clamp + rescale (and say so) instead of
@@ -109,16 +113,15 @@ export default class NoteCommands {
      * Apply a partial note update (velocity, pitch, prob, arp, …), persist
      * and record one undoable entry. Diffed against the current values so
      * no-op updates never reach the history.
-     * @param {any} track - owning track (version bump + persistence)
-     * @param {any} note - the note object being edited
-     * @param {object} updates - key → value
+     * @param {Track} track - owning track (version bump + persistence)
+     * @param {Note} note - the note object being edited
+     * @param {Partial<Note>} updates - key → value
      * @param {object} [opts]
      * @param {string} [opts.desc] - history label
      * @param {boolean} [opts.coalesce] - merge rapid same-key updates of
      *   this note into ONE undo step (continuous sliders/knobs)
-     * @returns {object} the note
+     * @returns {Note} the note
      */
-    /** @param {any} track @param {any} note @param {any} updates @param {any} [opts] @returns {any} */
     updateNote(track, note, updates, { desc, coalesce = false } = {}) {
         if (!note || !updates || typeof updates !== 'object') return note
 
@@ -151,7 +154,7 @@ export default class NoteCommands {
         return note
     }
 
-    /** @param {any} track @param {number} beat @param {number} beatStep @param {any[]} sourceNotes */
+    /** @param {Track} track @param {number} beat @param {number} beatStep @param {Note[]} sourceNotes */
     pasteStepNotes(track, beat, beatStep, sourceNotes) {
         if (!track || !Array.isArray(sourceNotes)) return
         const spb = track.stepsPerBeat ?? 4

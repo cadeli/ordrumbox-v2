@@ -20,10 +20,15 @@ import SelectionCommands from './selection_commands.js'
  * @property {(command: object) => void} record - record a reversible command
  * @property {() => void} persist - persist patterns to storage
  * @property {(obj: object) => number} coalesceId - stable id for coalesce keys
- * @property {(track: object) => void} incrementPatternVersionByTrack - bump owning pattern version
- * @property {(name?: string) => object} addPattern - cross-module (patterns)
- * @property {(pattern: object, type: string, stepsPerBeat?: number) => object} addTrack - cross-module (tracks)
- * @property {(track: object, beat: number, beatStep: number, pitch?: number) => object} addNote - cross-module (notes)
+ * @property {(track: import('../../model/track_schema.js').Track) => void} incrementPatternVersionByTrack - bump owning pattern version
+ * @property {(name?: string) => import('../../model/pattern_schema.js').Pattern} addPattern - cross-module (patterns)
+ * @property {(pattern: import('../../model/pattern_schema.js').Pattern, type: string, stepsPerBeat?: number) => import('../../model/track_schema.js').Track} addTrack - cross-module (tracks)
+ * @property {(track: import('../../model/track_schema.js').Track, beat: number, beatStep: number, pitch?: number) => import('../../core/note_schema.js').Note} addNote - cross-module (notes)
+ */
+
+/**
+ * @typedef {import('../../model/track_schema.js').Track} Track
+ * @typedef {import('../../model/pattern_schema.js').Pattern} Pattern
  */
 
 export default class Commander {
@@ -319,13 +324,13 @@ export default class Commander {
     /**
      * Apply a partial track update (known keys only, range-clamped), persist
      * and record one undoable entry.
-     * @param {any} track
+     * @param {Track} track
      * @param {object} updates - key → value (unknown/derived keys skipped)
      * @param {object} [opts]
      * @param {string} [opts.desc] - history label (defaults to "Update <name>")
      * @param {boolean} [opts.coalesce] - merge rapid same-key updates of this
      *   track into ONE undo step (slider/knob drags)
-     * @returns {object} the track
+     * @returns {Track} the track
      */
     updateTrack = (track, updates, { desc, coalesce = false } = {}) => {
         if (!track || !updates || typeof updates !== 'object') {
@@ -439,7 +444,7 @@ export default class Commander {
      * #genSnapshot is a single slot, so a second concurrent generation used to
      * overwrite it — the first commit then recorded the half-generated state
      * and the second commit silently did nothing (corrupted undo stack).
-     * @param {any} pattern
+     * @param {Pattern} pattern
      * @returns {boolean} true when the transaction was opened
      */
     beginGenerationUndo = (pattern) => {
