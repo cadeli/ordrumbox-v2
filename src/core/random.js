@@ -20,7 +20,7 @@ export function pickRandom(list) {
  * One key of an object, chosen uniformly at random (a scale, a palette, a map
  * of presets…).
  *
- * @param {object} obj
+ * @param {Record<string, unknown>} obj
  * @returns {string|null} a key of `obj`, null when the object has no key
  */
 export function pickRandomKey(obj) {

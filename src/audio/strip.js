@@ -44,8 +44,8 @@ const enumWarned = new Set()
  * Resolve an enum-like value, reporting an unknown one instead of silently
  * substituting a default (an unknown reverbType used to resolve to "none",
  * i.e. the reverb was quietly switched off).
- * @param {object} map
- * @param {any} value
+ * @param {Record<string, unknown>} map
+ * @param {string|null|undefined} value
  * @param {string} label
  * @param {string} fallback
  * @returns {string}

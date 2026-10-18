@@ -88,7 +88,7 @@ export function applyTrackToStrip(strip, track, time, opts) {
  * kinds of object; it takes the very same one.
  *
  * @param {import('./strip.js').default} strip  - target strip node
- * @param {object} track  - the track whose params are applied
+ * @param {import('../model/track_schema.js').Track} track  - the track whose params are applied
  * @param {number} time   - audio context currentTime
  */
 export function applyTrackParamsToStrip(strip, track, time) {

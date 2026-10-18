@@ -175,9 +175,9 @@ export default class Commander {
      * @param {string} [command.desc] - human-readable label (toolbar tooltips)
      * @param {string} [command.coalesceKey] - same key within the coalesce
      *   window merges with the previous entry (one undo step per gesture)
-     * @param {object} [command.params] - parameter snapshot shown in the
+     * @param {Record<string, unknown>} [command.params] - parameter snapshot shown in the
      *   undo/redo report toast (key → value)
-     * @param {object} [command.prev] - values the undo restores, for the
+     * @param {Record<string, unknown>} [command.prev] - values the undo restores, for the
      *   "new → old" arrows in the report toast
      *
      * The change is ALREADY applied when record() is called — execute only
@@ -245,7 +245,7 @@ export default class Commander {
      *
      * @param {string} desc - history label
      * @param {Function} fn - action to run (may return a promise)
-     * @param {object} [params] - parameter snapshot for the undo/redo report toast
+     * @param {Record<string, unknown>|null} [params] - parameter snapshot for the undo/redo report toast
      * @returns {any} fn's return value, or a promise of it when fn is async
      *   (partial mutations are still recorded if it throws)
      */
@@ -325,7 +325,7 @@ export default class Commander {
      * Apply a partial track update (known keys only, range-clamped), persist
      * and record one undoable entry.
      * @param {Track} track
-     * @param {object} updates - key → value (unknown/derived keys skipped)
+     * @param {Record<string, unknown>} updates - key → value (unknown/derived keys skipped)
      * @param {object} [opts]
      * @param {string} [opts.desc] - history label (defaults to "Update <name>")
      * @param {boolean} [opts.coalesce] - merge rapid same-key updates of this

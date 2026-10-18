@@ -66,7 +66,7 @@ export function notesAtStep(track, beat, beatStep) {
  * Canonical string for the AUDIBLE part of a note: every property except the
  * position keys, sorted, so two notes at the same step compare by sound alone.
  *
- * @param {object} note
+ * @param {import('../core/note_schema.js').Note} note
  * @returns {string}
  */
 export function getAudibleNoteSignature(note) {

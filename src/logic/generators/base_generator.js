@@ -210,7 +210,7 @@ export default class BaseGenerator {
      */
     /**
      * Pitch of a phrase, in scale degrees.
-     * @param {object} phrase
+     * @param {PhraseConfig} phrase
      * @param {number[]} tones scale degrees
      * @param {number[]|null} cachedPitches pitches already used (for `reuse`)
      * @param {number} pitchBias register offset (semitones)

@@ -238,7 +238,7 @@ export default class PatternCommands {
         return pattern
     }
 
-    /** @param {object} sourcePattern @returns {Pattern} */
+    /** @param {Partial<import('../../model/pattern_schema.js').Pattern>} sourcePattern @returns {Pattern} */
     importPatternFromJson(sourcePattern) {
         const result = importPatternFromJson(
             sourcePattern,

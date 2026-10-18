@@ -17,11 +17,9 @@ export default class KnobBar {
 
     /**
      * @param {import('../track_editor.js').default} editor
-     * @param {object} [options]
-     * @param {() => void} [options.onDecayChange] repaint hook — the decay
-     *   marker lives on the sample waveform, outside this module
+     * @param {{onDecayChange?: () => void}} [options] repaint hook for the decay
+     *   marker, which lives on the sample waveform outside this module
      */
-    /** @param {import('../track_editor.js').default} editor @param {{onDecayChange?: () => void}} [options] */
     constructor(editor, options = {}) {
         this.#editor = editor
         this.#onDecayChange = options.onDecayChange ?? (() => {})

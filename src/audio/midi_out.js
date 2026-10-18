@@ -28,7 +28,7 @@ export function createMidiMappingResolver() {
  *
  * @param {object} deps
  * @param {AudioContext} deps.audioCtx
- * @param {Array<{beatCount?: number, tracks: object}>} deps.patterns
+ * @param {Array<{beatCount?: number, tracks: object[]}>} deps.patterns
  * @param {() => number} deps.getSelectedPatternIdx
  * @param {number} deps.TICK
  * @param {{getCurrentFlatNotesMap: () => Map<number, object[]>, loop: number}} deps.player

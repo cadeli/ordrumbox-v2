@@ -23,7 +23,7 @@ export function pageCountFor(pattern) {
     return Math.max(1, Math.ceil(beatCount / BEATS_PER_PAGE))
 }
 
-/** @param {object} [pattern] @returns {number} last valid page index */
+/** @param {import('../model/pattern_schema.js').Pattern} [pattern] @returns {number} last valid page index */
 export function maxPageFor(pattern) {
     return pageCountFor(pattern) - 1
 }

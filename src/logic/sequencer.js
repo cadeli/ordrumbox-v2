@@ -289,8 +289,8 @@ export default class Sequencer {
     /**
      * Patterns that need sounds assigned before the transport runs: the selected
      * one in pattern mode, the whole arrangement in song mode.
-     * @param {object} selectedPattern
-     * @returns {object[]}
+     * @param {import('../model/pattern_schema.js').Pattern} selectedPattern
+     * @returns {import('../model/pattern_schema.js').Pattern[]}
      */
     patternsToPlay = (selectedPattern) => {
         if (this.appState.currentView !== 'song') return [selectedPattern]

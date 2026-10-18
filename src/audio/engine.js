@@ -297,7 +297,7 @@ export default class Engine {
 
     /**
      * @param {string} trackName
-     * @param {object} track the TRACK (not a params bag): absent fields are left
+     * @param {import('../model/track_schema.js').Track} track the TRACK (not a params bag): absent fields are left
      *   untouched, which is what distinguishes this from syncTrack
      */
     updateStrip = async (trackName, track) => {

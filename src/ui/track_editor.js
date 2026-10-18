@@ -76,10 +76,10 @@ export default class TrackEditor extends BasePanel {
 
     /**
      * @param {object} [deps] injected singletons, defaulting to the modules
-     * @param {object} [deps.appState]
-     * @param {object} [deps.serviceRegistry]
-     * @param {object} [deps.soundRegistry]
-     * @param {object} [deps.playbackEvents]
+     * @param {typeof import('../state/app_state.js').appState} [deps.appState]
+     * @param {typeof import('../state/service_registry.js').serviceRegistry} [deps.serviceRegistry]
+     * @param {typeof import('../state/sound_registry.js').soundRegistry} [deps.soundRegistry]
+     * @param {typeof import('../state/event_bus.js').playbackEvents} [deps.playbackEvents]
      */
     constructor(deps = {}) {
         super('te-panel')

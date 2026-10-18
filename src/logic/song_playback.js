@@ -97,8 +97,8 @@ export function resolveSongSources(song, patternsById, tick, ticksPerBeat, loopM
  * just one of them.
  *
  * @param {import('../model/song_schema.js').Song|null|undefined} song
- * @param {Array<{id?: string}>} patterns the pattern library
- * @returns {Array<object>}
+ * @param {import('../model/pattern_schema.js').Pattern[]} patterns the pattern library
+ * @returns {import('../model/pattern_schema.js').Pattern[]}
  */
 export function songPatterns(song, patterns) {
     const patternsById = new Map()

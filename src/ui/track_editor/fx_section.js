@@ -53,7 +53,7 @@ export default class FxSection {
 
     /**
      * Computes the track updates toggling an FX on/off (no mutation).
-     * @returns {object} partial track updates (filterType or an amount key)
+     * @returns {Partial<import('../../model/track_schema.js').Track>} partial track updates (filterType or an amount key)
      */
     toggleFxByKey(key) {
         const editor = this.#editor

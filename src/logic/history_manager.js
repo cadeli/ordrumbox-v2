@@ -32,8 +32,8 @@ function formatParamValue(value) {
  * @property {() => void} [redo]
  * @property {string} [desc]
  * @property {object} [meta]
- * @property {object} [meta.params] changed parameters, for the report
- * @property {object} [meta.prev] values before the change
+ * @property {Record<string, unknown>} [meta.params] changed parameters, for the report
+ * @property {Record<string, unknown>} [meta.prev] values before the change
  * @property {string} [meta.desc]
  * @property {string} [coalesceKey] groups repeated gestures of the same kind
  * @property {number} [coalesceAt] timestamp of the last coalesce
@@ -75,15 +75,15 @@ export default class HistoryManager {
 
     /**
      * Record a command with execute and undo functions.
-     * @param {object} command - { execute: Function, undo: Function, meta: object, coalesceKey?: string }
      *
      * With a coalesceKey matching the last past entry inside
      * COALESCE_WINDOW_MS, the two records merge into ONE entry: the first
      * entry's undo is kept (it restores the pre-gesture state) while
      * execute/meta are replaced by the newest values — so a whole slider
      * drag is a single undo step instead of one per input tick.
+     *
+     * @param {HistoryEntry} command
      */
-    /** @param {HistoryEntry} command */
     record(command) {
         if (this.#isUndoing || this.#isRedoing) return
 
@@ -118,7 +118,7 @@ export default class HistoryManager {
      * changed the undo stack.
      * @param {() => void} executeFn - The action to perform
      * @param {() => void} undoFn - The inverse action
-     * @param {object} [meta] - Optional metadata
+     * @param {{desc?: string, params?: Record<string, unknown>, prev?: Record<string, unknown>}} [meta] - Optional metadata
      * @returns {any} Result of executeFn
      */
     executeAndRecord(executeFn, undoFn, meta = {}) {
