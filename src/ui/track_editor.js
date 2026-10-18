@@ -1,30 +1,25 @@
 // src/ui/track_editor.js — Coordinator
 //
-// Thin coordinator that delegates tab rendering to section modules.
-// The DOM skeleton is built once in createDOM(); sync() only updates values
-// in place — no innerHTML wipe, no listener re-binding, and #ne-container
-// (which hosts the inline note editor) has a fixed place in the DOM.
-// Dependencies are injected via the constructor (DI) with fallback to
-// module-level singletons.
+// Thin coordinator that delegates tab rendering to section modules and the
+// chrome to its own sub-modules (sample bar, knob bar, LFO step watch,
+// event delegation). The DOM skeleton is built once in createDOM(); sync()
+// only updates values in place — no innerHTML wipe, no listener re-binding,
+// and #ne-container (which hosts the inline note editor) has a fixed place
+// in the DOM. Dependencies are injected via the constructor (DI) with
+// fallback to module-level singletons.
 
 import { appState } from '../state/app_state.js'
 import { playbackEvents, emitTrackChanged } from '../state/event_bus.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { reportUserError, showToast } from '../core/notify.js'
 import { getNoteAbsoluteStep } from '../core/notes.js'
 
 import SynthEditor from './synth_editor.js'
 import { OrTab } from './components/or_tab.js'
-import { OrKnob } from './components/or_knob.js'
-import { setViewBtn, knobFormat, knobUnit, setPatternPanelHidden } from './components/ui_utils.js'
+import { setViewBtn, setPatternPanelHidden } from './components/ui_utils.js'
 import BasePanel from './base_panel.js'
-import { TICK, isMobileViewport } from '../core/constants.js'
+import { isMobileViewport } from '../core/constants.js'
 import { isMobileLandscape, applyLayout, removeLayout } from './mobile_track_layout.js'
-import LfoUiBridge from '../logic/lfo_ui_bridge.js'
-import { sampleWaveformTheme } from './theme.js'
-import { analyzeSample, clearAnalysisCache, drawDecayMarker, drawEnvelope } from '../audio/sample_analyzer.js'
-import { logger } from '../core/logger.js'
 
 // ── Section imports ───────────────────────────────────────────────────
 import GenerationSection from './track_editor/generation_section.js'
@@ -33,9 +28,14 @@ import SoundSection from './track_editor/sound_section.js'
 import ModulationSection from './track_editor/modulation_section.js'
 import LoopSection from './track_editor/loop_section.js'
 
+// ── Chrome sub-module imports ─────────────────────────────────────────
+import SampleBar from './track_editor/sample_bar.js'
+import KnobBar from './track_editor/knob_bar.js'
+import LfoStepWatch from './track_editor/lfo_step_watch.js'
+import EditorEvents from './track_editor/editor_events.js'
+
 // ── Constants ────────────────────────────────────────────────────────
-import { FX_DEFS, TAB_DEFS, ALL_TRACK_PROPS, KNOB_PROPS } from './track_editor/track_editor_constants.js'
-import { TRACK_DEFAULTS } from '../model/track_schema.js'
+import { FX_DEFS, TAB_DEFS } from './track_editor/track_editor_constants.js'
 import { EVENTS } from '../core/events.js'
 
 export default class TrackEditor extends BasePanel {
@@ -49,17 +49,10 @@ export default class TrackEditor extends BasePanel {
     #track
     #selectedTrackIdx
     #selectedPropKey
-    #isDragging
     #selectedLfoTarget
     #prevFilterType
-    #knobs
-    #rafId
-    #lastTick
-    #isSelecting
-    #lfoBridge
+    #controls
     #noteEditor
-    #waveObserver
-    #waveObservedCanvas
     #neContainer
 
     // ── Sub-components ────────────────────────────────────────────
@@ -70,15 +63,14 @@ export default class TrackEditor extends BasePanel {
     #sndSection
     #modSection
     #loopSection
+    #sampleBar
+    #knobBar
+    #lfoWatch
+    #events
 
     // ── Cached DOM refs (built once by createDOM) ────────────────
     #teRoot
     #headerTrackEl
-    #sampleBarEl
-    #sampleInfoEl
-    #waveCanvas
-    /** @type {Map<string, import('./components/or_slider.js').OrSlider|import('./components/or_knob.js').OrKnob>} */
-    #controls
     /** False until createDOM() completes — sync() no-ops until then. */
     #domReady
 
@@ -102,18 +94,10 @@ export default class TrackEditor extends BasePanel {
         this.#track = null
         this.#selectedTrackIdx = -1
         this.#selectedPropKey = null
-        this.#rafId = null
-        this.#lastTick = -1
-        this.#isDragging = false
-        this.#isSelecting = false
-        this.#lfoBridge = null
         this.#selectedLfoTarget = null
         this.#prevFilterType = undefined
-        this.#knobs = []
         this.#controls = new Map()
         this.#noteEditor = null
-        this.#waveObserver = null
-        this.#waveObservedCanvas = null
 
         // ── Sub-components ───────────────────────────────────────────
         this.synthEditor = new SynthEditor(this)
@@ -141,6 +125,20 @@ export default class TrackEditor extends BasePanel {
         this.#sndSection = new SoundSection(this)
         this.#modSection = new ModulationSection(this)
         this.#loopSection = new LoopSection(this)
+
+        // ── Chrome ───────────────────────────────────────────────────
+        this.#sampleBar = new SampleBar(this)
+        this.#knobBar = new KnobBar(this, {
+            onDecayChange: () => this.#sampleBar.draw(this.#track),
+        })
+        this.#lfoWatch = new LfoStepWatch(this)
+        this.#events = new EditorEvents(this, {
+            fxSection: this.#fxSection,
+            modSection: this.#modSection,
+            sndSection: this.#sndSection,
+            genSection: this.#genSection,
+            sampleBar: this.#sampleBar,
+        })
     }
 
     // ── Public API (cross-class: sections, view manager, bootstrap) ─
@@ -168,6 +166,10 @@ export default class TrackEditor extends BasePanel {
     get selectedPropKey() {
         return this.#selectedPropKey
     }
+    /** @param {any} v */
+    set selectedPropKey(v) {
+        this.#selectedPropKey = v
+    }
 
     get selectedLfoTarget() {
         return this.#selectedLfoTarget
@@ -191,6 +193,10 @@ export default class TrackEditor extends BasePanel {
         return this.#neContainer
     }
 
+    get knobBar() {
+        return this.#knobBar
+    }
+
     get appState() {
         return this.#appState
     }
@@ -206,12 +212,18 @@ export default class TrackEditor extends BasePanel {
 
     /**
      * Live value control (slider or knob) for a track key, or null.
-     * Generation sliders win over FX knobs for the shared FX keys.
+     * Generation sliders win over FX knobs for the shared FX keys; the knob
+     * bar (velocity / pan / pitch / decay) is the last fallback.
      * @param {any} key
      * @returns {import('./components/or_slider.js').OrSlider|import('./components/or_knob.js').OrKnob|null}
      */
     getControl(key) {
-        return this.#controls.get(key) ?? this.#knobs.find((k) => k.key === key) ?? null
+        return this.#controls.get(key) ?? this.#knobBar?.getKnob(key) ?? null
+    }
+
+    /** Emit TRACK_PARAM_CHANGE for the current track. */
+    emitTrackChange() {
+        emitTrackChanged(this.#track, this.#playbackEvents)
     }
 
     // ── Lifecycle ──────────────────────────────────────────────────
@@ -257,14 +269,12 @@ export default class TrackEditor extends BasePanel {
         `
         this.#teRoot = this.container.querySelector('.track-editor')
         this.#headerTrackEl = this.container.querySelector('.ne-track')
-        this.#sampleBarEl = this.container.querySelector('.te-sample-bar')
-        this.#sampleInfoEl = this.container.querySelector('.te-sample-info')
-        this.#waveCanvas = this.container.querySelector('canvas.te-waveform')
         this.#neContainer = this.container.querySelector('#ne-container')
         this.#tab.bindTo(this.#teRoot)
-        this.#initKnobs()
+        this.#sampleBar.mount(this.container)
+        this.#knobBar.mount(this.container)
         this.#mountSections()
-        this.#bindEvents()
+        this.#events.bind()
         this.synthEditor.createDOM()
         this.#domReady = true
     }
@@ -280,50 +290,6 @@ export default class TrackEditor extends BasePanel {
             else if (tab.id === 'mod') this.#modSection.mount(panel)
             else if (tab.id === 'loop') this.#loopSection.mount(panel)
         }
-    }
-
-    /** Create the knob-bar OrKnobs once, replacing the placeholders. */
-    #initKnobs() {
-        const bar = this.container.querySelector('.te-knob-bar')
-        this.#knobs = KNOB_PROPS.map((def) => {
-            const isDecay = def.key === 'decay'
-            const dflt = TRACK_DEFAULTS[def.key] ?? (isDecay ? 500 : def.min)
-            const knob = new OrKnob({
-                key: def.key,
-                label: def.label,
-                min: def.min,
-                max: def.max,
-                step: def.step,
-                value: isDecay
-                    ? (this.#soundRegistry.sounds[this.#track?.sampleId]?.decay ?? 0)
-                    : (this.#track?.[def.key] ?? dflt),
-                defaultValue: isDecay ? 500 : dflt,
-                scale: def.scale,
-                format: knobFormat(def),
-                // decay's formatter already appends "ms" — a unit here
-                // would render the value as "5000 ms ms".
-                unit: knobUnit(def),
-                onChange: (v) => {
-                    if (isDecay) {
-                        // Looked up live: the track's sample can change while
-                        // the knob persists.
-                        const sound = this.#soundRegistry.sounds[this.#track?.sampleId]
-                        if (sound) sound.decay = v
-                    } else {
-                        // Continuous knob: coalesce the drag into ONE undo step.
-                        this.#serviceRegistry.cmd?.updateTrack(
-                            this.#track,
-                            { [def.key]: v },
-                            { desc: `${def.label} on ${this.#track.name}`, coalesce: true },
-                        )
-                    }
-                    this.#emitTrackChange()
-                    if (isDecay) this.#drawSampleWaveform()
-                },
-            })
-            bar.querySelector(`[data-or-knob="${def.key}"]`)?.replaceWith(knob.createElement())
-            return knob
-        })
     }
 
     /** @param {any} track @param {number} trackIdx */
@@ -360,13 +326,13 @@ export default class TrackEditor extends BasePanel {
                 this.showNoteEditorForTrack(data.track, data.trackIdx)
             }
         })
-        this.sub(this.#playbackEvents, EVENTS.PLAYBACK_START, () => this.#startStepWatch())
-        this.sub(this.#playbackEvents, EVENTS.PLAYBACK_STOP, () => this.#stopStepWatch())
+        this.sub(this.#playbackEvents, EVENTS.PLAYBACK_START, () => this.#lfoWatch.start())
+        this.sub(this.#playbackEvents, EVENTS.PLAYBACK_STOP, () => this.#lfoWatch.stop())
         this.sub(this.#playbackEvents, EVENTS.DRUMKIT_CHANGE, () => {
             if (this.#track) this.sync()
         })
         this.sub(this.#playbackEvents, EVENTS.PATTERN_CHANGE, () => {
-            if (this.#isDragging || this.#isSelecting) return
+            if (this.#events.isGestureActive) return
             if (!this.#track) return
             const pattern = this.#appState.selectedPattern
             if (!pattern?.tracks) return
@@ -386,106 +352,28 @@ export default class TrackEditor extends BasePanel {
     }
 
     onDestroy() {
-        this.#stopStepWatch()
-        this.#waveObserver?.disconnect()
-        this.#waveObserver = null
+        this.#lfoWatch.stop()
+        this.#sampleBar.destroy()
         this.#genSection.destroy?.()
         this.#fxSection.destroy?.()
         this.#loopSection.destroy?.()
         this.#modSection.destroy?.()
-        for (const k of this.#knobs) k.destroy()
-        this.#knobs = []
+        this.#knobBar.destroy()
         this.synthEditor?.destroy?.()
         // Sections are gone: a stale caller (an old ViewManager still bound
         // to the bus) must not reach them — sync() no-ops until createDOM().
         this.#domReady = false
     }
 
-    // ── Step watch (LFO animation) ─────────────────────────────────
-
-    #startStepWatch() {
-        if (this.#rafId) return
-        this.#lastTick = -1
-        const tick = () => {
-            const transport = this.#serviceRegistry.transport
-            if (!transport?.isRunning) {
-                this.#rafId = null
-                return
-            }
-            try {
-                const currentTick = transport.tick
-                if (currentTick !== this.#lastTick) {
-                    this.#lastTick = currentTick
-                    this.#updateLfoSliders()
-                }
-            } catch (err) {
-                reportUserError('TrackEditor.lfoLoop', 'LFO meters stopped updating', { cause: err })
-            }
-            this.#rafId = requestAnimationFrame(tick)
-        }
-        this.#rafId = requestAnimationFrame(tick)
-    }
-
-    #stopStepWatch() {
-        if (this.#rafId) {
-            cancelAnimationFrame(this.#rafId)
-            this.#rafId = null
-        }
-        this.#lastTick = -1
-        if (this.#lfoBridge) {
-            this.#lfoBridge.destroy()
-            this.#lfoBridge = null
-        }
-    }
-
-    /** @param {number} tick */
-    #lfoValuesForTick(tick) {
-        if (!this.#track) return null
-        const pattern = this.#appState.selectedPattern
-        if (!pattern) return null
-        const tickCount = TICK * pattern.beatCount
-        if (!this.#lfoBridge) this.#lfoBridge = new LfoUiBridge(this.#serviceRegistry.audioCtx)
-        return this.#lfoBridge.compute(this.#track, tick, tickCount)
-    }
-
-    /** @param {any} lfoValues */
-    #applyLfoValues(lfoValues) {
-        if (!lfoValues || !this.#track) return
-        ALL_TRACK_PROPS.forEach((p) => {
-            if (!p.lfoKey || !this.#track[p.lfoKey]) return
-            const ctrl = this.#controls.get(p.key)
-            if (!ctrl) return
-            const raw = lfoValues[p.key] ?? 0
-            ctrl.setValue(p.denormalize ? p.denormalize(raw) : raw)
-        })
-        KNOB_PROPS.forEach((p) => {
-            if (p.lfoKey && this.#track[p.lfoKey]) {
-                const knob = this.#knobs.find((k) => k.key === p.key)
-                if (knob) knob.setValue(lfoValues[p.key] ?? 0)
-            }
-        })
-    }
-
-    async #updateLfoSliders() {
-        if (!this.#track || !this.isVisible) return
-        const transport = this.#serviceRegistry.transport
-        if (!transport) return
-        const tick = transport.tick
-        const result = this.#lfoValuesForTick(tick)
-        if (!result) return
-        const values = result instanceof Promise ? await result : result
-        if (values && transport.tick === tick) this.#applyLfoValues(values)
-    }
-
     // ── Show / Sync / Hide ─────────────────────────────────────────
 
-        show({ track, trackIdx }) {
+    show({ track, trackIdx }) {
         this.#track = track
         this.#selectedTrackIdx = trackIdx
         this.#applyContainerDisplay()
         this.sync()
         void this.synthEditor.ensureGeneratedSoundsLoaded()
-        if (this.#serviceRegistry.transport?.isRunning) this.#startStepWatch()
+        if (this.#serviceRegistry.transport?.isRunning) this.#lfoWatch.start()
         setViewBtn('edit', true)
     }
 
@@ -501,10 +389,10 @@ export default class TrackEditor extends BasePanel {
         this.#headerTrackEl.textContent = `Track: ${this.#track.name}${soundInfo ? ' - ' + soundInfo : ''}`
 
         // 2. Sample bar (visibility + analysis text)
-        this.#updateSampleBar()
+        this.#sampleBar.sync(this.#track)
 
         // 3. Knob bar
-        this.#syncKnobValues()
+        this.#knobBar.sync(this.#track)
 
         // 4. Main tab bar
         this.#tab.refresh(this.#teRoot)
@@ -524,7 +412,7 @@ export default class TrackEditor extends BasePanel {
         }
 
         // 7. Waveform
-        this.#drawSampleWaveform()
+        this.#sampleBar.draw(this.#track)
 
         this.#syncMobileLayout()
     }
@@ -564,341 +452,6 @@ export default class TrackEditor extends BasePanel {
         this.#applyContainerDisplay()
     }
 
-    /** Sync knob bar values in place. */
-    #syncKnobValues() {
-        const track = this.#track
-        for (const def of KNOB_PROPS) {
-            const knob = this.#knobs.find((k) => k.key === def.key)
-            if (!knob) continue
-            if (def.key === 'decay') {
-                const sound = this.#soundRegistry.sounds[track?.sampleId]
-                knob.setValue(sound?.decay ?? 0)
-            } else {
-                knob.setValue(track[def.key] ?? def.min)
-            }
-        }
-    }
-
-    // ── Sample bar ─────────────────────────────────────────────────
-
-    /** Toggle the sample bar and refresh its analysis text. */
-    #updateSampleBar() {
-        const track = this.#track
-        const sound = track.useSoftSynth ? null : this.#soundRegistry.sounds[track.sampleId ?? '']
-        if (!sound?.buffer) {
-            this.#sampleBarEl.style.display = 'none'
-            return
-        }
-        this.#sampleBarEl.style.display = ''
-        const analysis = analyzeSample(sound.buffer)
-        const pitchStr = analysis?.noteInfo ? `${analysis.noteInfo.note}${analysis.noteInfo.octave}` : '—'
-        const durStr = analysis?.durationSec != null ? (analysis.durationSec * 1000).toFixed(0) + ' ms' : '—'
-        const peakStr = analysis?.peakDb != null ? analysis.peakDb.toFixed(1) + ' dB' : '—'
-        this.#sampleInfoEl.textContent = `${pitchStr} · ${durStr} · ${peakStr}`
-    }
-
-    #drawSampleWaveform() {
-        const canvas = this.#waveCanvas
-        if (!canvas) return
-        const track = this.#track
-        if (track.useSoftSynth) return
-        const sound = this.#soundRegistry.sounds[track?.sampleId]
-        if (!sound?.buffer) return
-        const analysis = analyzeSample(sound.buffer)
-        if (!analysis?.envelope?.length) return
-
-        // The canvas box is set by CSS (66% of the sample bar), so the fixed
-        // 500px backing store was scaled down and the curve landed on
-        // sub-pixel lines. Match the backing store to the rendered size.
-        const dpr = window.devicePixelRatio || 1
-        const w = canvas.clientWidth > 0 ? Math.max(1, Math.round(canvas.clientWidth * dpr)) : canvas.width
-        const h = canvas.clientHeight > 0 ? Math.max(1, Math.round(canvas.clientHeight * dpr)) : canvas.height
-        if (canvas.width !== w || canvas.height !== h) {
-            canvas.width = w
-            canvas.height = h
-        }
-        this.#observeWaveformCanvas(canvas)
-
-        const ctx = /** @type {HTMLCanvasElement} */ (canvas).getContext('2d')
-        const theme = sampleWaveformTheme(2 * dpr)
-        drawEnvelope(ctx, analysis.envelope, w, h, theme)
-
-        drawDecayMarker(ctx, sound, w, h, theme, dpr)
-    }
-
-    /** Redraw the waveform when its CSS box changes (window / panel resize). */
-    #observeWaveformCanvas(canvas) {
-        if (typeof ResizeObserver !== 'function' || this.#waveObservedCanvas === canvas) return
-        this.#waveObserver?.disconnect()
-        this.#waveObservedCanvas = canvas
-        this.#waveObserver = new ResizeObserver(() => this.#drawSampleWaveform())
-        this.#waveObserver.observe(canvas)
-    }
-
-    #onLoadSample() {
-        const input = this.container?.querySelector('.te-load-input')
-        if (input) /** @type {HTMLElement} */ (input).click()
-    }
-
-    /** @param {any} e */
-    async #onSampleFileSelected(e) {
-        const file = /** @type {HTMLInputElement} */ (e.target).files?.[0]
-        if (!file || !this.#track) return
-        const ctx = this.#serviceRegistry.audioCtx
-        if (!ctx) return
-        try {
-            const arrayBuffer = await file.arrayBuffer()
-            const buffer = await ctx.decodeAudioData(arrayBuffer)
-            const sampleId = this.#track.sampleId ?? ''
-            const oldSound = this.#soundRegistry.sounds[sampleId]
-            if (oldSound) {
-                clearAnalysisCache(oldSound.buffer)
-                oldSound.buffer = buffer
-                oldSound.display_name = file.name
-                oldSound.duration = Math.floor(buffer.duration * 1000)
-            } else {
-                this.#soundRegistry.sounds[sampleId] = {
-                    url: sampleId,
-                    key: sampleId,
-                    display_name: file.name,
-                    buffer,
-                    duration: Math.floor(buffer.duration * 1000),
-                    isLoad: true,
-                }
-            }
-            this.sync()
-            this.#emitTrackChange()
-        } catch (err) {
-            logger.warn('TrackEditor', `Sample import failed: ${err.message}`)
-            showToast('Sample import failed: ' + err.message, 'error')
-        }
-        const input = /** @type {HTMLInputElement} */ (e.target)
-        input.value = ''
-    }
-
-    /** @param {any} key */
-    #toggleFxByKey(key) {
-        const updates = this.#fxSection.toggleFxByKey(key)
-        if (updates) {
-            this.#serviceRegistry.cmd?.updateTrack(this.#track, updates, {
-                desc: `Toggle ${key} on ${this.#track.name}`,
-            })
-        }
-        this.sync()
-        this.#emitTrackChange()
-    }
-
-    /** @param {any} target */
-    #onFxIcon(target) {
-        const updates = this.#fxSection.onFxIcon(target)
-        if (updates) {
-            this.#serviceRegistry.cmd?.updateTrack(this.#track, updates, {
-                desc: `Filter type on ${this.#track.name}`,
-            })
-        }
-        this.sync()
-        this.#emitTrackChange()
-    }
-
-    /** @param {any} fxTabId */
-    #onFxTab(fxTabId) {
-        this.#fxSection.onFxTab(fxTabId)
-    }
-
-    /** @param {any} genTabId */
-    #onGenTab(genTabId) {
-        if (!genTabId) return
-        this.#genSection.subTab.setActive(genTabId)
-        this.sync()
-    }
-
-    /** @param {any} k */
-    #onLfoSelectBtn(k) {
-        this.#modSection.onSelectBtn(k)
-        this.sync()
-        this.#emitTrackChange()
-    }
-
-    /** @param {any} k */
-    #onLfoToggleBtn(k) {
-        const res = this.#modSection.onToggleBtn(k)
-        if (res) {
-            this.#serviceRegistry.cmd?.updateTrack(this.#track, res.updates, {
-                desc: `LFO ${k} on ${this.#track.name}`,
-            })
-        }
-        this.sync()
-        this.#emitTrackChange()
-    }
-
-    /** @param {any} input */
-    #onLfoSlider(input) {
-        const res = this.#modSection.onSlider(input)
-        if (res) {
-            this.#serviceRegistry.cmd?.updateTrack(this.#track, res.updates, {
-                desc: `LFO ${input.dataset.lfoKey} on ${this.#track.name}`,
-                coalesce: true,
-            })
-        }
-        if (res?.created) this.sync()
-        this.#emitTrackChange()
-    }
-
-    /** @param {any} sel */
-    #onLfoSelect(sel) {
-        const res = this.#modSection.onSelect(sel)
-        if (res) {
-            this.#serviceRegistry.cmd?.updateTrack(this.#track, res.updates, {
-                desc: `LFO type on ${this.#track.name}`,
-            })
-        }
-        this.#emitTrackChange()
-    }
-
-    // ── Event delegation (bound once by createDOM) ─────────────────
-
-    #bindEvents() {
-        // LFO sliders are plain <input> elements (not OrSlider instances)
-        // and require delegated input handling. Any range-input drag marks
-        // the editor as dragging so PATTERN_CHANGE events are ignored until
-        // the matching change event resets the flag.
-        this.listen(this.container, 'input', (e) => {
-            const target = /** @type {HTMLElement} */ (e.target)
-            // the nested note editor owns its own inputs
-            if (target.closest('#ne-container')) return
-            if (/** @type {HTMLInputElement} */ (target).type === 'range') this.#isDragging = true
-            if (target.dataset.lfoKey) {
-                this.#onLfoSlider(target)
-            }
-        })
-
-        this.listen(this.container, 'focusin', (e) => {
-            if (/** @type {HTMLElement} */ (e.target).tagName === 'SELECT') this.#isSelecting = true
-        })
-        this.listen(this.container, 'focusout', (e) => {
-            if (/** @type {HTMLElement} */ (e.target).tagName === 'SELECT') this.#isSelecting = false
-        })
-
-        this.listen(this.container, 'change', (e) => {
-            const target = /** @type {HTMLElement} */ (e.target)
-            // the nested note editor owns its own selects (arpScale, arpType…)
-            if (target.closest('#ne-container')) return
-            if (target.classList.contains('te-load-input')) {
-                this.#onSampleFileSelected(e)
-                return
-            }
-            if (/** @type {HTMLInputElement} */ (target).type === 'range') {
-                if (this.#isDragging) {
-                    this.#isDragging = false
-                    this.#isSelecting = false
-                    this.#emitTrackChange()
-                }
-                return
-            }
-            if (target.tagName === 'SELECT') {
-                if (target.dataset.key) this.#onSelect(target)
-                else if (target.dataset.lfoTypeSelect) this.#onLfoSelect(target)
-                else if (target.dataset.sound) {
-                    const soundType = target.dataset.sound
-                    const p =
-                        soundType === 'instrument'
-                            ? this.#sndSection.onInstrumentChange(target)
-                            : soundType === 'sample'
-                              ? this.#sndSection.onSampleChange(target)
-                              : soundType === 'generated'
-                                ? this.#sndSection.onGeneratedChange(target)
-                                : null
-                    if (p)
-                        p.finally(() => {
-                            this.#isSelecting = false
-                        })
-                }
-            }
-        })
-
-        this.listen(this.container, 'click', (e) => {
-            const target = /** @type {HTMLElement} */ (e.target)
-            if (target.dataset.lfoToggleBtn) {
-                this.#onLfoToggleBtn(target.dataset.lfoToggleBtn)
-                return
-            }
-            if (target.dataset.lfoSelectBtn) {
-                this.#onLfoSelectBtn(target.dataset.lfoSelectBtn)
-                return
-            }
-            if (target.dataset.fxToggleBtn) {
-                this.#toggleFxByKey(target.dataset.fxToggleBtn)
-                return
-            }
-            if (target.dataset.fxTab) {
-                this.#onFxTab(target.dataset.fxTab)
-                return
-            }
-            const genTabEl = target.closest?.('[data-gen-tab]')
-            if (genTabEl) {
-                this.#onGenTab(/** @type {HTMLElement} */ (genTabEl).dataset.genTab)
-                return
-            }
-            if (target.dataset.fxIconVal) {
-                this.#onFxIcon(target)
-                return
-            }
-
-            const btn = target.closest('button')
-            if (!btn) {
-                const row = target.closest('.ne-row[data-prop]')
-                if (row && target.tagName !== 'INPUT' && target.tagName !== 'SELECT') {
-                    this.#onRowClick(/** @type {HTMLElement} */ (row).dataset.prop)
-                }
-                return
-            }
-
-            if (btn.dataset.key) this.#onToggle(btn)
-            else if (btn.dataset.action === 'toggle-auto') this.#sndSection.toggleAuto()
-            else if (btn.dataset.action === 'load-sample') this.#onLoadSample()
-        })
-    }
-
-    /** @param {any} propKey */
-    #onRowClick(propKey) {
-        this.#selectedPropKey = propKey
-        this.sync()
-    }
-
-    /** @param {any} sel */
-    #onSelect(sel) {
-        if (!this.#track) return
-        const key = sel.dataset.key
-        let val = sel.value
-        if (key === 'delayTime') val = parseFloat(val)
-        this.#serviceRegistry.cmd?.updateTrack(
-            this.#track,
-            { [key]: val },
-            {
-                desc: `${key} on ${this.#track.name}`,
-            },
-        )
-        this.#emitTrackChange()
-    }
-
-    /** @param {any} btn */
-    #onToggle(btn) {
-        if (!this.#track) return
-        const key = btn.dataset.key
-        this.#serviceRegistry.cmd?.updateTrack(
-            this.#track,
-            { [key]: !this.#track[key] },
-            {
-                desc: `${key} on ${this.#track.name}`,
-            },
-        )
-        btn.textContent = this.#track[key] ? 'ON' : 'OFF'
-        btn.classList.toggle('active', this.#track[key])
-        this.#emitTrackChange()
-        // Auto swaps which half of the gen tab is visible (manual props vs Groove/Engine).
-        if (key === 'auto') this.sync()
-    }
-
     /** @param {any} key @param {any} value */
     onLoopSlider(key, value) {
         if (!this.#track) return
@@ -932,7 +485,7 @@ export default class TrackEditor extends BasePanel {
                     trackIdx: this.#selectedTrackIdx,
                     loopAtStep: track.loopAtStep,
                 })
-                this.#emitTrackChange()
+                this.emitTrackChange()
             })
         } else if (key === 'stepsPerBeat') {
             // Structure change: the piano roll rebuilds its columns only on
@@ -942,15 +495,11 @@ export default class TrackEditor extends BasePanel {
             // via its structureSig check.)
             this.#playbackEvents.batch(() => {
                 this.#playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-                this.#emitTrackChange()
+                this.emitTrackChange()
             })
         } else {
-            this.#emitTrackChange()
+            this.emitTrackChange()
         }
-    }
-
-    #emitTrackChange() {
-        emitTrackChanged(this.#track, this.#playbackEvents)
     }
 
     // ── Hide ───────────────────────────────────────────────────────
@@ -972,11 +521,7 @@ export default class TrackEditor extends BasePanel {
         this.#track = null
         this.#selectedTrackIdx = -1
         this.#selectedPropKey = null
-        this.#lastTick = -1
-        if (this.#lfoBridge) {
-            this.#lfoBridge.destroy()
-            this.#lfoBridge = null
-        }
+        this.#lfoWatch.stop()
         if (this.#noteEditor) this.#noteEditor.hide()
         setViewBtn('edit', false)
     }
