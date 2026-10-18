@@ -18,7 +18,23 @@ import { serviceRegistry } from '../state/service_registry.js'
  * Construction order matters: noteEditor/trackEditor cross-wiring requires
  * trackEditor.init() first so neContainer exists.
  */
-/** @returns {any} */
+/**
+ * @returns {{
+ *   toolbar: import('../ui/toolbar.js').default,
+ *   patternPanel: import('../ui/pattern_panel.js').default,
+ *   pianoRollPanel: import('../ui/piano_roll_panel.js').default,
+ *   noteEditor: import('../ui/note_editor.js').default,
+ *   trackEditor: import('../ui/track_editor.js').default,
+ *   toolsPanel: import('../ui/tools_panel.js').default,
+ *   outputPanel: import('../ui/output_panel.js').default,
+ *   aboutPanel: import('../ui/about_panel.js').default,
+ *   drumkitManager: import('../ui/drumkit_manager.js').default,
+ *   songPanel: import('../ui/song_panel.js').default,
+ *   mobileTabBar: import('../ui/mobile_tab_bar.js').default,
+ *   patternSettingsPanel: import('../ui/pattern_settings_panel.js').default,
+ *   viewManager: import('../ui/view_manager.js').default,
+ * }}
+ */
 export function createAndInitPanels() {
     const toolbar = new Toolbar()
     const patternPanel = new PatternPanel()

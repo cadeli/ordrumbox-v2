@@ -9,8 +9,6 @@ export default class ImportSection {
     #midiImportService
 
     /** @param {import('../tools_panel.js').default} panel */
-    /** @param {any} panel */
-    /** @param {any} panel */
     constructor(panel) {
         this.#panel = panel
         this.#midiImportService = new MidiImportService()
@@ -34,9 +32,9 @@ export default class ImportSection {
         importMidiFile.addEventListener('change', (e) => this.onImportMidiFile(e))
     }
 
-    /** @param {any} e */
+    /** @param {Event} e */
     async onImportMidiFile(e) {
-        const file = e.target.files[0]
+        const file = /** @type {HTMLInputElement} */ (e.target).files?.[0]
         if (!file) return
 
         try {
@@ -50,6 +48,6 @@ export default class ImportSection {
             logger.error('ToolsPanel', 'MIDI Import failed', err)
             showToast('MIDI Import failed: ' + err.message, 'error')
         }
-        e.target.value = ''
+        /** @type {HTMLInputElement} */ (e.target).value = ''
     }
 }

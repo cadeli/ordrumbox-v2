@@ -50,7 +50,20 @@ export default class ViewManager {
     /** Owns every bus sub bound through #life — released by destroy(). */
     #life = new Lifecycle()
 
-    /** @param {any} config */
+    /**
+     * @param {{
+     *   trackEditor: import('./track_editor.js').default,
+     *   synthEditor: import('./synth_editor.js').default,
+     *   pianoRollPanel: import('./piano_roll_panel.js').default,
+     *   noteEditor: import('./note_editor.js').default,
+     *   toolsPanel: import('./tools_panel.js').default,
+     *   patternSettingsPanel: import('./pattern_settings_panel.js').default,
+     *   outputPanel: import('./output_panel.js').default,
+     *   drumkitManager: import('./drumkit_manager.js').default,
+     *   songPanel: import('./song_panel.js').default,
+     *   aboutPanel: import('./about_panel.js').default,
+     * }} config
+     */
     constructor({
         trackEditor,
         synthEditor,
@@ -115,7 +128,7 @@ export default class ViewManager {
 
     // ── Slot panel logic ──────────────────────────────────────────────────
 
-    /** @param {any} show @param {any} name @param {any} panel */
+    /** @param {boolean} show @param {string} name @param {{show: () => void, hide: () => void, isVisible?: boolean}} panel */
     #toggleSlotPanel(show, name, panel) {
         if (!panel) return
         if (show) {
@@ -139,7 +152,7 @@ export default class ViewManager {
         }
     }
 
-    /** @param {any} exceptName */
+    /** @param {string} exceptName */
     #hideOtherSlotPanels(exceptName) {
         for (const [name, { panel }] of this.#slots) {
             if (name !== exceptName && panel?.isVisible) panel.hide()
@@ -148,7 +161,7 @@ export default class ViewManager {
 
     // ── View switching ────────────────────────────────────────────────────
 
-    /** @param {any} view */
+    /** @param {import('./components/ui_utils.js').ViewName} view */
     #switchTo(view) {
         if (view === this.#currentView) return
         const prev = this.#currentView

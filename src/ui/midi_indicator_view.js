@@ -24,7 +24,7 @@ export default class MidiIndicatorView {
         this.#onActivity = () => this.#flashActivity()
     }
 
-    /** @param {any} midiManager */
+    /** @param {import('../logic/midi/midi_manager.js').default} midiManager */
     connect(midiManager) {
         if (this.#midiManager === midiManager) return
         this.disconnect()
@@ -53,7 +53,7 @@ export default class MidiIndicatorView {
         }
     }
 
-    /** @param {any} midiManager */
+    /** @param {import('../logic/midi/midi_manager.js').default} midiManager */
     sync(midiManager) {
         if (midiManager) {
             const s = midiManager.getStatus()
@@ -75,7 +75,7 @@ export default class MidiIndicatorView {
         }
     }
 
-    /** @param {any} ledId @param {any} isOn @param {any} label */
+    /** @param {string} ledId @param {boolean} isOn @param {string} label */
     #setLedState(ledId, isOn, label) {
         const led = this.#container.querySelector(`#${ledId}`)
         const text = this.#container.querySelector(`#${ledId.replace('Led', 'Label')}`)

@@ -58,7 +58,7 @@ export function getPanFromTrackName(trackName) {
  * names; anything else ("808 KICK", "SYNTH BASS") goes through the substring
  * rules below, which is why this cannot be a plain lookup.
  *
- * @param {any} name
+ * @param {string} name
  * @returns {string}
  */
 export function detectTrackType(name) {

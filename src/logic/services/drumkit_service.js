@@ -34,7 +34,7 @@ class DrumkitService {
         return soundRegistry.drumkitList[appState.selectedDrumkitIdx]?.name ?? null
     }
 
-    /** @returns {any} */
+    /** @returns {{name: string, instruments: import('../../state/sound_registry.js').SoundEntry[]}|null} */
     exportCurrentKit() {
         const name = this.currentKitName()
         if (!name) return null
@@ -57,7 +57,7 @@ class DrumkitService {
         return { name, instruments }
     }
 
-    /** @param {any} data @returns {Promise<void>} */
+    /** @param {Record<string, unknown>} data @returns {Promise<string>} */
     async restoreDrumkit(data) {
         if (!data || typeof data.name !== 'string' || !Array.isArray(data.instruments)) {
             throw new Error('Missing drumkit name or instruments')
@@ -162,8 +162,7 @@ class DrumkitService {
         return sound.display_name
     }
 
-    /** @param {string} soundKey */
-    /** @param {string} soundKey @returns {any} */
+    /** @param {string} soundKey @returns {string|null} */
     removeSample(soundKey) {
         const sound = soundRegistry.sounds[soundKey]
         if (!sound) return null
@@ -236,7 +235,7 @@ class DrumkitService {
 
         for (const s of sounds) {
             if (!s.buffer || !ctx) continue
-            const analysis = /** @type {any} */ (analyzeSample(s.buffer))
+            const analysis = /** @type {{peakDb?: number, peakLinear?: number, duration?: number, envelope?: number[]}} */ (analyzeSample(s.buffer))
             if (!analysis?.peakLinear || analysis.peakLinear <= 0) continue
 
             const gainDb = -analysis.peakDb

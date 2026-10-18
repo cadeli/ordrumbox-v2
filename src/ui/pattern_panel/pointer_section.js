@@ -32,9 +32,10 @@ export default class PointerSection {
         if (this.#tooltip) this.#tooltip.style.display = 'none'
     }
 
-    /** @param {any} e */
+    /** @param {MouseEvent} e */
     onMouseOver(e) {
-        const cell = e.target.closest('.pp-cell.filled')
+        const target = /** @type {HTMLElement} */ (e.target)
+        const cell = /** @type {HTMLElement|null} */ (target.closest('.pp-cell.filled'))
         if (!cell) return
         // The edit gauge is describing this same note: no second bubble.
         if (this.#editor.gauge?.isVisible) {
@@ -51,7 +52,7 @@ export default class PointerSection {
         const { track, notesAtStep } = resolved
         if (notesAtStep.length === 0) return
 
-        const sliceEl = e.target.closest('.pp-note-slice')
+        const sliceEl = /** @type {HTMLElement|null} */ (target.closest('.pp-note-slice'))
         const voiceIdx = sliceEl ? parseInt(sliceEl.dataset.voiceIdx, 10) : 0
         const note = notesAtStep[Math.min(voiceIdx, notesAtStep.length - 1)]
 
@@ -67,9 +68,10 @@ export default class PointerSection {
         this.#tooltip.style.top = `${rect.top - containerRect.top - this.#tooltip.offsetHeight - 4}px`
     }
 
-    /** @param {any} e */
+    /** @param {MouseEvent} e */
     onMouseOut(e) {
-        const cell = e.target.closest('.pp-cell.filled')
+        const target = /** @type {HTMLElement} */ (e.target)
+        const cell = target.closest('.pp-cell.filled')
         if (!cell) return
         if (this.#tooltip) this.#tooltip.style.display = 'none'
     }
@@ -114,42 +116,43 @@ export default class PointerSection {
         emitTrackChanged(track, this.#editor.playbackEvents)
     }
 
-    /** @param {any} e */
+    /** @param {MouseEvent} e */
     onClick(e) {
+        const target = /** @type {HTMLElement} */ (e.target)
         // A cell drag ends over the cell it started on, and clicking an already
         // selected note deletes it: that click is not a click.
         if (this.#editor.drag?.consumeClick()) return
 
         this.#editor.rangeAnchor = null
 
-        const actionBtn = e.target.closest('.pp-action-btn')
+        const actionBtn = /** @type {HTMLElement|null} */ (target.closest('.pp-action-btn'))
         if (actionBtn) {
             this.#editor.actions.run(actionBtn.dataset.ppAction)
             return
         }
 
-        const masterTrackEl = e.target.closest('.pp-master-track')
+        const masterTrackEl = target.closest('.pp-master-track')
         if (masterTrackEl) {
             this.#editor.playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
             return
         }
 
-        const trackEl = e.target.closest('.pp-track')
+        const trackEl = target.closest('.pp-track')
         if (
             trackEl &&
-            !e.target.closest('.pp-track-name') &&
-            !e.target.closest('.pp-divider') &&
-            !e.target.closest('.pp-solo') &&
-            !e.target.closest('.pp-cell') &&
-            !e.target.closest('.pp-volume')
+            !target.closest('.pp-track-name') &&
+            !target.closest('.pp-divider') &&
+            !target.closest('.pp-solo') &&
+            !target.closest('.pp-cell') &&
+            !target.closest('.pp-volume')
         ) {
-            const trackIdx = parseInt(trackEl.querySelector('.pp-track-name')?.dataset.track, 10)
+            const trackIdx = parseInt(/** @type {HTMLElement|null} */ (trackEl.querySelector('.pp-track-name'))?.dataset.track, 10)
             if (isNaN(trackIdx)) return
             this.#editor.selection.selectTrack(trackIdx)
             return
         }
 
-        const trackNameEl = e.target.closest('.pp-track-name')
+        const trackNameEl = /** @type {HTMLElement|null} */ (target.closest('.pp-track-name'))
         if (trackNameEl) {
             const trackIdx = parseInt(trackNameEl.dataset.track, 10)
             if (isNaN(trackIdx)) return
@@ -157,7 +160,7 @@ export default class PointerSection {
             return
         }
 
-        const dividerEl = e.target.closest('.pp-divider')
+        const dividerEl = /** @type {HTMLElement|null} */ (target.closest('.pp-divider'))
         if (dividerEl) {
             const trackIdx = parseInt(dividerEl.dataset.track, 10)
             if (isNaN(trackIdx)) return
@@ -165,7 +168,7 @@ export default class PointerSection {
             return
         }
 
-        const soloEl = e.target.closest('.pp-solo')
+        const soloEl = /** @type {HTMLElement|null} */ (target.closest('.pp-solo'))
         if (soloEl) {
             const trackIdx = parseInt(soloEl.dataset.track, 10)
             if (isNaN(trackIdx)) return
@@ -173,7 +176,7 @@ export default class PointerSection {
             return
         }
 
-        if (e.target.closest('#pp-add-track')) {
+        if (target.closest('#pp-add-track')) {
             const pattern = this.#editor.appState.selectedPattern
             if (!pattern) return
             const trackCount = getTracksArray(pattern).length + 1
@@ -182,7 +185,7 @@ export default class PointerSection {
             return
         }
 
-        if (e.target.closest('#pp-delete-track')) {
+        if (target.closest('#pp-delete-track')) {
             const pattern = this.#editor.appState.selectedPattern
             if (!pattern) return
             const tracks = getTracksArray(pattern)
@@ -195,7 +198,7 @@ export default class PointerSection {
             return
         }
 
-        const cell = e.target.closest('.pp-cell')
+        const cell = /** @type {HTMLElement|null} */ (target.closest('.pp-cell'))
         if (!cell) return
         const trackIdx = parseInt(cell.dataset.track, 10)
         const beat = parseInt(cell.dataset.beat, 10)
@@ -211,7 +214,7 @@ export default class PointerSection {
         const { track, notesAtStep, pattern } = resolved
 
         if (notesAtStep.length > 0) {
-            const sliceEl = e.target.closest('.pp-note-slice')
+            const sliceEl = /** @type {HTMLElement|null} */ (target.closest('.pp-note-slice'))
             const voiceIdx = sliceEl ? parseInt(sliceEl.dataset.voiceIdx, 10) : 0
             const note = notesAtStep[Math.min(voiceIdx, notesAtStep.length - 1)]
 
@@ -257,9 +260,10 @@ export default class PointerSection {
         this.#editor.serviceRegistry.seq?.simpleBeep(trackIdx, newNote)
     }
 
-    /** @param {any} e */
+    /** @param {Event} e */
     onInput(e) {
-        const volSlider = e.target.closest('.pp-volume')
+        const target = /** @type {HTMLElement} */ (e.target)
+        const volSlider = /** @type {HTMLInputElement|null} */ (target.closest('.pp-volume'))
         if (volSlider) {
             const trackIdx = parseInt(volSlider.dataset.track, 10)
             if (isNaN(trackIdx)) return
@@ -276,7 +280,7 @@ export default class PointerSection {
             )
             emitTrackChanged(track, this.#editor.playbackEvents)
         }
-        const masterSlider = e.target.closest('.pp-master-volume')
+        const masterSlider = /** @type {HTMLInputElement|null} */ (target.closest('.pp-master-volume'))
         if (masterSlider) {
             const value = parseFloat(masterSlider.value)
             this.#editor.serviceRegistry.audioEngine?.mixer?.setMasterBus({ master: value })

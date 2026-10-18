@@ -325,10 +325,10 @@ export default class SynthEditor {
         this.#delegationBound = true
     }
 
-    /** @param {any} e */
+    /** @param {MouseEvent} e */
     #handleClick(e) {
         try {
-            const { target } = e
+            const target = /** @type {HTMLElement} */ (e.target)
             if (this.#handlePowerBtn(target, e)) return
             if (this.#handleBooleanBtn(target)) return
             if (this.#handleIconBtn(target)) return

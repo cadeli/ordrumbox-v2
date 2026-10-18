@@ -33,14 +33,14 @@ export default class KeyboardSection {
         }
     }
 
-    /** @param {any} e */
+    /** @param {KeyboardEvent} e */
     onKeyDown(e) {
         const pattern = this.#editor.appState.selectedPattern
         if (!pattern) return
         const tracks = getTracksArray(pattern)
         if (tracks.length === 0) return
 
-        const target = e.target
+        const target = /** @type {(HTMLElement & {type?: string})|null} */ (e.target)
         const isEditable =
             target &&
             (target.tagName === 'TEXTAREA' ||

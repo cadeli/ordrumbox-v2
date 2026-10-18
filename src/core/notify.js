@@ -59,7 +59,7 @@ function ensureStyles() {
 /**
  * Shows a toast notification.
  * @param {string} message  Text to display
- * @param {any} type   'info' | 'success' | 'error' | 'warning'
+ * @param {'info'|'success'|'error'|'warning'} type
  * @param {Object} [opts]
  * @param {Array<{label:string, onClick:Function}>} [opts.actions]  Action buttons (disables auto-dismiss)
  * @param {boolean} [opts.dismissible]  Show a × close button (disables auto-dismiss)
@@ -152,7 +152,7 @@ const reportedOnce = new Set()
  * @param {string} context   stable identifier, used as dedup key (e.g. 'Mixer.worklet')
  * @param {string} message   user-facing text (no technical detail)
  * @param {Object} [opts]
- * @param {string} [opts.type]       'info' | 'success' | 'error' | 'warning' (default 'warning')
+ * @param {'info'|'success'|'error'|'warning'} [opts.type]       default 'warning'
  * @param {boolean} [opts.once]      report only the first time per session (default true)
  * @param {Error} [opts.cause]       logged for developers (dev builds only)
  * @param {Array<{label:string, onClick:Function}>} [opts.actions]

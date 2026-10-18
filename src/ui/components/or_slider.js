@@ -187,18 +187,20 @@ export class OrSlider extends BaseControl {
     /**
      * Handles 'input' events from the range element.
      */
+    /** @param {Event} _e */
     handleInput(_e) {
         const norm = parseFloat(this.#input.value)
         this.commitValue(this.#toDenorm(norm))
     }
 
-    /** @param {any} e */
+    /** @param {Event} e */
     #onInput(e) {
         this.handleInput(e)
     }
 
     /**
      * Handles 'keydown' events (ArrowUp/Down).
+     * @param {KeyboardEvent} e
      */
     handleKeydown(e) {
         const isUp = e.key === 'ArrowUp' || e.key === 'ArrowRight'
@@ -225,7 +227,7 @@ export class OrSlider extends BaseControl {
         return true
     }
 
-    /** @param {any} e */
+    /** @param {KeyboardEvent} e */
     #onKeydown(e) {
         this.handleKeydown(e)
     }

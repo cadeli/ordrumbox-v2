@@ -132,16 +132,16 @@ export default class PatternPanel extends BasePanel {
             'click',
             (e) => {
                 this.container.focus()
-                this.#pointer.onClick(e)
+                this.#pointer.onClick(/** @type {MouseEvent} */ (e))
             },
             { passive: false },
         )
         this.listen(this.container, 'mousedown', (e) => this.#drag.onMouseDown(/** @type {MouseEvent} */ (e)))
         this.listen(this.container, 'input', (e) => this.#pointer.onInput(e))
-        this.listen(this.container, 'keydown', (e) => this.#keyboard.onKeyDown(e))
-        this.listen(this.container, 'contextmenu', (e) => this.#menuSection.onContextMenu(e))
-        this.listen(this.container, 'mouseover', (e) => this.#pointer.onMouseOver(e))
-        this.listen(this.container, 'mouseout', (e) => this.#pointer.onMouseOut(e))
+        this.listen(this.container, 'keydown', (e) => this.#keyboard.onKeyDown(/** @type {KeyboardEvent} */ (e)))
+        this.listen(this.container, 'contextmenu', (e) => this.#menuSection.onContextMenu(/** @type {MouseEvent} */ (e)))
+        this.listen(this.container, 'mouseover', (e) => this.#pointer.onMouseOver(/** @type {MouseEvent} */ (e)))
+        this.listen(this.container, 'mouseout', (e) => this.#pointer.onMouseOut(/** @type {MouseEvent} */ (e)))
         this.#resizeObserver = new ResizeObserver(() => this.#updateBeatRectsCache())
         this.#resizeObserver.observe(this.container)
     }

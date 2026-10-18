@@ -55,7 +55,7 @@ class EventBus {
      * starve the UI redraw of the whole panel).
      * @param {string} event
      * @param {Function} fn
-     * @param {any} payload
+     * @param {unknown} payload
      */
     #dispatch(event, fn, payload) {
         try {

@@ -175,7 +175,7 @@ export class OrTab {
     togglePanels(container) {
         const { panel, hidden, panelData } = this.#css
         const camelPanelData = OrTab.#toCamel(panelData)
-        container.querySelectorAll(`.${panel}`).forEach((/** @type {any} */ p) => {
+        container.querySelectorAll(`.${panel}`).forEach((/** @type {HTMLElement} */ p) => {
             p.classList.toggle(hidden, p.dataset[camelPanelData] !== this.#activeTab)
         })
     }

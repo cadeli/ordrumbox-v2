@@ -24,7 +24,9 @@ export default class Sequencer {
     /** Whether the transport was last anchored in the song view's mode. */
     #anchoredSongMode = false
 
-    /** @param {any} [options] */
+    /**
+     * @param {{serviceRegistry?: typeof import('../state/service_registry.js').serviceRegistry, appState?: typeof import('../state/app_state.js').appState, soundRegistry?: typeof import('../state/sound_registry.js').soundRegistry, playbackEvents?: typeof import('../state/event_bus.js').playbackEvents}} [options]
+     */
     constructor(options = {}) {
         this.serviceRegistry = options.serviceRegistry ?? serviceRegistry
         this.appState = options.appState ?? appState

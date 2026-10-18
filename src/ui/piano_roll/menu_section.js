@@ -24,13 +24,14 @@ export default class MenuSection {
         this.#editor = editor
     }
 
-    /** @param {any} e */
+    /** @param {MouseEvent} e */
     onContextMenu(e) {
         const track = this.#editor.track
         const cmd = serviceRegistry.cmd
         if (!track || !cmd) return
 
-        const keyEl = e.target.closest('.pp-pr-key')
+        const target = /** @type {HTMLElement} */ (e.target)
+        const keyEl = /** @type {HTMLElement|null} */ (target.closest('.pp-pr-key'))
         if (keyEl) {
             e.preventDefault()
             const midi = parseInt(keyEl.dataset.midi, 10)
@@ -39,7 +40,7 @@ export default class MenuSection {
             return
         }
 
-        const gridEl = e.target.closest('#pp-piano-grid')
+        const gridEl = target.closest('#pp-piano-grid')
         if (!gridEl) {
             this.#contextMenu.hide()
             return

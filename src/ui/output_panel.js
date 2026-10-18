@@ -240,7 +240,7 @@ export default class OutputPanel extends BasePanel {
         this.#persistMaster('hicut', this.#hicutVal)
     }
 
-    /** @param {any} key @param {any} value */
+    /** @param {string} key @param {number|boolean} value */
     #persistMaster(key, value) {
         soundRegistry.settings.master[key] = value
         if (this.#saveTimer) clearTimeout(this.#saveTimer)

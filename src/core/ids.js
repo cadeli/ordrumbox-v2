@@ -9,7 +9,7 @@
  * Slugify a name into an id: lowercase, alphanumerics and dashes, no leading or
  * trailing dash. Returns '' when the name has nothing sluggable (e.g. "***"), so
  * the caller can fall back to a generated id.
- * @param {any} value
+ * @param {unknown} value
  * @returns {string}
  */
 export function slugify(value) {

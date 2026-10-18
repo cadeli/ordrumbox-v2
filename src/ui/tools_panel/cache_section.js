@@ -23,7 +23,6 @@ export default class CacheSection {
     #jsonModalCleanup
 
     /** @param {import('../tools_panel.js').default} panel */
-    /** @param {any} panel */
     constructor(panel) {
         this.#panel = panel
         this.#jsonModalCleanup = null
@@ -161,7 +160,7 @@ export default class CacheSection {
         }
     }
 
-    /** @param {any} type @param {any} key */
+    /** @param {string|undefined} type @param {string|undefined} key - data-attribute strings, guarded by storeMap below */
     async showJson(type, key) {
         const storeMap = {
             patterns: 'patterns',
@@ -187,7 +186,7 @@ export default class CacheSection {
         }
     }
 
-    /** @param {any} title @param {any} json */
+    /** @param {string} title @param {string} json */
     #openJsonModal(title, json) {
         this.#closeJsonModal()
         const overlay = document.createElement('div')

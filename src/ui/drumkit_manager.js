@@ -185,9 +185,9 @@ export default class DrumkitManager extends BasePanel {
         showToast(`Saved drumkit "${kit.name}"`, 'success')
     }
 
-    /** @param {any} e */
+    /** @param {Event} e */
     async #onLoadKitFile(e) {
-        const file = e.target.files?.[0]
+        const file = /** @type {HTMLInputElement} */ (e.target).files?.[0]
         if (!file) return
 
         try {
@@ -200,13 +200,13 @@ export default class DrumkitManager extends BasePanel {
             logger.warn(TAG, `Drumkit load failed: ${err.message}`)
             showToast('Invalid drumkit JSON', 'error')
         } finally {
-            e.target.value = ''
+            /** @type {HTMLInputElement} */ (e.target).value = ''
         }
     }
 
-    /** @param {any} e */
+    /** @param {Event} e */
     async #onImportDir(e) {
-        const files = e.target.files
+        const files = /** @type {HTMLInputElement} */ (e.target).files
         if (!files || files.length === 0) return
 
         try {
@@ -230,7 +230,7 @@ export default class DrumkitManager extends BasePanel {
             logger.error(TAG, 'Directory import failed', err)
             showToast('Import failed: ' + err.message, 'error')
         }
-        e.target.value = ''
+        /** @type {HTMLInputElement} */ (e.target).value = ''
     }
 
     #renderList() {

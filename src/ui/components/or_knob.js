@@ -167,7 +167,7 @@ export class OrKnob extends BaseControl {
         this.#knobEl?.removeEventListener('keydown', this.#boundOnKeydown)
     }
 
-    /** @param {any} e */
+    /** @param {MouseEvent} e */
     #onStart(e) {
         if (this.#dragging) return // compatibility mousedown of a pointer drag
         if (e.button !== 0) return // primary button only
@@ -228,7 +228,7 @@ export class OrKnob extends BaseControl {
         this.#knobEl?.classList.remove('dragging')
     }
 
-    /** @param {any} e */
+    /** @param {KeyboardEvent} e */
     #onKeydown(e) {
         const isUp = e.key === 'ArrowUp' || e.key === 'ArrowRight'
         const isDown = e.key === 'ArrowDown' || e.key === 'ArrowLeft'

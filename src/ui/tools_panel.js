@@ -18,12 +18,12 @@ export default class ToolsPanel extends BasePanel {
     #cache
 
     /** The delay/repeat slider widget of the export section (not a count).
-     *  @returns {any} */
+     *  @returns {import('./components/or_slider.js').OrSlider|null} */
     get wavLoopsSlider() {
         return this.#export.wavLoopsSlider
     }
 
-    /** @returns {any} */
+    /** @returns {HTMLButtonElement|null} */
     get exportWavBtn() {
         return this.#export.wavBtn
     }

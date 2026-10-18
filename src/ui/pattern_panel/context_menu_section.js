@@ -20,18 +20,19 @@ export default class ContextMenuSection {
         this.#contextMenu = new ContextMenu()
     }
 
-    /** @param {any} e */
+    /** @param {MouseEvent} e */
     onContextMenu(e) {
-        const trackEl = e.target.closest('.pp-track:not(.pp-master-track)')
+        const target = /** @type {HTMLElement} */ (e.target)
+        const trackEl = target.closest('.pp-track:not(.pp-master-track)')
         if (!trackEl) {
             this.#contextMenu.hide()
             return
         }
-        const trackNameEl = trackEl.querySelector('.pp-track-name[data-track]')
+        const trackNameEl = /** @type {HTMLElement|null} */ (trackEl.querySelector('.pp-track-name[data-track]'))
         const trackIdx = parseInt(trackNameEl?.dataset.track, 10)
         if (isNaN(trackIdx)) return
 
-        const cellEl = e.target.closest('.pp-cell')
+        const cellEl = /** @type {HTMLElement|null} */ (target.closest('.pp-cell'))
         if (cellEl) {
             const beat = parseInt(cellEl.dataset.beat, 10)
             const beatStep = parseInt(cellEl.dataset.step, 10)

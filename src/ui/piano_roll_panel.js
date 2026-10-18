@@ -134,9 +134,9 @@ export default class PianoRollPanel extends BasePanel {
                 return
             }
             const gridEl = /** @type {Element} */ (e.target).closest('#pp-piano-grid')
-            if (gridEl) this.#onGridClick(e, gridEl)
+            if (gridEl) this.#onGridClick(/** @type {MouseEvent} */ (e), gridEl)
         })
-        this.listen(this.container, 'contextmenu', (e) => this.#menu.onContextMenu(e))
+        this.listen(this.container, 'contextmenu', (e) => this.#menu.onContextMenu(/** @type {MouseEvent} */ (e)))
         this.#resizeObserver = new ResizeObserver(() => this.#viewport.onResize())
         this.#boundOnKeyDown = (e) => this.#onKeyDown(e)
         this.#boundOnWheel = (e) => this.#viewport.onWheel(e)
@@ -238,7 +238,7 @@ export default class PianoRollPanel extends BasePanel {
         playbackEvents.emit(EVENTS.NOTE_SELECT, null)
     }
 
-    /** @param {any} e @param {any} gridEl */
+    /** @param {MouseEvent} e @param {Element} gridEl */
     #onGridClick(e, gridEl) {
         const track = this.#track
         const cmd = serviceRegistry.cmd
@@ -344,7 +344,7 @@ export default class PianoRollPanel extends BasePanel {
         return true
     }
 
-    /** @param {any} e */
+    /** @param {KeyboardEvent} e */
     #onKeyDown(e) {
         if (!this.isVisible) return
         const track = this.#track
@@ -567,7 +567,7 @@ export default class PianoRollPanel extends BasePanel {
         this.#viewport.measureCellWidth()
     }
 
-    /** Handle keyboard event. */
+    /** Handle keyboard event. @param {KeyboardEvent} e */
     onKeyDown(e) {
         this.#onKeyDown(e)
     }

@@ -82,7 +82,7 @@ export default class ViewportSection {
         emitPageChanged()
     }
 
-    /** @param {any} e */
+    /** @param {WheelEvent} e */
     onWheel(e) {
         if (!this.#editor.isVisible || !e.shiftKey) return
         if (e.deltaY > 0 || e.deltaX > 0) this.nextPage()

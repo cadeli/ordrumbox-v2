@@ -168,7 +168,7 @@ export default class Toolbar {
         this.sync()
         this.#bindSyncEvents()
         this.#setupOverflowObserver()
-        this.#life.listen(document, 'keydown', (e) => this.#handleKeyboard(e))
+        this.#life.listen(document, 'keydown', (e) => this.#handleKeyboard(/** @type {KeyboardEvent} */ (e)))
     }
 
     #beginInit() {
@@ -257,7 +257,7 @@ export default class Toolbar {
         })
     }
 
-    /** @param {any} e */
+    /** @param {KeyboardEvent} e */
     #handleKeyboard(e) {
         if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
             e.preventDefault()

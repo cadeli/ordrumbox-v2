@@ -24,7 +24,7 @@ export class Lifecycle {
      * addEventListener tied to this lifetime: destroy() aborts it, so no
      * handler reference is kept for removeEventListener.
      * @param {EventTarget|null|undefined} target
-     * @param {any} type
+     * @param {string} type
      * @param {EventListener} handler
      * @param {AddEventListenerOptions} [options]
      */

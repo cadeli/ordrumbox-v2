@@ -103,7 +103,7 @@ export default class MidiManager extends EventTarget {
         return 'Enable MIDI'
     }
 
-    /** @returns {any} */
+    /** @returns {{supported: boolean, ready: boolean, inputCount: number, outputCount: number, syncEnabled: boolean}} */
     getStatus = () => {
         return {
             supported: this.isSupported(),
@@ -156,7 +156,7 @@ export default class MidiManager extends EventTarget {
         this.dispatchEvent(new Event('statusChange'))
     }
 
-    /** @param {any} id */
+    /** @param {string|null} id */
     setSelectedOutput = (id) => {
         this.selectedOutputId = id
     }

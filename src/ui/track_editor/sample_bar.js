@@ -84,7 +84,7 @@ export default class SampleBar {
         if (input) /** @type {HTMLElement} */ (input).click()
     }
 
-    /** Replace the track's sample buffer with the chosen file. @param {any} e */
+    /** Replace the track's sample buffer with the chosen file. @param {Event} e */
     async onFileSelected(e) {
         const file = /** @type {HTMLInputElement} */ (e.target).files?.[0]
         const track = this.#editor.track

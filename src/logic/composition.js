@@ -89,7 +89,7 @@ export function getSequence(index) {
 
 /**
  * Build absolute relative-pitch notes for one chord per measure (4/4).
- * @param {any} sequence  entry from SEQUENCES
+ * @param {{id?: string, name?: string, chords: Array<{quality: string, root: number}>}} sequence  entry from SEQUENCES
  * @param {number} tonic     relative pitch of the sequence root (track pitch units)
  * @param {number} beatCount number of beats in the pattern
  * @param {number} [beatsPerMeasure=4] beats in one measure

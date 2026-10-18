@@ -11,7 +11,6 @@ export default class MidiSection {
     #midiView
 
     /** @param {import('../tools_panel.js').default} panel */
-    /** @param {any} panel */
     constructor(panel) {
         this.#panel = panel
         this.#midiView = null

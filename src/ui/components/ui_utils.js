@@ -140,15 +140,15 @@ export function injectUiCss() {
  * @param {(id: string) => void} [onChange]  - called with the newly activated tab id
  */
 export function bindTabToggles(container, onChange) {
-    container.querySelectorAll('.ne-tab-btn[data-ne-tab]').forEach((/** @type {any} */ btn) => {
+    container.querySelectorAll('.ne-tab-btn[data-ne-tab]').forEach((/** @type {HTMLElement} */ btn) => {
         btn.addEventListener('click', () => {
             const id = btn.dataset.neTab
             container
                 .querySelectorAll('.ne-tab-btn')
-                .forEach((/** @type {any} */ b) => b.classList.toggle('active', b.dataset.neTab === id))
+                .forEach((/** @type {HTMLElement} */ b) => b.classList.toggle('active', b.dataset.neTab === id))
             container
                 .querySelectorAll('.ne-tab-panel')
-                .forEach((/** @type {any} */ p) => p.classList.toggle('ne-tab-panel-hidden', p.dataset.tabPanel !== id))
+                .forEach((/** @type {HTMLElement} */ p) => p.classList.toggle('ne-tab-panel-hidden', p.dataset.tabPanel !== id))
             onChange?.(id)
         })
     })

@@ -55,7 +55,7 @@ export default class BasePanel {
      * addEventListener tied to the panel lifetime: destroy() aborts it, so no
      * panel has to keep handler references around for removeEventListener.
      * @param {EventTarget} target
-     * @param {any} type
+     * @param {string} type
      * @param {EventListener} handler
      * @param {AddEventListenerOptions} [options]
      */
