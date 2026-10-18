@@ -210,6 +210,22 @@ export function detectUsedKeys(notes) {
  */
 const LEGACY_NOTE_KEY_ALIASES = Object.freeze({ retriggerNum: 'retriggerCount', steppc: 'stepPercent' })
 
+
+/**
+ * Rename legacy note keys in place. @param {any} note @param {Readonly<Record<string,string>>} aliases
+ * @returns {boolean}
+ */
+function renameLegacyKeys(note, aliases) {
+    if (!note || typeof note !== 'object' || Array.isArray(note)) return false
+    let changed = false
+    for (const [legacy, current] of Object.entries(aliases)) {
+        if (!Object.prototype.hasOwnProperty.call(note, legacy)) continue
+        if (note[current] === undefined) note[current] = note[legacy]
+        delete note[legacy]
+        changed = true
+    }
+    return changed
+}
 /**
  * Rewrite a note's legacy keys onto their current names, in place. The current
  * key wins when a note carries both, and the legacy one is dropped so it cannot
@@ -219,15 +235,7 @@ const LEGACY_NOTE_KEY_ALIASES = Object.freeze({ retriggerNum: 'retriggerCount', 
  * @returns {boolean} true when a key was rewritten
  */
 export function migrateLegacyNoteKeys(note) {
-    if (!note || typeof note !== 'object' || Array.isArray(note)) return false
-    let changed = false
-    for (const [legacy, current] of Object.entries(LEGACY_NOTE_KEY_ALIASES)) {
-        if (!Object.prototype.hasOwnProperty.call(note, legacy)) continue
-        if (note[current] === undefined) note[current] = note[legacy]
-        delete note[legacy]
-        changed = true
-    }
-    return changed
+    return renameLegacyKeys(note, LEGACY_NOTE_KEY_ALIASES)
 }
 
 /**
