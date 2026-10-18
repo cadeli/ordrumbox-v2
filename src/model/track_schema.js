@@ -53,6 +53,9 @@ import { valueOrFallback } from '../core/logger.js'
  * @property {boolean} delayOn              - Delay enabled. Default: true
  * @property {string}  synthSoundKey    - Synth preset key. Default: null
  * @property {Array}   notes                - Note array (objects or compact arrays). Default: []
+ * @property {string[]} [noteKeys]           - Compact-format header: the name carried by each
+ *                                             position of a compact notes[][]. Present only
+ *                                             while notes are stored compactly.
  * @property {number}  probability          - Base probability of every note on the track (0-1). Default: 1
  * @property {number}  prob_pitch            - Per-note chance the PITCH is randomized (0-100). Default: 50
  * @property {number}  prob_velocity         - Per-note chance the VELOCITY is randomized (0-100). Default: 50
@@ -192,7 +195,7 @@ export const TRACK_VALUE_RANGES = {
  * would produce beatStep/stepPercent values nothing else can read.
  *
  * Pure (no logging) — callers surface the change with reportUserError().
- * @param {any} track
+ * @param {Track} track
  * @returns {boolean} true when the track was corrected
  */
 export function clampStepsPerBeat(track) {

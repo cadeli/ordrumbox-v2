@@ -137,7 +137,7 @@ export function computeTickSpacing(track, rate, tick = TICK) {
     return Math.round((tick / track.stepsPerBeat) * getStepSpacing(rate))
 }
 
-/** @param {number} tick @param {{stepsPerBeat?: number, [key: string]: any}} track @param {{pitch?: number, [key: string]: any}} note @param {number} semitoneOffset @returns {any} */
+/** @param {number} tick @param {import('../model/track_schema.js').Track} track @param {Partial<import('../core/note_schema.js').Note>} note @param {number} semitoneOffset */
 export function createArpFlatNote(tick, track, note, semitoneOffset) {
     const arpNote = {
         ...note,

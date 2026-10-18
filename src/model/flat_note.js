@@ -7,8 +7,9 @@ export default class FlatNote {
 
     /**
      * @param {number} tick - absolute tick position within the pattern
-     * @param {any} track - owning track
-     * @param {any} note - source note object
+     * @param {import('./track_schema.js').Track} track - owning track
+     * @param {Partial<import('../core/note_schema.js').Note>} note - source note object
+     *   (partial: a player preview note carries no beat/beatStep)
      */
     constructor(tick, track, note) {
         this.tick = tick

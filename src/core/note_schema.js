@@ -212,7 +212,9 @@ const LEGACY_NOTE_KEY_ALIASES = Object.freeze({ retriggerNum: 'retriggerCount', 
 
 
 /**
- * Rename legacy note keys in place. @param {any} note @param {Readonly<Record<string,string>>} aliases
+ * Rename legacy note keys in place.
+ * @param {object|null|undefined} note
+ * @param {Readonly<Record<string,string>>} aliases
  * @returns {boolean}
  */
 function renameLegacyKeys(note, aliases) {
@@ -231,7 +233,7 @@ function renameLegacyKeys(note, aliases) {
  * key wins when a note carries both, and the legacy one is dropped so it cannot
  * leak back out through the exporter.
  *
- * @param {any} note an object note — anything else is left alone
+ * @param {object|null|undefined} note an object note — anything else is left alone
  * @returns {boolean} true when a key was rewritten
  */
 export function migrateLegacyNoteKeys(note) {
@@ -264,15 +266,18 @@ export function canonicalNoteKeys(keys) {
  * module reaches this one through `./notes.js`, so importing it back would
  * close a cycle (tests/module_graph.test.js).
  *
- * @param {any} pattern
+ * @param {{tracks?: object|object[]}|null|undefined} pattern - pre-normalization
+ *   shape: `tracks` may still be an indexed object
  * @returns {boolean} true when a key was rewritten
  */
 export function migrateLegacyPatternKeys(pattern) {
-    const tracks = !pattern?.tracks
-        ? []
-        : Array.isArray(pattern.tracks)
-          ? pattern.tracks
-          : Object.values(pattern.tracks)
+    const tracks = /** @type {import('../model/track_schema.js').Track[]} */ (
+        !pattern?.tracks
+            ? []
+            : Array.isArray(pattern.tracks)
+              ? pattern.tracks
+              : Object.values(pattern.tracks)
+    )
     let changed = false
     for (const track of tracks) {
         changed = migrateLegacyTrackKeys(track) || changed

@@ -8,6 +8,12 @@
 // Note keys keep their own alias table in core/note_schema.js
 // (LEGACY_NOTE_KEY_ALIASES) — this module carries the track and song keys.
 
+/**
+ * @typedef {import('../model/track_schema.js').Track} Track
+ * @typedef {import('../model/song_schema.js').Song} Song
+ * @typedef {import('../model/song_schema.js').SongClip} SongClip
+ */
+
 /** Legacy track key -> its current spelling. @type {Readonly<Record<string, string>>} */
 const LEGACY_TRACK_KEY_ALIASES = Object.freeze({ soundId: 'sampleId' })
 
@@ -22,7 +28,7 @@ const LEGACY_SONG_KEY_ALIASES = Object.freeze({ loopBars: 'loopMeasureCount' })
  * Rename legacy keys onto their current spellings in place, using the given
  * alias table. The current name always wins (a record carrying both keeps the
  * newer value). Returns whether anything changed.
- * @param {any} obj
+ * @param {object|null|undefined} obj
  * @param {Readonly<Record<string, string>>} aliases
  * @returns {boolean}
  */
@@ -40,7 +46,7 @@ function renameLegacyKeys(obj, aliases) {
 /**
  * Rename the legacy spellings of one track's keys in place. The current name
  * always wins, so a record carrying both spellings keeps the newer value.
- * @param {any} track
+ * @param {Partial<Track>|null|undefined} track
  * @returns {boolean} whether anything changed
  */
 export function migrateLegacyTrackKeys(track) {
@@ -49,7 +55,7 @@ export function migrateLegacyTrackKeys(track) {
 
 /**
  * Rename the legacy spellings of one clip in place (`startBar`, `bars`).
- * @param {any} clip
+ * @param {Partial<SongClip>|null|undefined} clip
  * @returns {boolean} whether anything changed
  */
 export function migrateLegacyClipKeys(clip) {
@@ -60,7 +66,7 @@ export function migrateLegacyClipKeys(clip) {
  * Rename the legacy spellings of one song in place: `loopBars` and the clip
  * keys of every clip. The song's embedded patterns are the caller's job — they
  * travel through migrateLegacyPatternKeys() in core/note_schema.js.
- * @param {any} song
+ * @param {Partial<Song>|null|undefined} song
  * @returns {boolean} whether anything changed
  */
 export function migrateLegacySongKeys(song) {

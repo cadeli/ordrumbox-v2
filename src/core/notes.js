@@ -2,6 +2,10 @@ import { toFiniteNumber } from './numbers.js'
 import { NOTE_POSITION_KEYS } from './note_schema.js'
 
 /**
+ * @typedef {import('../model/track_schema.js').Track} Track
+ * @typedef {import('./note_schema.js').Note} Note
+ */
+/**
  * Absolute step of a note within its track: `beat * stepsPerBeat + beatStep`.
  *
  * A note without `beat`/`beatStep` (a trigger config, say) reads as step 0.
@@ -49,10 +53,10 @@ export function stepToTick(step, stepsPerBeat, tick) {
  * (array or indexed object) — a bare `(track.notes ?? []).filter(...)`
  * breaks on the object form.
  *
- * @param {{notes?: any, stepsPerBeat?: number}} track
+ * @param {Partial<Track>} track
  * @param {number} beat
  * @param {number} beatStep
- * @returns {any[]}
+ * @returns {Note[]}
  */
 export function notesAtStep(track, beat, beatStep) {
     return Object.values(track?.notes ?? {}).filter((n) => n.beat === beat && n.beatStep === beatStep)
@@ -102,7 +106,7 @@ export function normalizeSignatureValue(value) {
  * Map of step → signature of every note on it, signatures joined in sorted
  * order. Used to compare a track's notes against a loop of them.
  *
- * @param {any} notes
+ * @param {Note[]|Record<string, Note>|null|undefined} notes
  * @param {number} stepsPerBeat
  * @param {(step: number) => number} stepMapper - maps a source step to the step it is stored under
  * @returns {Map<number, string>}
@@ -141,7 +145,7 @@ export function semiToneToPitch(semiTone) {
  * UI curve for a knob/slider value: the first octave is linear up to 8, then
  * one step per unit, so low values stay usable.
  *
- * @param {any} value
+ * @param {number} value
  * @returns {number}
  */
 export function getStepSpacing(value) {
