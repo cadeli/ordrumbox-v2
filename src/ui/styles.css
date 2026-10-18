@@ -431,50 +431,9 @@ body {
 #tb .tb-bpm-panel.open {
     display: flex;
 }
+/* BPM panel range overrides width (shared track/thumb styles above). */
 #tb .tb-bpm-panel input[type='range'] {
     width: 100px;
-    cursor: pointer;
-    -webkit-appearance: none;
-    appearance: none;
-    background: none;
-    outline: none;
-    height: 16px;
-}
-#tb .tb-bpm-panel input[type='range']::-webkit-slider-runnable-track {
-    height: 2px;
-    background: var(--line);
-    border-radius: 0;
-}
-#tb .tb-bpm-panel input[type='range']::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 9px;
-    height: 9px;
-    border-radius: 0;
-    margin-top: -3.5px;
-    background: var(--black);
-    border: none;
-    cursor: pointer;
-}
-#tb .tb-bpm-panel input[type='range']::-moz-range-track {
-    height: 2px;
-    background: var(--line);
-    border-radius: 0;
-    border: none;
-}
-#tb .tb-bpm-panel input[type='range']::-moz-range-thumb {
-    width: 9px;
-    height: 9px;
-    border-radius: 0;
-    background: var(--black);
-    border: none;
-    cursor: pointer;
-}
-#tb .tb-bpm-panel input[type='range']:focus::-webkit-slider-thumb {
-    box-shadow: 0 0 0 2px var(--accent);
-}
-#tb .tb-bpm-panel input[type='range']:focus::-moz-range-thumb {
-    box-shadow: 0 0 0 2px var(--accent);
 }
 #tb .tb-bpm-panel .tb-bpm-val {
     color: var(--text);
