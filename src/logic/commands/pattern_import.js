@@ -148,7 +148,7 @@ function copyNoteProps(note, sourceNote, track) {
  * @param {number} [sourcePattern.beatCount]
  * @param {string} [sourcePattern.application]
  * @param {string} [sourcePattern.url]
- * @param {string[]} [sourcePattern.tags]
+ * @param {string[]|Record<string, string>} [sourcePattern.tags]
  * @param {object|object[]} [sourcePattern.tracks]
  * @param {Function} addPattern  - fn(name) => pattern  (creates + registers)
  * @param {Function} addTrack    - fn(pattern, name) => track
@@ -175,7 +175,11 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
 
     if (sourcePattern?.application) importedPattern.application = sourcePattern.application
     if (sourcePattern?.url) importedPattern.url = sourcePattern.url
-    if (sourcePattern?.tags) importedPattern.tags = { ...sourcePattern.tags }
+    // Tags circulate in two shapes: a string[] (pattern schema) and an
+    // object map { style, type } (generators). Preserve the source shape —
+    // `{ ...anArray }` would turn [] into {} and a list into { 0: 'a', 1: 'b' }.
+    if (sourcePattern?.tags)
+        importedPattern.tags = Array.isArray(sourcePattern.tags) ? [...sourcePattern.tags] : { ...sourcePattern.tags }
 
     if (!('description' in sourcePattern)) {
         delete importedPattern.description
