@@ -225,6 +225,7 @@ export default class PatternPanel extends BasePanel {
         this.#syncRafId = null
         this.#syncPending = false
         this.#drag.cancel()
+        this.#gauge?.hide()
         this.#menuSection?.destroy()
     }
 
