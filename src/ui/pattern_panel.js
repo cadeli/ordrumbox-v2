@@ -7,8 +7,6 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents, emitStructureChanged } from '../state/event_bus.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { soundRegistry } from '../state/sound_registry.js'
-import { maxPageFor, pageBeatWindow } from './page_nav.js'
 
 import { getTracksArray } from '../core/tracks.js'
 import BasePanel from './base_panel.js'
@@ -23,10 +21,9 @@ import PointerSection from './pattern_panel/pointer_section.js'
 import PatternGridDrag from './pattern_panel/pattern_grid_drag.js'
 import NoteGauge from './components/note_gauge.js'
 
-const TRIGGER_FLASH_MS = 120
 import GridSection from './pattern_panel/grid_section.js'
 import PlaybackOverlaySection from './pattern_panel/playback_overlay_section.js'
-import { EVENTS } from '../core/events.js'
+import SyncSection from './pattern_panel/sync_section.js'
 
 export default class PatternPanel extends BasePanel {
     #appState
@@ -34,27 +31,16 @@ export default class PatternPanel extends BasePanel {
     #playbackEvents
     #selectedNote
     #gridTrackIdx
-    #syncRafId
-    #syncPending
-    #beatRectsCache
     #focusRowIdx
     #cursorBeat
     #cursorBeatStep
-    #cellMap
-    #trackDataDirty
-    #trackDataCache
-    #cachedPage
-    #cachedVersion
     #header
     #grid
     #overlay
-    #headerDirty
-    #forceFullRender
-    #structureSig
+    #sync
     #headerEl
     #tracksEl
     #resizeObserver
-    #layoutCache
     #clipboardSection
     #selection
     #keyboard
@@ -81,23 +67,16 @@ export default class PatternPanel extends BasePanel {
 
         this.#selectedNote = null
         this.#gridTrackIdx = -1
-        this.#syncRafId = null
-        this.#syncPending = false
-        this.#beatRectsCache = []
         this.#focusRowIdx = -1
         this.#cursorBeat = 0
         this.#cursorBeatStep = 0
-        this.#cellMap = new Map()
-        this.#trackDataDirty = true
-        this.#trackDataCache = new Map()
-        this.#cachedPage = -1
-        this.#cachedVersion = -1
         this.#clipboardSection = new ClipboardSection(this)
         this.#rangeAnchor = null
 
         this.#header = new HeaderSection(this)
         this.#grid = new GridSection(this)
         this.#overlay = new PlaybackOverlaySection(this)
+        this.#sync = new SyncSection(this)
         this.#selection = new SelectionSection(this)
         this.#keyboard = new KeyboardSection(this)
         this.#menuSection = new ContextMenuSection(this)
@@ -111,9 +90,6 @@ export default class PatternPanel extends BasePanel {
             resolveAnchor: (note) => this.#resolveCellEl(note),
         })
         this.#selectedByPointer = false
-        this.#headerDirty = true
-        this.#forceFullRender = false
-        this.#structureSig = ''
     }
 
     createDOM() {
@@ -142,145 +118,32 @@ export default class PatternPanel extends BasePanel {
         this.listen(this.container, 'contextmenu', (e) => this.#menuSection.onContextMenu(/** @type {MouseEvent} */ (e)))
         this.listen(this.container, 'mouseover', (e) => this.#pointer.onMouseOver(/** @type {MouseEvent} */ (e)))
         this.listen(this.container, 'mouseout', (e) => this.#pointer.onMouseOut(/** @type {MouseEvent} */ (e)))
-        this.#resizeObserver = new ResizeObserver(() => this.#updateBeatRectsCache())
+        this.#resizeObserver = new ResizeObserver(() => this.#sync.updateBeatRectsCache())
         this.#resizeObserver.observe(this.container)
     }
 
     subscribe() {
-        const onNoteChange = () => {
-            this.#overlay.resetPrevLoopTick()
-            this.#trackDataDirty = true
-            this.requestSync()
-        }
-        const onStructureChange = () => {
-            this.#overlay.resetPrevLoopTick()
-            this.#trackDataDirty = true
-            this.#headerDirty = true
-            this.#forceFullRender = true
-            this.requestSync()
-        }
-        this.sub(this.#playbackEvents, EVENTS.NOTE_CHANGE, onNoteChange)
-        this.sub(this.#playbackEvents, EVENTS.TRACK_PARAM_CHANGE, onNoteChange)
-        this.sub(this.#playbackEvents, EVENTS.PATTERN_STRUCTURE_CHANGE, onStructureChange)
-        this.sub(this.#playbackEvents, EVENTS.PATTERN_META_CHANGE, onStructureChange)
-        this.sub(this.#playbackEvents, EVENTS.DRUMKIT_CHANGE, onStructureChange)
-        this.sub(this.#playbackEvents, EVENTS.LOOP_POINT_CHANGE, (data) => {
-            if (data && typeof data.trackIdx === 'number' && typeof data.loopAtStep === 'number') {
-                this.refreshLoopRow(data.trackIdx)
-            }
-        })
-        this.sub(this.#playbackEvents, EVENTS.SELECTED_PATTERN_CHANGE, () => {
-            this.#rangeAnchor = null
-            const pattern = this.#appState.selectedPattern
-            const maxPage = maxPageFor(pattern)
-            if (this.#appState.currentPage > maxPage) {
-                this.#serviceRegistry.cmd.resetPage()
-            }
-            this.#forceFullRender = true
-            this.#headerDirty = true
-            this.#trackDataDirty = true
-            this.requestSync()
-        })
-        this.sub(this.#playbackEvents, EVENTS.PLAYBACK_STOP, () => {
-            this.#overlay.resetPrevLoopTick()
-            this.#overlay.stopRafLoop()
-            this.#overlay.hidePlayhead()
-            this.#overlay.resetVuAndWaveform()
-        })
-        this.sub(this.#playbackEvents, EVENTS.PLAYBACK_START, () => {
-            this.#updateBeatRectsCache()
-            this.#overlay.startRafLoop()
-        })
-        this.sub(this.#playbackEvents, EVENTS.NOTE_TRIGGER, (data) => {
-            if (!this.container || !data) return
-            const cell = this.#cellMap.get(`${data.trackIdx}:${data.beat}:${data.beatStep}`)
-            if (!cell) return
-            cell.classList.add('pp-triggered')
-            clearTimeout(cell._triggerTimer)
-            cell._triggerTimer = setTimeout(() => cell.classList.remove('pp-triggered'), TRIGGER_FLASH_MS)
-        })
-        this.sub(this.#playbackEvents, EVENTS.TRACK_PARAM_CHANGE, () => {
-            this.#overlay.syncVusVisibility()
-            this.#updateBeatRectsCache()
-        })
-        this.sub(this.#playbackEvents, EVENTS.TRACK_SELECT, (data) => {
-            if (data) {
-                if (this.#gridTrackIdx !== data.trackIdx) {
-                    this.#selectedNote = null
-                    this.#selectedByPointer = false
-                }
-                this.#gridTrackIdx = data.trackIdx
-            } else {
-                this.#gridTrackIdx = -1
-                this.#selectedNote = null
-                this.#selectedByPointer = false
-            }
-            this.applySelection()
-        })
+        this.#sync.subscribe()
     }
 
     onDestroy() {
         this.#resizeObserver?.disconnect()
-        if (this.#syncRafId) cancelAnimationFrame(this.#syncRafId)
-        this.#syncRafId = null
-        this.#syncPending = false
+        this.#sync.cancel()
         this.#drag.cancel()
         this.#gauge?.hide()
-        for (const cell of this.#cellMap.values()) {
-            if (cell._triggerTimer) { clearTimeout(cell._triggerTimer); cell._triggerTimer = null }
-        }
         this.#menuSection?.destroy()
     }
 
-    #updateBeatRectsCache() {
-        if (!this.container) return
-        this.#beatRectsCache = []
-        const tracksEl = this.container.querySelector('.pp-tracks')
-        if (!tracksEl) return
-
-        const containerRect = this.container.getBoundingClientRect()
-        const tracksRect = tracksEl.getBoundingClientRect()
-        this.#layoutCache = {
-            containerLeft: containerRect.left,
-            containerRight: containerRect.right,
-            tracksLeft: tracksRect.left,
-            tracksHeight: tracksEl.clientHeight,
-            tracksOffset: tracksRect.left - containerRect.left,
-        }
-
-        const beatEls = this.container.querySelectorAll('.pp-beat')
-        beatEls.forEach((el) => {
-            const r = el.getBoundingClientRect()
-            this.#beatRectsCache[parseInt(/** @type {HTMLElement} */ (el).dataset.beat)] = {
-                left: r.left - this.#layoutCache.tracksLeft,
-                absLeft: r.left,
-                absRight: r.right,
-                width: r.width,
-            }
-        })
+    sync() {
+        this.#sync.sync()
     }
 
     requestSync() {
-        if (this.#syncPending) return
-        this.#syncPending = true
-        this.#scheduleSync()
+        this.#sync.requestSync()
     }
 
     forceSync() {
-        this.#forceFullRender = true
-        if (this.#syncRafId) cancelAnimationFrame(this.#syncRafId)
-        this.#syncPending = false
-        this.#scheduleSync()
-    }
-
-    /** Shared requestAnimationFrame callback for sync + beat-rects cache update. */
-    #scheduleSync() {
-        this.#syncRafId = requestAnimationFrame(() => {
-            this.sync()
-            this.#syncPending = false
-            this.#syncRafId = null
-            requestAnimationFrame(() => this.#updateBeatRectsCache())
-        })
+        this.#sync.forceSync()
     }
 
     /** @param {number} idx */
@@ -304,194 +167,7 @@ export default class PatternPanel extends BasePanel {
 
     /** @param {number} trackIdx @param {import('../model/track_schema.js').Track} track @param {Partial<import('../model/pattern_schema.js').Pattern>} pattern */
     updateTrackCellsInPlace(trackIdx, track, pattern) {
-        if (!this.container || !track || this.#cellMap.size === 0) {
-            this.sync()
-            return
-        }
-        const { startBeat, endBeatPage } = pageBeatWindow(this.#appState.currentPage)
-
-        this.#grid.updateTrackCells(
-            trackIdx,
-            track,
-            pattern,
-            startBeat,
-            endBeatPage,
-            this.#trackDataCache,
-            this.#cellMap,
-        )
-    }
-
-    /** @param {Partial<import('../model/pattern_schema.js').Pattern>} pattern @param {import('../model/track_schema.js').Track[]} tracks */
-    #syncCellsInPlace(pattern, tracks) {
-        const { startBeat, endBeatPage } = pageBeatWindow(this.#appState.currentPage)
-
-        tracks.forEach((track, trackIdx) => {
-            if (!track) return
-            this.#grid.updateTrackCells(
-                trackIdx,
-                track,
-                pattern,
-                startBeat,
-                endBeatPage,
-                this.#trackDataCache,
-                this.#cellMap,
-            )
-
-            // Update track-level row classes and properties
-            const trackEl = this.#tracksEl?.querySelectorAll('.pp-track:not(.pp-master-track)')?.[trackIdx]
-            if (trackEl) {
-                const isMuted = track.mute === true
-                const isSolo = track.solo === true
-                trackEl.classList.toggle('pp-muted', isMuted)
-
-                const divider = trackEl.querySelector('.pp-divider')
-                divider?.classList.toggle('muted', isMuted)
-
-                const solo = trackEl.querySelector('.pp-solo')
-                solo?.classList.toggle('active', isSolo)
-
-                const volInput = trackEl.querySelector('.pp-volume')
-                if (volInput && document.activeElement !== volInput) {
-                    volInput.value = track.velocity ?? 1
-                }
-
-                const nameEl = trackEl.querySelector('.pp-track-name')
-                if (nameEl && track.name && nameEl.textContent !== track.name) {
-                    nameEl.textContent = track.name
-                }
-
-                const urlEl = trackEl.querySelector('.pp-track-url')
-                if (urlEl) {
-                    const newLabel =
-                        track.useSoftSynth && track.synthSoundKey
-                            ? `SYNTH: ${track.synthSoundKey}`
-                            : track.sampleId && track.sampleId !== 'NOT_DEFINED'
-                              ? (soundRegistry.sounds[track.sampleId]?.url ?? track.sampleId)
-                              : ''
-                    if (urlEl.textContent !== newLabel) {
-                        urlEl.textContent = newLabel
-                    }
-                }
-            }
-        })
-
-        this.applySelection()
-    }
-
-    sync() {
-        if (!this.container) return
-
-        const pattern = this.#appState.selectedPattern
-        if (!pattern) {
-            this.#headerEl.innerHTML = '<div class="pp-header pp-waiting">Waiting for patterns...</div>'
-            this.#tracksEl.innerHTML = ''
-            this.#cellMap.clear()
-            return
-        }
-
-        const tracks = getTracksArray(pattern)
-
-        const { startBeat, endBeatPage } = pageBeatWindow(this.#appState.currentPage)
-
-        if (tracks.length === 0) {
-            const prevHeight = this.container.offsetHeight
-            this.#headerEl.innerHTML = this.#header.render(pattern, this.#appState.currentPage)
-            this.#tracksEl.innerHTML = `<div class="pp-toolbar-row">
-                    <div class="pp-master-track" id="pp-master-btn">
-                        <span class="pp-track-name">Master</span>
-                        <input type="range" class="pp-master-volume" min="0" max="2" step="0.01" value="1" title="Master Gain">
-                    </div>
-                    <div class="pp-toolbar-actions">
-                        <div class="pp-add-track" id="pp-add-track">+ new track</div>
-                    </div>
-                </div>`
-            this.#cellMap.clear()
-            this.#headerDirty = false
-            if (prevHeight > 0) {
-                this.container.style.minHeight = prevHeight + 'px'
-                requestAnimationFrame(() => {
-                    this.container.style.minHeight = ''
-                })
-            }
-            return
-        }
-
-        // Structure (stepsPerBeat/beatCount) can change via TRACK_PARAM_CHANGE or
-        // undo without PATTERN_META_CHANGE — detect it and force a full rebuild
-        // so the DOM cell count per beat matches the track.
-        const structureSig = `${pattern.beatCount ?? 4}|${tracks
-            .map((t) => `${t?.stepsPerBeat ?? 4}:${t?.beatCount ?? 4}`)
-            .join(',')}`
-        if (structureSig !== this.#structureSig) {
-            this.#structureSig = structureSig
-            this.#forceFullRender = true
-            this.#headerDirty = true
-        }
-
-        const existingTrackEls = this.#tracksEl?.querySelectorAll('.pp-track:not(.pp-master-track)')
-        const canUpdateInPlace =
-            !this.#forceFullRender &&
-            existingTrackEls &&
-            existingTrackEls.length === tracks.length &&
-            this.#cachedPage === startBeat &&
-            this.#cellMap.size > 0
-
-        if (canUpdateInPlace) {
-            if (this.#headerDirty) {
-                this.#headerEl.innerHTML = this.#header.render(pattern, this.#appState.currentPage)
-                this.#headerDirty = false
-            }
-            this.#syncCellsInPlace(pattern, tracks)
-            return
-        }
-
-        this.#forceFullRender = false
-        this.#cellMap.clear()
-
-        const patternVersion = pattern._revision ?? 0
-        this.#trackDataCache.clear()
-        this.#cachedVersion = patternVersion
-        this.#cachedPage = startBeat
-        this.#trackDataDirty = false
-
-        if (this.#headerDirty) {
-            this.#headerEl.innerHTML = this.#header.render(pattern, this.#appState.currentPage)
-            this.#headerDirty = false
-        }
-
-        const tracksHtml = this.#grid.render(tracks, pattern, {
-            startBeat,
-            endBeatPage,
-            effectiveTrackIdx: this.effectiveTrackIdx,
-            cachedPage: this.#cachedPage,
-            cachedVersion: this.#cachedVersion,
-            trackDataDirty: this.#trackDataDirty,
-            trackDataCache: this.#trackDataCache,
-        })
-
-        const tmp = document.createElement('div')
-        tmp.innerHTML = tracksHtml
-        const newTracksInner = tmp.querySelector('.pp-tracks')?.innerHTML
-
-        if (newTracksInner != null) {
-            const prevHeight = this.container.offsetHeight
-            this.#tracksEl.innerHTML = newTracksInner
-            if (prevHeight > 0) {
-                this.container.style.minHeight = prevHeight + 'px'
-                requestAnimationFrame(() => {
-                    this.container.style.minHeight = ''
-                })
-            }
-        }
-
-        this.#grid.applyScrollConstraints(this.#tracksEl, tracks)
-
-        this.#overlay.ensurePlayhead()
-        this.#cellMap = this.#grid.buildCellMap(this.container)
-        this.applySelection()
-
-        this.#overlay.clearCaches()
-        this.#overlay.syncVusVisibility()
+        this.#sync.updateTrackCellsInPlace(trackIdx, track, pattern)
     }
 
     /**
@@ -500,20 +176,23 @@ export default class PatternPanel extends BasePanel {
      * @param {number} trackIdx
      */
     refreshLoopRow(trackIdx) {
-        const pattern = this.#appState.selectedPattern
-        const tracks = getTracksArray(pattern)
-        const track = tracks[trackIdx]
-        if (track && this.#cellMap.size > 0) {
-            this.updateTrackCellsInPlace(trackIdx, track, pattern)
-        } else {
-            this.forceSync()
-        }
+        this.#sync.refreshLoopRow(trackIdx)
+    }
+
+    /** Invalidate the per-track render cache (call after bulk note changes). */
+    markTrackDataDirty() {
+        this.#sync.markTrackDataDirty()
     }
 
     // ─── Public API ───────────────────────────────────────────────────────
     /** @returns {HTMLElement} tracks container element */
     get tracksEl() {
         return this.#tracksEl
+    }
+
+    /** @returns {HTMLElement} header container element */
+    get headerEl() {
+        return this.#headerEl
     }
 
     /**
@@ -582,7 +261,47 @@ export default class PatternPanel extends BasePanel {
     }
     /** @returns {Map<string, HTMLElement>} cell lookup keyed by "trackIdx:beat:beatStep" */
     get cellMap() {
-        return this.#cellMap
+        return this.#sync.cellMap
+    }
+
+    get layoutCache() {
+        return this.#sync.layoutCache
+    }
+
+    get beatRectsCache() {
+        return this.#sync.beatRectsCache
+    }
+
+    /**
+     * True when the selected note was picked with the pointer (click or drag),
+     * not by walking the cursor with the arrows.
+     *
+     * This is what tells Shift+Arrow the two apart: it edits a note the mouse
+     * picked, and keeps extending the range selection when the cursor merely
+     * moved over a filled cell (the cursor sync selects that note too).
+     * @returns {boolean}
+     */
+    get selectedByPointer() {
+        return this.#selectedByPointer
+    }
+    /** @param {boolean} v */
+    set selectedByPointer(v) {
+        this.#selectedByPointer = v
+    }
+
+    /** @returns {import('./pattern_panel/header_section.js').default} */
+    get header() {
+        return this.#header
+    }
+
+    /** @returns {import('./pattern_panel/grid_section.js').default} */
+    get grid() {
+        return this.#grid
+    }
+
+    /** @returns {import('./pattern_panel/playback_overlay_section.js').default} */
+    get overlay() {
+        return this.#overlay
     }
 
     /** @returns {import('./pattern_panel/selection_section.js').default} */
@@ -625,6 +344,16 @@ export default class PatternPanel extends BasePanel {
         return this.#gauge
     }
 
+    get appState() {
+        return this.#appState
+    }
+    get serviceRegistry() {
+        return this.#serviceRegistry
+    }
+    get playbackEvents() {
+        return this.#playbackEvents
+    }
+
     /**
      * Cell element holding a note, for the editing gauge anchor.
      * @param {Object} note
@@ -636,49 +365,12 @@ export default class PatternPanel extends BasePanel {
         const beat = note.beat ?? 0
         const beatStep = note.beatStep ?? 0
         return (
-            this.#cellMap.get(`${trackIdx}:${beat}:${beatStep}`) ??
+            this.#sync.cellMap.get(`${trackIdx}:${beat}:${beatStep}`) ??
             this.container?.querySelector(
                 `.pp-cell[data-track="${trackIdx}"][data-beat="${beat}"][data-step="${beatStep}"]`,
             ) ??
             null
         )
-    }
-
-    /**
-     * True when the selected note was picked with the pointer (click or drag),
-     * not by walking the cursor with the arrows.
-     *
-     * This is what tells Shift+Arrow the two apart: it edits a note the mouse
-     * picked, and keeps extending the range selection when the cursor merely
-     * moved over a filled cell (the cursor sync selects that note too).
-     * @returns {boolean}
-     */
-    get selectedByPointer() {
-        return this.#selectedByPointer
-    }
-    /** @param {boolean} v */
-    set selectedByPointer(v) {
-        this.#selectedByPointer = v
-    }
-
-    /** Invalidate the per-track render cache (call after bulk note changes). */
-    markTrackDataDirty() {
-        this.#trackDataDirty = true
-    }
-    get appState() {
-        return this.#appState
-    }
-    get serviceRegistry() {
-        return this.#serviceRegistry
-    }
-    get playbackEvents() {
-        return this.#playbackEvents
-    }
-    get layoutCache() {
-        return this.#layoutCache
-    }
-    get beatRectsCache() {
-        return this.#beatRectsCache
     }
 
     /** Execute a panel action (new, delete, duplicate, etc.) */
