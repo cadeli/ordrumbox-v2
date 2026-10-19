@@ -1,5 +1,4 @@
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { TICK, MIDI_MAX_BEATS, MIDI_MAX_PATTERNS, NOT_FOUND } from '../../core/constants.js'
 import { parseMidi, findAllNotes, extractProgramChanges, midiVelocityToNormalized } from '../midi/midi_parser.js'
@@ -11,11 +10,11 @@ export default class MidiImportService {
     #registry
 
     /**
-     * @param {object} [deps]
-     * @param {typeof import('../../state/service_registry.js').serviceRegistry} [deps.registry]
+     * @param {object} deps
+     * @param {typeof import('../../state/service_registry.js').serviceRegistry} deps.registry
      */
-    constructor(deps = {}) {
-        this.#registry = deps.registry ?? serviceRegistry
+    constructor({ registry }) {
+        this.#registry = registry
     }
     /**
      * Import a MIDI file and create patterns from it.

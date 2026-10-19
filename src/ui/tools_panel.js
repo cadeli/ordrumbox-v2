@@ -16,6 +16,25 @@ export default class ToolsPanel extends BasePanel {
     #import
     #midi
     #cache
+    #serviceRegistry
+
+    /**
+     * @param {object} [deps]
+     * @param {typeof import('../state/service_registry.js').serviceRegistry} [deps.serviceRegistry]
+     */
+    constructor({ serviceRegistry: sr = null } = {}) {
+        super('tools-panel')
+        this.#serviceRegistry = sr
+        this.#pattern = new PatternSection(this)
+        this.#export = new ExportSection(this)
+        this.#import = new ImportSection(this)
+        this.#midi = new MidiSection(this)
+        this.#cache = new CacheSection(this)
+    }
+
+    get serviceRegistry() {
+        return this.#serviceRegistry
+    }
 
     /** The delay/repeat slider widget of the export section (not a count).
      *  @returns {import('./components/or_slider.js').OrSlider|null} */
@@ -26,15 +45,6 @@ export default class ToolsPanel extends BasePanel {
     /** @returns {HTMLButtonElement|null} */
     get exportWavBtn() {
         return this.#export.wavBtn
-    }
-
-        constructor() {
-        super('tools-panel')
-        this.#pattern = new PatternSection(this)
-        this.#export = new ExportSection(this)
-        this.#import = new ImportSection(this)
-        this.#midi = new MidiSection(this)
-        this.#cache = new CacheSection(this)
     }
 
     createDOM() {

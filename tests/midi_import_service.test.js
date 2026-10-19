@@ -1,4 +1,5 @@
 import { makeAppStateMock } from './helpers/app_state_mock.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { buildMidi, buildDrumMidi, buildEmptyMidi } from './helpers/midi_builder.js'
 
@@ -88,7 +89,7 @@ describe('MidiImportService', () => {
             ],
         })
         const file = makeFile('test_drums.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         const result = await service.importFile(file)
 
         expect(result.trackCount).toBeGreaterThanOrEqual(1)
@@ -102,7 +103,7 @@ describe('MidiImportService', () => {
     it('returns 0 tracks for empty MIDI file', async () => {
         const midiBytes = buildEmptyMidi({ division: 96, tempo: 120 })
         const file = makeFile('empty.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         const result = await service.importFile(file)
 
         expect(result.trackCount).toBe(0)
@@ -118,7 +119,7 @@ describe('MidiImportService', () => {
             tracks: [{ name: 'Empty Track', channel: 0, program: 0, notes: [] }],
         })
         const file = makeFile('no_notes.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         const result = await service.importFile(file)
 
         expect(result.trackCount).toBe(0)
@@ -152,7 +153,7 @@ describe('MidiImportService', () => {
             ],
         })
         const file = makeFile('multi_track.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         const result = await service.importFile(file)
 
         expect(result.trackCount).toBeGreaterThanOrEqual(1)
@@ -165,7 +166,7 @@ describe('MidiImportService', () => {
             notes: [{ tick: 0, note: 36, velocity: 100 }],
         })
         const file = makeFile('sel_pat.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         await service.importFile(file)
 
         expect(mockSetSelectedPatternIdx).toHaveBeenCalled()
@@ -179,7 +180,7 @@ describe('MidiImportService', () => {
             notes: [{ tick: 0, note: 36, velocity: 100 }],
         })
         const file = makeFile('cache_inval.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         await service.importFile(file)
 
         expect(serviceRegistry.audioEngine.invalidateCache).toHaveBeenCalled()
@@ -199,7 +200,7 @@ describe('MidiImportService', () => {
             ],
         })
         const file = makeFile('tempo_test.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         await service.importFile(file)
 
         const pattern = mockAddPattern.mock.results[0]?.value
@@ -225,7 +226,7 @@ describe('MidiImportService', () => {
             ],
         })
         const file = makeFile('beats_test.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         await service.importFile(file)
 
         const pattern = mockAddPattern.mock.results[0]?.value
@@ -248,7 +249,7 @@ describe('MidiImportService', () => {
             ],
         })
         const file = makeFile('note_place.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         await service.importFile(file)
 
         expect(mockAddNote).toHaveBeenCalled()
@@ -274,7 +275,7 @@ describe('MidiImportService', () => {
             ],
         })
         const file = makeFile('prog_change.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         const result = await service.importFile(file)
 
         expect(result.trackCount).toBeGreaterThanOrEqual(1)
@@ -298,7 +299,7 @@ describe('MidiImportService', () => {
             ],
         })
         const file = makeFile('long_file.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         const result = await service.importFile(file)
 
         expect(result.patternCount).toBeGreaterThanOrEqual(2)
@@ -311,7 +312,7 @@ describe('MidiImportService', () => {
             notes: [{ tick: 0, note: 36, velocity: 100 }],
         })
         const file = makeFile('state_test.mid', midiBytes)
-        const service = new MidiImportService()
+        const service = new MidiImportService({ registry: serviceRegistry })
         await service.importFile(file)
 
         expect(appState.patterns.length).toBeGreaterThanOrEqual(1)

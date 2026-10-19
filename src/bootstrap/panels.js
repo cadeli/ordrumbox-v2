@@ -41,7 +41,7 @@ export function createAndInitPanels() {
     const pianoRollPanel = new PianoRollPanel({ serviceRegistry })
     const noteEditor = new NoteEditor()
     const trackEditor = new TrackEditor()
-    const toolsPanel = new ToolsPanel()
+    const toolsPanel = new ToolsPanel({ serviceRegistry })
     const outputPanel = new OutputPanel({
         resourcesLoader: serviceRegistry.resourcesLoader,
         getAudioEngine: () => serviceRegistry.audioEngine,
