@@ -344,44 +344,4 @@ describe('fixPattern assigns stable ids', () => {
 
 // Files written before a note-key rename (retriggerNum → retriggerCount) keep
 // loading: the key is mapped on read, in both note shapes.
-describe('patternFixer - legacy note keys', () => {
-    const makeTrack = (extra) => ({ name: 'KICK', stepsPerBeat: 4, notes: [{ beat: 0, beatStep: 0, ...extra }] })
 
-    it('renames a legacy key on an object note', () => {
-        const [track] = fixPattern({ name: 'P', tracks: [makeTrack({ retriggerNum: 3 })] }).tracks
-        expect(track.notes[0].retriggerCount).toBe(3)
-        expect(track.notes[0]).not.toHaveProperty('retriggerNum')
-    })
-
-    it('decodes a compact track whose noteKeys header is legacy', () => {
-        const track = fixTrackDefaults({
-            name: 'KICK',
-            stepsPerBeat: 4,
-            noteKeys: ['velocity', 'beat', 'retriggerNum'],
-            notes: [[0.9, 1, 4]],
-        })
-        expect(track.notes).toHaveLength(1)
-        expect(track.notes[0].retriggerCount).toBe(4)
-        expect(track.notes[0].velocity).toBe(0.9)
-        expect(track).not.toHaveProperty('noteKeys')
-    })
-
-    it('keeps the current key when a note carries both spellings', () => {
-        const [track] = fixPattern({ name: 'P', tracks: [makeTrack({ retriggerCount: 7, retriggerNum: 3 })] }).tracks
-        expect(track.notes[0].retriggerCount).toBe(7)
-        expect(track.notes[0]).not.toHaveProperty('retriggerNum')
-    })
-
-    it('does not re-export the legacy key', () => {
-        const [track] = fixPattern({ name: 'P', tracks: [makeTrack({ retriggerNum: 3 })] }).tracks
-        expect(Object.keys(track.notes[0])).not.toContain('retriggerNum')
-    })
-
-    it('renames a legacy steppc to stepPercent', () => {
-        const [track] = fixPattern({ name: 'P', tracks: [makeTrack({ steppc: 50 })] }).tracks
-        expect(track.notes[0]).not.toHaveProperty('steppc')
-        // the value is recalculated from the grid right after the rename, so only
-        // the spelling has to survive — never the stored number
-        expect(track.notes[0].stepPercent).toBe(0)
-    })
-})

@@ -4,7 +4,6 @@ import {
     areValidNoteKeys,
     compactArrayToNote,
     isCompactFormat,
-    migrateLegacyPatternKeys,
 } from '../../core/note_schema.js'
 import { reportUserError } from '../../core/notify.js'
 import { toFiniteNumber } from '../../core/numbers.js'
@@ -156,11 +155,6 @@ function copyNoteProps(note, sourceNote, track) {
  * @returns {import('../../model/pattern_schema.js').Pattern} the imported pattern
  */
 export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNote) {
-    // Files written before a note-key rename still carry the old spelling, in
-    // object notes and in the compact noteKeys header. Map it first: the header
-    // is validated (areValidNoteKeys) and decoded below, the object notes are
-    // copied property by property.
-    migrateLegacyPatternKeys(sourcePattern)
     const patternName = sourcePattern?.name ?? undefined
     const importedPattern = addPattern(patternName)
 

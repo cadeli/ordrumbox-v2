@@ -100,38 +100,4 @@ describe('MCP server stays aligned with the app model', () => {
         expect(JSON.parse(instruments.content[0].text).count).toBeGreaterThan(0)
     })
 
-    // A file written before the retriggerNum → retriggerCount rename must read
-    // back with the current spelling, through both note shapes — exactly what
-    // the app does, or MCP clients and the UI would disagree on the value.
-    it('reads legacy note keys like the app', () => {
-        const compact = normalizePattern({
-            name: 'Legacy',
-            tracks: [
-                { name: 'KICK', stepsPerBeat: 4, noteKeys: ['velocity', 'beat', 'retriggerNum'], notes: [[0.9, 1, 4]] },
-            ],
-        })
-        const fromCompact = compact.tracks[0].notes[0]
-        expect(fromCompact.retriggerCount).toBe(4)
-        expect(fromCompact).not.toHaveProperty('retriggerNum')
-
-        const objectNotes = normalizePattern({
-            name: 'Legacy',
-            tracks: [{ name: 'KICK', notes: [{ beat: 0, retriggerNum: 3 }] }],
-        })
-        const fromObject = objectNotes.tracks[0].notes[0]
-        expect(fromObject.retriggerCount).toBe(3)
-        expect(fromObject).not.toHaveProperty('retriggerNum')
-    })
-
-    // A file written before the soundId → sampleId rename must read back with
-    // the current spelling too: normalizeTrack() drops unknown keys, so the
-    // mapping has to happen before it, exactly like the app's import path.
-    it('reads legacy track keys like the app', () => {
-        const pattern = normalizePattern({ name: 'Legacy', tracks: [{ name: 'KICK', soundId: 'kick01' }] })
-        expect(pattern.tracks[0].sampleId).toBe('kick01')
-        expect(pattern.tracks[0]).not.toHaveProperty('soundId')
-
-        const both = normalizePattern({ name: 'Both', tracks: [{ name: 'KICK', soundId: 'old', sampleId: 'new' }] })
-        expect(both.tracks[0].sampleId).toBe('new')
-    })
 })

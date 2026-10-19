@@ -146,23 +146,6 @@ describe('SongService', () => {
             expect(appState.currentPage).toBe(0)
         })
 
-        // .odbox files exported before the selectedPatternNum → selectedPatternIdx
-        // rename still have to select their pattern.
-        it('reads the legacy selectedPatternNum of an older file', async () => {
-            const data = { patterns: [{ name: 'A' }, { name: 'B' }], selectedPatternNum: 1 }
-            await songService.applyToAppState(data, 'Legacy')
-            expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(1)
-        })
-
-        it('prefers selectedPatternIdx when a file carries both spellings', async () => {
-            const data = {
-                patterns: [{ name: 'A' }, { name: 'B' }],
-                selectedPatternIdx: 0,
-                selectedPatternNum: 1,
-            }
-            await songService.applyToAppState(data, 'Both')
-            expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(0)
-        })
 
         it('uses fallback name when data.name is null', async () => {
             const data = { patterns: [], selectedPatternIdx: 0 }
@@ -274,28 +257,3 @@ describe('SongService — arrangements', () => {
 
 // .odbox files exported before the retriggerNum → retriggerCount rename still
 // have to keep their retrigger value (no fixPattern runs on this path).
-describe('SongService - legacy note keys', () => {
-    it('maps retriggerNum of an imported file onto retriggerCount', async () => {
-        const data = {
-            name: 'Legacy',
-            patterns: [{ name: 'A', tracks: [{ name: 'KICK', notes: [{ beat: 0, retriggerNum: 4 }] }] }],
-        }
-        await songService.applyToAppState(data, 'Legacy')
-        expect(appState.patterns[0].tracks[0].notes[0].retriggerCount).toBe(4)
-        expect(appState.patterns[0].tracks[0].notes[0]).not.toHaveProperty('retriggerNum')
-    })
-
-    it('maps a legacy compact noteKeys header', async () => {
-        const data = {
-            name: 'Legacy',
-            patterns: [
-                {
-                    name: 'A',
-                    tracks: [{ name: 'KICK', noteKeys: ['beat', 'retriggerNum'], notes: [[0, 5]] }],
-                },
-            ],
-        }
-        await songService.applyToAppState(data, 'Legacy')
-        expect(appState.patterns[0].tracks[0].noteKeys).toEqual(['beat', 'retriggerCount'])
-    })
-})

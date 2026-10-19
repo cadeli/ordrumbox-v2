@@ -363,14 +363,14 @@ Applied by `updateTrack()` and MCP tools. Out-of-range values are clamped:
 
 1. `JSON.parse(text)` — the raw string is parsed (caller's responsibility; must be wrapped in try/catch).
 2. `validatePatternJson(data)` (`src/logic/commands/pattern_import.js`) — structural validation: non-null object, `tracks` shape, ≤ 64 tracks, ≤ 10,000 notes in total.
-3. `importPatternFromJson(data, addPattern, addTrack, addNote)` — maps legacy keys (`migrateLegacyPatternKeys`), copies the pattern/tracks/notes into a fresh pattern — a track whose compact notes carry an unreadable `noteKeys` header is reported and skipped — then calls `fixPattern()` on the result.
+3. `importPatternFromJson(data, addPattern, addTrack, addNote)` — copies the pattern/tracks/notes into a fresh pattern — a track whose compact notes carry an unreadable `noteKeys` header is reported and skipped — then calls `fixPattern()` on the result.
 4. `fixPattern()` (`src/patterns/fixer.js`) — stamps `application`/`url` if missing, ensures a stable pattern `id`, then calls `fixTrackDefaults()` on every track.
 5. `fixTrackDefaults()`:
     - Expands compact note arrays to objects.
     - Fills a **missing** `pan` from the track's drum type (a `pan` the file carries is kept).
     - Applies `TRACK_DEFAULTS` for missing properties.
     - Forces `useAutoAssignSound = false` if `useSoftSynth` is `true`.
-    - Normalizes every note: legacy key rename, `normalizeNoteGridPosition()` (wraps `beatStep` overflow into the next beat, recomputes `stepPercent`), then `normalizeNote()`.
+    - Normalizes every note: `normalizeNoteGridPosition()` (wraps `beatStep` overflow into the next beat, recomputes `stepPercent`), then `normalizeNote()`.
 
 ## Export flow
 

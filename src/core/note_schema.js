@@ -25,8 +25,6 @@
  * Detection: if `noteKeys` is present on the track → compact format.
  */
 
-import { migrateLegacyTrackKeys } from './legacy_keys.js'
-
 /**
  * Ordered list of note properties for the compact array format.
  * Order matters: index in this array = index in the note array.
@@ -200,103 +198,32 @@ export function detectUsedKeys(notes) {
 }
 
 /**
- * Note keys renamed by past versions, keyed by their CURRENT name.
- *
- * Files written before a rename still carry the old spelling, in object notes
- * and in the compact `noteKeys` header, so every read path maps it back:
- * `fixPattern` (library load + .odbox via song_service), `importPatternFromJson`
- * and the IndexedDB migration walks (MIGRATIONS[7], MIGRATIONS[8]).
- *
- * `steppc` → `stepPercent` is included although the key is recalculated on
- * import (never serialized): app-state notes carry it, so IndexedDB records do.
- * @type {Readonly<Record<string, string>>}
- */
-const LEGACY_NOTE_KEY_ALIASES = Object.freeze({ retriggerNum: 'retriggerCount', steppc: 'stepPercent' })
-
-
-/**
- * Rename legacy note keys in place.
- * @param {object|null|undefined} note
- * @param {Readonly<Record<string,string>>} aliases
- * @returns {boolean}
- */
-function renameLegacyKeys(note, aliases) {
-    if (!note || typeof note !== 'object' || Array.isArray(note)) return false
-    let changed = false
-    for (const [legacy, current] of Object.entries(aliases)) {
-        if (!Object.prototype.hasOwnProperty.call(note, legacy)) continue
-        const n = /** @type {Record<string, unknown>} */ (note)
-        if (n[current] === undefined) n[current] = n[legacy]
-        delete n[legacy]
-        changed = true
-    }
-    return changed
-}
-/**
- * Rewrite a note's legacy keys onto their current names, in place. The current
- * key wins when a note carries both, and the legacy one is dropped so it cannot
- * leak back out through the exporter.
- *
- * @param {object|null|undefined} note an object note — anything else is left alone
- * @returns {boolean} true when a key was rewritten
- */
-export function migrateLegacyNoteKeys(note) {
-    return renameLegacyKeys(note, LEGACY_NOTE_KEY_ALIASES)
-}
-
-/**
- * Map a `noteKeys` header onto current names. Compact notes decode
- * positionally, so renaming the header entry moves no value.
- *
+ * Canonicalize a `noteKeys` header. With legacy compatibility dropped, this is
+ * the identity (kept for callers that still reference it).
  * @param {unknown} keys
- * @returns {string[]} current names (always a fresh array)
+ * @returns {string[]}
  */
 export function canonicalNoteKeys(keys) {
     if (!Array.isArray(keys)) return []
-    return keys.map((key) => (typeof key === 'string' ? (LEGACY_NOTE_KEY_ALIASES[key] ?? key) : key))
+    return [...keys]
 }
 
 /**
- * Rewrite the legacy keys of every track of a pattern, in place: the note keys
- * (the compact `noteKeys` header and the object notes) and the track keys
- * (LEGACY_TRACK_KEY_ALIASES — `soundId` → `sampleId`). Compact note arrays are
- * left alone — they are positional and follow their header.
- *
- * This is the pattern-level entry point for every read path: the library load,
- * .odbox (song_service), importPatternFromJson() and the IndexedDB walks in
- * core/idb.js.
- *
- * Track walking is inlined rather than borrowed from `./tracks.js`: that
- * module reaches this one through `./notes.js`, so importing it back would
- * close a cycle (tests/module_graph.test.js).
- *
- * @param {{tracks?: object|object[]}|null|undefined} pattern - pre-normalization
- *   shape: `tracks` may still be an indexed object
- * @returns {boolean} true when a key was rewritten
+ * No-op: legacy note/pattern key migration is no longer supported.
+ * @param {any} _note
+ * @returns {boolean}
  */
-export function migrateLegacyPatternKeys(pattern) {
-    const tracks = /** @type {import('../model/track_schema.js').Track[]} */ (
-        !pattern?.tracks
-            ? []
-            : Array.isArray(pattern.tracks)
-              ? pattern.tracks
-              : Object.values(pattern.tracks)
-    )
-    let changed = false
-    for (const track of tracks) {
-        changed = migrateLegacyTrackKeys(track) || changed
-        if (Array.isArray(track?.noteKeys)) {
-            const canonical = canonicalNoteKeys(track.noteKeys)
-            if (canonical.some((key, i) => key !== track.noteKeys[i])) {
-                track.noteKeys = canonical
-                changed = true
-            }
-        }
-        if (Array.isArray(track?.notes)) {
-            for (const note of track.notes) changed = migrateLegacyNoteKeys(note) || changed
-        }
-    }
-    return changed
+export function migrateLegacyNoteKeys(_note) {
+    return false
+}
+
+/**
+ * No-op: legacy pattern key migration is no longer supported.
+ * @param {any} _pattern
+ * @returns {boolean}
+ */
+export function migrateLegacyPatternKeys(_pattern) {
+    return false
 }
 
 /**
@@ -319,17 +246,13 @@ export function isCompactFormat(track) {
  * carrying an unknown key (or reordering the known ones) therefore rewrites
  * note values onto the wrong properties — silently, with no decode error.
  * Only a header made of distinct known keys, in NOTE_KEY_ORDER, is trusted.
- * A legacy spelling (LEGACY_NOTE_KEY_ALIASES) counts as its current name, so a
- * file written before a rename still validates — decode must use
- * canonicalNoteKeys() with the same mapping.
  * @param {unknown} keys
  * @returns {boolean}
  */
 export function areValidNoteKeys(keys) {
     if (!Array.isArray(keys)) return false
-    const mapped = canonicalNoteKeys(keys)
-    if (new Set(mapped).size !== mapped.length) return false
-    const positions = mapped.map((k) => NOTE_KEY_ORDER.indexOf(k))
+    if (new Set(keys).size !== keys.length) return false
+    const positions = keys.map((k) => NOTE_KEY_ORDER.indexOf(k))
     if (positions.some((i) => i < 0)) return false
     return positions.every((pos, i) => i === 0 || pos > positions[i - 1])
 }

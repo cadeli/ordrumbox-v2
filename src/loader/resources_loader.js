@@ -242,12 +242,6 @@ export default class ResourcesLoader {
             const raw = await idbGet('settings', ResourcesLoader.SETTINGS_KEY)
             if (raw) {
                 if (raw.master) raw.master = { ...MASTER_BUS_DEFAULTS, ...raw.master }
-                // NOT merged with SESSION_DEFAULTS: that would write
-                // selectedDrumkitIdx: 0 over a legacy snapshot's
-                // selectedDrumkitNum, and `restoreSession` reads
-                // `idx ?? legacyIdx` — the legacy value could then never win,
-                // i.e. exactly the reset this compat path exists to prevent.
-                // The "nothing stored" case is covered by defaults.session below.
                 if (raw.session) raw.session = { ...raw.session }
                 Object.assign(soundRegistry.settings, defaults, raw)
                 soundRegistry.settings.colorScheme = normalizeColorScheme(soundRegistry.settings.colorScheme)
@@ -331,20 +325,11 @@ export default class ResourcesLoader {
     }
 
     restoreSession = () => {
-        // typed as the snapshot, not as SESSION_DEFAULTS: a stored snapshot may
-        // still carry the legacy `…Num` spellings
         const s = /** @type {SessionSnapshot|undefined} */ (soundRegistry.settings.session)
         if (!s) return
-        // `?? legacy` rather than a migration: the settings store is not
-        // version-gated, and a rename without it would reset the selection of
-        // every existing user to 0. Only reachable because loadSettings() leaves
-        // a stored session unmerged — see the note there.
-        const drumkitIdx = s.selectedDrumkitIdx ?? s.selectedDrumkitNum
-        const patternIdx = s.selectedPatternIdx ?? s.selectedPatternNum
-        const trackIdx = s.selectedTrackIdx ?? s.selectedTrackNum
-        if (typeof drumkitIdx === 'number') appState.selectedDrumkitIdx = drumkitIdx
-        if (typeof patternIdx === 'number') appState.selectedPatternIdx = patternIdx
-        if (typeof trackIdx === 'number') appState.selectedTrackIdx = trackIdx
+        if (typeof s.selectedDrumkitIdx === 'number') appState.selectedDrumkitIdx = s.selectedDrumkitIdx
+        if (typeof s.selectedPatternIdx === 'number') appState.selectedPatternIdx = s.selectedPatternIdx
+        if (typeof s.selectedTrackIdx === 'number') appState.selectedTrackIdx = s.selectedTrackIdx
         if (typeof s.currentView === 'string') appState.currentView = s.currentView
     }
 

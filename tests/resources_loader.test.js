@@ -445,53 +445,6 @@ describe('ResourcesLoader', () => {
             expect(appState.selectedTrackIdx).toBe(1)
         })
 
-        it('reads a legacy snapshot that still uses the …Num keys', () => {
-            soundRegistry.settings.session = {
-                selectedDrumkitNum: 1,
-                selectedPatternNum: 2,
-                selectedTrackNum: 0,
-                currentView: 'proll',
-            }
-
-            loader.restoreSession()
-
-            expect(appState.selectedDrumkitIdx).toBe(1)
-            expect(appState.selectedPatternIdx).toBe(2)
-            expect(appState.selectedTrackIdx).toBe(0)
-            expect(appState.currentView).toBe('proll')
-        })
-
-        // The tests above inject soundRegistry.settings.session directly, which
-        // short-circuits the bug: loadSettings() used to merge SESSION_DEFAULTS
-        // into a STORED session, so the legacy key was always shadowed by
-        // selectedPatternIdx: 0 and `?? legacy` could never fire at boot.
-        it('restores a legacy snapshot that went through loadSettings', async () => {
-            const { idbPut } = await import('../src/core/idb.js')
-            await idbPut('settings', ResourcesLoader.SETTINGS_KEY, {
-                session: { selectedDrumkitNum: 1, selectedPatternNum: 2, selectedTrackNum: 3 },
-            })
-
-            soundRegistry.settings.session = undefined
-            appState.selectedDrumkitIdx = 0
-            appState.selectedPatternIdx = 0
-            appState.selectedTrackIdx = 0
-
-            await loader.loadSettings(true)
-            loader.restoreSession()
-
-            expect(appState.selectedDrumkitIdx).toBe(1)
-            expect(appState.selectedPatternIdx).toBe(2)
-            expect(appState.selectedTrackIdx).toBe(3)
-        })
-
-        it('prefers the current key when a snapshot carries both spellings', () => {
-            soundRegistry.settings.session = { selectedPatternIdx: 4, selectedPatternNum: 2 }
-
-            loader.restoreSession()
-
-            expect(appState.selectedPatternIdx).toBe(4)
-        })
-
         it('drops the legacy keys on save, so a snapshot has one spelling', () => {
             soundRegistry.settings.session = { selectedPatternNum: 2 }
             appState.selectedPatternIdx = 5

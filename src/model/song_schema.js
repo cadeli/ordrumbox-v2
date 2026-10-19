@@ -72,7 +72,6 @@ export const SONG_DEFAULTS = Object.freeze({
 // The id helpers live in core/ids.js (core may not import model, and idb.js
 // needs them for its migration); re-exported here as the domain-facing entry.
 import { slugify, uniqueId, ensurePatternId } from '../core/ids.js'
-import { migrateLegacySongKeys } from '../core/legacy_keys.js'
 
 export { slugify, uniqueId, ensurePatternId }
 
@@ -138,10 +137,6 @@ export function songBpm(song, fallbackBpm = SONG_DEFAULTS.bpm) {
  * is not in the library) are dropped and reported by name rather than failing
  * the whole file: a partially stale arrangement is still worth loading.
  *
- * A file written before the measure rename (`startBar`/`bars`/`loopBars`) is
- * mapped first, in place — raw is either a freshly parsed file or an
- * already-normalized song, where the mapping is a no-op.
- *
  * @param {Record<string, any>} raw - validated to a non-array object by the guard below
  * @param {Map<string, object>|Set<string>} knownPatternIds library ids, or a Map id→pattern
  * @returns {{ ok: boolean, song?: Song, error?: string, dropped?: DroppedClip[] }}
@@ -150,8 +145,6 @@ export function normalizeSong(raw, knownPatternIds) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
         return { ok: false, error: 'Each song must be a JSON object' }
     }
-    migrateLegacySongKeys(raw)
-
     const ids = knownPatternIds instanceof Map ? new Set(knownPatternIds.keys()) : (knownPatternIds ?? new Set())
     const clips = []
     /** @type {DroppedClip[]} */

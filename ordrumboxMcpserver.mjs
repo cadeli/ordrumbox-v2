@@ -17,10 +17,7 @@ import { getTracksArray } from './src/core/tracks.js'
 import { normalizeColorScheme } from './src/core/constants.js'
 import { normalizeTrack, TRACK_VALUE_RANGES } from './src/model/track_schema.js'
 import {
-    canonicalNoteKeys,
     compactArrayToNote,
-    migrateLegacyNoteKeys,
-    migrateLegacyPatternKeys,
     normalizeNote,
 } from './src/core/note_schema.js'
 import { songLengthMeasures } from './src/model/song_schema.js'
@@ -141,9 +138,6 @@ async function savePatternToDisk(pattern) {
 }
 
 export function normalizePattern(source) {
-    // A file written before a key rename still carries the old spelling
-    // (soundId, retriggerNum): map it first, exactly like the app does.
-    migrateLegacyPatternKeys(source)
     const pattern = { ...source }
     delete pattern.loopPointBeat
     delete pattern.loopPointStep
@@ -152,11 +146,7 @@ export function normalizePattern(source) {
         delete track.loopPointBeat
         delete track.loopPointStep
         track.notes = (t.notes ?? []).map((n) => {
-            // A file written before a note-key rename decodes through the
-            // canonical header, and its object notes are mapped too — same rule
-            // as the app (core/note_schema.js), so both sides see one spelling.
-            const decoded = Array.isArray(n) ? compactArrayToNote(n, canonicalNoteKeys(t.noteKeys)) : { ...n }
-            migrateLegacyNoteKeys(decoded)
+            const decoded = Array.isArray(n) ? compactArrayToNote(n, t.noteKeys) : { ...n }
             return { ...normalizeNote(decoded) }
         })
         return track

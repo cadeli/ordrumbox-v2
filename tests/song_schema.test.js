@@ -305,26 +305,6 @@ describe('normalizeSong', () => {
         expect(normalizeSong('x', ids).ok).toBe(false)
     })
 
-    it('maps a song written before the measure rename', () => {
-        const raw = { name: 'Old', loopBars: 8, clips: [{ pattern: 'rock', startBar: 4, bars: 2 }] }
-        const r = normalizeSong(raw, ids)
-        expect(r.ok).toBe(true)
-        expect(r.song.clips).toEqual([{ pattern: 'rock', startMeasure: 4, measureCount: 2 }])
-        expect(r.song.loopMeasureCount).toBe(8)
-        expect(JSON.stringify(r.song)).not.toContain('startBar')
-    })
-
-    it('keeps the current keys when a song carries both spellings', () => {
-        const raw = {
-            name: 'Both',
-            loopBars: 99,
-            loopMeasureCount: 8,
-            clips: [{ pattern: 'rock', bars: 9, measureCount: 2 }],
-        }
-        const r = normalizeSong(raw, ids)
-        expect(r.song.clips).toEqual([{ pattern: 'rock', startMeasure: 0, measureCount: 2 }])
-        expect(r.song.loopMeasureCount).toBe(8)
-    })
 })
 
 describe('normalizeSongs', () => {
