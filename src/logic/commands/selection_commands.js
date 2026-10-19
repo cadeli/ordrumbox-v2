@@ -1,5 +1,4 @@
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { playbackEvents } from '../../state/event_bus.js'
 import { getAutoAssignService } from '../../state/service_loader.js'
@@ -14,11 +13,11 @@ export default class SelectionCommands {
     #registry
 
     /**
-     * @param {object} [deps]
-     * @param {typeof import('../../state/service_registry.js').serviceRegistry} [deps.registry] - mutable service registry (services assigned later)
+     * @param {object} deps
+     * @param {typeof import('../../state/service_registry.js').serviceRegistry} deps.registry - mutable service registry (services assigned later)
      */
-    constructor(deps = {}) {
-        this.#registry = deps.registry ?? serviceRegistry
+    constructor({ registry }) {
+        this.#registry = registry
     }
 
     /** @param {number} num */

@@ -50,7 +50,7 @@ export default class SpectrumSection {
         if (!this.#bgColor) {
             this.#bgColor = color('scope-bg')
         }
-        const data = this.#editor.serviceRegistry.audioEngine?.getAnalyserData?.()
+        const data = this.#editor.audioEngine?.getAnalyserData?.()
 
         ctx.fillStyle = this.#bgColor
         ctx.fillRect(0, 0, w, h)

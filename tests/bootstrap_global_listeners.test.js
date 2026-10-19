@@ -24,7 +24,13 @@ describe('bootstrap/global_listeners', () => {
 
     beforeAll(async () => {
         ;({ initGlobalListeners } = await import('../src/bootstrap/global_listeners.js'))
-        initGlobalListeners()
+        initGlobalListeners({
+            getCmd: () => serviceRegistry.cmd,
+            getSeq: () => serviceRegistry.seq,
+            getFlatNotes: () => serviceRegistry.flatNotes,
+            getResourcesLoader: () => serviceRegistry.resourcesLoader,
+            getAudioEngine: () => serviceRegistry.audioEngine,
+        })
     })
 
     beforeEach(() => {

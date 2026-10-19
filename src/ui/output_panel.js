@@ -1,4 +1,3 @@
-import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { bindTabToggles } from './components/ui_utils.js'
 import BasePanel from './base_panel.js'
@@ -17,11 +16,18 @@ export default class OutputPanel extends BasePanel {
     #filters
     #spectrum
     #saveTimer = null
-    #serviceRegistry
+    #resourcesLoader
+    #getAudioEngine
 
-    constructor({ serviceRegistry: sr = serviceRegistry } = {}) {
+    /**
+     * @param {object} deps
+     * @param {import('../loader/resources_loader.js').default} [deps.resourcesLoader]
+     * @param {() => import('../audio/engine.js').default|null} [deps.getAudioEngine] - audio engine is created at runtime, so a getter
+     */
+    constructor({ resourcesLoader = null, getAudioEngine = () => null } = {}) {
         super('output-panel')
-        this.#serviceRegistry = sr
+        this.#resourcesLoader = resourcesLoader
+        this.#getAudioEngine = getAudioEngine
         this.canvas = null
         this.#master = new MasterSection(this)
         this.#compressor = new CompressorSection(this)
@@ -29,8 +35,8 @@ export default class OutputPanel extends BasePanel {
         this.#spectrum = new SpectrumSection(this)
     }
 
-    get serviceRegistry() {
-        return this.#serviceRegistry
+    get audioEngine() {
+        return this.#getAudioEngine()
     }
 
     get canvas() {
@@ -69,7 +75,7 @@ export default class OutputPanel extends BasePanel {
         soundRegistry.settings.master[key] = value
         if (this.#saveTimer) clearTimeout(this.#saveTimer)
         this.#saveTimer = setTimeout(() => {
-            this.#serviceRegistry.resourcesLoader?.saveSettings?.()
+            this.#resourcesLoader?.saveSettings?.()
         }, 500)
     }
 

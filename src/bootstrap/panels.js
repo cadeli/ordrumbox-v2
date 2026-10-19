@@ -42,7 +42,10 @@ export function createAndInitPanels() {
     const noteEditor = new NoteEditor()
     const trackEditor = new TrackEditor()
     const toolsPanel = new ToolsPanel()
-    const outputPanel = new OutputPanel({ serviceRegistry })
+    const outputPanel = new OutputPanel({
+        resourcesLoader: serviceRegistry.resourcesLoader,
+        getAudioEngine: () => serviceRegistry.audioEngine,
+    })
     const aboutPanel = new AboutPanel()
     const drumkitManager = new DrumkitManager()
     const songPanel = new SongPanel()
@@ -62,7 +65,7 @@ export function createAndInitPanels() {
 
     const mobileTabBar = new MobileTabBar()
     mobileTabBar.init()
-    const patternSettingsPanel = new PatternSettingsPanel()
+    const patternSettingsPanel = new PatternSettingsPanel({ getCmd: () => serviceRegistry.cmd })
     patternSettingsPanel.init()
 
     const appContent = document.createElement('div')

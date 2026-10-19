@@ -77,7 +77,7 @@ export default class CompressorSection {
         this.#compBypassBtn.addEventListener('click', () => {
             this.#compBypass = !this.#compBypass
             this.#compBypassBtn.classList.toggle('active', !this.#compBypass)
-            this.#editor.serviceRegistry.audioEngine?.mixer?.setMasterBus({ bypass: this.#compBypass })
+            this.#editor.audioEngine?.mixer?.setMasterBus({ bypass: this.#compBypass })
             this.#editor.persistMaster('compBypass', this.#compBypass)
             this.drawCompCurve()
         })
@@ -113,7 +113,7 @@ export default class CompressorSection {
                 format: (v) => (p.step < 1 ? parseFloat(v.toFixed(3)) : Math.round(v)),
                 unit: p.unit ?? '',
                 onChange: (v) => {
-                    this.#editor.serviceRegistry.audioEngine?.mixer?.setMasterBus({ [p.key]: v })
+                    this.#editor.audioEngine?.mixer?.setMasterBus({ [p.key]: v })
                     this.#editor.persistMaster(p.key, v)
                     if (p.key === 'threshold' || p.key === 'ratio' || p.key === 'knee' || p.key === 'makeup') {
                         this.drawCompCurve()

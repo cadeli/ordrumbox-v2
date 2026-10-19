@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import OutputPanel from '../src/ui/output_panel.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { MASTER_BUS_DEFAULTS } from '../src/core/constants.js'
 
@@ -12,10 +11,11 @@ describe('OutputPanel — master controls', () => {
     beforeEach(() => {
         document.body.innerHTML = ''
         setMasterBusMock = vi.fn()
-        serviceRegistry.audioEngine = { mixer: { setMasterBus: setMasterBusMock } }
-        serviceRegistry.resourcesLoader = { saveSettings: vi.fn() }
         soundRegistry.reset()
-        panel = new OutputPanel()
+        panel = new OutputPanel({
+            resourcesLoader: { saveSettings: vi.fn() },
+            getAudioEngine: () => ({ mixer: { setMasterBus: setMasterBusMock } }),
+        })
         panel.init()
     })
 
@@ -73,10 +73,11 @@ describe('OutputPanel — compressor (VST knobs)', () => {
     beforeEach(() => {
         document.body.innerHTML = ''
         setMasterBusMock = vi.fn()
-        serviceRegistry.audioEngine = { mixer: { setMasterBus: setMasterBusMock } }
-        serviceRegistry.resourcesLoader = { saveSettings: vi.fn() }
         soundRegistry.reset()
-        panel = new OutputPanel()
+        panel = new OutputPanel({
+            resourcesLoader: { saveSettings: vi.fn() },
+            getAudioEngine: () => ({ mixer: { setMasterBus: setMasterBusMock } }),
+        })
         panel.init()
     })
 

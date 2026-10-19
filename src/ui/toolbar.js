@@ -41,7 +41,7 @@ export default class Toolbar {
         this.#serviceRegistry = sr
 
         this.#transport = new TransportControls(this)
-        this.#patternNav = new PatternNav()
+        this.#patternNav = new PatternNav({ getCmd: () => this.#serviceRegistry.cmd })
         this.#viewSwitch = new ViewSwitch(this)
         this.#overflow = new OverflowMenu()
         this.#nextUndoDesc = null

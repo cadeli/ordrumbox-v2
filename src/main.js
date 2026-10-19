@@ -42,7 +42,13 @@ export function init() {
     playbackEvents.on(EVENTS.COLOR_SCHEME_CHANGE, (scheme) => {
         applyColorScheme(scheme)
     })
-    initGlobalListeners()
+    initGlobalListeners({
+        getCmd: () => serviceRegistry.cmd,
+        getSeq: () => serviceRegistry.seq,
+        getFlatNotes: () => serviceRegistry.flatNotes,
+        getResourcesLoader: () => serviceRegistry.resourcesLoader,
+        getAudioEngine: () => serviceRegistry.audioEngine,
+    })
     createAndInitPanels()
     initSelectDropdown()
     startAfterFirstPaint()

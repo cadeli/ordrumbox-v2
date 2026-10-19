@@ -38,7 +38,7 @@ export default class MasterSection {
             value: 1,
             format: (v) => v.toFixed(2),
             onChange: (v) => {
-                this.#editor.serviceRegistry.audioEngine?.mixer?.setMasterBus({ master: v })
+                this.#editor.audioEngine?.mixer?.setMasterBus({ master: v })
                 this.#editor.persistMaster('volume', v)
             },
         })
@@ -58,7 +58,7 @@ export default class MasterSection {
             format: formatSignedDb,
             unit: 'dB',
             onChange: (v) => {
-                this.#editor.serviceRegistry.audioEngine?.mixer?.setMasterBus({ preGain: v })
+                this.#editor.audioEngine?.mixer?.setMasterBus({ preGain: v })
                 this.#editor.persistMaster('preGain', v)
             },
         })

@@ -1,6 +1,5 @@
 import { TICK } from '../../core/constants.js'
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
 import { reportUserError } from '../../core/notify.js'
 
@@ -13,7 +12,7 @@ export default class Transport {
      * @param {() => any} [deps.getMidiManager] - resolves the live MIDI manager at call time (lazily created)
      */
     constructor(audioCtx, deps = {}) {
-        this.#getMidiManager = deps.getMidiManager ?? (() => serviceRegistry.midiManager)
+        this.#getMidiManager = deps.getMidiManager ?? (() => null)
         this.audioCtx = audioCtx
         this.isRunning = false
         this.tick = 1

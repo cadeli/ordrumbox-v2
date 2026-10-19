@@ -52,7 +52,14 @@ export default class PatternSettingsPanel {
         return this.#nextPageBtn
     }
 
-    constructor() {
+    #getCmd
+
+    /**
+     * @param {object} [deps]
+     * @param {() => import('../logic/commands/commander.js').default} [deps.getCmd]
+     */
+    constructor({ getCmd = () => null } = {}) {
+        this.#getCmd = getCmd
         this.container = null
         this.#isOpen = false
     }
@@ -180,8 +187,8 @@ export default class PatternSettingsPanel {
     }
 
     #bindPageControls() {
-        this.#life.listen(this.#prevPageBtn, 'click', () => prevPage())
-        this.#life.listen(this.#nextPageBtn, 'click', () => nextPage())
+        this.#life.listen(this.#prevPageBtn, 'click', () => prevPage(this.#getCmd()))
+        this.#life.listen(this.#nextPageBtn, 'click', () => nextPage(this.#getCmd()))
     }
 
     #bindBeatsSelect() {
@@ -199,11 +206,11 @@ export default class PatternSettingsPanel {
     }
 
     #bindDrumkitSelect() {
-        this.#life.listen(this.#drumkitSelect, 'change', () => onDrumkitSelectChange(this.#drumkitSelect))
+        this.#life.listen(this.#drumkitSelect, 'change', () => onDrumkitSelectChange(this.#drumkitSelect, this.#getCmd()))
     }
 
     #bindPatternSelect() {
-        this.#life.listen(this.#patternSelect, 'change', () => onPatternSelectChange(this.#patternSelect))
+        this.#life.listen(this.#patternSelect, 'change', () => onPatternSelectChange(this.#patternSelect, this.#getCmd()))
     }
 
     // ── Generation buttons ───────────────────────────────────────────

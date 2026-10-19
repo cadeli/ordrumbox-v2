@@ -19,7 +19,7 @@ export default class ImportSection {
     /** @param {import('../drumkit_manager.js').default} editor */
     constructor(editor) {
         this.#editor = editor
-        this.#audioImportService = new AudioImportService()
+        this.#audioImportService = new AudioImportService({ registry: serviceRegistry })
     }
 
     get audioImportService() {

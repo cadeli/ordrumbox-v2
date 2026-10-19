@@ -1,7 +1,6 @@
 // src/ui/page_nav.js — Shared page navigation for pattern panels.
 
 import { appState } from '../state/app_state.js'
-import { serviceRegistry } from '../state/service_registry.js'
 import { emitPageChanged } from '../state/event_bus.js'
 import { PATTERN_DEFAULTS } from '../model/pattern_schema.js'
 import { BEATS_PER_PAGE } from '../core/constants.js'
@@ -43,9 +42,9 @@ export function pageBeatWindow(page = appState.currentPage) {
 /**
  * Navigate to the previous page of steps.
  */
-export function prevPage() {
+export function prevPage(cmd) {
     if (appState.currentPage > 0) {
-        serviceRegistry.cmd?.setCurrentPage(appState.currentPage - 1)
+        cmd?.setCurrentPage(appState.currentPage - 1)
         emitPageChanged()
     }
 }
@@ -53,12 +52,12 @@ export function prevPage() {
 /**
  * Navigate to the next page of steps.
  */
-export function nextPage() {
+export function nextPage(cmd) {
     const pattern = appState.selectedPattern
     if (!pattern) return
     const maxPage = maxPageFor(pattern)
     if (appState.currentPage < maxPage) {
-        serviceRegistry.cmd?.setCurrentPage(appState.currentPage + 1)
+        cmd?.setCurrentPage(appState.currentPage + 1)
         emitPageChanged()
     }
 }

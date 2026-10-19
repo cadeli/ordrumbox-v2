@@ -137,7 +137,7 @@ describe('onPatternSelectChange', () => {
         const select = makeSelect()
         rebuildPatternSelect(select)
         select.value = '1'
-        onPatternSelectChange(select)
+        onPatternSelectChange(select, serviceRegistry.cmd)
 
         expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(1)
         expect(serviceRegistry.cmd.resetPage).toHaveBeenCalled()
@@ -154,7 +154,7 @@ describe('onPatternSelectChange', () => {
         const select = makeSelect()
         rebuildPatternSelect(select)
         select.value = '1'
-        onPatternSelectChange(select)
+        onPatternSelectChange(select, serviceRegistry.cmd)
 
         expect(structure).not.toHaveBeenCalled()
     })
@@ -164,7 +164,7 @@ describe('onPatternSelectChange', () => {
         const select = makeSelect()
         rebuildPatternSelect(select)
         select.value = ''
-        onPatternSelectChange(select)
+        onPatternSelectChange(select, serviceRegistry.cmd)
 
         expect(serviceRegistry.cmd.setSelectedPatternIdx).not.toHaveBeenCalled()
         expect(serviceRegistry.cmd.resetPage).not.toHaveBeenCalled()
@@ -181,14 +181,14 @@ describe('onDrumkitSelectChange', () => {
         const select = makeSelect()
         rebuildDrumkitSelect(select)
         select.value = '1'
-        onDrumkitSelectChange(select)
+        onDrumkitSelectChange(select, serviceRegistry.cmd)
 
         expect(serviceRegistry.cmd.setSelectedDrumkitIdx).toHaveBeenCalledWith(1)
     })
 
     it('ignores an invalid value', () => {
         const select = makeSelect()
-        onDrumkitSelectChange(select)
+        onDrumkitSelectChange(select, serviceRegistry.cmd)
         expect(serviceRegistry.cmd.setSelectedDrumkitIdx).not.toHaveBeenCalled()
     })
 })

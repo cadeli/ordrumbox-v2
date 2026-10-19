@@ -29,6 +29,15 @@ export default class PatternNav {
     #patLabel
     /** @type {HTMLSpanElement} */
     #kitLabel
+    #getCmd
+
+    /**
+     * @param {object} [deps]
+     * @param {() => import('../../logic/commands/commander.js').default} [deps.getCmd]
+     */
+    constructor({ getCmd = () => null } = {}) {
+        this.#getCmd = getCmd
+    }
 
     get patternSelect() {
         return this.#patternSelect
@@ -133,18 +142,18 @@ export default class PatternNav {
         this.#life.reset()
 
         this.#life.listen(this.#patternSelect, 'change', () =>
-            onPatternSelectChange(this.#patternSelect),
+            onPatternSelectChange(this.#patternSelect, this.#getCmd()),
         )
 
         this.#life.listen(this.#drumkitSelect, 'change', () =>
-            onDrumkitSelectChange(this.#drumkitSelect),
+            onDrumkitSelectChange(this.#drumkitSelect, this.#getCmd()),
         )
 
         this.#life.listen(this.#kitLabel, 'click', () => {
             playbackEvents.emit(EVENTS.DRUMKIT_MANAGER_TOGGLE, true)
         })
 
-        this.#life.listen(this.#prevPageBtn, 'click', () => prevPage())
-        this.#life.listen(this.#nextPageBtn, 'click', () => nextPage())
+        this.#life.listen(this.#prevPageBtn, 'click', () => prevPage(this.#getCmd()))
+        this.#life.listen(this.#nextPageBtn, 'click', () => nextPage(this.#getCmd()))
     }
 }

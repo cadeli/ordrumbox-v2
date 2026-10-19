@@ -1,5 +1,4 @@
 import { appState } from './state/app_state.js'
-import { serviceRegistry } from './state/service_registry.js'
 import { getAutoAssignService, getAutoGeneratorService } from './state/service_loader.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents, emitStructureChanged, emitTrackChanged } from './state/event_bus.js'
@@ -30,36 +29,42 @@ const PHYSICAL_TRACK_PREVIEW_KEYS = ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'Ke
 
 const PHYSICAL_KEYS_PREVENTING_BROWSER_DEFAULT = new Set(['Space'])
 
+// Injected by initKeyboardShortcuts(deps) from the bootstrap — never a global import.
+let getCmd
+let getSeq
+let getFlatNotes
+let getResourcesLoader
+let getAudioEngine
+
 function toggleTrackMute(trackIdx) {
     const track = getTracksArray(appState.selectedPattern ?? {})[trackIdx]
     if (!track) return
-    serviceRegistry.cmd?.updateTrack(track, { mute: !track.mute }, { desc: `Mute on ${track.name}` })
+    getCmd()?.updateTrack(track, { mute: !track.mute }, { desc: `Mute on ${track.name}` })
     emitTrackChanged(track)
 }
 
 function previewTrack(trackIdx) {
-    serviceRegistry.seq.simpleBeep(trackIdx)
+    getSeq().simpleBeep(trackIdx)
 }
 
 async function generatePattern() {
-    const cmd = serviceRegistry.cmd
-    if (!cmd?.addPattern) return
+    if (!getCmd()?.addPattern) return
 
     // B always starts from a brand new pattern instead of overwriting the
     // currently selected one.
     const previousIdx = appState.selectedPatternIdx
     const newIdx = appState.patterns.length
-    cmd.addPattern()
-    await cmd.setSelectedPatternIdx(newIdx)
-    cmd.resetPage?.()
+    getCmd().addPattern()
+    await getCmd().setSelectedPatternIdx(newIdx)
+    getCmd().resetPage?.()
     emitPatternStructureChange()
 
     const autoGen = await getAutoGeneratorService()
     const generated = await autoGen.generatePattern()
 
     if (!generated) {
-        cmd.removePattern?.(newIdx)
-        await cmd.setSelectedPatternIdx(Math.min(previousIdx, appState.patterns.length - 1))
+        getCmd().removePattern?.(newIdx)
+        await getCmd().setSelectedPatternIdx(Math.min(previousIdx, appState.patterns.length - 1))
         emitPatternStructureChange()
         showToast('Pattern generation failed', 'error')
         return
@@ -70,7 +75,7 @@ async function generatePattern() {
 }
 
 function toggleVus() {
-    serviceRegistry.cmd?.toggleShowVus()
+    getCmd()?.toggleShowVus()
     showToast(appState.showVus ? 'VU meters on' : 'VU meters off', 'info')
 }
 
@@ -79,12 +84,12 @@ function cycleColorScheme() {
     const next = (current % COLOR_SCHEME_COUNT) + 1
     soundRegistry.settings.colorScheme = next
     playbackEvents.emit(EVENTS.COLOR_SCHEME_CHANGE, next)
-    void serviceRegistry.resourcesLoader?.saveSettings?.()
+    void getResourcesLoader()?.saveSettings?.()
     showToast(`Color scheme ${next}/${COLOR_SCHEME_COUNT}`, 'info')
 }
 
 function toggleStartStop() {
-    serviceRegistry.seq.toggleStartStop()
+    getSeq().toggleStartStop()
 }
 
 function emitPatternStructureChange() {
@@ -104,27 +109,25 @@ function saveCurrentPattern() {
 }
 
 function addNewPattern() {
-    const cmd = serviceRegistry.cmd
-    if (!cmd?.addPattern) return
+    if (!getCmd()?.addPattern) return
     const newIdx = appState.patterns.length
-    cmd.addPattern()
-    cmd.setSelectedPatternIdx(newIdx)
-    cmd.resetPage?.()
+    getCmd().addPattern()
+    getCmd().setSelectedPatternIdx(newIdx)
+    getCmd().resetPage?.()
     emitPatternStructureChange()
     showToast('Pattern added', 'success')
 }
 
 async function duplicateCurrentPattern() {
-    const cmd = serviceRegistry.cmd
     const pattern = appState.selectedPattern
-    if (!pattern || !cmd?.addPattern) return
-    const clone = cmd.addPattern((pattern.name ?? 'Pattern') + ' copy')
+    if (!pattern || !getCmd()?.addPattern) return
+    const clone = getCmd().addPattern((pattern.name ?? 'Pattern') + ' copy')
     Object.assign(clone, structuredClone(pattern))
     clone.name = (pattern.name ?? 'Pattern') + ' copy'
     // Object.assign copied the source id too — two patterns sharing one would
     // make arrangement references ambiguous.
-    cmd.refreshPatternId(clone)
-    await cmd.setSelectedPatternIdx(appState.patterns.length - 1)
+    getCmd().refreshPatternId(clone)
+    await getCmd().setSelectedPatternIdx(appState.patterns.length - 1)
     emitPatternStructureChange()
     showToast('Pattern duplicated', 'success')
 }
@@ -137,7 +140,7 @@ function selectRandomPattern() {
         return
     }
     const num = patterns.indexOf(picked)
-    serviceRegistry.cmd.setSelectedPatternIdx(num)
+    getCmd().setSelectedPatternIdx(num)
     showToast(`Pattern "${picked.name ?? num + 1}" selected`, 'success')
 }
 
@@ -149,7 +152,7 @@ function selectRandomDrumkit() {
         return
     }
     const num = drumkits.indexOf(picked)
-    serviceRegistry.cmd.setSelectedDrumkitIdx(num)
+    getCmd().setSelectedDrumkitIdx(num)
     showToast(`Drumkit "${picked.name ?? num + 1}" selected`, 'success')
 }
 
@@ -173,7 +176,7 @@ async function convertToGeneratedSounds() {
 
     if (Object.keys(soundRegistry.generatedSounds).length === 0) {
         try {
-            await serviceRegistry.resourcesLoader.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
+            await getResourcesLoader().loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
         } catch (e) {
             logger.error('KeyboardShortcuts', 'Failed to load generated sounds', e)
             showToast('Failed to load generated sounds', 'error')
@@ -188,9 +191,8 @@ async function convertToGeneratedSounds() {
     const randomPicks = new Map()
     const generatedSoundKeys = Object.keys(soundRegistry.generatedSounds)
     const tracks = getTracksArray(selectedPattern)
-    const cmd = serviceRegistry.cmd
     // One undo step for the whole pattern, not one per track.
-    cmd?.recordTransaction('Convert tracks to generated sounds', () => {
+    getCmd()?.recordTransaction('Convert tracks to generated sounds', () => {
         for (const track of tracks) {
             const type = detectTrackType(track.name)
             let synthKey = SYNTH_SOUND_MAP[type]
@@ -198,7 +200,7 @@ async function convertToGeneratedSounds() {
                 synthKey = pickRandomKey(soundRegistry.generatedSounds)
                 if (synthKey) randomPicks.set(type || track.name, synthKey)
             }
-            cmd.updateTrack(
+            getCmd().updateTrack(
                 track,
                 {
                     useSoftSynth: true,
@@ -210,8 +212,8 @@ async function convertToGeneratedSounds() {
         }
     })
 
-    serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
-    serviceRegistry.audioEngine?.invalidateCache()
+    getFlatNotes().applyFlatNotes(selectedPattern)
+    getAudioEngine()?.invalidateCache()
     playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     logger.info('KeyboardShortcuts', 'All tracks converted to generated sounds')
     if (randomPicks.size > 0) {
@@ -236,11 +238,10 @@ function assignRandomSampleAllTracks() {
     }
 
     const tracks = getTracksArray(selectedPattern)
-    const cmd = serviceRegistry.cmd
     // One undo step for the whole pattern, not one per track.
-    cmd?.recordTransaction('Random samples on all tracks', () => {
+    getCmd()?.recordTransaction('Random samples on all tracks', () => {
         for (const track of tracks) {
-            cmd.updateTrack(
+            getCmd().updateTrack(
                 track,
                 { useAutoAssignSound: false, useSoftSynth: false, sampleId: pickRandom(allSounds) },
                 { desc: `Sample on ${track.name}` },
@@ -248,8 +249,8 @@ function assignRandomSampleAllTracks() {
         }
     })
 
-    serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
-    serviceRegistry.audioEngine?.invalidateCache()
+    getFlatNotes().applyFlatNotes(selectedPattern)
+    getAudioEngine()?.invalidateCache()
     playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     showToast('Random samples assigned', 'success')
 }
@@ -262,20 +263,19 @@ async function autoAssignAllTracks() {
     }
 
     const tracks = getTracksArray(selectedPattern)
-    const cmd = serviceRegistry.cmd
     // One undo step for the whole pattern, not one per track. The service
     // assignment is inside the transaction so its sampleId writes are covered
     // by the same before/after snapshot.
-    await cmd?.recordTransaction('Auto-assign all tracks', async () => {
+    await getCmd()?.recordTransaction('Auto-assign all tracks', async () => {
         for (const track of tracks) {
-            cmd.updateTrack(track, { useAutoAssignSound: true, useSoftSynth: false }, { desc: `Auto-assign on ${track.name}` })
+            getCmd().updateTrack(track, { useAutoAssignSound: true, useSoftSynth: false }, { desc: `Auto-assign on ${track.name}` })
         }
         const autoAssign = await getAutoAssignService()
         autoAssign.autoAssignSounds(selectedPattern)
     })
 
-    serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
-    serviceRegistry.audioEngine?.invalidateCache()
+    getFlatNotes().applyFlatNotes(selectedPattern)
+    getAudioEngine()?.invalidateCache()
     playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     showToast('All tracks auto-assigned', 'success')
 }
@@ -357,8 +357,21 @@ async function handleKeyboardShortcut(event) {
     await shortcut()
 }
 
-/** @returns {void} */
-export function initKeyboardShortcuts() {
+/**
+ * @param {object} deps
+ * @param {() => import('./logic/commands/commander.js').default} deps.getCmd
+ * @param {() => import('./logic/sequencer.js').default} deps.getSeq
+ * @param {() => typeof import('./patterns/flat_notes.js')} [deps.getFlatNotes]
+ * @param {() => import('./loader/resources_loader.js').default} [deps.getResourcesLoader]
+ * @param {() => import('./audio/engine.js').default|null} [deps.getAudioEngine] - engine created at runtime
+ * @returns {void}
+ */
+export function initKeyboardShortcuts(deps) {
+    getCmd = deps.getCmd
+    getSeq = deps.getSeq
+    getFlatNotes = deps.getFlatNotes ?? (() => null)
+    getResourcesLoader = deps.getResourcesLoader ?? (() => null)
+    getAudioEngine = deps.getAudioEngine ?? (() => null)
     document.addEventListener(
         'keydown',
         (event) => {

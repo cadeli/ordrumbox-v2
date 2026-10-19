@@ -3,15 +3,22 @@ import { initClickBursts } from '../core/click_bursts.js'
 import { clamp, toFiniteNumber } from '../core/numbers.js'
 import { isMobileViewport } from '../core/constants.js'
 import { isLandscape, watchOrientation } from '../core/device.js'
-import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/event_bus.js'
 import { logger } from '../core/logger.js'
 import { EVENTS } from '../core/events.js'
 import { initKeyboardShortcuts } from '../keyboard_shortcuts.js'
 import { initServiceWorker } from '../service_worker.js'
 
-/** Global window/DOM listeners and bus subscriptions. Call once at startup. */
-export function initGlobalListeners() {
+/**
+ * Global window/DOM listeners and bus subscriptions. Call once at startup.
+ * @param {object} deps
+ * @param {() => import('../logic/commands/commander.js').default} deps.getCmd
+ * @param {() => import('../logic/sequencer.js').default} deps.getSeq
+ * @param {() => typeof import('../patterns/flat_notes.js')} [deps.getFlatNotes]
+ * @param {() => import('../loader/resources_loader.js').default} [deps.getResourcesLoader]
+ * @param {() => import('../audio/engine.js').default|null} [deps.getAudioEngine]
+ */
+export function initGlobalListeners(deps) {
     // Device/orientation classes: `html.is-compact` mirrors isMobileViewport()
     // so the CSS (converted media queries) and the JS verdict can never
     // diverge — updated synchronously on every resize (no debounce), while
@@ -51,7 +58,7 @@ export function initGlobalListeners() {
 
     playbackEvents.on(EVENTS.TRACK_SELECT, (data) => {
         if (data && data.trackIdx !== undefined) {
-            serviceRegistry.cmd.setSelectedTrackIdx(data.trackIdx)
+            deps.getCmd().setSelectedTrackIdx(data.trackIdx)
         }
     })
 
@@ -135,7 +142,13 @@ export function initGlobalListeners() {
         if (slider && !slider.disabled) slider.focus()
     })
 
-    initKeyboardShortcuts()
+    initKeyboardShortcuts({
+        getCmd: deps.getCmd,
+        getSeq: deps.getSeq,
+        getFlatNotes: deps.getFlatNotes,
+        getResourcesLoader: deps.getResourcesLoader,
+        getAudioEngine: deps.getAudioEngine,
+    })
     initServiceWorker()
     initClickBursts()
 }

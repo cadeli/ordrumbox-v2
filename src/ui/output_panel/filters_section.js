@@ -74,7 +74,7 @@ export default class FiltersSection {
     }
 
     pushFilters() {
-        this.#editor.serviceRegistry.audioEngine?.mixer?.setMasterBus({
+        this.#editor.audioEngine?.mixer?.setMasterBus({
             lowcut: this.#lowcutVal,
             hicut: this.#hicutVal,
         })

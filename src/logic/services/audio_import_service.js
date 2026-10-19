@@ -1,7 +1,6 @@
 import { logger } from '../../core/logger.js'
 import { appState } from '../../state/app_state.js'
 import { playbackEvents } from '../../state/event_bus.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { instrumentsManager } from './instruments_manager/index.js'
 import { cacheSample, cacheDrumkits } from '../../cache/idb_cache.js'
@@ -11,11 +10,11 @@ export default class AudioImportService {
     #registry
 
     /**
-     * @param {object} [deps]
-     * @param {typeof import('../../state/service_registry.js').serviceRegistry} [deps.registry]
+     * @param {object} deps
+     * @param {typeof import('../../state/service_registry.js').serviceRegistry} deps.registry
      */
-    constructor(deps = {}) {
-        this.#registry = deps.registry ?? serviceRegistry
+    constructor({ registry }) {
+        this.#registry = registry
     }
     /**
      * Import a directory of audio files as a new drumkit.

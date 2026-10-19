@@ -33,7 +33,10 @@ describe('MidiManager', () => {
     })
 
     function createManager() {
-        return new MidiManager()
+        return new MidiManager({
+            getSeq: () => serviceRegistry.seq,
+            getAudioCtx: () => serviceRegistry.audioCtx,
+        })
     }
 
     describe('constructor', () => {

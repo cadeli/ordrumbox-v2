@@ -1,5 +1,4 @@
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { instrumentsManager } from '../services/instruments_manager/index.js'
 import { logger } from '../../core/logger.js'
 import {
@@ -24,8 +23,8 @@ export default class MidiManager extends EventTarget {
      */
     constructor(deps = {}) {
         super()
-        this.#getSeq = deps.getSeq ?? (() => serviceRegistry.seq)
-        this.#getAudioCtx = deps.getAudioCtx ?? (() => serviceRegistry.audioCtx)
+        this.#getSeq = deps.getSeq ?? (() => null)
+        this.#getAudioCtx = deps.getAudioCtx ?? (() => null)
         this.midiAccess = null
         this.inputs = []
         this.outputs = []

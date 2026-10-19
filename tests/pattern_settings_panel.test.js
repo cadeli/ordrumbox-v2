@@ -61,7 +61,7 @@ describe('PatternSettingsPanel', () => {
                 appState.currentPage = 0
             }),
         }
-        panel = new PatternSettingsPanel()
+        panel = new PatternSettingsPanel({ getCmd: () => serviceRegistry.cmd })
         panel.init()
     })
 

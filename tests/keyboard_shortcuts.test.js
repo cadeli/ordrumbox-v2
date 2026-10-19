@@ -111,7 +111,13 @@ describe('Keyboard shortcuts', () => {
     })
 
     beforeAll(() => {
-        initKeyboardShortcuts()
+        initKeyboardShortcuts({
+            getCmd: () => serviceRegistry.cmd,
+            getSeq: () => serviceRegistry.seq,
+            getFlatNotes: () => serviceRegistry.flatNotes,
+            getResourcesLoader: () => serviceRegistry.resourcesLoader,
+            getAudioEngine: () => serviceRegistry.audioEngine,
+        })
     })
 
     afterEach(() => {

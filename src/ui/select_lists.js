@@ -4,7 +4,6 @@
 
 import { appState } from '../state/app_state.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { serviceRegistry } from '../state/service_registry.js'
 import { emitPageChanged } from '../state/event_bus.js'
 
 /**
@@ -64,11 +63,11 @@ export function rebuildDrumkitSelect(select) {
  * by the settings panel but not by the toolbar).
  * @param {HTMLSelectElement} select
  */
-export function onPatternSelectChange(select) {
+export function onPatternSelectChange(select, cmd) {
     const num = parseInt(select.value, 10)
     if (isNaN(num)) return
-    serviceRegistry.cmd.setSelectedPatternIdx(num)
-    serviceRegistry.cmd.resetPage()
+    cmd.setSelectedPatternIdx(num)
+    cmd.resetPage()
     emitPageChanged()
 }
 
@@ -77,8 +76,8 @@ export function onPatternSelectChange(select) {
  * event live inside the command itself.
  * @param {HTMLSelectElement} select
  */
-export function onDrumkitSelectChange(select) {
+export function onDrumkitSelectChange(select, cmd) {
     const num = parseInt(select.value, 10)
     if (isNaN(num)) return
-    serviceRegistry.cmd.setSelectedDrumkitIdx(num)
+    cmd.setSelectedDrumkitIdx(num)
 }
