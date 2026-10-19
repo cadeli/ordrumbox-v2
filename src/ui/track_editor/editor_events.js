@@ -8,6 +8,7 @@ export default class EditorEvents {
     #editor
     #fxSection
     #modSection
+    /** @type {import('./sound_section.js').default} */
     #sndSection
     #genSection
     #sampleBar
@@ -86,11 +87,11 @@ export default class EditorEvents {
                     const soundType = target.dataset.sound
                     const p =
                         soundType === 'instrument'
-                            ? this.#sndSection.onInstrumentChange(target)
+                            ? this.#sndSection.onInstrumentChange(/** @type {HTMLInputElement} */ (target))
                             : soundType === 'sample'
-                              ? this.#sndSection.onSampleChange(target)
+                              ? this.#sndSection.onSampleChange(/** @type {HTMLInputElement} */ (target))
                               : soundType === 'generated'
-                                ? this.#sndSection.onGeneratedChange(target)
+                                ? this.#sndSection.onGeneratedChange(/** @type {HTMLInputElement} */ (target))
                                 : null
                     if (p)
                         p.finally(() => {
@@ -128,9 +129,9 @@ export default class EditorEvents {
                 return
             }
 
-            const btn = target.closest('button')
+            const btn = /** @type {HTMLButtonElement | null} */ (target.closest('button'))
             if (!btn) {
-                const row = target.closest('.ne-row[data-prop]')
+                const row = /** @type {HTMLElement | null} */ (target.closest('.ne-row[data-prop]'))
                 if (row && target.tagName !== 'INPUT' && target.tagName !== 'SELECT') {
                     this.#onRowClick(/** @type {HTMLElement} */ (row).dataset.prop)
                 }

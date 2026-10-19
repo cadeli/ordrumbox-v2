@@ -205,8 +205,8 @@ export default class ArrangementSection {
     #onContextMenu(e) {
         const target = e.target instanceof Element ? e.target : null
         if (!target || !this.#song) return
-        const clipEl = target.closest('.sa-clip')
-        const nameEl = target.closest('.sa-row-name')
+        const clipEl = /** @type {HTMLElement | null} */ (target.closest('.sa-clip'))
+        const nameEl = /** @type {HTMLElement | null} */ (target.closest('.sa-row-name'))
 
         if (clipEl) {
             e.preventDefault()
@@ -230,6 +230,7 @@ export default class ArrangementSection {
     }
 
     /** Clip: remove it, or repeat the same pattern right after it. */
+    /** @param {HTMLElement} clipEl @param {number} x @param {number} y */
     #showClipMenu(clipEl, x, y) {
         const index = Number(clipEl.dataset.index)
         const clip = this.#song.clips?.[index]

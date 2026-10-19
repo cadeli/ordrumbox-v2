@@ -23,7 +23,7 @@ export default class ContextMenuSection {
     /** @param {MouseEvent} e */
     onContextMenu(e) {
         const target = /** @type {HTMLElement} */ (e.target)
-        const trackEl = target.closest('.pp-track:not(.pp-master-track)')
+        const trackEl = /** @type {HTMLElement | null} */ (target.closest('.pp-track:not(.pp-master-track)'))
         if (!trackEl) {
             this.#contextMenu.hide()
             return

@@ -40,7 +40,7 @@ export default class MenuSection {
             return
         }
 
-        const gridEl = target.closest('#pp-piano-grid')
+        const gridEl = /** @type {HTMLElement | null} */ (target.closest('#pp-piano-grid'))
         if (!gridEl) {
             this.#contextMenu.hide()
             return

@@ -71,7 +71,7 @@ export default class PointerSection {
     /** @param {MouseEvent} e */
     onMouseOut(e) {
         const target = /** @type {HTMLElement} */ (e.target)
-        const cell = target.closest('.pp-cell.filled')
+        const cell = /** @type {HTMLElement | null} */ (target.closest('.pp-cell.filled'))
         if (!cell) return
         if (this.#tooltip) this.#tooltip.style.display = 'none'
     }
@@ -131,13 +131,13 @@ export default class PointerSection {
             return
         }
 
-        const masterTrackEl = target.closest('.pp-master-track')
+        const masterTrackEl = /** @type {HTMLElement | null} */ (target.closest('.pp-master-track'))
         if (masterTrackEl) {
             this.#editor.playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
             return
         }
 
-        const trackEl = target.closest('.pp-track')
+        const trackEl = /** @type {HTMLElement | null} */ (target.closest('.pp-track'))
         if (
             trackEl &&
             !target.closest('.pp-track-name') &&

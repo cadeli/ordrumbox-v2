@@ -136,6 +136,7 @@ export default class SoundSection {
      * here: it is the identity the auto-assign algorithm keys on, so renaming it
      * would silently retarget the auto LED.
      */
+    /** @param {HTMLInputElement} target */
     async onInstrumentChange(target) {
         const editor = this.#editor
         const track = editor.track

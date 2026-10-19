@@ -41,7 +41,7 @@ function onPointerDown(e) {
     const t = e.target
     if (!(t instanceof Element)) return
 
-    const optEl = t.closest(`.${OPTION_CLASS}`)
+    const optEl = /** @type {HTMLElement | null} */ (t.closest(`.${OPTION_CLASS}`))
     if (optEl && popup?.contains(optEl)) {
         e.preventDefault()
         e.stopPropagation()
@@ -50,7 +50,7 @@ function onPointerDown(e) {
         return
     }
 
-    const select = t.closest('select')
+    const select = /** @type {HTMLSelectElement | null} */ (t.closest('select'))
     if (select instanceof HTMLSelectElement) {
         if (select.disabled || select.multiple) return
         e.preventDefault()

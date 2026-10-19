@@ -210,6 +210,7 @@ export default class ModulationSection {
      * object on first touch). The stored object is never mutated: a fresh
      * clone carries the new value so undo can restore the previous reference.
      * Also updates the DOM labels next to the input.
+     * @param {HTMLInputElement} input
      * @returns {{updates: object, created: boolean}|null}
      */
     onSlider(input) {
@@ -227,7 +228,7 @@ export default class ModulationSection {
             if (valEl) valEl.textContent = `${fmt(lfo.min)}..${fmt(lfo.max)}`
         } else {
             if (input.nextElementSibling) {
-                input.nextElementSibling.textContent = fmt(input.value)
+                input.nextElementSibling.textContent = String(fmt(Number(input.value)))
             }
         }
         return { updates: { [prop.lfoKey]: lfo }, created: !current }
@@ -235,6 +236,7 @@ export default class ModulationSection {
 
     /**
      * Computes the track updates for the LFO type select.
+     * @param {HTMLSelectElement} sel
      * @returns {{updates: object, created: boolean}|null}
      */
     onSelect(sel) {

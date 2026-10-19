@@ -73,6 +73,7 @@ export default class FxSection {
 
     /**
      * Computes the track updates for a filter-type icon click (no mutation).
+     * @param {HTMLElement} target
      * @returns {object|null} null when the icon is outside the filter row
      */
     onFxIcon(target) {
