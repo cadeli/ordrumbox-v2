@@ -39,9 +39,17 @@ export default class PianoRollPanel extends BasePanel {
     #playback
     #gauge
     #drag
+    #serviceRegistry
 
-    constructor() {
+    /**
+     * @param {object} [deps]  Optional dependency overrides (DI).
+     * @param {typeof import('../state/app_state.js').appState} [deps.appState]
+     * @param {typeof import('../state/service_registry.js').serviceRegistry} [deps.serviceRegistry]
+     * @param {typeof import('../state/event_bus.js').playbackEvents} [deps.playbackEvents]
+     */
+    constructor(deps = {}) {
         super('piano-roll-panel')
+        this.#serviceRegistry = deps.serviceRegistry ?? serviceRegistry
         this.#track = null
         this.#selectedTrackIdx = -1
         this.#cellWidth = 24
@@ -65,6 +73,10 @@ export default class PianoRollPanel extends BasePanel {
             },
         })
         this.#drag = new PianoRollDrag(this)
+    }
+
+    get serviceRegistry() {
+        return this.#serviceRegistry
     }
 
     createDOM() {
@@ -174,7 +186,7 @@ export default class PianoRollPanel extends BasePanel {
         // released by hide()/onDestroy(), so they keep manual add/remove.
         document.addEventListener('keydown', this.#boundOnKeyDown)
         this.container?.addEventListener('wheel', this.#boundOnWheel, { passive: false })
-        if (serviceRegistry.transport?.isRunning) this.#playback.start()
+        if (this.#serviceRegistry.transport?.isRunning) this.#playback.start()
     }
 
     hide() {
@@ -241,7 +253,7 @@ export default class PianoRollPanel extends BasePanel {
     /** @param {MouseEvent} e @param {Element} gridEl */
     #onGridClick(e, gridEl) {
         const track = this.#track
-        const cmd = serviceRegistry.cmd
+        const cmd = this.#serviceRegistry.cmd
         if (!track || !cmd) return
         const cell = pointToCell(e, gridEl, this.#cellWidth, this.pageInfo())
         if (!cell) return
@@ -268,7 +280,7 @@ export default class PianoRollPanel extends BasePanel {
                     beat,
                     beatStep,
                 })
-                serviceRegistry.seq?.simpleBeep(this.#selectedTrackIdx, hit)
+                this.#serviceRegistry.seq?.simpleBeep(this.#selectedTrackIdx, hit)
             }
         } else {
             const newNote = cmd.addNote(track, beat, beatStep, relativePitch)
@@ -285,7 +297,7 @@ export default class PianoRollPanel extends BasePanel {
                 beat,
                 beatStep,
             })
-            serviceRegistry.seq?.simpleBeep(this.#selectedTrackIdx, newNote)
+            this.#serviceRegistry.seq?.simpleBeep(this.#selectedTrackIdx, newNote)
         }
     }
 
@@ -296,7 +308,7 @@ export default class PianoRollPanel extends BasePanel {
         const relativePitch = midi - MIDDLE_C - (track.pitch ?? 0)
         const flatNote = new FlatNote(0, track, { ...NOTE_DEFAULTS, pitch: relativePitch })
         NoteParams.applyNoteParams(flatNote, appState.secondsPerTick)
-        serviceRegistry.audioEngine?.sound?.play(flatNote, serviceRegistry.audioEngine.audioCtx.currentTime)
+        this.#serviceRegistry.audioEngine?.sound?.play(flatNote, this.#serviceRegistry.audioEngine.audioCtx.currentTime)
     }
 
     /** Puts the cursor on the selected note, so it follows a transpose. */
@@ -318,7 +330,7 @@ export default class PianoRollPanel extends BasePanel {
     #nudgeSelectedNote(dir) {
         const track = this.#track
         const note = this.#selectedNote
-        if (!track || !note || !serviceRegistry.cmd?.updateNote) return false
+        if (!track || !note || !this.#serviceRegistry.cmd?.updateNote) return false
 
         const {
             key,
@@ -326,7 +338,7 @@ export default class PianoRollPanel extends BasePanel {
             trackPitch,
             dir: nudgeDir,
         } = applyNoteNudge({
-            registry: serviceRegistry,
+            registry: this.#serviceRegistry,
             track,
             trackIdx: this.#selectedTrackIdx,
             note,
@@ -350,7 +362,7 @@ export default class PianoRollPanel extends BasePanel {
         const track = this.#track
         const pattern = appState.selectedPattern
         if (!track || !pattern) return
-        const cmd = serviceRegistry.cmd
+        const cmd = this.#serviceRegistry.cmd
         const { stepsPerBeat, totalSteps, pageStartStep } = this.pageInfo()
 
         const isArrow = e.key.startsWith('Arrow')
@@ -433,7 +445,7 @@ export default class PianoRollPanel extends BasePanel {
         const pageStartStep = appState.currentPage * BEATS_PER_PAGE * stepsPerBeat
         const pageEndStep = pageStartStep + BEATS_PER_PAGE * stepsPerBeat
         if (this.#cursorStep < pageStartStep || this.#cursorStep >= pageEndStep) {
-            serviceRegistry.cmd.setCurrentPage(Math.floor(this.#cursorStep / stepsPerBeat / BEATS_PER_PAGE))
+            this.#serviceRegistry.cmd.setCurrentPage(Math.floor(this.#cursorStep / stepsPerBeat / BEATS_PER_PAGE))
             this.#gridDirty = true
         }
         const track = this.#track

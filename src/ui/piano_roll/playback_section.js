@@ -2,7 +2,6 @@
 // Playhead, rAF loop and note illumination during playback.
 
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents, emitPageChanged } from '../../state/event_bus.js'
 import { BEATS_PER_PAGE, TICK } from '../../core/constants.js'
 import { getNoteAbsoluteStep } from '../../core/notes.js'
@@ -36,7 +35,7 @@ export default class PlaybackSection {
     start() {
         if (this.#rafId) return
         const loop = () => {
-            const transport = serviceRegistry.transport
+            const transport = this.#editor.serviceRegistry.transport
             if (!transport?.isRunning || !this.#editor.container || !this.#editor.isVisible) {
                 this.#rafId = null
                 if (this.#playhead) this.#playhead.style.display = 'none'
@@ -61,7 +60,7 @@ export default class PlaybackSection {
     }
 
     #updatePlayhead() {
-        const transport = serviceRegistry.transport
+        const transport = this.#editor.serviceRegistry.transport
         if (!transport?.isRunning) return
         const pattern = appState.selectedPattern
         const track = this.#editor.track
@@ -83,7 +82,7 @@ export default class PlaybackSection {
         if (absStep < pageStartStep || absStep >= pageEndStep) {
             const newPage = Math.floor(absStep / stepsPerBeat / BEATS_PER_PAGE)
             if (newPage !== appState.currentPage) {
-                serviceRegistry.cmd.setCurrentPage(newPage)
+                this.#editor.serviceRegistry.cmd.setCurrentPage(newPage)
                 this.#editor.viewport.clampPage()
                 this.#editor.gridDirty = true
                 this.#editor.sync()

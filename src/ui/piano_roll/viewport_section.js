@@ -2,7 +2,6 @@
 // Piano roll paging, cell-width measurement and page navigation UI.
 
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { emitPageChanged } from '../../state/event_bus.js'
 import { clamp } from '../../core/numbers.js'
 import { pageCountFor } from '../page_nav.js'
@@ -67,18 +66,18 @@ export default class ViewportSection {
     }
 
     clampPage() {
-        serviceRegistry.cmd.setCurrentPage(clamp(appState.currentPage, 0, this.#totalPages() - 1))
+        this.#editor.serviceRegistry.cmd.setCurrentPage(clamp(appState.currentPage, 0, this.#totalPages() - 1))
     }
 
     prevPage() {
         if (appState.currentPage <= 0) return
-        serviceRegistry.cmd.setCurrentPage(appState.currentPage - 1)
+        this.#editor.serviceRegistry.cmd.setCurrentPage(appState.currentPage - 1)
         emitPageChanged()
     }
 
     nextPage() {
         if (appState.currentPage >= this.#totalPages() - 1) return
-        serviceRegistry.cmd.setCurrentPage(appState.currentPage + 1)
+        this.#editor.serviceRegistry.cmd.setCurrentPage(appState.currentPage + 1)
         emitPageChanged()
     }
 

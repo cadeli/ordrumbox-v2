@@ -37,8 +37,8 @@ import { serviceRegistry } from '../state/service_registry.js'
  */
 export function createAndInitPanels() {
     const toolbar = new Toolbar({ serviceRegistry })
-    const patternPanel = new PatternPanel()
-    const pianoRollPanel = new PianoRollPanel()
+    const patternPanel = new PatternPanel({ serviceRegistry })
+    const pianoRollPanel = new PianoRollPanel({ serviceRegistry })
     const noteEditor = new NoteEditor()
     const trackEditor = new TrackEditor()
     const toolsPanel = new ToolsPanel()

@@ -5,7 +5,6 @@
 // note under the pointer, keeping the cursor on it, repainting.
 
 import { playbackEvents, emitNotesChanged } from '../../state/event_bus.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import NoteDrag from '../components/note_drag.js'
 import { applyNoteEdit, emitNotePicked } from '../components/note_edit.js'
 
@@ -63,7 +62,7 @@ export default class PianoRollDrag {
     #apply(note, axis, value, dir) {
         const track = this.#editor.track
         const changed = applyNoteEdit({
-            registry: serviceRegistry,
+            registry: this.#editor.serviceRegistry,
             track,
             trackIdx: this.#editor.selectedTrackIdx,
             note,

@@ -3,7 +3,6 @@
 
 import { notesAtStep } from '../../core/notes.js'
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents, emitNotesChanged } from '../../state/event_bus.js'
 import { beatLabel, notesLabel } from '../components/labels.js'
 import { EVENTS } from '../../core/events.js'
@@ -27,7 +26,7 @@ export default class MenuSection {
     /** @param {MouseEvent} e */
     onContextMenu(e) {
         const track = this.#editor.track
-        const cmd = serviceRegistry.cmd
+        const cmd = this.#editor.serviceRegistry.cmd
         if (!track || !cmd) return
 
         const target = /** @type {HTMLElement} */ (e.target)
@@ -104,7 +103,7 @@ export default class MenuSection {
     /** @param {number} beat @param {number} beatStep @param {number} relativePitch */
     #menuAddNote(beat, beatStep, relativePitch) {
         const track = this.#editor.track
-        const cmd = serviceRegistry.cmd
+        const cmd = this.#editor.serviceRegistry.cmd
         if (!track || !cmd) return
         const newNote = cmd.addNote(track, beat, beatStep, relativePitch)
         this.#editor.selectedNote = newNote
@@ -122,14 +121,14 @@ export default class MenuSection {
                 beatStep,
             })
         })
-        serviceRegistry.seq?.simpleBeep(this.#editor.selectedTrackIdx, newNote)
+        this.#editor.serviceRegistry.seq?.simpleBeep(this.#editor.selectedTrackIdx, newNote)
         showToast(`Added note (pitch ${relativePitch}) — ${track.name} @ ${beatLabel(beat, beatStep)}`, 'success')
     }
 
     /** @param {import('../../core/note_schema.js').Note|null} hit @param {number} beat @param {number} beatStep */
     #menuDeleteNote(hit, beat, beatStep) {
         const track = this.#editor.track
-        const cmd = serviceRegistry.cmd
+        const cmd = this.#editor.serviceRegistry.cmd
         if (!track || !cmd || !hit) return
         cmd.deleteNote(track, hit)
         if (this.#editor.selectedNote === hit) this.#editor.clearSelection()
@@ -141,7 +140,7 @@ export default class MenuSection {
     /** @param {number} beat @param {number} beatStep @param {number} rootPitch @param {number[]} intervals @param {string} quality */
     #menuAddChord(beat, beatStep, rootPitch, intervals, quality) {
         const track = this.#editor.track
-        const cmd = serviceRegistry.cmd
+        const cmd = this.#editor.serviceRegistry.cmd
         if (!track || !cmd) return
         const existing = new Set(notesAtStep(track, beat, beatStep).map((n) => n.pitch ?? 0))
         const added = []
@@ -177,7 +176,7 @@ export default class MenuSection {
 
     #menuClearAll() {
         const track = this.#editor.track
-        const cmd = serviceRegistry.cmd
+        const cmd = this.#editor.serviceRegistry.cmd
         if (!track || !cmd) return
         const count = (track.notes ?? []).length
         if (count === 0) {
@@ -193,7 +192,7 @@ export default class MenuSection {
     /** @param {number} tonic */
     #menuAddSequence(tonic) {
         const track = this.#editor.track
-        const cmd = serviceRegistry.cmd
+        const cmd = this.#editor.serviceRegistry.cmd
         const pattern = appState.selectedPattern
         if (!track || !cmd || !pattern) return
 
