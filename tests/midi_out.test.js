@@ -23,6 +23,7 @@ function makeCtx({ midiMap = new Map(), pattern, resolveMapping } = {}) {
         player: { getCurrentFlatNotesMap: () => flatNotes, loop: 0 },
         getFlatNotes: () => flatNotes,
         resolveMapping: resolveMapping ?? (() => ({ channel: 1, key: '36' })),
+        midiManager: serviceRegistry.midiManager,
     }
 }
 
@@ -215,13 +216,13 @@ describe('sendTriggerMidi', () => {
 
     it('no-op when track is missing', () => {
         serviceRegistry.midiManager = makeReadyMidi()
-        sendTriggerMidi({ track: null, resolveMapping })
+        sendTriggerMidi({ track: null, resolveMapping, midiManager: serviceRegistry.midiManager })
         expect(serviceRegistry.midiManager.sendNoteOn).not.toHaveBeenCalled()
     })
 
     it('no-op when mapping is missing', () => {
         serviceRegistry.midiManager = makeReadyMidi()
-        sendTriggerMidi({ track: { id: 'X' }, resolveMapping: () => null })
+        sendTriggerMidi({ track: { id: 'X' }, resolveMapping: () => null, midiManager: serviceRegistry.midiManager })
         expect(serviceRegistry.midiManager.sendNoteOn).not.toHaveBeenCalled()
     })
 
@@ -229,7 +230,7 @@ describe('sendTriggerMidi', () => {
         const midi = makeReadyMidi()
         serviceRegistry.midiManager = midi
 
-        sendTriggerMidi({ track: { id: 'X', velocity: 0.5 }, resolveMapping })
+        sendTriggerMidi({ track: { id: 'X', velocity: 0.5 }, resolveMapping, midiManager: serviceRegistry.midiManager })
 
         expect(midi.sendNoteOn).toHaveBeenCalledWith(10, 40, 63)
         expect(midi.sendNoteOff).not.toHaveBeenCalled()
@@ -242,10 +243,10 @@ describe('sendTriggerMidi', () => {
         const midi = makeReadyMidi()
         serviceRegistry.midiManager = midi
 
-        sendTriggerMidi({ track: { id: 'X', velocity: 0.5 }, note: { velocity: 1 }, resolveMapping })
+        sendTriggerMidi({ track: { id: 'X', velocity: 0.5 }, note: { velocity: 1 }, resolveMapping, midiManager: serviceRegistry.midiManager })
         expect(midi.sendNoteOn).toHaveBeenCalledWith(10, 40, 127)
 
-        sendTriggerMidi({ track: { id: 'X', velocity: 0.5 }, resolveMapping })
+        sendTriggerMidi({ track: { id: 'X', velocity: 0.5 }, resolveMapping, midiManager: serviceRegistry.midiManager })
         expect(midi.sendNoteOn).toHaveBeenLastCalledWith(10, 40, 63)
     })
 
@@ -253,7 +254,7 @@ describe('sendTriggerMidi', () => {
         const midi = makeReadyMidi()
         serviceRegistry.midiManager = midi
 
-        sendTriggerMidi({ track: { id: 'X', velocity: 1 }, resolveMapping: () => ({ channel: 'a', key: 'b' }) })
+        sendTriggerMidi({ track: { id: 'X', velocity: 1 }, resolveMapping: () => ({ channel: 'a', key: 'b' }), midiManager: serviceRegistry.midiManager })
         expect(midi.sendNoteOn).toHaveBeenCalledWith(9, 60, 127)
     })
 })

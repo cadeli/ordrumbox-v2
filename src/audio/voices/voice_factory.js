@@ -12,14 +12,16 @@ export default class VoiceFactory {
      * @param {Record<string, any>} generatedSounds
      * @param {import('../node_pool.js').default|null} [nodePool]
      * @param {import('./synth_voice_pool.js').default|null} [synthNodePool]
+     * @param {(() => number)|null} [getBpm]
      */
-    constructor(audioCtx, mixer, sounds, generatedSounds, nodePool = null, synthNodePool = null) {
+    constructor(audioCtx, mixer, sounds, generatedSounds, nodePool = null, synthNodePool = null, getBpm = null) {
         this.audioCtx = audioCtx
         this.mixer = mixer
         this.sounds = sounds
         this.generatedSounds = generatedSounds
         this.nodePool = nodePool
         this.synthNodePool = synthNodePool
+        this.getBpm = getBpm ?? (() => 120)
     }
 
     /** @param {import('../../model/flat_note.js').default} flatNote @returns {Promise<import('./base_voice.js').default|null>} */
@@ -53,6 +55,7 @@ export default class VoiceFactory {
                 soundKey,
                 this.nodePool,
                 this.synthNodePool,
+                this.getBpm,
             )
         }
 

@@ -2,7 +2,7 @@ import VoiceFactory from './voices/voice_factory.js'
 import NodePool from './node_pool.js'
 import SynthVoicePool from './voices/synth_voice_pool.js'
 import { applyTrackToStrip } from './strip_sync.js'
-import { serviceRegistry } from '../state/service_registry.js'
+
 import ResourcesLoader from '../loader/resources_loader.js'
 import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
@@ -27,12 +27,15 @@ export default class Sound {
     #activeVoiceSet
     #stripParamCache
 
-    /** @param {BaseAudioContext} audioCtx @param {Mixer} mixer @param {Record<string, SoundEntry>} sounds @param {Record<string, object>} generatedSounds @param {boolean} [isOffline] */
-    constructor(audioCtx, mixer, sounds, generatedSounds, isOffline = false) {
+    /** @param {BaseAudioContext} audioCtx @param {Mixer} mixer @param {Record<string, SoundEntry>} sounds @param {Record<string, object>} generatedSounds @param {boolean} [isOffline] @param {any} [transport] @param {any} [resourcesLoader] @param {(() => number)|null} [getBpm] */
+    constructor(audioCtx, mixer, sounds, generatedSounds, isOffline = false, transport = null, resourcesLoader = null, getBpm = null) {
         this.audioCtx = audioCtx
         this.mixer = mixer
         this.sounds = sounds
         this.generatedSounds = generatedSounds ?? {}
+        this.transport = transport
+        this.resourcesLoader = resourcesLoader
+        this.getBpm = getBpm ?? (() => transport?.bpm ?? 120)
         /** Mono tracks only: the voice currently held by each mono track. */
         this.monoVoiceByTrack = new WeakMap()
         this.activeSynthVoices = new Set()
@@ -60,6 +63,7 @@ export default class Sound {
             this.generatedSounds,
             this.nodePool,
             this.synthNodePool,
+            this.getBpm,
         )
         this.generatedSoundsLoading = false
         this.generatedSoundsLoadFailed = false
@@ -170,7 +174,7 @@ export default class Sound {
                 }
                 let lfoContext = null
                 if (flatNote.track.pitchLfo) {
-                    const tick = serviceRegistry.transport?.tick ?? 0
+                    const tick = this.transport?.tick ?? 0
                     const tickCount = TICK * (flatNote.track.beatCount ?? 4)
                     lfoContext = { tick, tickCount }
                 }
@@ -229,7 +233,7 @@ export default class Sound {
         if (this.generatedSoundsLoading || this.generatedSoundsLoadFailed) return
         this.generatedSoundsLoading = true
         try {
-            await serviceRegistry.resourcesLoader?.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
+            await this.resourcesLoader?.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
             this.generatedSoundsLoading = false
             if (Object.keys(this.generatedSounds).length === 0) {
                 this.generatedSoundsLoadFailed = true

@@ -2,7 +2,7 @@ import Player from './player.js'
 import Mixer from './mixer.js'
 import { recomputeFlatNotes } from '../patterns/pattern_engine.js'
 import { PLAYBACK_MODE, songPatterns } from '../logic/song_playback.js'
-import { serviceRegistry } from '../state/service_registry.js'
+
 import { playbackEvents } from '../state/event_bus.js'
 import { instrumentsManager } from '../logic/services/instruments_manager/index.js'
 import { getTracksArray } from '../core/tracks.js'
@@ -42,8 +42,12 @@ export default class Engine {
      *   getAutoGenerator?: () => Promise<import('../state/service_registry.js').AutoGeneratorService>,
      *   TICK?: number,
      *   secondsPerTick?: number,
-     *   isOffline?: boolean,
-     * }} config
+  *   isOffline?: boolean,
+  *   midiManager?: any,
+  *   transport?: any,
+  *   resourcesLoader?: any,
+  *   getBpm?: (() => number)|null,
+  * }} config
      */
     constructor(config) {
         this.audioCtx = config.audioCtx
@@ -61,6 +65,7 @@ export default class Engine {
         this.secondsPerTick = config.secondsPerTick
         this.instrumentsManager = instrumentsManager
         this.isOffline = !!config.isOffline
+        this.midiManager = config.midiManager ?? null
 
         this.flatNotes = new Map()
         this.#cachedPatternRef = null
@@ -94,6 +99,9 @@ export default class Engine {
                     TICK: this.TICK,
                     secondsPerTick: this.secondsPerTick,
                     isOffline: this.isOffline,
+                    transport: config.transport,
+                    resourcesLoader: config.resourcesLoader,
+                    getBpm: config.getBpm,
                 })
                 this.sound = this.player.sound
 
@@ -248,8 +256,8 @@ export default class Engine {
             this.mixer.transportClock.offset.setValueAtTime(0, this.audioCtx.currentTime)
         }
         this.mixer.stop()
-        if (serviceRegistry.midiManager) {
-            serviceRegistry.midiManager.sendAllNotesOff()
+        if (this.midiManager) {
+            this.midiManager.sendAllNotesOff()
         }
     }
 
@@ -268,6 +276,7 @@ export default class Engine {
                 player: this.player,
                 getFlatNotes: (loop) => this.getFlatNotesForCurrentPattern(loop),
                 resolveMapping: this.#resolveMidiMapping,
+                midiManager: this.midiManager,
             },
             tick,
             atTime,
@@ -284,12 +293,12 @@ export default class Engine {
 
         await this.player.simpleBeep(trackIdx, note)
 
-        const midi = serviceRegistry.midiManager
+        const midi = this.midiManager
         if (midi && midi.isReady && midi.selectedOutputId) {
             const pat = this.patterns[this.getSelectedPatternIdx()]
             const tracks = getTracksArray(pat)
             const track = typeof trackIdx === 'number' ? tracks[trackIdx] : pat?.tracks?.[trackIdx]
-            sendTriggerMidi({ track, note, resolveMapping: this.#resolveMidiMapping })
+            sendTriggerMidi({ track, note, resolveMapping: this.#resolveMidiMapping, midiManager: midi })
         }
     }
 

@@ -1,7 +1,7 @@
 import Engine from '../engine.js'
 import { TICK } from '../../core/constants.js'
 import { bufferToWav } from './wav_encoder.js'
-import { serviceRegistry } from '../../state/service_registry.js'
+
 import { getAutoGeneratorService } from '../../state/service_loader.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { valueOrFallback, logger } from '../../core/logger.js'
@@ -61,39 +61,6 @@ export default class WavExporter {
     }
 
     /**
-     * Runs `fn` with `serviceRegistry.transport.bpm` set to `bpm`, then restores
-     * it — even if `fn` throws.
-     *
-     * The transport OBJECT is never swapped: synth voices read its bpm (auto
-     * release, LFO sync) while other services read start/tick/isRunning, so a
-     * replacement would be visible to them.
-     *
-     * @template T
-     * @param {number} bpm
-     * @param {() => Promise<T>} fn
-     * @returns {Promise<T>}
-     */
-    async #withTransportBpm(bpm, fn) {
-        const savedTransport = serviceRegistry.transport
-        const savedBpm = savedTransport?.bpm
-        if (savedTransport) {
-            savedTransport.bpm = bpm
-        } else {
-            // stand-in: only bpm is readable during the offline render
-            serviceRegistry.transport = /** @type {import('../../logic/transport/transport.js').default} */ ({ bpm })
-        }
-        try {
-            return await fn()
-        } finally {
-            if (savedTransport) {
-                savedTransport.bpm = savedBpm
-            } else {
-                serviceRegistry.transport = null
-            }
-        }
-    }
-
-    /**
      * Renders an offline export, retrying while the buffer comes back silent.
      *
      * A soft-synth note is triggered by `port.postMessage` (see
@@ -144,6 +111,7 @@ export default class WavExporter {
         const schedule = async () => {
             const offlineCtx = new OfflineAudioContext(2, Math.floor(sampleRate * duration), sampleRate)
 
+            const exportTransport = { bpm: pattern.bpm }
             const exporterAudioEngine = new Engine({
                 audioCtx: offlineCtx,
                 sounds: soundRegistry.sounds,
@@ -154,6 +122,8 @@ export default class WavExporter {
                 TICK,
                 secondsPerTick: secondsPerTick, // one sequencer tick, for swing
                 isOffline: true,
+                transport: exportTransport,
+                getBpm: () => exportTransport.bpm,
             })
 
             // start() awaits the worklet mixer init internally — must be awaited
@@ -166,11 +136,9 @@ export default class WavExporter {
             exporterAudioEngine.mixer.setBpm(pattern.bpm)
 
             // Simple offline scheduling
-            await this.#withTransportBpm(pattern.bpm, async () => {
-                for (let t = 0; t < totalTicks; t++) {
-                    await exporterAudioEngine.playNotes(t, t * secondsPerTick)
-                }
-            })
+            for (let t = 0; t < totalTicks; t++) {
+                await exporterAudioEngine.playNotes(t, t * secondsPerTick)
+            }
 
             return offlineCtx
         }
@@ -210,6 +178,7 @@ export default class WavExporter {
         const schedule = async () => {
             const offlineCtx = new OfflineAudioContext(2, Math.ceil(sampleRate * duration), sampleRate)
 
+            const exportTransport = { bpm }
             const exporterAudioEngine = new Engine({
                 audioCtx: offlineCtx,
                 sounds: soundRegistry.sounds,
@@ -227,6 +196,8 @@ export default class WavExporter {
                 TICK,
                 secondsPerTick: secondsPerTick,
                 isOffline: true,
+                transport: exportTransport,
+                getBpm: () => exportTransport.bpm,
             })
 
             await exporterAudioEngine.start(usedPatterns[0])
@@ -238,11 +209,9 @@ export default class WavExporter {
 
             exporterAudioEngine.mixer.setBpm(bpm)
 
-            await this.#withTransportBpm(bpm, async () => {
-                for (let t = 0; t < totalTicks; t++) {
-                    await exporterAudioEngine.playNotes(t, t * secondsPerTick)
-                }
-            })
+            for (let t = 0; t < totalTicks; t++) {
+                await exporterAudioEngine.playNotes(t, t * secondsPerTick)
+            }
 
             return offlineCtx
         }

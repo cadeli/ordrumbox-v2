@@ -3,7 +3,7 @@
 import { hasAnySolo, shouldTrackPlay } from '../core/tracks.js'
 import { logger, valueOrFallback } from '../core/logger.js'
 import InstrumentsManager from '../logic/services/instruments_manager/index.js'
-import { serviceRegistry } from '../state/service_registry.js'
+
 
 /** @type {Set<ReturnType<typeof setTimeout>>} */
 const pendingMidiTimers = new Set()
@@ -34,13 +34,14 @@ export function createMidiMappingResolver() {
  * @param {{getCurrentFlatNotesMap: () => Map<number, object[]>, loop: number}} deps.player
  * @param {(loop: number) => Map} deps.getFlatNotes
  * @param {(trackId: string) => {channel?: string|number, key?: string|number}|null} deps.resolveMapping
+ * @param {any} [deps.midiManager]
  * @param {number} tick
  * @param {number} atTime - AudioContext time
  */
 export function sendMidiNotes(deps, tick, atTime) {
-    const { audioCtx, patterns, getSelectedPatternIdx, TICK, player, getFlatNotes, resolveMapping } = deps
+    const { audioCtx, patterns, getSelectedPatternIdx, TICK, player, getFlatNotes, resolveMapping, midiManager } = deps
 
-    const midi = serviceRegistry.midiManager
+    const midi = midiManager
     if (!midi || !midi.isReady || !midi.selectedOutputId) return
 
     const selectedPattern = patterns[getSelectedPatternIdx()]
@@ -93,9 +94,10 @@ export function sendMidiNotes(deps, tick, atTime) {
  * @param {{id?: string, velocity?: number}} args.track
  * @param {{velocity?: number}|null} [args.note] - flat note override (velocity source)
  * @param {(trackId: string) => {channel?: string|number, key?: string|number}|null} args.resolveMapping
+ * @param {any} [args.midiManager]
  */
-export function sendTriggerMidi({ track, note, resolveMapping }) {
-    const midi = serviceRegistry.midiManager
+export function sendTriggerMidi({ track, note, resolveMapping, midiManager }) {
+    const midi = midiManager
     if (!midi || !midi.isReady || !midi.selectedOutputId) return
     if (!track) return
 

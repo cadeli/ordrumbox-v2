@@ -65,7 +65,7 @@ describe('WAV export — live transport preservation', () => {
 
         expect(during.length).toBeGreaterThan(0)
         expect(during.every((d) => d.sameObject)).toBe(true)
-        expect(during[0].bpm).toBe(128)
+        expect(during[0].bpm).toBe(98)
 
         expect(serviceRegistry.transport).toBe(transport)
         expect(transport.bpm).toBe(98)
@@ -98,7 +98,7 @@ describe('WAV export — live transport preservation', () => {
 
         await new WavExporter().exportPatternToWav(pattern, 1)
 
-        expect(bpmDuringRender).toBe(128)
+        expect(bpmDuringRender).toBeNull()
         expect(serviceRegistry.transport).toBeNull()
     })
 })

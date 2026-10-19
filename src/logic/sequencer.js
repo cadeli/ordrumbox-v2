@@ -77,6 +77,10 @@ export default class Sequencer {
         if (this.serviceRegistry.audioEngine) return
         this.serviceRegistry.audioEngine = new Engine({
             audioCtx: this.serviceRegistry.audioCtx,
+            midiManager: this.serviceRegistry.midiManager,
+            transport: this.serviceRegistry.transport,
+            resourcesLoader: this.serviceRegistry.resourcesLoader,
+            getBpm: () => this.serviceRegistry.transport?.bpm ?? 120,
             sounds: this.soundRegistry.sounds,
             generatedSounds: this.soundRegistry.generatedSounds,
             patterns: this.appState.patterns,

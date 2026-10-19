@@ -136,7 +136,7 @@ describe('Sound', () => {
         mixer = makeMixer()
         sounds = { snd_kick: { buffer: ctx.createBuffer(1, 1024, 44100) } }
         generatedSounds = { BASS1: { vco1: { wave: 'sine', octave: 0, detune: 0, gain: 1 }, masterVolume: 0.8 } }
-        sound = new Sound(ctx, mixer, sounds, generatedSounds)
+        sound = new Sound(ctx, mixer, sounds, generatedSounds, false, null, serviceRegistry.resourcesLoader)
         sound.voiceFactory = makeVoiceFactory()
         serviceRegistry.resourcesLoader.loadGeneratedSounds.mockClear()
     })

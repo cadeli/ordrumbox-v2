@@ -57,8 +57,11 @@ export default class Player {
      *   getSong?: () => import('../model/song_schema.js').Song|null,
      *   TICK?: number,
      *   secondsPerTick?: number,
-     *   isOffline?: boolean,
-     * }} config
+  *   isOffline?: boolean,
+  *   transport?: any,
+  *   resourcesLoader?: any,
+  *   getBpm?: (() => number)|null,
+  * }} config
      */
     constructor(config) {
         this.audioCtx = config.audioCtx
@@ -76,7 +79,7 @@ export default class Player {
         this.TICK = config.TICK
         this.secondsPerTick = config.secondsPerTick
         this.isOffline = !!config.isOffline
-        this.sound = new Sound(config.audioCtx, config.mixer, this.sounds, this.generatedSounds, this.isOffline)
+        this.sound = new Sound(config.audioCtx, config.mixer, this.sounds, this.generatedSounds, this.isOffline, config.transport, config.resourcesLoader, config.getBpm)
         this.loop = 0
         this.lastDisplayBeats = 0
     }

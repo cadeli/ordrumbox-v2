@@ -5,7 +5,7 @@ import { computeOscFrequency, computeNoteRatio, computeAccent, syncToHz } from '
 import { WAVE_TO_INT, FILTER_TO_INT } from '../fx_values.js'
 import { clamp, toFiniteNumber } from '../../core/numbers.js'
 import { RELEASE_TIME, NOTE_VELO_BALANCE } from '../../core/constants.js'
-import { serviceRegistry } from '../../state/service_registry.js'
+
 import { logger } from '../../core/logger.js'
 
 // Register the synth-voice processor (idempotent)
@@ -108,9 +108,10 @@ export default class WorkletSynthVoice extends BaseVoice {
      * @param {Record<string, any>} generatedSound synth preset - free-form JSON with no model yet
      * @param {string|null} [soundKey]
      * @param {import('../node_pool.js').default|null} [nodePool]
-     * @param {import('./synth_voice_pool.js').default|null} [synthNodePool]
-     */
-    constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null, synthNodePool = null) {
+ * @param {import('./synth_voice_pool.js').default|null} [synthNodePool]
+ * @param {(() => number)|null} [getBpm]
+ */
+constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null, synthNodePool = null, getBpm = null) {
         super(audioCtx, strip, nodePool)
         this.generatedSound = generatedSound
         this.soundKey = soundKey
@@ -122,6 +123,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.#cleanupTimer = null
         this.#autoReleaseTimer = null
         this.#synthNodePool = synthNodePool
+        this.getBpm = getBpm ?? (() => 120)
     }
 
     async setup(flatNote, _time) {
@@ -172,7 +174,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             // `currentTime` in its per-sample loop, so this works correctly in
             // both real-time and OfflineBaseAudioContext (export).
             if (this.#autoReleaseTimer) clearTimeout(this.#autoReleaseTimer)
-            const bpm = serviceRegistry.transport?.bpm ?? 120
+            const bpm = this.getBpm()
             const stepDuration = 60 / bpm / this.#stepsPerBeat
             const autoReleaseTime = time + stepDuration
             postRelease(this.workletNode, autoReleaseTime)
@@ -329,11 +331,11 @@ export default class WorkletSynthVoice extends BaseVoice {
                 velocity: peak, // param slot 22 is named "velocity" but carries the peak amplitude
                 lfo1Target: mapEnum(LFO_TARGET_TO_INT, gs.lfo?.target, 'lfoTarget'),
                 lfo1Wave: mapEnum(WAVE_TO_INT, gs.lfo?.wave, 'wave'),
-                lfo1Freq: syncToHz(gs.lfo?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo?.freq, 0),
+                lfo1Freq: syncToHz(gs.lfo?.sync, this.getBpm()) ?? toFiniteNumber(gs.lfo?.freq, 0),
                 lfo1Depth: toFiniteNumber(gs.lfo?.depth, 0),
                 lfo2Target: mapEnum(LFO_TARGET_TO_INT, gs.lfo2?.target, 'lfoTarget'),
                 lfo2Wave: mapEnum(WAVE_TO_INT, gs.lfo2?.wave, 'wave'),
-                lfo2Freq: syncToHz(gs.lfo2?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo2?.freq, 0),
+                lfo2Freq: syncToHz(gs.lfo2?.sync, this.getBpm()) ?? toFiniteNumber(gs.lfo2?.freq, 0),
                 lfo2Depth: toFiniteNumber(gs.lfo2?.depth, 0),
                 filterEnvAmt: clamp(toFiniteNumber((gs.filterEnv ?? gs.filter)?.filterEnvelopeAmount, 0), 0, 1),
                 fmAmount: clamp(toFiniteNumber(gs.fm?.amount, 0), 0, 1),
