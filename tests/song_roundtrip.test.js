@@ -16,7 +16,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import songService from '../src/logic/services/song_service.js'
 import Commander from '../src/logic/commands/commander.js'
@@ -286,7 +286,7 @@ describe('Song & Project Persistence Roundtrip', () => {
         serviceRegistry.reset()
 
         // Set up real Commander and History for state manipulation
-        const cmd = new Commander()
+        const cmd = new Commander({ registry: serviceRegistry })
         serviceRegistry.cmd = cmd
         serviceRegistry.seq = { setBpm: vi.fn(), toggleStartStop: vi.fn() }
         serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }

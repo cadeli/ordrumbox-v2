@@ -2,7 +2,6 @@
 
 import { appState } from '../../state/app_state.js'
 import { playbackEvents } from '../../state/event_bus.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { getTracksArray } from '../../core/tracks.js'
 import { EVENTS } from '../../core/events.js'
 
@@ -38,10 +37,10 @@ export default class PatternSection {
         if (!pattern || !pattern.tracks) return
 
         getTracksArray(pattern).forEach((track) => {
-            serviceRegistry.cmd?.compactTrack(track)
+            this.#panel.serviceRegistry.cmd?.compactTrack(track)
         })
 
-        serviceRegistry.audioEngine?.invalidateCache()
+        this.#panel.serviceRegistry.audioEngine?.invalidateCache()
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.NOTE_CHANGE)
             playbackEvents.emit(EVENTS.PATTERN_CHANGE)
@@ -53,9 +52,9 @@ export default class PatternSection {
         if (!pattern) return
         const tracks = getTracksArray(pattern)
         for (const track of tracks) {
-            serviceRegistry.cmd?.randomizeTrack(track, pattern)
+            this.#panel.serviceRegistry.cmd?.randomizeTrack(track, pattern)
         }
-        serviceRegistry.audioEngine?.invalidateCache()
+        this.#panel.serviceRegistry.audioEngine?.invalidateCache()
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.NOTE_CHANGE)
             playbackEvents.emit(EVENTS.PATTERN_CHANGE)

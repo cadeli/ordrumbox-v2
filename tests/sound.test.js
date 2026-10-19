@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { logger } from '../src/core/logger.js'
 import Sound from '../src/audio/sound.js'
 import { makeParam, makeNode } from './helpers/worklet_mocks.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 
-vi.mock('../src/state/service_registry.js', () => ({
+vi.mock('../src/state/service_loader.js', () => ({
     serviceRegistry: {
         resourcesLoader: { loadGeneratedSounds: vi.fn().mockResolvedValue() },
     },

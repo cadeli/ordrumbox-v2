@@ -2,7 +2,6 @@
 // Pattern library list rendering, selection and inline rename.
 
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { emitStructureChanged } from '../../state/event_bus.js'
 
 export default class ListSection {
@@ -58,8 +57,8 @@ export default class ListSection {
 
     /** @param {number} idx */
     selectPattern(idx) {
-        serviceRegistry.cmd.setSelectedPatternIdx(idx)
-        serviceRegistry.cmd.resetPage()
+        this.#editor.serviceRegistry.cmd.setSelectedPatternIdx(idx)
+        this.#editor.serviceRegistry.cmd.resetPage()
         emitStructureChanged()
         this.renderList()
     }
@@ -81,7 +80,7 @@ export default class ListSection {
         const commit = () => {
             const newName = input.value.trim()
             if (newName && newName !== currentName) {
-                serviceRegistry.cmd.renamePattern(idx, newName)
+                this.#editor.serviceRegistry.cmd.renamePattern(idx, newName)
                 emitStructureChanged()
             }
             this.#editor.sync()

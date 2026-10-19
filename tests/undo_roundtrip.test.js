@@ -17,7 +17,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/commander.js'
 import HistoryManager from '../src/logic/history_manager.js'
@@ -30,10 +30,9 @@ describe('Undo Roundtrip & State Inversion', () => {
         soundRegistry.reset()
         serviceRegistry.reset()
 
-        cmd = new Commander()
-        serviceRegistry.cmd = cmd
         history = new HistoryManager(50)
-        serviceRegistry.history = history
+        cmd = new Commander({ history })
+        serviceRegistry.cmd = cmd
     })
 
     describe('Roundtrip 1: 15-step Deep Mutation & Complete Inversion', () => {
@@ -326,7 +325,8 @@ describe('Undo Roundtrip & State Inversion', () => {
     describe('Roundtrip 4: History Sliding Window & Limits', () => {
         it('maintains maximum history size without crashing on empty undo', () => {
             const smallHistory = new HistoryManager(3)
-            serviceRegistry.history = smallHistory
+            cmd = new Commander({ history: smallHistory })
+            serviceRegistry.cmd = cmd
 
             const pattern = cmd.addPattern('Small_History')
             const kick = cmd.addTrack(pattern, 'KICK', 4)

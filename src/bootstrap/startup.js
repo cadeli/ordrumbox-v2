@@ -1,7 +1,7 @@
 import { showToast } from '../core/notify.js'
 import ResourcesLoader from '../loader/resources_loader.js'
 import { appState } from '../state/app_state.js'
-import { serviceRegistry } from '../state/service_registry.js'
+import { getServices } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { playbackEvents, emitStructureChanged } from '../state/event_bus.js'
 import { logger } from '../core/logger.js'
@@ -20,14 +20,14 @@ function scheduleAfterFirstPaint(callback) {
 
 async function loadStartupResources() {
     try {
-        await serviceRegistry.resourcesLoader.loadSettings()
+        await services.resourcesLoader.loadSettings()
         soundRegistry.settings.loaded = true
-        await serviceRegistry.resourcesLoader.loadSong(ResourcesLoader.SONG_URL)
+        await services.resourcesLoader.loadSong(ResourcesLoader.SONG_URL)
         if (soundRegistry.drumkitList.length === 0) {
-            await serviceRegistry.resourcesLoader.loadDrumkitList(ResourcesLoader.DRUMKITS_URL)
+            await services.resourcesLoader.loadDrumkitList(ResourcesLoader.DRUMKITS_URL)
         }
         if (Object.keys(soundRegistry.generatedSounds).length === 0) {
-            await serviceRegistry.resourcesLoader.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
+            await services.resourcesLoader.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
         }
     } catch (e) {
         logger.error('Main', 'Failed to load startup resources', e)
@@ -38,7 +38,7 @@ async function loadStartupResources() {
 function restoreInitialView() {
     if (appState.patterns.length === 0) return
 
-    serviceRegistry.resourcesLoader.restoreSession()
+    services.resourcesLoader.restoreSession()
 
     const dkIdx = Math.min(appState.selectedDrumkitIdx, soundRegistry.drumkitList.length - 1)
     const patIdx = Math.min(appState.selectedPatternIdx, appState.patterns.length - 1)
@@ -48,8 +48,8 @@ function restoreInitialView() {
         playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
     })
 
-    serviceRegistry.cmd.setSelectedDrumkitIdx(dkIdx)
-    serviceRegistry.cmd.setSelectedPatternIdx(patIdx)
+    services.cmd.setSelectedDrumkitIdx(dkIdx)
+    services.cmd.setSelectedPatternIdx(patIdx)
 
     const savedView = appState.currentView
     const resolvedView = savedView === 'output' ? 'master' : savedView
@@ -71,7 +71,7 @@ function installE2eHook() {
     win.__e2e = {
         ready: true,
         appState,
-        serviceRegistry,
+        serviceRegistry: services,
         soundRegistry,
         playbackEvents,
     }
@@ -99,6 +99,8 @@ async function logIdbReport() {
 }
 
 /** Deferred startup: load resources, restore session/view, expose e2e hook. */
+const services = getServices()
+
 export function startAfterFirstPaint() {
     scheduleAfterFirstPaint(async () => {
         await loadStartupResources()

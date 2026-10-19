@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import Commander from '../src/logic/commands/commander.js'
 import { Exporter } from '../src/patterns/exporter.js'
 import { mkdir, writeFile, readFile, unlink } from 'node:fs/promises'

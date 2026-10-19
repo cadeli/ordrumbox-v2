@@ -7,7 +7,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import HistoryManager from '../src/logic/history_manager.js'
 import Commander from '../src/logic/commands/commander.js'
@@ -37,9 +37,8 @@ describe('P1a — silent failure guards', () => {
         soundRegistry.reset()
         serviceRegistry.reset()
         resetUserErrorReports()
-        cmd = new Commander()
+        cmd = new Commander({ history: new HistoryManager(50) })
         serviceRegistry.cmd = cmd
-        serviceRegistry.history = new HistoryManager(50)
         // Every test in this file trips a guard on purpose. reportUserError()
         // attaches the cause to console.warn outside production, so without
         // this the suite prints expected stack traces that read like failures.

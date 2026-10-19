@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import Commander from '../src/logic/commands/commander.js'
 import { getPanFromTrackName } from '../src/core/drum_taxonomy.js'
 import { isNoteAt, kitIsLoaded, getTrackFromType, getAllSoundsForType } from './helpers/cmd_test_helpers.js'
@@ -11,12 +11,14 @@ import { resetUserErrorReports } from '../src/core/notify.js'
 
 describe('Functional: Commander operations', () => {
     let cmd
+    let history
 
     beforeEach(() => {
         appState.reset()
         soundRegistry.reset()
         serviceRegistry.reset()
-        cmd = new Commander()
+        history = new HistoryManager(50)
+        cmd = new Commander({ history })
         serviceRegistry.cmd = cmd
     })
 
@@ -72,8 +74,6 @@ describe('Functional: Commander operations', () => {
         // pattern out of the library, not only revert what happened inside it
         // (see tests/undo_roundtrip.test.js for everything below that level).
         it('undo removes the pattern it added to the library', () => {
-            const history = new HistoryManager(50)
-            serviceRegistry.history = history
             expect(appState.patterns).toHaveLength(0)
             cmd.addPattern('UndoMe')
             expect(appState.patterns).toHaveLength(1)
@@ -483,8 +483,6 @@ describe('Functional: Commander operations', () => {
         })
 
         it('undoes back to the previous length', () => {
-            const history = new HistoryManager(50)
-            serviceRegistry.history = history
             const pattern = cmd.addPattern('Test')
             const kick = cmd.addTrack(pattern, 'KICK')
             cmd.setPatternBeatCount(pattern, 12)
@@ -614,11 +612,8 @@ describe('Functional: Commander operations', () => {
     // ── arrangement clips ────────────────────────────────────────────────────────
 
     describe('arrangement clips', () => {
-        let history
 
         beforeEach(() => {
-            history = new HistoryManager(50)
-            serviceRegistry.history = history
         })
 
         const song = (clips) => {
@@ -723,11 +718,8 @@ describe('Functional: Commander operations', () => {
     // The loop is the grid width and what the player loops over, so it has to
     // follow the content instead of freezing at whatever the file declared.
     describe('arrangement loop follows the content', () => {
-        let history
 
         beforeEach(() => {
-            history = new HistoryManager(50)
-            serviceRegistry.history = history
             appState.patterns = [makePattern({ name: 'Rock', id: 'rock', beatCount: 4 })]
         })
 
@@ -812,11 +804,8 @@ describe('Functional: Commander operations', () => {
     // ── placement API (pattern name/id → clip) ──────────────────────────────────
 
     describe('arrangement placement API', () => {
-        let history
 
         beforeEach(() => {
-            history = new HistoryManager(50)
-            serviceRegistry.history = history
             appState.patterns = [
                 makePattern({ name: 'Verse', id: 'verse', beatCount: 8 }),
                 makePattern({ name: 'Chorus', id: 'chorus', beatCount: 12 }),
@@ -963,11 +952,8 @@ describe('Functional: Commander operations', () => {
     // ── arrangement CRUD ────────────────────────────────────────────────────────
 
     describe('arrangement CRUD', () => {
-        let history
 
         beforeEach(() => {
-            history = new HistoryManager(50)
-            serviceRegistry.history = history
             appState.patterns = [makePattern({ name: 'Verse', id: 'verse' })]
             appState.songs = []
             appState.selectedSongIdx = 0

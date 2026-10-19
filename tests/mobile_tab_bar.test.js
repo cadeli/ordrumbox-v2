@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/event_bus.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import TrackEditor from '../src/ui/track_editor.js'
 import NoteEditor from '../src/ui/note_editor.js'
@@ -108,11 +108,11 @@ describe('Mobile tab bar', () => {
         trackEditor.init()
         // Attach synth panel to app-content
         document.getElementById('app-content').appendChild(trackEditor.synthEditor.panel)
-        noteEditor = new NoteEditor()
+        noteEditor = new NoteEditor({ serviceRegistry })
         noteEditor.setContainer(trackEditor.neContainer)
         noteEditor.init()
         trackEditor.setNoteEditor(noteEditor)
-        toolsPanel = new ToolsPanel()
+        toolsPanel = new ToolsPanel({ serviceRegistry })
         toolsPanel.init()
 
         viewManager = new ViewManager({

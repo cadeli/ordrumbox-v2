@@ -17,7 +17,7 @@ import outputCompressorSrc from '../src/ui/output_panel/compressor_section.js?ra
 import outputFiltersSrc from '../src/ui/output_panel/filters_section.js?raw'
 import pointerSectionSrc from '../src/ui/pattern_panel/pointer_section.js?raw'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/commander.js'
 import HistoryManager from '../src/logic/history_manager.js'
@@ -32,10 +32,9 @@ describe('Undo policy — track parameters (cmd.updateTrack)', () => {
         appState.reset()
         soundRegistry.reset()
         serviceRegistry.reset()
-        cmd = new Commander()
-        serviceRegistry.cmd = cmd
         history = new HistoryManager(50)
-        serviceRegistry.history = history
+        cmd = new Commander({ history })
+        serviceRegistry.cmd = cmd
         track = normalizeTrack({ name: 'KICK' })
     })
 

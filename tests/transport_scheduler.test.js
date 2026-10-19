@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('../src/state/service_registry.js', () => ({
+vi.mock('../src/state/service_loader.js', () => ({
     serviceRegistry: { midiManager: null, audioCtx: { currentTime: 0 } },
 }))
 

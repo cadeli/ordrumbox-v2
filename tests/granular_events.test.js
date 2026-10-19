@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/event_bus.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/commander.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
@@ -87,7 +87,7 @@ describe('Granular patternChange events', () => {
 
         it('emitted by tools_panel compact', () => {
             const cap = captureGranular()
-            const panel = new ToolsPanel()
+            const panel = new ToolsPanel({ serviceRegistry })
             panel.init()
             playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
             panel.container.querySelector('#tp-compact').click()
@@ -96,7 +96,7 @@ describe('Granular patternChange events', () => {
 
         it('emitted by tools_panel randomize', () => {
             const cap = captureGranular()
-            const panel = new ToolsPanel()
+            const panel = new ToolsPanel({ serviceRegistry })
             panel.init()
             playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
             panel.container.querySelector('#tp-rnd').click()
@@ -195,7 +195,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('toolbar gen buttons update via signal on noteChange', () => {
-            toolbar = new Toolbar()
+            toolbar = new Toolbar({ serviceRegistry })
             toolbar.init()
             playbackEvents.emit(EVENTS.PATTERN_CHANGE)
             appState.patterns[0].tracks[0]._toolbarAuto = true
@@ -204,7 +204,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('toolbar pattern select rebuilds via signal on patternStructureChange', () => {
-            toolbar = new Toolbar()
+            toolbar = new Toolbar({ serviceRegistry })
             toolbar.init()
             const prevLen = toolbar.patternSelect.options.length
             appState.patterns.push({ name: 'New', beatCount: 4, bpm: 120, tracks: [] })
@@ -213,7 +213,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('toolbar page label updates via signal on patternMetaChange', () => {
-            toolbar = new Toolbar()
+            toolbar = new Toolbar({ serviceRegistry })
             toolbar.init()
             playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
             // a string is always "defined": pin what the label has to show
@@ -221,7 +221,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('toolbar does NOT rebuild pattern select on patternChange', () => {
-            toolbar = new Toolbar()
+            toolbar = new Toolbar({ serviceRegistry })
             toolbar.init()
             const len = toolbar.patternSelect.options.length
             playbackEvents.emit(EVENTS.PATTERN_CHANGE)
@@ -229,7 +229,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('song_panel responds to patternStructureChange', () => {
-            const pp = new SongPanel()
+            const pp = new SongPanel({ serviceRegistry })
             pp.init()
             pp.show()
             const spy = vi.spyOn(pp, 'sync')

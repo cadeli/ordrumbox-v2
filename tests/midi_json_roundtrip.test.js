@@ -23,7 +23,7 @@ import { parseMidi, findAllNotes, extractProgramChanges } from '../src/logic/mid
 import { TICK } from '../src/core/constants.js'
 import Commander from '../src/logic/commands/commander.js'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import * as flatNotesService from '../src/patterns/flat_notes.js'
 import { recomputeFlatNotes } from '../src/patterns/pattern_engine.js'

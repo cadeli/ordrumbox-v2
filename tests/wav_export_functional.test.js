@@ -14,7 +14,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import WavExporter from '../src/audio/export/wav_exporter.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import * as flatNotesService from '../src/patterns/flat_notes.js'
 import { TICK } from '../src/core/constants.js'
 import { recomputeFlatNotes } from '../src/patterns/pattern_engine.js'

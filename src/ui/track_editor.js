@@ -10,7 +10,7 @@
 
 import { appState } from '../state/app_state.js'
 import { playbackEvents, emitTrackChanged } from '../state/event_bus.js'
-import { serviceRegistry } from '../state/service_registry.js'
+import { getServices } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { getNoteAbsoluteStep } from '../core/notes.js'
 
@@ -77,7 +77,7 @@ export default class TrackEditor extends BasePanel {
     /**
      * @param {object} [deps] injected singletons, defaulting to the modules
      * @param {typeof import('../state/app_state.js').appState} [deps.appState]
-     * @param {typeof import('../state/service_registry.js').serviceRegistry} [deps.serviceRegistry]
+     * @param {typeof import('../state/service_loader.js').serviceRegistry} [deps.serviceRegistry]
      * @param {typeof import('../state/sound_registry.js').soundRegistry} [deps.soundRegistry]
      * @param {typeof import('../state/event_bus.js').playbackEvents} [deps.playbackEvents]
      */
@@ -86,7 +86,7 @@ export default class TrackEditor extends BasePanel {
 
         // ── DI'd dependencies with fallback to module singletons ────
         this.#appState = deps.appState ?? appState
-        this.#serviceRegistry = deps.serviceRegistry ?? serviceRegistry
+        this.#serviceRegistry = deps.serviceRegistry ?? getServices()
         this.#soundRegistry = deps.soundRegistry ?? soundRegistry
         this.#playbackEvents = deps.playbackEvents ?? playbackEvents
 

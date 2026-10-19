@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import Toolbar from '../src/ui/toolbar.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import Commander from '../src/logic/commands/commander.js'
 import { playbackEvents } from '../src/state/event_bus.js'
 import { EVENTS } from '../src/core/events.js'
@@ -40,7 +40,7 @@ describe('Toolbar UI Layout', () => {
         // Clear body
         document.body.innerHTML = ''
 
-        toolbar = new Toolbar()
+        toolbar = new Toolbar({ serviceRegistry })
         toolbar.init()
     })
 
@@ -165,7 +165,7 @@ describe('Toolbar destroy()', () => {
         serviceRegistry.transport = { isRunning: false }
         serviceRegistry.history = { canUndo: false, canRedo: false, undo: vi.fn(), redo: vi.fn() }
         document.body.innerHTML = ''
-        toolbar = new Toolbar()
+        toolbar = new Toolbar({ serviceRegistry })
         toolbar.init()
     })
 

@@ -16,8 +16,8 @@ vi.mock('../src/state/event_bus.js', () => ({
     },
 }))
 
-vi.mock('../src/state/service_registry.js', () => ({
-    serviceRegistry: {
+vi.mock('../src/state/service_loader.js', () => {
+    const registry = {
         cmd: {
             beginGenerationUndo: vi.fn(),
             commitGenerationUndo: vi.fn(),
@@ -25,8 +25,13 @@ vi.mock('../src/state/service_registry.js', () => ({
             addTrack: vi.fn(),
         },
         flatNotes: { applyFlatNotes: vi.fn() },
-    },
-}))
+    }
+    return {
+        serviceRegistry: registry,
+        getServices: () => registry,
+        getAutoGeneratorService: vi.fn(),
+    }
+})
 
 vi.mock('../src/state/app_state.js', () => ({
     appState: makeAppStateMock({ patterns: [{ tracks: [] }] }),
@@ -53,17 +58,13 @@ vi.mock('../src/core/tracks.js', () => ({
     filterEmptyMelodicTracks: vi.fn((tracks) => tracks),
 }))
 
-vi.mock('../src/state/service_loader.js', () => ({
-    getAutoGeneratorService: vi.fn(),
-}))
-
 vi.mock('../src/core/notify.js', () => ({
     showToast: vi.fn(),
 }))
 
 import patternAutoGen from '../src/logic/services/pattern_auto_gen.js'
 import { playbackEvents } from '../src/state/event_bus.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { appState } from '../src/state/app_state.js'
 import { getAutoGeneratorService } from '../src/state/service_loader.js'
 import { DRUM_TYPES } from '../src/core/drum_taxonomy.js'

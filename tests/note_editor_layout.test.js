@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import NoteEditor from '../src/ui/note_editor.js'
 
@@ -50,7 +50,7 @@ describe('NoteEditor — knob bar layout', () => {
             json: async () => ({}),
         })
 
-        noteEditor = new NoteEditor()
+        noteEditor = new NoteEditor({ serviceRegistry })
         noteEditor.init()
     })
 

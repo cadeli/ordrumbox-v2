@@ -6,7 +6,7 @@ import { TICK } from '../core/constants.js'
 import { measureToTick, songPatterns, songTempo } from './song_playback.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/event_bus.js'
-import { serviceRegistry } from '../state/service_registry.js'
+import { getServices } from '../state/service_loader.js'
 import { getAutoAssignService, getAutoGeneratorService } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { logger } from '../core/logger.js'
@@ -25,10 +25,10 @@ export default class Sequencer {
     #anchoredSongMode = false
 
     /**
-     * @param {{serviceRegistry?: typeof import('../state/service_registry.js').serviceRegistry, appState?: typeof import('../state/app_state.js').appState, soundRegistry?: typeof import('../state/sound_registry.js').soundRegistry, playbackEvents?: typeof import('../state/event_bus.js').playbackEvents}} [options]
+     * @param {{serviceRegistry?: typeof import('../state/service_loader.js').serviceRegistry, appState?: typeof import('../state/app_state.js').appState, soundRegistry?: typeof import('../state/sound_registry.js').soundRegistry, playbackEvents?: typeof import('../state/event_bus.js').playbackEvents}} [options]
      */
     constructor(options = {}) {
-        this.serviceRegistry = options.serviceRegistry ?? serviceRegistry
+        this.serviceRegistry = options.serviceRegistry ?? getServices()
         this.appState = options.appState ?? appState
         this.soundRegistry = options.soundRegistry ?? soundRegistry
         this.playbackEvents = options.playbackEvents ?? playbackEvents

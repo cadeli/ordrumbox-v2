@@ -1,5 +1,5 @@
 import { makeAppStateMock } from './helpers/app_state_mock.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { buildMidi, buildDrumMidi, buildEmptyMidi } from './helpers/midi_builder.js'
 
@@ -25,7 +25,7 @@ const mockAddNote = vi.fn((track, beat, beatStep, pitch) => {
 
 const mockSetSelectedPatternIdx = vi.fn().mockResolvedValue(undefined)
 
-vi.mock('../src/state/service_registry.js', () => ({
+vi.mock('../src/state/service_loader.js', () => ({
     serviceRegistry: {
         audioCtx: { currentTime: 0 },
         cmd: {
@@ -175,7 +175,7 @@ describe('MidiImportService', () => {
     })
 
     it('invalidates audio engine cache after import', async () => {
-        const { serviceRegistry } = await import('../src/state/service_registry.js')
+        const { serviceRegistry } = await import('../src/state/service_loader.js')
         const midiBytes = buildDrumMidi({
             notes: [{ tick: 0, note: 36, velocity: 100 }],
         })

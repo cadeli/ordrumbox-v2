@@ -1,5 +1,5 @@
 import { appState } from '../state/app_state.js'
-import { serviceRegistry } from '../state/service_registry.js'
+import { getServices } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { playbackEvents } from '../state/event_bus.js'
 import { fixPatterns, fixSongs } from '../patterns/fixer.js'
@@ -94,8 +94,8 @@ export default class ResourcesLoader {
             }
             this.#audioCtx = new AudioContextCtor()
         }
-        if (serviceRegistry.audioCtx !== this.#audioCtx) {
-            serviceRegistry.audioCtx = this.#audioCtx
+        if (getServices().audioCtx !== this.#audioCtx) {
+            getServices().audioCtx = this.#audioCtx
         }
         return this.#audioCtx
     }
@@ -319,7 +319,7 @@ export default class ResourcesLoader {
         delete s.selectedDrumkitNum
         delete s.selectedPatternNum
         delete s.selectedTrackNum
-        s.currentView = serviceRegistry.viewManager?.currentView ?? appState.currentView ?? 'edit'
+        s.currentView = getServices().viewManager?.currentView ?? appState.currentView ?? 'edit'
         appState.currentView = s.currentView
         this.saveSettings()
     }
@@ -401,7 +401,7 @@ export default class ResourcesLoader {
         appState.patterns.length = 0
         // Boot must not fill the undo stack: suppress per-pattern recording,
         // then reset history so the first Ctrl+Z can never wipe a loaded note.
-        serviceRegistry.cmd.withSuppressedRecord(() => {
+        getServices().cmd.withSuppressedRecord(() => {
             fixedPatterns.forEach((pattern) => {
                 if (pattern?.tracks) {
                     getTracksArray(pattern).forEach((track) => {
@@ -412,10 +412,10 @@ export default class ResourcesLoader {
                         }
                     })
                 }
-                serviceRegistry.cmd.importPatternFromJson(pattern)
+                getServices().cmd.importPatternFromJson(pattern)
             })
         })
-        serviceRegistry.history?.clear()
+        getServices().history?.clear()
         this.#autoPersistEnabled = true
     }
 

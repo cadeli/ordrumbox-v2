@@ -11,7 +11,7 @@ export default class AudioImportService {
 
     /**
      * @param {object} deps
-     * @param {typeof import('../../state/service_registry.js').serviceRegistry} deps.registry
+     * @param {typeof import('../../state/service_loader.js').serviceRegistry} deps.registry
      */
     constructor({ registry }) {
         this.#registry = registry

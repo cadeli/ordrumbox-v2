@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import PatternPanel from '../src/ui/pattern_panel.js'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { resetNotePreviewThrottle } from '../src/ui/components/note_preview.js'
 
 describe('Pattern grid note drag', () => {

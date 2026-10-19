@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import ArrangementSection from '../src/ui/song_panel/arrangement_section.js'
 import { MEASURE_WIDTH, CLIP_INSET, HEADER_HEIGHT, LABEL_WIDTH, ROW_HEIGHT } from '../src/ui/song_panel/layout.js'
 import { BEATS_PER_MEASURE } from '../src/model/song_schema.js'
@@ -26,7 +26,7 @@ function build() {
     // the host panel supplies listen() for the two delegated grid listeners and
     // sub() for the playback subscriptions (cursor loop)
     const handlers = new Map()
-    const panel = { listen: vi.fn((el, type, fn) => handlers.set(type, fn)), sub: vi.fn() }
+    const panel = { listen: vi.fn((el, type, fn) => handlers.set(type, fn)), sub: vi.fn(), serviceRegistry }
     const section = new ArrangementSection(panel, root, root.querySelector('.t'), list)
     return { root, section, list, panel, handlers }
 }

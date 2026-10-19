@@ -1,5 +1,4 @@
 import { appState } from '../state/app_state.js'
-import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/event_bus.js'
 import { injectUiCss } from './components/ui_utils.js'
 import { isMobileViewport } from '../core/constants.js'
@@ -36,12 +35,12 @@ export default class Toolbar {
     #checkOverflow
     #serviceRegistry
 
-    constructor({ serviceRegistry: sr = serviceRegistry } = {}) {
+    constructor({ serviceRegistry: sr = null } = {}) {
         this.container = null
         this.#serviceRegistry = sr
 
         this.#transport = new TransportControls(this)
-        this.#patternNav = new PatternNav({ getCmd: () => this.#serviceRegistry.cmd })
+        this.#patternNav = new PatternNav({ getCmd: () => this.#serviceRegistry?.cmd })
         this.#viewSwitch = new ViewSwitch(this)
         this.#overflow = new OverflowMenu()
         this.#nextUndoDesc = null
@@ -223,9 +222,9 @@ export default class Toolbar {
 
     /** Reads the model once, then hands each section what it renders. */
     sync() {
-        const transport = this.#serviceRegistry.transport
+        const transport = this.#serviceRegistry?.transport
         const pat = appState.selectedPattern
-        const history = this.#serviceRegistry.history
+        const history = this.#serviceRegistry?.history
         const tracks = pat ? getTracksArray(pat) : []
 
         this.#transport.sync({
@@ -267,10 +266,10 @@ export default class Toolbar {
     #handleKeyboard(e) {
         if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
             e.preventDefault()
-            this.#serviceRegistry.history?.undo()
+            this.#serviceRegistry?.history?.undo()
         } else if ((e.ctrlKey || e.metaKey) && ((e.shiftKey && e.key === 'z') || e.key === 'y')) {
             e.preventDefault()
-            this.#serviceRegistry.history?.redo()
+            this.#serviceRegistry?.history?.redo()
         }
     }
 

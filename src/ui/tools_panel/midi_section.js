@@ -1,6 +1,5 @@
 // src/ui/tools_panel/midi_section.js — Tools "Status" + "MIDI" tabs and MIDI sync.
 
-import { serviceRegistry } from '../../state/service_registry.js'
 import { escapeHtml, renderOptions } from '../components/ui_utils.js'
 import { showToast } from '../../core/notify.js'
 import { valueOrFallback } from '../../core/logger.js'
@@ -70,24 +69,24 @@ export default class MidiSection {
 
         root.querySelector('#tp-midi-enable').addEventListener('click', async () => {
             const btn = root.querySelector('#tp-midi-enable')
-            if (!serviceRegistry.midiManager) {
+            if (!this.#panel.serviceRegistry.midiManager) {
                 const { getMidiManagerService } = await import('../../state/service_loader.js')
                 await getMidiManagerService()
             }
 
-            if (serviceRegistry.midiManager.isReady) {
-                serviceRegistry.midiManager.disable()
+            if (this.#panel.serviceRegistry.midiManager.isReady) {
+                this.#panel.serviceRegistry.midiManager.disable()
                 btn.textContent = 'Enable MIDI'
             } else {
-                await serviceRegistry.midiManager.init()
+                await this.#panel.serviceRegistry.midiManager.init()
                 btn.textContent = 'Disable MIDI'
             }
             this.#panel.sync()
         })
 
         root.querySelector('#tp-midi-sync').addEventListener('click', () => {
-            if (serviceRegistry.midiManager) {
-                serviceRegistry.midiManager.toggleExternalSync()
+            if (this.#panel.serviceRegistry.midiManager) {
+                this.#panel.serviceRegistry.midiManager.toggleExternalSync()
                 this.#panel.sync()
             } else {
                 showToast('Enable MIDI first', 'info')
@@ -96,8 +95,8 @@ export default class MidiSection {
 
         const outputSelect = /** @type {HTMLSelectElement} */ (root.querySelector('#tp-midi-output-select'))
         outputSelect.addEventListener('change', () => {
-            if (serviceRegistry.midiManager) {
-                serviceRegistry.midiManager.setSelectedOutput(outputSelect.value)
+            if (this.#panel.serviceRegistry.midiManager) {
+                this.#panel.serviceRegistry.midiManager.setSelectedOutput(outputSelect.value)
             }
         })
 
@@ -115,13 +114,13 @@ export default class MidiSection {
         const outputSelect = /** @type {HTMLSelectElement} */ (root.querySelector('#tp-midi-output-select'))
         const enableBtn = root.querySelector('#tp-midi-enable')
 
-        if (serviceRegistry.midiManager) {
-            this.#midiView.connect(serviceRegistry.midiManager)
-            this.#midiView.sync(serviceRegistry.midiManager)
-            enableBtn.textContent = serviceRegistry.midiManager.isReady ? 'Disable MIDI' : 'Enable MIDI'
+        if (this.#panel.serviceRegistry.midiManager) {
+            this.#midiView.connect(this.#panel.serviceRegistry.midiManager)
+            this.#midiView.sync(this.#panel.serviceRegistry.midiManager)
+            enableBtn.textContent = this.#panel.serviceRegistry.midiManager.isReady ? 'Disable MIDI' : 'Enable MIDI'
 
-            const outputs = serviceRegistry.midiManager.outputs
-            const currentOutputId = serviceRegistry.midiManager.selectedOutputId
+            const outputs = this.#panel.serviceRegistry.midiManager.outputs
+            const currentOutputId = this.#panel.serviceRegistry.midiManager.selectedOutputId
 
             if (outputSelect.options.length !== outputs.length) {
                 const values = outputs.map((o) => o.id)

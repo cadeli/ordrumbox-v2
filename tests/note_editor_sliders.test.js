@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/event_bus.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import NoteEditor from '../src/ui/note_editor.js'
 import { NOTE_DEFAULTS } from '../src/core/note_schema.js'
@@ -92,7 +92,7 @@ describe('NoteEditor — OrSlider integration', () => {
             clip: vi.fn(),
         })
 
-        noteEditor = new NoteEditor()
+        noteEditor = new NoteEditor({ serviceRegistry })
         noteEditor.init()
     })
 

@@ -1,7 +1,6 @@
 // src/ui/tools_panel/export_section.js — Tools "Export" tab (MIDI / WAV + loops slider).
 
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { showToast } from '../../core/notify.js'
 import { OrSlider } from '../components/or_slider.js'
 import { logger, valueOrFallback } from '../../core/logger.js'
@@ -115,12 +114,12 @@ export default class ExportSection {
         this.#songBtn.textContent = 'Exporting...'
 
         try {
-            if (!serviceRegistry.wavExporter) {
+            if (!this.#panel.serviceRegistry.wavExporter) {
                 const { default: WavExporter } = await import('../../audio/export/wav_exporter.js')
-                serviceRegistry.wavExporter = new WavExporter()
+                this.#panel.serviceRegistry.wavExporter = new WavExporter()
             }
-            const blob = await serviceRegistry.wavExporter.exportSongToWav(song)
-            serviceRegistry.wavExporter.downloadWav(
+            const blob = await this.#panel.serviceRegistry.wavExporter.exportSongToWav(song)
+            this.#panel.serviceRegistry.wavExporter.downloadWav(
                 blob,
                 `ordrumbox-${valueOrFallback(song.name, 'song', 'ToolsPanel', 'song wav name fallback')}.wav`,
             )
@@ -146,14 +145,14 @@ export default class ExportSection {
         this.#wavBtn.textContent = 'Exporting...'
 
         try {
-            if (!serviceRegistry.wavExporter) {
+            if (!this.#panel.serviceRegistry.wavExporter) {
                 const { default: WavExporter } = await import('../../audio/export/wav_exporter.js')
-                serviceRegistry.wavExporter = new WavExporter()
+                this.#panel.serviceRegistry.wavExporter = new WavExporter()
             }
 
             const loops = Math.round(this.#wavLoopsSlider.getValue())
-            const blob = await serviceRegistry.wavExporter.exportPatternToWav(pattern, loops)
-            serviceRegistry.wavExporter.downloadWav(
+            const blob = await this.#panel.serviceRegistry.wavExporter.exportPatternToWav(pattern, loops)
+            this.#panel.serviceRegistry.wavExporter.downloadWav(
                 blob,
                 `ordrumbox-${valueOrFallback(pattern.name, 'pattern', 'ToolsPanel', 'wav name fallback')}.wav`,
             )

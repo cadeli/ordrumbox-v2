@@ -1,6 +1,5 @@
 import { playbackEvents } from '../state/event_bus.js'
 import { appState } from '../state/app_state.js'
-import { serviceRegistry } from '../state/service_registry.js'
 import { setViewMode, setPatternPanelHidden } from './components/ui_utils.js'
 import { isMobileViewport } from '../core/constants.js'
 import { removeLayout } from './mobile_track_layout.js'
@@ -47,6 +46,7 @@ export default class ViewManager {
     #songPanel
     #currentView
     #slots
+    #getResourcesLoader
     /** Owns every bus sub bound through #life — released by destroy(). */
     #life = new Lifecycle()
 
@@ -62,6 +62,7 @@ export default class ViewManager {
      *   drumkitManager: import('./drumkit_manager.js').default,
      *   songPanel: import('./song_panel.js').default,
      *   aboutPanel: import('./about_panel.js').default,
+     *   getResourcesLoader?: () => import('../loader/resources_loader.js').default|null,
      * }} config
      */
     constructor({
@@ -75,6 +76,7 @@ export default class ViewManager {
         drumkitManager,
         songPanel,
         aboutPanel,
+        getResourcesLoader = () => null,
     }) {
         this.#trackEditor = trackEditor
         this.#synthEditor = synthEditor
@@ -84,6 +86,7 @@ export default class ViewManager {
         this.#outputPanel = outputPanel
         this.#songPanel = songPanel
         this.#currentView = null
+        this.#getResourcesLoader = getResourcesLoader
 
         // ── Slot panel registry: short name → { event, panel } ─────────────
         this.#slots = new Map([
@@ -166,7 +169,7 @@ export default class ViewManager {
         if (view === this.#currentView) return
         const prev = this.#currentView
         this.#currentView = view
-        serviceRegistry.resourcesLoader?.saveSession?.()
+        this.#getResourcesLoader()?.saveSession?.()
 
         this.#patternSettingsPanel?.hide?.()
 

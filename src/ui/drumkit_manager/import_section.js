@@ -1,7 +1,6 @@
 // src/ui/drumkit_manager/import_section.js
 // Import / save / load / normalize actions for the drumkit manager.
 
-import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/event_bus.js'
 import drumkitService from '../../logic/services/drumkit_service.js'
 import AudioImportService from '../../logic/services/audio_import_service.js'
@@ -19,7 +18,7 @@ export default class ImportSection {
     /** @param {import('../drumkit_manager.js').default} editor */
     constructor(editor) {
         this.#editor = editor
-        this.#audioImportService = new AudioImportService({ registry: serviceRegistry })
+        this.#audioImportService = new AudioImportService({ registry: this.#editor.serviceRegistry })
     }
 
     get audioImportService() {
@@ -72,7 +71,7 @@ export default class ImportSection {
                 if (assignResult?.warning) {
                     showToast(assignResult.warning, 'warning')
                 }
-                serviceRegistry.audioEngine?.invalidateCache()
+                this.#editor.serviceRegistry.audioEngine?.invalidateCache()
                 playbackEvents.emit(EVENTS.PATTERN_CHANGE)
                 showToast(`Imported ${fileCount} files into kit "${kitName}"`, 'success')
                 this.#editor.selectedSoundKey = null
@@ -91,7 +90,7 @@ export default class ImportSection {
         const file = addInput.files?.[0]
         if (!file) return
 
-        const ctx = serviceRegistry.audioCtx
+        const ctx = this.#editor.serviceRegistry.audioCtx
         if (!ctx) return
 
         try {

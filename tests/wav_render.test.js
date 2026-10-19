@@ -271,7 +271,7 @@ describe('real render — orDrumbox pattern', () => {
     it('renders a simple pattern via wav_exporter with real OfflineAudioContext', async () => {
         const { default: WavExporter } = await import('../src/audio/export/wav_exporter.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
-        const { serviceRegistry } = await import('../src/state/service_registry.js')
+        const { serviceRegistry } = await import('../src/state/service_loader.js')
         const flatNotesService = await import('../src/patterns/flat_notes.js')
 
         soundRegistry.reset()

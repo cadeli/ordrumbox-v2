@@ -5,10 +5,12 @@ import { initGlobalListeners } from './bootstrap/global_listeners.js'
 import { startAfterFirstPaint } from './bootstrap/startup.js'
 import { initSelectDropdown } from './ui/select_dropdown.js'
 import { applyColorScheme } from './ui/theme.js'
-import { serviceRegistry } from './state/service_registry.js'
+import { getServices } from './state/service_loader.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/event_bus.js'
 import { EVENTS } from './core/events.js'
+
+const services = getServices()
 
 /**
  * Kicks the settings fetch before anything else (loadSettings is single-flight,
@@ -20,7 +22,7 @@ import { EVENTS } from './core/events.js'
  * a toast) by loadStartupResources(); without settings, scheme 1 applies.
  */
 function primeColorScheme() {
-    void serviceRegistry.resourcesLoader
+    void services.resourcesLoader
         .loadSettings()
         .then(() => {
             applyColorScheme(soundRegistry.settings.colorScheme)
@@ -43,11 +45,11 @@ export function init() {
         applyColorScheme(scheme)
     })
     initGlobalListeners({
-        getCmd: () => serviceRegistry.cmd,
-        getSeq: () => serviceRegistry.seq,
-        getFlatNotes: () => serviceRegistry.flatNotes,
-        getResourcesLoader: () => serviceRegistry.resourcesLoader,
-        getAudioEngine: () => serviceRegistry.audioEngine,
+        getCmd: () => services.cmd,
+        getSeq: () => services.seq,
+        getFlatNotes: () => services.flatNotes,
+        getResourcesLoader: () => services.resourcesLoader,
+        getAudioEngine: () => services.audioEngine,
     })
     createAndInitPanels()
     initSelectDropdown()

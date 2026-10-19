@@ -1,5 +1,4 @@
 import BaseGenerator from './base_generator.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import ResourcesLoader from '../../loader/resources_loader.js'
 import { logger } from '../../core/logger.js'
 import { pickRandom } from '../../core/random.js'
@@ -244,17 +243,17 @@ export default class BassGenerator extends BaseGenerator {
 
     /**
      * @param {object} [deps]
-     * @param {typeof import('../../state/service_registry.js').serviceRegistry} [deps.registry]
+     * @param {typeof import('../../state/service_loader.js').serviceRegistry} [deps.registry]
      */
     constructor(deps = {}) {
         super('BASS', BassGenerator.BASS_GENERATION_CONFIGS)
-        this.#registry = deps.registry ?? serviceRegistry
+        this.#registry = deps.registry ?? null
         this.setToneThreshold(5)
         this.isScalesLoading = false
     }
 
     loadScales = async () => {
-        if (this.isScalesLoading || !this.#registry.resourcesLoader) return
+        if (this.isScalesLoading || !this.#registry?.resourcesLoader) return
         this.isScalesLoading = true
         await this.#registry.resourcesLoader.loadScales(ResourcesLoader.SCALES_URL)
         this.finishScalesLoad()

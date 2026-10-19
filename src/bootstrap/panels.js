@@ -11,7 +11,7 @@ import SongPanel from '../ui/song_panel.js'
 import ViewManager from '../ui/view_manager.js'
 import MobileTabBar from '../ui/mobile_tab_bar.js'
 import PatternSettingsPanel from '../ui/pattern_settings_panel.js'
-import { serviceRegistry } from '../state/service_registry.js'
+import { getServices } from '../state/service_loader.js'
 
 /**
  * Construct, init, and mount all app panels, then register the ViewManager.
@@ -35,20 +35,22 @@ import { serviceRegistry } from '../state/service_registry.js'
  *   viewManager: import('../ui/view_manager.js').default,
  * }}
  */
+const services = getServices()
+
 export function createAndInitPanels() {
-    const toolbar = new Toolbar({ serviceRegistry })
-    const patternPanel = new PatternPanel({ serviceRegistry })
-    const pianoRollPanel = new PianoRollPanel({ serviceRegistry })
-    const noteEditor = new NoteEditor()
+    const toolbar = new Toolbar({ serviceRegistry: services })
+    const patternPanel = new PatternPanel({ serviceRegistry: services })
+    const pianoRollPanel = new PianoRollPanel({ serviceRegistry: services })
+    const noteEditor = new NoteEditor({ serviceRegistry: services })
     const trackEditor = new TrackEditor()
-    const toolsPanel = new ToolsPanel({ serviceRegistry })
+    const toolsPanel = new ToolsPanel({ serviceRegistry: services })
     const outputPanel = new OutputPanel({
-        resourcesLoader: serviceRegistry.resourcesLoader,
-        getAudioEngine: () => serviceRegistry.audioEngine,
+        resourcesLoader: services.resourcesLoader,
+        getAudioEngine: () => services.audioEngine,
     })
     const aboutPanel = new AboutPanel()
-    const drumkitManager = new DrumkitManager()
-    const songPanel = new SongPanel()
+    const drumkitManager = new DrumkitManager({ serviceRegistry: services })
+    const songPanel = new SongPanel({ serviceRegistry: services })
 
     toolbar.init()
     patternPanel.init()
@@ -65,7 +67,7 @@ export function createAndInitPanels() {
 
     const mobileTabBar = new MobileTabBar()
     mobileTabBar.init()
-    const patternSettingsPanel = new PatternSettingsPanel({ getCmd: () => serviceRegistry.cmd })
+    const patternSettingsPanel = new PatternSettingsPanel({ getCmd: () => services.cmd })
     patternSettingsPanel.init()
 
     const appContent = document.createElement('div')
@@ -96,8 +98,9 @@ export function createAndInitPanels() {
         drumkitManager,
         songPanel,
         aboutPanel,
+        getResourcesLoader: () => services.resourcesLoader,
     })
-    serviceRegistry.viewManager = viewManager
+    services.viewManager = viewManager
     viewManager.init()
 
     return {

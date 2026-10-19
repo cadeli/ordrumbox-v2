@@ -1,5 +1,4 @@
 import { playbackEvents } from '../state/event_bus.js'
-import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import drumkitService from '../logic/services/drumkit_service.js'
 import { showToast } from '../core/notify.js'
@@ -18,6 +17,7 @@ export default class DrumkitManager extends BasePanel {
     #drumkitChangeDebounce
     #detail
     #importSection
+    #serviceRegistry
 
     get knobs() {
         return this.#knobs
@@ -31,9 +31,13 @@ export default class DrumkitManager extends BasePanel {
     set selectedSoundKey(v) {
         this.#selectedSoundKey = v
     }
+    get serviceRegistry() {
+        return this.#serviceRegistry
+    }
 
-    constructor() {
+    constructor({ serviceRegistry: sr = null } = {}) {
         super('dm-panel')
+        this.#serviceRegistry = sr
         this.#selectedSoundKey = null
         this.#listEl = null
         this.#detailEl = null
@@ -188,7 +192,7 @@ export default class DrumkitManager extends BasePanel {
     }
 
     audition(url) {
-        const ctx = serviceRegistry.audioCtx
+        const ctx = this.#serviceRegistry?.audioCtx
         if (!ctx) return
         const sound = soundRegistry.sounds[url]
         if (!sound?.buffer) return
@@ -217,7 +221,7 @@ export default class DrumkitManager extends BasePanel {
         const file = input.files?.[0]
         if (!file) return
 
-        const ctx = serviceRegistry.audioCtx
+        const ctx = this.#serviceRegistry?.audioCtx
         if (!ctx) return
 
         try {

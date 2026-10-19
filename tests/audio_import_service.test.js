@@ -1,6 +1,6 @@
 import { makeAppStateMock } from './helpers/app_state_mock.js'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 
 const mockDecodeAudioData = vi.fn().mockResolvedValue({
     duration: 0.5,
@@ -32,7 +32,7 @@ const sharedSoundRegistry = {
     drumkits: {},
 }
 
-vi.mock('../src/state/service_registry.js', () => ({
+vi.mock('../src/state/service_loader.js', () => ({
     serviceRegistry: {
         audioCtx: {
             decodeAudioData: (...a) => mockDecodeAudioData(...a),

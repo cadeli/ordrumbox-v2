@@ -7,7 +7,7 @@ import InstrumentsManager from '../src/logic/services/instruments_manager/index.
 
 import TrackEditor from '../src/ui/track_editor.js'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import WorkletLoader from '../src/audio/worklets/worklet_loader.js'
 import { playbackEvents } from '../src/state/event_bus.js'

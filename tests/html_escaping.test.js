@@ -8,7 +8,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { escapeHtml, renderOptions } from '../src/ui/components/ui_utils.js'
 import SoundSection from '../src/ui/track_editor/sound_section.js'
 import DrumkitManager from '../src/ui/drumkit_manager.js'
@@ -108,7 +108,7 @@ describe('HTML escaping in innerHTML fragments', () => {
         soundRegistry.drumkitList = [hostileKit()]
         soundRegistry.sounds = { [SOUND_URL]: hostileSound() }
 
-        const dm = new DrumkitManager()
+        const dm = new DrumkitManager({ serviceRegistry })
         dm.init()
         dm.selectSound(SOUND_URL)
 

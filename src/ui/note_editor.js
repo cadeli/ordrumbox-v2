@@ -16,9 +16,11 @@ export default class NoteEditor extends BasePanel {
     #sliders
     #tab
     #sync
+    #serviceRegistry
 
-    constructor() {
+    constructor({ serviceRegistry: sr = null } = {}) {
         super('ne-panel')
+        this.#serviceRegistry = sr
         this.#externalContainer = null
         this.#note = null
         this.#track = null
@@ -34,6 +36,9 @@ export default class NoteEditor extends BasePanel {
         this.#sync = new SyncSection(this)
     }
 
+    get serviceRegistry() {
+        return this.#serviceRegistry
+    }
     get note() {
         return this.#note
     }

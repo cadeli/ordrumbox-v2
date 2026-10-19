@@ -2,7 +2,6 @@
 // Song-level actions: save, load, export, import, rename, arrangement change.
 
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { showToast } from '../../core/notify.js'
 import { downloadJson } from '../components/ui_utils.js'
 import songService from '../../logic/services/song_service.js'
@@ -29,7 +28,7 @@ export default class ActionsSection {
         const editor = this.#editor
         const value = editor.arrangementSelect.value
         if (value === '') return
-        serviceRegistry.cmd.setSelectedSongIdx(Number(value))
+        this.#editor.serviceRegistry.cmd.setSelectedSongIdx(Number(value))
         editor.sync()
     }
 
@@ -179,7 +178,7 @@ export default class ActionsSection {
 
         const pattern = appState.patterns?.find((p) => p.id === patternId)
         const label = pattern?.name ?? patternId
-        const startMeasure = Math.floor(songMeasureAtTick(song, serviceRegistry.seq?.tick, TICK))
+        const startMeasure = Math.floor(songMeasureAtTick(song, this.#editor.serviceRegistry.seq?.tick, TICK))
 
         editor.listMenu.show(
             label,
@@ -187,7 +186,7 @@ export default class ActionsSection {
                 {
                     label: `Add at measure ${startMeasure + 1}`,
                     run: () => {
-                        serviceRegistry.cmd.addPatternAtMeasure(patternId, startMeasure)
+                        this.#editor.serviceRegistry.cmd.addPatternAtMeasure(patternId, startMeasure)
                         showToast(`"${label}" added at measure ${startMeasure + 1}`, 'success')
                         editor.arrangement?.sync()
                     },

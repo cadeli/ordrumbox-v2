@@ -2,6 +2,7 @@
  * @vitest-environment jsdom
  */
 import { beforeEach, describe, expect, it } from 'vitest'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import DrumkitManager from '../src/ui/drumkit_manager.js'
 import drumkitService from '../src/logic/services/drumkit_service.js'
 import AutoAssign from '../src/logic/services/auto_assign.js'
@@ -35,7 +36,7 @@ describe('DrumkitManager instrument mapping', () => {
     })
 
     it('persists the selected instrument for a subsequent auto-assign', () => {
-        const manager = new DrumkitManager()
+        const manager = new DrumkitManager({ serviceRegistry })
         manager.init()
         manager.selectSound(SAMPLE_ID)
 
@@ -57,7 +58,7 @@ describe('DrumkitManager instrument mapping', () => {
     })
 
     it('persists per-sample gain, tune, and decay settings', () => {
-        const manager = new DrumkitManager()
+        const manager = new DrumkitManager({ serviceRegistry })
         manager.init()
         manager.selectSound(SAMPLE_ID)
 
@@ -80,7 +81,7 @@ describe('DrumkitManager instrument mapping', () => {
         soundRegistry.sounds[SAMPLE_ID].gainDb = -3.5
         soundRegistry.sounds[SAMPLE_ID].tune = 2
         soundRegistry.sounds[SAMPLE_ID].decay = 750
-        const manager = new DrumkitManager()
+        const manager = new DrumkitManager({ serviceRegistry })
         manager.init()
 
         const exported = drumkitService.exportCurrentKit()

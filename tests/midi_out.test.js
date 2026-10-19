@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { createMidiMappingResolver, sendMidiNotes, sendTriggerMidi } from '../src/audio/midi_out.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 
 function makeReadyMidi() {
     return {

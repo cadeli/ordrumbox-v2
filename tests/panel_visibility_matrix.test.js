@@ -23,7 +23,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/event_bus.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import TrackEditor from '../src/ui/track_editor.js'
 import NoteEditor from '../src/ui/note_editor.js'
@@ -180,12 +180,12 @@ function setupApp(viewport) {
     trackEditor.synthEditor = mockSynthEditor
     trackEditor.init()
 
-    const noteEditor = new NoteEditor()
+    const noteEditor = new NoteEditor({ serviceRegistry })
     noteEditor.setContainer(trackEditor.neContainer)
     noteEditor.init()
     trackEditor.setNoteEditor(noteEditor)
 
-    const toolsPanel = new ToolsPanel()
+    const toolsPanel = new ToolsPanel({ serviceRegistry })
     toolsPanel.init()
 
     const patternSettingsPanel = new PatternSettingsPanel()
@@ -197,10 +197,10 @@ function setupApp(viewport) {
     const aboutPanel = new AboutPanel()
     aboutPanel.init()
 
-    const songPanel = new SongPanel()
+    const songPanel = new SongPanel({ serviceRegistry })
     songPanel.init()
 
-    const drumkitManager = new DrumkitManager()
+    const drumkitManager = new DrumkitManager({ serviceRegistry })
     drumkitManager.init()
 
     const viewManager = new ViewManager({

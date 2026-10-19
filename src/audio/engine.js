@@ -39,7 +39,7 @@ export default class Engine {
      *   getCurrentView?: () => string,
      *   getSongs?: () => import('../model/song_schema.js').Song[],
      *   getSelectedSongIdx?: () => number,
-     *   getAutoGenerator?: () => Promise<import('../state/service_registry.js').AutoGeneratorService>,
+     *   getAutoGenerator?: () => Promise<import('../state/service_loader.js').AutoGeneratorService>,
      *   TICK?: number,
      *   secondsPerTick?: number,
   *   isOffline?: boolean,

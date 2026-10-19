@@ -13,7 +13,6 @@ import { songLengthMeasures, songBpm } from '../../model/song_schema.js'
 import { MEASURE_WIDTH, CLIP_INSET, HEADER_HEIGHT, LABEL_WIDTH, ROW_HEIGHT } from './layout.js'
 import { escapeHtml } from '../components/ui_utils.js'
 import ContextMenu from '../components/context_menu.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { showToast } from '../../core/notify.js'
 import { TICK } from '../../core/constants.js'
 import { songMeasureAtTick } from '../../logic/song_playback.js'
@@ -83,7 +82,7 @@ export default class ArrangementSection {
      * @returns {number}
      */
     #transportBar() {
-        return songMeasureAtTick(this.#song, serviceRegistry.seq?.tick, TICK)
+        return songMeasureAtTick(this.#song, this.#panel.serviceRegistry.seq?.tick, TICK)
     }
 
     /**
@@ -92,9 +91,9 @@ export default class ArrangementSection {
      * @returns {number}
      */
     #cursorMeasure() {
-        const measure = serviceRegistry.transport?.isRunning
+        const measure = this.#panel.serviceRegistry.transport?.isRunning
             ? this.#transportBar()
-            : (serviceRegistry.seq?.songCursorMeasure ?? 0)
+            : (this.#panel.serviceRegistry.seq?.songCursorMeasure ?? 0)
         // The running position already wraps on the loop length, but a parked
         // cursor aimed on a longer arrangement must not be drawn off this grid.
         return Math.min(measure, Math.max(0, songLengthMeasures(this.#song) - 1))
@@ -113,7 +112,7 @@ export default class ArrangementSection {
             this.#rafId = null
             // Stops on its own once the transport does, so a STOP event that
             // never arrives (panel torn down mid-play) cannot leak the loop.
-            const running = !!serviceRegistry.transport?.isRunning && !!this.#song
+            const running = !!this.#panel.serviceRegistry.transport?.isRunning && !!this.#song
             this.#paintCursor()
             if (running) this.#rafId = requestAnimationFrame(loop)
         }
@@ -153,7 +152,7 @@ export default class ArrangementSection {
         }
         // Parked reads differently from running: a stopped cursor marks where
         // play will start, it is not a measure sounding.
-        const idle = !serviceRegistry.transport?.isRunning
+        const idle = !this.#panel.serviceRegistry.transport?.isRunning
         if (idle !== this.#cursorIdle) {
             this.#cursorIdle = idle
             el.classList.toggle('sa-cursor-idle', idle)
@@ -191,7 +190,7 @@ export default class ArrangementSection {
         if (!headEl || !this.#song) return
         const measure = Number(headEl.dataset.measure)
         if (!Number.isInteger(measure) || measure < 0) return
-        serviceRegistry.seq?.setSongCursor(measure)
+        this.#panel.serviceRegistry.seq?.setSongCursor(measure)
         // Repaint now: while the transport runs the rAF loop would follow on the
         // next frame, and stopped there is no loop at all.
         this.#paintCursor()
@@ -242,7 +241,7 @@ export default class ArrangementSection {
                 {
                     label: 'Next',
                     run: () => {
-                        serviceRegistry.cmd.repeatPatternAtMeasure(clip.startMeasure)
+                        this.#panel.serviceRegistry.cmd.repeatPatternAtMeasure(clip.startMeasure)
                         this.sync()
                         showToast(
                             `"${label}" repeated at measure ${clip.startMeasure + clip.measureCount + 1}`,
@@ -253,7 +252,7 @@ export default class ArrangementSection {
                 {
                     label: 'Delete',
                     run: () => {
-                        serviceRegistry.cmd.removeSongClips([index])
+                        this.#panel.serviceRegistry.cmd.removeSongClips([index])
                         this.sync()
                         showToast(`Removed "${label}" at measure ${clip.startMeasure + 1}`, 'success')
                     },
@@ -287,7 +286,7 @@ export default class ArrangementSection {
                 {
                     label: `Add at measure ${startMeasure + 1}`,
                     run: () => {
-                        serviceRegistry.cmd.addPatternAtMeasure(patternId, startMeasure)
+                        this.#panel.serviceRegistry.cmd.addPatternAtMeasure(patternId, startMeasure)
                         this.sync()
                         showToast(`"${label}" added at measure ${startMeasure + 1}`, 'success')
                     },
@@ -297,7 +296,7 @@ export default class ArrangementSection {
                     disabled: indices.length === 0,
                     run: () => {
                         // one command, so the whole row is a single undo step
-                        serviceRegistry.cmd.removePatternClips(patternId)
+                        this.#panel.serviceRegistry.cmd.removePatternClips(patternId)
                         this.sync()
                         showToast(`Removed "${label}" from the arrangement`, 'success')
                     },
@@ -324,7 +323,7 @@ export default class ArrangementSection {
                 {
                     label: 'Add here',
                     run: () => {
-                        serviceRegistry.cmd.addPatternAtMeasure(pattern.id, startMeasure)
+                        this.#panel.serviceRegistry.cmd.addPatternAtMeasure(pattern.id, startMeasure)
                         this.sync()
                         showToast(`"${pattern.name ?? pattern.id}" added at measure ${startMeasure + 1}`, 'success')
                     },

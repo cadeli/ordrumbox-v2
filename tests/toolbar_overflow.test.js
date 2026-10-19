@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import Toolbar from '../src/ui/toolbar.js'
 
 describe('Toolbar overflow (mobile single-line)', () => {
@@ -44,7 +44,7 @@ describe('Toolbar overflow (mobile single-line)', () => {
 
     it('adds tb-overflow class on mobile when toolbar overflows', () => {
         global.window.innerWidth = 500
-        toolbar = new Toolbar()
+        toolbar = new Toolbar({ serviceRegistry })
         toolbar.init()
 
         simulateOverflow(toolbar, true)
@@ -54,7 +54,7 @@ describe('Toolbar overflow (mobile single-line)', () => {
 
     it('does not add tb-overflow class on mobile when toolbar fits on one line', () => {
         global.window.innerWidth = 500
-        toolbar = new Toolbar()
+        toolbar = new Toolbar({ serviceRegistry })
         toolbar.init()
 
         simulateOverflow(toolbar, false)
@@ -64,7 +64,7 @@ describe('Toolbar overflow (mobile single-line)', () => {
 
     it('does not add tb-overflow class on desktop even if overflow detected', () => {
         global.window.innerWidth = 1400
-        toolbar = new Toolbar()
+        toolbar = new Toolbar({ serviceRegistry })
         toolbar.init()
 
         simulateOverflow(toolbar, true)
@@ -74,7 +74,7 @@ describe('Toolbar overflow (mobile single-line)', () => {
 
     it('toggles tb-overflow class as dimensions change', () => {
         global.window.innerWidth = 500
-        toolbar = new Toolbar()
+        toolbar = new Toolbar({ serviceRegistry })
         toolbar.init()
 
         simulateOverflow(toolbar, true)
@@ -89,7 +89,7 @@ describe('Toolbar overflow (mobile single-line)', () => {
 
     it('re-checks overflow on window resize', () => {
         global.window.innerWidth = 500
-        toolbar = new Toolbar()
+        toolbar = new Toolbar({ serviceRegistry })
         toolbar.init()
 
         simulateOverflow(toolbar, true)

@@ -14,7 +14,7 @@ export default class SelectionCommands {
 
     /**
      * @param {object} deps
-     * @param {typeof import('../../state/service_registry.js').serviceRegistry} deps.registry - mutable service registry (services assigned later)
+     * @param {typeof import('../../state/service_loader.js').serviceRegistry} deps.registry - mutable service registry (services assigned later)
      */
     constructor({ registry }) {
         this.#registry = registry

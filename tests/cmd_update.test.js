@@ -8,7 +8,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/event_bus.js'
 import { EVENTS } from '../src/core/events.js'
@@ -45,10 +45,9 @@ describe('Commander — updateNote / updateTrack opts / setStepsPerBeat', () => 
         appState.reset()
         soundRegistry.reset()
         serviceRegistry.reset()
-        cmd = new Commander()
         history = new HistoryManager(50)
+        cmd = new Commander({ history })
         serviceRegistry.cmd = cmd
-        serviceRegistry.history = history
 
         now = 1_000_000
         nowSpy = vi.spyOn(performance, 'now').mockImplementation(() => now)

@@ -6,7 +6,7 @@
 
 import { appState } from '../state/app_state.js'
 import { playbackEvents, emitStructureChanged } from '../state/event_bus.js'
-import { serviceRegistry } from '../state/service_registry.js'
+import { getServices } from '../state/service_loader.js'
 
 import { getTracksArray } from '../core/tracks.js'
 import BasePanel from './base_panel.js'
@@ -55,14 +55,14 @@ export default class PatternPanel extends BasePanel {
     /**
      * @param {object} [deps]  Optional dependency overrides (DI).
      * @param {typeof import('../state/app_state.js').appState} [deps.appState]
-     * @param {typeof import('../state/service_registry.js').serviceRegistry} [deps.serviceRegistry]
+     * @param {typeof import('../state/service_loader.js').serviceRegistry} [deps.serviceRegistry]
      * @param {typeof import('../state/event_bus.js').playbackEvents} [deps.playbackEvents]
      */
     constructor(deps = {}) {
         super('pattern-panel')
 
         this.#appState = deps.appState ?? appState
-        this.#serviceRegistry = deps.serviceRegistry ?? serviceRegistry
+        this.#serviceRegistry = deps.serviceRegistry ?? getServices()
         this.#playbackEvents = deps.playbackEvents ?? playbackEvents
 
         this.#selectedNote = null

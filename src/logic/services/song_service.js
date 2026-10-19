@@ -1,5 +1,5 @@
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
+import { getServices } from '../../state/service_loader.js'
 import { idbGet, idbPut, idbKeys } from '../../core/idb.js'
 
 import { logger } from '../../core/logger.js'
@@ -100,7 +100,7 @@ class SongService {
         const ids = new Set((data.patterns ?? []).map((p) => p?.id).filter(Boolean))
         const { songs, dropped } = normalizeSongs(data.songs, ids)
 
-        await serviceRegistry.cmd.recordTransaction('Load song', async () => {
+        await getServices().cmd.recordTransaction('Load song', async () => {
             appState.patterns.length = 0
             for (const pat of data.patterns) {
                 appState.patterns.push(pat)
@@ -117,8 +117,8 @@ class SongService {
                 showToast(`Ignored ${dropped.length} song clip(s) referencing an unknown pattern: ${names}`, 'warning')
             }
 
-            await serviceRegistry.cmd.setSelectedPatternIdx(data.selectedPatternIdx ?? 0)
-            serviceRegistry.cmd.resetPage()
+            await getServices().cmd.setSelectedPatternIdx(data.selectedPatternIdx ?? 0)
+            getServices().cmd.resetPage()
         })
 
         if (this.#loadGeneration !== gen) return name

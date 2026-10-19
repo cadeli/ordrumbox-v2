@@ -10,7 +10,7 @@ vi.mock('../src/logic/midi/midi_exporter.js', () => ({
 
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/event_bus.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
 import { EVENTS } from '../src/core/events.js'
@@ -33,7 +33,7 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
 
         document.body.innerHTML = ''
 
-        toolsPanel = new ToolsPanel()
+        toolsPanel = new ToolsPanel({ serviceRegistry })
         toolsPanel.init()
         playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
     })
@@ -98,7 +98,7 @@ describe('ToolsPanel — MIDI indicator teardown', () => {
 
         document.body.innerHTML = ''
 
-        toolsPanel = new ToolsPanel()
+        toolsPanel = new ToolsPanel({ serviceRegistry })
         toolsPanel.init()
     })
 

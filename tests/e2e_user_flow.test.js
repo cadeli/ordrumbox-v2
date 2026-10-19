@@ -19,7 +19,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/commander.js'
 import { Exporter } from '../src/patterns/exporter.js'
@@ -33,13 +33,16 @@ import HistoryManager from '../src/logic/history_manager.js'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
+let sharedHistory
+
 function resetAll() {
     appState.patterns.length = 0
     appState.selectedPatternIdx = 0
     appState.selectedTrackIdx = 0
     appState.flatNotes = null
     serviceRegistry.reset()
-    serviceRegistry.history = new HistoryManager(50)
+    sharedHistory = new HistoryManager(50)
+    serviceRegistry.history = sharedHistory
     soundRegistry.reset()
 }
 
@@ -50,7 +53,7 @@ describe('E2E Flow 1 — Create pattern and build beat', () => {
 
     beforeEach(() => {
         resetAll()
-        cmd = new Commander()
+        cmd = new Commander({ history: sharedHistory })
         serviceRegistry.cmd = cmd
     })
 
@@ -187,7 +190,7 @@ describe('E2E Flow 2 — Set triggers and note parameters', () => {
 
     beforeEach(() => {
         resetAll()
-        cmd = new Commander()
+        cmd = new Commander({ history: sharedHistory })
         serviceRegistry.cmd = cmd
     })
 
@@ -274,7 +277,7 @@ describe('E2E Flow 3 — Track parameter updates', () => {
 
     beforeEach(() => {
         resetAll()
-        cmd = new Commander()
+        cmd = new Commander({ history: sharedHistory })
         serviceRegistry.cmd = cmd
     })
 
@@ -339,7 +342,7 @@ describe('E2E Flow 4 — Compute flat notes from pattern', () => {
 
     beforeEach(() => {
         resetAll()
-        cmd = new Commander()
+        cmd = new Commander({ history: sharedHistory })
         serviceRegistry.cmd = cmd
     })
 
@@ -418,7 +421,7 @@ describe('E2E Flow 5 — Export to MIDI and verify', () => {
 
     beforeEach(() => {
         resetAll()
-        cmd = new Commander()
+        cmd = new Commander({ history: sharedHistory })
         serviceRegistry.cmd = cmd
     })
 
@@ -510,7 +513,7 @@ describe('E2E Flow 6 — Export to JSON and roundtrip', () => {
 
     beforeEach(() => {
         resetAll()
-        cmd = new Commander()
+        cmd = new Commander({ history: sharedHistory })
         serviceRegistry.cmd = cmd
     })
 
@@ -614,7 +617,7 @@ describe('E2E Flow 7 — Transport lifecycle', () => {
             postMessage() {}
             terminate() {}
         }
-        cmd = new Commander()
+        cmd = new Commander({ history: sharedHistory })
         serviceRegistry.cmd = cmd
 
         const Transport = (await import('../src/logic/transport/transport.js')).default
@@ -679,7 +682,7 @@ describe('E2E Flow 8 — Full user session simulation', () => {
 
     beforeEach(() => {
         resetAll()
-        cmd = new Commander()
+        cmd = new Commander({ history: sharedHistory })
         serviceRegistry.cmd = cmd
         history = cmd.getHistory()
     })

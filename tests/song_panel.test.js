@@ -4,7 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import SongPanel from '../src/ui/song_panel.js'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { playbackEvents } from '../src/state/event_bus.js'
 import { EVENTS } from '../src/core/events.js'
 
@@ -30,7 +30,7 @@ describe('SongPanel', () => {
         appState.selectedPatternIdx = 0
         appState.songInfos = { name: 'Test Song', date: '2024-01-01', description: 'desc' }
 
-        panel = new SongPanel()
+        panel = new SongPanel({ serviceRegistry })
         panel.createDOM()
         document.body.appendChild(panel.container)
     })

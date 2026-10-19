@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/event_bus.js'
 
@@ -18,7 +18,7 @@ const { mocks } = vi.hoisted(() => ({
     },
 }))
 
-vi.mock('../src/state/service_registry.js', () => ({
+vi.mock('../src/state/service_loader.js', () => ({
     serviceRegistry: {
         seq: { setBpm: mocks.setBpm },
         patterns: { applyFlatNotes: mocks.applyFlatNotes },
@@ -28,9 +28,6 @@ vi.mock('../src/state/service_registry.js', () => ({
             loadSamplesForPatterns: mocks.loadSamplesForPatterns,
         },
     },
-}))
-
-vi.mock('../src/state/service_loader.js', () => ({
     getAutoAssignService: vi.fn().mockResolvedValue({
         autoAssignSounds: mocks.autoAssignSounds,
     }),
@@ -59,7 +56,7 @@ describe('commands/selection_commands', () => {
             loadSamplesForPatterns: mocks.loadSamplesForPatterns,
         }
 
-        cmd = new Commander()
+        cmd = new Commander({ registry: serviceRegistry })
         serviceRegistry.cmd = cmd
     })
 

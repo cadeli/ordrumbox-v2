@@ -6,7 +6,7 @@
 // Knob instances are kept alive between renders via setValue().
 
 import { soundRegistry as _soundRegistrySingleton } from '../state/sound_registry.js'
-import { serviceRegistry as _serviceRegistrySingleton } from '../state/service_registry.js'
+import { getServices } from '../state/service_loader.js'
 import { playbackEvents as _playbackEventsSingleton } from '../state/event_bus.js'
 import { logger } from '../core/logger.js'
 import { syncKnobs } from './components/sync_helpers.js'
@@ -50,7 +50,7 @@ export default class SynthEditor {
         this.panel = null
 
         this.#soundRegistry = deps.soundRegistry ?? _soundRegistrySingleton
-        this.#serviceRegistry = deps.serviceRegistry ?? _serviceRegistrySingleton
+        this.#serviceRegistry = deps.serviceRegistry ?? getServices()
         this.#playbackEvents = deps.playbackEvents ?? _playbackEventsSingleton
 
         this.#delegationBound = false

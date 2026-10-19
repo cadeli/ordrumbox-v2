@@ -3,7 +3,7 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents, emitNotesChanged } from '../state/event_bus.js'
 import { getNoteAbsoluteStep, stepToBeat } from '../core/notes.js'
 import { getTracksArray } from '../core/tracks.js'
-import { serviceRegistry } from '../state/service_registry.js'
+import { getServices } from '../state/service_loader.js'
 import FlatNote from '../model/flat_note.js'
 import BasePanel from './base_panel.js'
 import { getNoteSubPositions } from '../patterns/note_positions.js'
@@ -44,12 +44,12 @@ export default class PianoRollPanel extends BasePanel {
     /**
      * @param {object} [deps]  Optional dependency overrides (DI).
      * @param {typeof import('../state/app_state.js').appState} [deps.appState]
-     * @param {typeof import('../state/service_registry.js').serviceRegistry} [deps.serviceRegistry]
+     * @param {typeof import('../state/service_loader.js').serviceRegistry} [deps.serviceRegistry]
      * @param {typeof import('../state/event_bus.js').playbackEvents} [deps.playbackEvents]
      */
     constructor(deps = {}) {
         super('piano-roll-panel')
-        this.#serviceRegistry = deps.serviceRegistry ?? serviceRegistry
+        this.#serviceRegistry = deps.serviceRegistry ?? getServices()
         this.#track = null
         this.#selectedTrackIdx = -1
         this.#cellWidth = 24

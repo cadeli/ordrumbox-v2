@@ -30,7 +30,7 @@ import Sound from '../src/audio/sound.js'
 import { makeParam, makeNode } from './helpers/worklet_mocks.js'
 import { RELEASE_TIME } from '../src/core/constants.js'
 
-vi.mock('../src/state/service_registry.js', () => ({
+vi.mock('../src/state/service_loader.js', () => ({
     serviceRegistry: {
         transport: { bpm: 120 },
         resourcesLoader: { loadGeneratedSounds: vi.fn().mockResolvedValue() },

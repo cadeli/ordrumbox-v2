@@ -1,5 +1,4 @@
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { clamp } from '../../core/numbers.js'
 import { detectTrackType } from '../../core/drum_taxonomy.js'
 import CowbellGenerator from './cowbell_generator.js'
@@ -39,19 +38,28 @@ export default class AutoGenerator {
     #registry
 
     /**
-     * @param {object} [deps]
-     * @param {typeof import('../../state/service_registry.js').serviceRegistry} [deps.registry]
+     * @param {object} deps
+     * @param {typeof import('../../state/service_loader.js').serviceRegistry} deps.registry
      */
-    constructor(deps = {}) {
-        this.#registry = deps.registry ?? serviceRegistry
+    constructor(deps) {
+        this.#registry = deps.registry
+        const addNote = (track, beat, beatStep, pitch) => this.#registry.cmd.addNote(track, beat, beatStep, pitch)
         this.kickGen = new KickGenerator()
+        this.kickGen.addNoteFn = addNote
         this.snareGen = new SnareGenerator()
+        this.snareGen.addNoteFn = addNote
         this.hatGen = new HatGenerator()
+        this.hatGen.addNoteFn = addNote
         this.clapGen = new ClapGenerator()
+        this.clapGen.addNoteFn = addNote
         this.percGen = new PercGenerator()
+        this.percGen.addNoteFn = addNote
         this.cowbellGen = new CowbellGenerator()
+        this.cowbellGen.addNoteFn = addNote
         this.bassGen = new BassGenerator({ registry: this.#registry })
+        this.bassGen.addNoteFn = addNote
         this.melodyGen = new MelodyGenerator()
+        this.melodyGen.addNoteFn = addNote
         this.structureGen = new SongStructure()
     }
 

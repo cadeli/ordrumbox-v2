@@ -2,7 +2,6 @@
 // Rendering + control sync for the note editor panel.
 
 import { emitNotesChanged } from '../../state/event_bus.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { fmt, pitchToNoteName, knobFormat, knobUnit, renderOptions } from '../components/ui_utils.js'
 import { OrSlider } from '../components/or_slider.js'
 import { syncComponentMap, syncKnobs } from '../components/sync_helpers.js'
@@ -273,7 +272,7 @@ export default class SyncSection {
         const editor = this.#editor
         if (!editor.note || !editor.track) return
         const updates = key === 'arpRange' ? { arp: this.#arpValue({ range: val }) } : { [key]: val }
-        serviceRegistry.cmd?.updateNote(editor.track, editor.note, updates, {
+        editor.serviceRegistry.cmd?.updateNote(editor.track, editor.note, updates, {
             desc: `Edit note ${key === 'arpRange' ? 'arp' : key} on ${editor.track.name}`,
             coalesce: true,
         })
@@ -287,7 +286,7 @@ export default class SyncSection {
         const key = sel.dataset.key
         const overrides = key === 'arpScale' ? { scale: sel.value } : key === 'arpType' ? { type: sel.value } : {}
         const updates = { ['_' + key]: sel.value, arp: this.#arpValue(overrides) }
-        serviceRegistry.cmd?.updateNote(editor.track, editor.note, updates, {
+        editor.serviceRegistry.cmd?.updateNote(editor.track, editor.note, updates, {
             desc: `Edit note ${key === 'arpRange' ? 'arp' : key} on ${editor.track.name}`,
         })
         emitNotesChanged(editor.track)

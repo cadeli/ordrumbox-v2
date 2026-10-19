@@ -9,7 +9,7 @@ vi.mock('../src/logic/midi/midi_exporter.js', () => ({
 }))
 
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/event_bus.js'
 import { showToast } from '../src/core/notify.js'
@@ -28,7 +28,7 @@ function makeToolsPanel() {
     soundRegistry.reset()
     serviceRegistry.reset()
     document.body.innerHTML = ''
-    const toolsPanel = new ToolsPanel()
+    const toolsPanel = new ToolsPanel({ serviceRegistry })
     toolsPanel.init()
     playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
     return toolsPanel

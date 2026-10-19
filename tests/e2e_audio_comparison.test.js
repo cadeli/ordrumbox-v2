@@ -24,7 +24,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import nodeWaa from 'node-web-audio-api'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/commander.js'
 import WavExporter from '../src/audio/export/wav_exporter.js'

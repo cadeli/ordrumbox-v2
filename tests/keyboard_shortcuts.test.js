@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { initKeyboardShortcuts } from '../src/keyboard_shortcuts.js'
 import { EVENTS } from '../src/core/events.js'
@@ -20,7 +20,8 @@ vi.mock('../src/core/download.js', () => ({
     downloadBlob: vi.fn(),
 }))
 
-vi.mock('../src/state/service_loader.js', () => ({
+vi.mock('../src/state/service_loader.js', async (importOriginal) => ({
+    ...(await importOriginal()),
     getService: vi.fn(),
     getAutoGeneratorService: vi.fn(async () => ({ generatePattern: vi.fn() })),
     getAutoAssignService: vi.fn(async () => ({ autoAssignSounds: vi.fn() })),

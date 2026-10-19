@@ -11,7 +11,7 @@ vi.mock('../src/state/event_bus.js', () => ({
     },
 }))
 
-vi.mock('../src/state/service_registry.js', () => ({
+vi.mock('../src/state/service_loader.js', () => ({
     serviceRegistry: {
         history: { undo: vi.fn(), redo: vi.fn() },
         cmd: { beginGenerationUndo: vi.fn(), commitGenerationUndo: vi.fn(), cancelGenerationUndo: vi.fn() },
@@ -24,7 +24,7 @@ vi.mock('../src/state/app_state.js', () => ({
 }))
 
 import { playbackEvents } from '../src/state/event_bus.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 
 describe('ViewSwitch', () => {
     let vs

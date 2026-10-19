@@ -9,7 +9,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { playbackEvents } from '../src/state/event_bus.js'
 import HistoryManager from '../src/logic/history_manager.js'
 import Commander from '../src/logic/commands/commander.js'
@@ -24,10 +24,9 @@ describe('P2 — concurrency regressions', () => {
         soundRegistry.reset()
         serviceRegistry.reset()
         resetUserErrorReports()
-        cmd = new Commander()
         history = new HistoryManager(50)
+        cmd = new Commander({ history })
         serviceRegistry.cmd = cmd
-        serviceRegistry.history = history
     })
 
     beforeEach(() => {
@@ -130,7 +129,7 @@ describe('P2 — concurrency regressions', () => {
 
     describe('selection commands abandon work for a target the user left', () => {
         it('clamps an out-of-range pattern index', async () => {
-            const cmd2 = new Commander()
+            const cmd2 = new Commander({ history, registry: serviceRegistry })
             serviceRegistry.cmd = cmd2
             cmd2.addPattern('only')
             // serviceRegistry.flatNotes is a core service: without it the switch
@@ -152,7 +151,7 @@ describe('P2 — concurrency regressions', () => {
         // indistinguishable from never having moved (the pattern list is left
         // holding a stale index, which every later appState.patterns[idx] reads).
         it('restores the previous index when the switch throws', async () => {
-            const cmd2 = new Commander()
+            const cmd2 = new Commander({ history, registry: serviceRegistry })
             serviceRegistry.cmd = cmd2
             cmd2.addPattern('A')
             cmd2.addPattern('B')
@@ -170,7 +169,7 @@ describe('P2 — concurrency regressions', () => {
         })
 
         it('completes the switch when the sequencer is not up yet', async () => {
-            const cmd2 = new Commander()
+            const cmd2 = new Commander({ history, registry: serviceRegistry })
             serviceRegistry.cmd = cmd2
             cmd2.addPattern('only')
             serviceRegistry.seq = null

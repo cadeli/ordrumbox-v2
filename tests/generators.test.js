@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/commander.js'
 import AutoGenerator from '../src/logic/generators/auto_generator.js'
@@ -634,7 +634,7 @@ describe('Generators', () => {
             const pattern = cmd.addPattern('T')
             const track = cmd.addTrack(pattern, name, 4)
             track.beatCount = 4
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             await expect(autoGen.generateTrack(track, 'basic')).resolves.not.toThrow()
         })
 
@@ -642,7 +642,7 @@ describe('Generators', () => {
             const pattern = cmd.addPattern('T')
             const track = cmd.addTrack(pattern, 'COWBELL', 4)
             track.beatCount = 4
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             await expect(autoGen.generateTrack(track, 'basic')).resolves.not.toThrow()
         })
 
@@ -653,7 +653,7 @@ describe('Generators', () => {
             cmd.addNote(track, 0, 0, 0)
             const applySpy = vi.fn()
             serviceRegistry.flatNotes = { ...flatNotesService, applyFlatNotes: applySpy }
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
 
             await autoGen.changeTrack(0, pattern, track)
 
@@ -665,7 +665,7 @@ describe('Generators', () => {
             const pattern = cmd.addPattern('T')
             const track = cmd.addTrack(pattern, 'SNARE', 4)
             track.beatCount = 4
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             await expect(autoGen.changeTrack(0, pattern, track)).resolves.not.toThrow()
         })
     })
@@ -745,7 +745,7 @@ describe('Generators', () => {
 
             for (let i = 0; i < 25; i++) {
                 pattern.tags = { style: 'house', type: 'default' }
-                await new AutoGenerator().generatePattern()
+                await new AutoGenerator({ registry: serviceRegistry }).generatePattern()
                 const bass = bassOf(pattern)
                 expect(bass, 'a BASS track was generated').toBeTruthy()
                 expect(bass.useSoftSynth === true || bass.synthSoundKey).toBeTruthy()
@@ -773,7 +773,7 @@ describe('Generators', () => {
         })
 
         it('a hand-picked bass variant survives an auto-generate', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern({ genre: 'house' })
 
@@ -795,7 +795,7 @@ describe('Generators', () => {
         })
 
         it('a BASS track with no pick still draws from the genre list', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern({ genre: 'house' })
 
@@ -829,7 +829,7 @@ describe('Generators', () => {
         })
 
         it('generatePattern gives every track a non-zero auto variation', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
@@ -843,7 +843,7 @@ describe('Generators', () => {
         })
 
         it('melodic parts vary more than percussion', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern({ genre: 'techno' })
 
@@ -853,7 +853,7 @@ describe('Generators', () => {
         })
 
         it('the manual Var Pos / Var Prop sliders are never touched by the generator', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
@@ -866,7 +866,7 @@ describe('Generators', () => {
         })
 
         it('an auto variation already picked is never overwritten', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
@@ -877,7 +877,7 @@ describe('Generators', () => {
         })
 
         it('an auto variation of 0 is a real off, not an unset value', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
@@ -898,7 +898,7 @@ describe('Generators', () => {
         })
 
         it('generatePattern stores the genre used on the pattern', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
             expect(typeof pattern._autoGenGenre).toBe('string')
@@ -906,7 +906,7 @@ describe('Generators', () => {
         })
 
         it('changeTrack uses the same genre as generatePattern', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
@@ -921,7 +921,7 @@ describe('Generators', () => {
         })
 
         it('changeTrack does not pick a new random genre when _autoGenGenre is set', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
@@ -936,7 +936,7 @@ describe('Generators', () => {
         })
 
         it('genre is derived from pattern tags when available', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             pattern.tags = { style: 'rock', type: 'default' }
             await autoGen.generatePattern()
@@ -944,7 +944,7 @@ describe('Generators', () => {
         })
 
         it('genre falls back to random when tags have no matching style', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             pattern.tags = { style: 'unknown_style', type: 'default' }
             await autoGen.generatePattern()
@@ -952,7 +952,7 @@ describe('Generators', () => {
         })
 
         it('genre falls back to random when pattern has no tags', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             pattern.tags = null
             await autoGen.generatePattern()
@@ -970,7 +970,7 @@ describe('Generators', () => {
         })
 
         it('generatePattern stores a randomized key offset and scale', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
@@ -979,7 +979,7 @@ describe('Generators', () => {
         })
 
         it('reuses the pattern key when the pattern is regenerated', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
             const key = pattern._autoGenKeyOffset
@@ -993,7 +993,7 @@ describe('Generators', () => {
 
         it('randomizes the genre structure instead of using the raw template', async () => {
             const spy = vi.spyOn(SongStructure, 'randomizeStructure')
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
 
             try {
                 await autoGen.generatePattern()
@@ -1004,7 +1004,7 @@ describe('Generators', () => {
         })
 
         it('generates each track with a jittered density', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const spy = vi.spyOn(autoGen, 'generateTrack')
 
             await autoGen.generatePattern()
@@ -1017,7 +1017,7 @@ describe('Generators', () => {
         })
 
         it('jitters the swing amount of every track within bounds', async () => {
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
@@ -1352,7 +1352,7 @@ describe('Generators', () => {
             pattern.beatCount = beatCount
             appState.selectedPatternIdx = appState.patterns.length - 1
 
-            const autoGen = new AutoGenerator()
+            const autoGen = new AutoGenerator({ registry: serviceRegistry })
             const result = await autoGen.generatePattern()
 
             expect(result).not.toBeNull()

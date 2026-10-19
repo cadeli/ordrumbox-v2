@@ -20,7 +20,7 @@ export default class ToolsPanel extends BasePanel {
 
     /**
      * @param {object} [deps]
-     * @param {typeof import('../state/service_registry.js').serviceRegistry} [deps.serviceRegistry]
+     * @param {typeof import('../state/service_loader.js').serviceRegistry} [deps.serviceRegistry]
      */
     constructor({ serviceRegistry: sr = null } = {}) {
         super('tools-panel')

@@ -4,7 +4,7 @@ import Sound from '../src/audio/sound.js'
 import Mixer from '../src/audio/mixer.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import * as AudioMath from '../src/audio/math.js'
 import { makeParam, makeNode, installWorkletMocks } from './helpers/worklet_mocks.js'
 

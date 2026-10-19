@@ -30,9 +30,9 @@ vi.mock('../src/state/sound_registry.js', () => {
     return { soundRegistry: state, __esModule: true }
 })
 
-vi.mock('../src/state/service_registry.js', () => {
+vi.mock('../src/state/service_loader.js', () => {
     const reg = { audioCtx: null, cmd: null }
-    return { serviceRegistry: reg, __esModule: true }
+    return { serviceRegistry: reg, getServices: () => reg, __esModule: true }
 })
 
 vi.mock('../src/patterns/fixer.js', () => ({
@@ -107,7 +107,7 @@ describe('ResourcesLoader', () => {
         }
         vi.spyOn(logger, 'error').mockImplementation(() => {})
         vi.spyOn(logger, 'info').mockImplementation(() => {})
-        const { serviceRegistry } = await import('../src/state/service_registry.js')
+        const { serviceRegistry } = await import('../src/state/service_loader.js')
         serviceRegistry.cmd = {
             importPatternFromJson: vi.fn(),
             withSuppressedRecord: (fn) => fn(),
@@ -165,7 +165,7 @@ describe('ResourcesLoader', () => {
     describe('loadSong', () => {
         it('loads patterns into appState', async () => {
             const { appState } = await import('../src/state/app_state.js')
-            const { serviceRegistry } = await import('../src/state/service_registry.js')
+            const { serviceRegistry } = await import('../src/state/service_loader.js')
             serviceRegistry.cmd = {
                 importPatternFromJson: vi.fn(),
                 withSuppressedRecord: (fn) => fn(),
@@ -184,7 +184,7 @@ describe('ResourcesLoader', () => {
         })
 
         it('resets sampleId when useAutoAssignSound is not false', async () => {
-            const { serviceRegistry } = await import('../src/state/service_registry.js')
+            const { serviceRegistry } = await import('../src/state/service_loader.js')
             serviceRegistry.cmd = {
                 importPatternFromJson: vi.fn(),
                 withSuppressedRecord: (fn) => fn(),
@@ -209,7 +209,7 @@ describe('ResourcesLoader', () => {
         })
 
         it('keeps sampleId when useAutoAssignSound is false', async () => {
-            const { serviceRegistry } = await import('../src/state/service_registry.js')
+            const { serviceRegistry } = await import('../src/state/service_loader.js')
             serviceRegistry.cmd = {
                 importPatternFromJson: vi.fn(),
                 withSuppressedRecord: (fn) => fn(),
@@ -234,7 +234,7 @@ describe('ResourcesLoader', () => {
         })
 
         it('skips tracks with sampleId NOT_DEFINED', async () => {
-            const { serviceRegistry } = await import('../src/state/service_registry.js')
+            const { serviceRegistry } = await import('../src/state/service_loader.js')
             serviceRegistry.cmd = {
                 importPatternFromJson: vi.fn(),
                 withSuppressedRecord: (fn) => fn(),
@@ -259,7 +259,7 @@ describe('ResourcesLoader', () => {
         })
 
         it('imports under record suppression and clears history after boot', async () => {
-            const { serviceRegistry } = await import('../src/state/service_registry.js')
+            const { serviceRegistry } = await import('../src/state/service_loader.js')
             const importPatternFromJson = vi.fn()
             const withSuppressedRecord = vi.fn((fn) => fn())
             const clear = vi.fn()
@@ -312,7 +312,7 @@ describe('ResourcesLoader', () => {
     describe('ensureResourcesLoaded', () => {
         it('loads patterns when empty and releases the in-flight guard', async () => {
             const { appState } = await import('../src/state/app_state.js')
-            const { serviceRegistry } = await import('../src/state/service_registry.js')
+            const { serviceRegistry } = await import('../src/state/service_loader.js')
             const { soundRegistry } = await import('../src/state/sound_registry.js')
             serviceRegistry.cmd = {
                 importPatternFromJson: vi.fn(),
@@ -336,7 +336,7 @@ describe('ResourcesLoader', () => {
 
         it('concurrent callers share the in-flight pattern load', async () => {
             const { appState } = await import('../src/state/app_state.js')
-            const { serviceRegistry } = await import('../src/state/service_registry.js')
+            const { serviceRegistry } = await import('../src/state/service_loader.js')
             const { soundRegistry } = await import('../src/state/sound_registry.js')
             serviceRegistry.cmd = {
                 importPatternFromJson: vi.fn(),
@@ -388,7 +388,7 @@ describe('ResourcesLoader', () => {
         it('concurrent callers share the in-flight sample load', async () => {
             const { appState } = await import('../src/state/app_state.js')
             const { soundRegistry } = await import('../src/state/sound_registry.js')
-            const { serviceRegistry } = await import('../src/state/service_registry.js')
+            const { serviceRegistry } = await import('../src/state/service_loader.js')
             serviceRegistry.cmd = {
                 importPatternFromJson: vi.fn(),
                 withSuppressedRecord: (fn) => fn(),

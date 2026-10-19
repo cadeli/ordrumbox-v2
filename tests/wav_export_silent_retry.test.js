@@ -21,7 +21,7 @@ vi.mock('../src/audio/engine.js', () => ({
 }))
 
 import WavExporter from '../src/audio/export/wav_exporter.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { logger } from '../src/core/logger.js'
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import Commander from '../src/logic/commands/commander.js'
 import { Exporter } from '../src/patterns/exporter.js'
 import { recomputeFlatNotes, computeTickCountForPattern } from '../src/patterns/pattern_engine.js'

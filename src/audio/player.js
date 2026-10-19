@@ -50,7 +50,7 @@ export default class Player {
      *   patterns?: import('../model/pattern_schema.js').Pattern[],
      *   getSelectedPatternIdx?: () => number,
      *   computeFlatNotes?: (pattern: import('../model/pattern_schema.js').Pattern, loop: number) => Map<number, import('../model/flat_note.js').default[]>|void,
-     *   getAutoGenerator?: () => Promise<import('../state/service_registry.js').AutoGeneratorService>,
+     *   getAutoGenerator?: () => Promise<import('../state/service_loader.js').AutoGeneratorService>,
      *   getFlatNotes?: (loop: number) => Map<number, import('../model/flat_note.js').default[]>,
      *   getFlatNotesForPattern?: (pattern: import('../model/pattern_schema.js').Pattern, loop: number) => Map<number, import('../model/flat_note.js').default[]>,
      *   getPlaybackMode?: () => string,

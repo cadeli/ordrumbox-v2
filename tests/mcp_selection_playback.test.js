@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { tools, handleToolCall, resetLibraryCache } from '../ordrumboxMcpserver.mjs'
 
 const toolByName = (name) => tools.find((t) => t.name === name)

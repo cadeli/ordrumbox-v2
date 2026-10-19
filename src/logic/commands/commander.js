@@ -1,7 +1,6 @@
 import { clamp } from '../../core/numbers.js'
 import { getTracksArray } from '../../core/tracks.js'
 import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
 import { reportUserError } from '../../core/notify.js'
 import { TRACK_DEFAULTS, TRACK_VALUE_RANGES } from '../../model/track_schema.js'
@@ -105,7 +104,7 @@ export default class Commander {
     constructor({ history = null, persistPatterns = null, registry = null } = {}) {
         this.#history = history
         this.#persistPatterns = persistPatterns
-        this.#registry = registry ?? serviceRegistry
+        this.#registry = registry
         this.#suppressRecord = false
 
         this.#notes = new NoteCommands(this)
@@ -165,9 +164,6 @@ export default class Commander {
     }
 
     getHistory() {
-        if (!this.#history) {
-            this.#history = serviceRegistry.history
-        }
         return this.#history
     }
 
@@ -315,8 +311,6 @@ export default class Commander {
     persist = () => {
         if (this.#persistPatterns) {
             this.#persistPatterns()
-        } else {
-            serviceRegistry.resourcesLoader?.persistPatterns?.()
         }
     }
 

@@ -10,7 +10,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
+import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { logger } from '../src/core/logger.js'
 import Commander from '../src/logic/commands/commander.js'
@@ -23,10 +23,9 @@ describe('Commander history API', () => {
         appState.reset()
         soundRegistry.reset()
         serviceRegistry.reset()
-        cmd = new Commander()
-        serviceRegistry.cmd = cmd
         history = new HistoryManager(50)
-        serviceRegistry.history = history
+        cmd = new Commander({ history })
+        serviceRegistry.cmd = cmd
     })
 
     describe('recordTransaction', () => {

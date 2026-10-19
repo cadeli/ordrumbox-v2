@@ -20,9 +20,15 @@ export default class SongPanel extends BasePanel {
     #arrangement
     #list
     #actions
+    #serviceRegistry
 
-    constructor() {
+    constructor({ serviceRegistry: sr = null } = {}) {
         super('song-panel')
+        this.#serviceRegistry = sr
+    }
+
+    get serviceRegistry() {
+        return this.#serviceRegistry
     }
 
     get songName() {

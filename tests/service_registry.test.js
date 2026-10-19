@@ -4,7 +4,7 @@ describe('ServiceRegistry', () => {
     let ServiceRegistry, serviceRegistry
 
     beforeEach(async () => {
-        const mod = await import('../src/state/service_registry.js')
+        const mod = await import('../src/state/service_loader.js')
         ServiceRegistry = mod.ServiceRegistry
         serviceRegistry = mod.serviceRegistry
         serviceRegistry.reset()
@@ -69,7 +69,7 @@ describe('lazyService', () => {
     let serviceRegistry
 
     beforeEach(async () => {
-        const mod = await import('../src/state/service_registry.js')
+        const mod = await import('../src/state/service_loader.js')
         serviceRegistry = mod.serviceRegistry
         serviceRegistry.reset()
     })

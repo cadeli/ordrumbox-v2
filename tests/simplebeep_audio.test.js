@@ -59,7 +59,7 @@ describe('simpleBeep — real audio rendering', () => {
     it('wav_exporter renders non-silent audio with kick buffer', async () => {
         const { default: WavExporter } = await import('../src/audio/export/wav_exporter.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
-        const { serviceRegistry } = await import('../src/state/service_registry.js')
+        const { serviceRegistry } = await import('../src/state/service_loader.js')
         const flatNotesService = await import('../src/patterns/flat_notes.js')
 
         soundRegistry.reset()
@@ -114,7 +114,7 @@ describe('simpleBeep — real audio rendering', () => {
     it('silent pattern produces near-silence', async () => {
         const { default: WavExporter } = await import('../src/audio/export/wav_exporter.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
-        const { serviceRegistry } = await import('../src/state/service_registry.js')
+        const { serviceRegistry } = await import('../src/state/service_loader.js')
         const flatNotesService = await import('../src/patterns/flat_notes.js')
 
         soundRegistry.reset()
@@ -167,7 +167,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
     it('after stop(), addStrip re-creates busInput and connects strip', async () => {
         const { default: Mixer } = await import('../src/audio/mixer.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
-        const { serviceRegistry } = await import('../src/state/service_registry.js')
+        const { serviceRegistry } = await import('../src/state/service_loader.js')
         const flatNotesService = await import('../src/patterns/flat_notes.js')
 
         soundRegistry.reset()
@@ -198,7 +198,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
     it('signal reaches destination after stop → addStrip → render', async () => {
         const { default: Mixer } = await import('../src/audio/mixer.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
-        const { serviceRegistry } = await import('../src/state/service_registry.js')
+        const { serviceRegistry } = await import('../src/state/service_loader.js')
         const flatNotesService = await import('../src/patterns/flat_notes.js')
 
         soundRegistry.reset()
@@ -244,7 +244,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
     it('signal still reaches the destination after mixer.stop() nulls busInput', async () => {
         const { default: Mixer } = await import('../src/audio/mixer.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
-        const { serviceRegistry } = await import('../src/state/service_registry.js')
+        const { serviceRegistry } = await import('../src/state/service_loader.js')
         const flatNotesService = await import('../src/patterns/flat_notes.js')
 
         soundRegistry.reset()

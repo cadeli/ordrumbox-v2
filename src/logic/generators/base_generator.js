@@ -102,7 +102,6 @@
  * Tonal centre + scale a melodic generator plays in.
  * @typedef {{root: number, scale: string|null}} Harmony
  */
-import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { TRACK_VALUE_RANGES } from '../../model/track_schema.js'
 import { clamp } from '../../core/numbers.js'
@@ -115,7 +114,12 @@ export default class BaseGenerator {
         this.instrumentName = instrumentName
         this.configs = configs
         this.addNoteFn =
-            addNoteFn ?? ((track, beat, beatStep, pitch) => serviceRegistry.cmd.addNote(track, beat, beatStep, pitch))
+            addNoteFn ??
+            ((track, beat, beatStep, pitch) => {
+                const note = { beat, beatStep, pitch }
+                track.notes.push(note)
+                return note
+            })
     }
 
     /** Protected setter — subclasses call this in their constructor. */
