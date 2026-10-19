@@ -5,7 +5,6 @@ import { Lifecycle } from '../core/lifecycle.js'
 import { prevPage, nextPage } from './page_nav.js'
 import { maxPageFor } from './page_nav.js'
 import { EVENTS } from '../core/events.js'
-import patternAutoGen from '../logic/services/pattern_auto_gen.js'
 import {
     rebuildPatternSelect,
     rebuildDrumkitSelect,
@@ -52,13 +51,16 @@ export default class PatternSettingsPanel {
     }
 
     #getCmd
+    #getPatternAutoGen
 
     /**
      * @param {object} [deps]
      * @param {() => import('../logic/commands/commander.js').default} [deps.getCmd]
+     * @param {() => import('../logic/services/pattern_auto_gen.js').PatternAutoGen} [deps.getPatternAutoGen]
      */
-    constructor({ getCmd = () => null } = {}) {
+    constructor({ getCmd = () => null, getPatternAutoGen = () => null } = {}) {
         this.#getCmd = getCmd
+        this.#getPatternAutoGen = getPatternAutoGen
         this.container = null
         this.#isOpen = false
     }
@@ -222,9 +224,9 @@ export default class PatternSettingsPanel {
     // toolbar's ViewSwitch.
 
     #bindGenerationButtons() {
-        this.#life.listen(this.#drumBtn, 'click', () => patternAutoGen.toggleDrums())
-        this.#life.listen(this.#bassBtn, 'click', () => patternAutoGen.toggleMelodic('BASS'))
-        this.#life.listen(this.#chordsBtn, 'click', () => patternAutoGen.toggleMelodic('PIANO'))
+        this.#life.listen(this.#drumBtn, 'click', () => this.#getPatternAutoGen().toggleDrums())
+        this.#life.listen(this.#bassBtn, 'click', () => this.#getPatternAutoGen().toggleMelodic('BASS'))
+        this.#life.listen(this.#chordsBtn, 'click', () => this.#getPatternAutoGen().toggleMelodic('PIANO'))
     }
 
     #subscribeEvents() {

@@ -8,7 +8,6 @@
 // a single NOTE_CHANGE + PATTERN_CHANGE batch.
 
 import { appState } from '../../state/app_state.js'
-import { getServices } from '../../state/service_loader.js'
 import { playbackEvents } from '../../state/event_bus.js'
 import { getAutoGeneratorService } from '../../state/service_loader.js'
 import { DRUM_TYPES, detectTrackType } from '../../core/drum_taxonomy.js'
@@ -26,7 +25,17 @@ const MELODIC_GEN_PRESETS = {
     PIANO: { synthSoundKey: 'PIANO', defaultVariant: 'chordStab' },
 }
 
-class PatternAutoGen {
+export class PatternAutoGen {
+    #registry
+
+    /**
+     * @param {object} registry - service container
+     */
+    constructor(registry) {
+        this.#registry = registry
+    }
+
+
     /**
      * Toggle shell shared by every generation button: when a matching track
      * already plays with generation on, turn the family off; otherwise run
@@ -64,7 +73,7 @@ class PatternAutoGen {
                 const autoGen = await getAutoGeneratorService()
                 await generate(pattern, autoGen)
             } catch (err) {
-                getServices().cmd.cancelGenerationUndo?.()
+                this.#registry.cmd.cancelGenerationUndo?.()
                 showToast('Auto-generation failed: ' + err.message, 'error')
             }
         }
@@ -81,7 +90,7 @@ class PatternAutoGen {
      */
     async toggleDrums() {
         await this.toggleAutoGeneration(DRUM_TYPES, async (pattern, autoGen) => {
-            if (!getServices().cmd.beginGenerationUndo(pattern)) return
+            if (!this.#registry.cmd.beginGenerationUndo(pattern)) return
             await autoGen.generatePattern()
 
             if (pattern.tracks) {
@@ -93,7 +102,7 @@ class PatternAutoGen {
                     track._toolbarAuto = true
                 }
             }
-            getServices().cmd.commitGenerationUndo()
+            this.#registry.cmd.commitGenerationUndo()
         })
     }
 
@@ -108,7 +117,7 @@ class PatternAutoGen {
         if (!preset) throw new Error(`No auto-generation preset for track type "${trackType}"`)
 
         await this.toggleAutoGeneration(trackType, async (pattern, autoGen) => {
-            if (!getServices().cmd.beginGenerationUndo(pattern)) return
+            if (!this.#registry.cmd.beginGenerationUndo(pattern)) return
 
             let track = pattern.tracks?.find((t) => detectTrackType(t.name) === trackType)
             if (!track) {
@@ -119,19 +128,18 @@ class PatternAutoGen {
                 const structure = autoGen.structureGen.generateStructure(genre)
                 const variant = structure[trackType] ?? preset.defaultVariant
 
-                track = getServices().cmd.addTrack(pattern, trackType)
+                track = this.#registry.cmd.addTrack(pattern, trackType)
                 track.useSoftSynth = true
                 track.useAutoAssignSound = false
                 track.synthSoundKey = preset.synthSoundKey
                 track.velocity = 0.8
                 await autoGen.generateTrack(track, variant, 1, pattern, harmony)
-                getServices().flatNotes.applyFlatNotes(pattern)
+                this.#registry.flatNotes.applyFlatNotes(pattern)
             }
             track.auto = true
             track._toolbarAuto = true
-            getServices().cmd.commitGenerationUndo()
+            this.#registry.cmd.commitGenerationUndo()
         })
     }
 }
 
-export default new PatternAutoGen()

@@ -49,7 +49,7 @@ describe('Pattern Panel UI Grid', () => {
 
         // Setup DOM
         document.body.innerHTML = ''
-        panel = new PatternPanel()
+        panel = new PatternPanel({ serviceRegistry })
         panel.init()
     })
 

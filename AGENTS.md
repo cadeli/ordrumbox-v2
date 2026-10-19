@@ -24,8 +24,7 @@ npm run typecheck      # tsc --noEmit (jsconfig.json, // @ts-check files)
 index.html → src/main.js (bootstrap after "Start" click)
                 ↓
         state/app_state.js       ← global state singleton
-        state/service_registry.js ← manual dependency injection
-        state/service_loader.js  ← async service init
+        state/service_loader.js  ← async service init + DI container (ServiceRegistry)
         state/sound_registry.js  ← sample/instrument registry
                 ↓
         audio/engine.js          ← core audio engine
@@ -135,7 +134,7 @@ Guarded by `tests/undo_policy.test.js`.
 - **Language**: vanilla JS, ES Modules (`import`/`export`), no transpiler
 - **English only**: all code, comments, variable/function/class names must be exclusively in English. No other languages in source code.
 - **Class pattern**: ES classes with private fields (`#field`)
-- **State**: data (patterns, selection, song) centralized in `app_state.js`; services/DI instances (cmd, seq, audioEngine…) in `service_registry.js` — they are separate, appState is not accessed via serviceRegistry
+- **State**: data (patterns, selection, song) centralized in `app_state.js`; services/DI instances (cmd, seq, audioEngine…) in the container owned by `service_loader.js` (accessed via `getServices()` or constructor injection) — they are separate, appState is not accessed via serviceRegistry
 - **UI panels**: extend `BasePanel` or follow its pattern (no framework)
 - **DOM listeners**: bind with `panel.listen(target, type, handler, options?)` — `BasePanel.destroy()` aborts one `AbortController` per instance, so panels keep no handler references for `removeEventListener` (a fresh controller is created per `init()` cycle). Keep raw `add`/`removeEventListener` only for **visibility-scoped** bindings (bound in `show()`, released in `hide()` — see `piano_roll_panel.js` keydown/wheel). Standalone panels that don't extend `BasePanel` (`pattern_settings_panel.js`, `toolbar/view_switch.js`) own their own `#abortController` + `listen()` + `destroy()`
 - **Naming**: `snake_case` for files, `camelCase` for variables/functions, `PascalCase` for classes
@@ -204,7 +203,7 @@ src/
   logic/           — sequencer, LFO, history, commands, generators, MIDI, services
   model/           — data models (flat_note, instrument, track/pattern schema)
   patterns/        — pattern engine, flat notes, defaults, variation
-  state/           — app state, service registry/loader, sound registry
+  state/           — app state, service loader (DI container), sound registry
   ui/              — all UI panels and components
 
 e2e/               — Playwright end-to-end specs

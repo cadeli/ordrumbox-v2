@@ -10,7 +10,6 @@
 
 import { appState } from '../state/app_state.js'
 import { playbackEvents, emitTrackChanged } from '../state/event_bus.js'
-import { getServices } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { getNoteAbsoluteStep } from '../core/notes.js'
 
@@ -86,7 +85,7 @@ export default class TrackEditor extends BasePanel {
 
         // ── DI'd dependencies with fallback to module singletons ────
         this.#appState = deps.appState ?? appState
-        this.#serviceRegistry = deps.serviceRegistry ?? getServices()
+        this.#serviceRegistry = deps.serviceRegistry
         this.#soundRegistry = deps.soundRegistry ?? soundRegistry
         this.#playbackEvents = deps.playbackEvents ?? playbackEvents
 

@@ -1,10 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import drumkitService from '../src/logic/services/drumkit_service.js'
+import { DrumkitService } from '../src/logic/services/drumkit_service.js'
+
+let drumkitService
 
 describe('drumkit service — sound lookups', () => {
     beforeEach(() => {
+        drumkitService = new DrumkitService({})
         appState.reset()
         soundRegistry.reset()
         soundRegistry.drumkitList = [{ name: 'real' }, { name: '808' }]

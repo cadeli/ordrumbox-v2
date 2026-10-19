@@ -15,6 +15,9 @@
  * @typedef {import('../logic/transport/transport.js').default} TransportService
  * @typedef {import('../ui/view_manager.js').default} ViewManagerService
  * @typedef {import('../logic/history_manager.js').default} HistoryService
+ * @typedef {import('../logic/services/pattern_auto_gen.js').PatternAutoGen} PatternAutoGenService
+ * @typedef {import('../logic/services/drumkit_service.js').DrumkitService} DrumkitServiceService
+ * @typedef {import('../logic/services/song_service.js').SongService} SongServiceService
  */
 
 export class ServiceRegistry {
@@ -32,6 +35,9 @@ export class ServiceRegistry {
         transport: null,
         viewManager: null,
         history: null,
+        patternAutoGen: null,
+        drumkitService: null,
+        songService: null,
     }
 
     // Declared for TypeScript consumers (Object.assign is not modelled by tsc).
@@ -61,6 +67,12 @@ export class ServiceRegistry {
     viewManager
     /** @type {HistoryService|null} */
     history
+    /** @type {PatternAutoGenService|null} */
+    patternAutoGen
+    /** @type {DrumkitServiceService|null} */
+    drumkitService
+    /** @type {SongServiceService|null} */
+    songService
 
     constructor() {
         Object.assign(this, ServiceRegistry.DEFAULTS)
@@ -171,14 +183,23 @@ export async function initServices() {
             import('../logic/sequencer.js'),
             import('../patterns/flat_notes.js'),
         ])
-    services.resourcesLoader = new ResourcesLoader()
+    services.resourcesLoader = new ResourcesLoader({ serviceRegistry: services })
     services.history = await getHistoryService()
     services.cmd = new Commander({
         history: services.history,
         persistPatterns: () => services.resourcesLoader?.persistPatterns?.(),
         registry: services,
     })
-    services.seq = new Sequencer()
+    services.seq = new Sequencer({ serviceRegistry: services })
     services.flatNotes = flatNotesService
+
+    const [{ PatternAutoGen }, { DrumkitService }, { SongService }] = await Promise.all([
+        import('../logic/services/pattern_auto_gen.js'),
+        import('../logic/services/drumkit_service.js'),
+        import('../logic/services/song_service.js'),
+    ])
+    services.patternAutoGen = new PatternAutoGen(services)
+    services.drumkitService = new DrumkitService(services)
+    services.songService = new SongService(services)
     return services
 }

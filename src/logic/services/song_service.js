@@ -1,5 +1,4 @@
 import { appState } from '../../state/app_state.js'
-import { getServices } from '../../state/service_loader.js'
 import { idbGet, idbPut, idbKeys } from '../../core/idb.js'
 
 import { logger } from '../../core/logger.js'
@@ -31,7 +30,17 @@ const SONGS_STORE = 'songs'
  * @property {number} [selectedSongIdx]
  */
 
-class SongService {
+export class SongService {
+    #registry
+
+    /**
+     * @param {object} registry - service container
+     */
+    constructor(registry) {
+        this.#registry = registry
+    }
+
+
     #loadGeneration = 0
 
     /**
@@ -100,7 +109,7 @@ class SongService {
         const ids = new Set((data.patterns ?? []).map((p) => p?.id).filter(Boolean))
         const { songs, dropped } = normalizeSongs(data.songs, ids)
 
-        await getServices().cmd.recordTransaction('Load song', async () => {
+        await this.#registry.cmd.recordTransaction('Load song', async () => {
             appState.patterns.length = 0
             for (const pat of data.patterns) {
                 appState.patterns.push(pat)
@@ -117,8 +126,8 @@ class SongService {
                 showToast(`Ignored ${dropped.length} song clip(s) referencing an unknown pattern: ${names}`, 'warning')
             }
 
-            await getServices().cmd.setSelectedPatternIdx(data.selectedPatternIdx ?? 0)
-            getServices().cmd.resetPage()
+            await this.#registry.cmd.setSelectedPatternIdx(data.selectedPatternIdx ?? 0)
+            this.#registry.cmd.resetPage()
         })
 
         if (this.#loadGeneration !== gen) return name
@@ -153,4 +162,3 @@ class SongService {
     }
 }
 
-export default new SongService()

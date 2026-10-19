@@ -107,7 +107,7 @@ describe('Granular patternChange events', () => {
     describe(EVENTS.TRACK_PARAM_CHANGE, () => {
         it('emitted when track editor slider changes', () => {
             const cap = captureGranular()
-            const te = new TrackEditor()
+            const te = new TrackEditor({ serviceRegistry })
             te.init()
             const track = appState.patterns[0].tracks[0]
             te.track = track
@@ -126,7 +126,7 @@ describe('Granular patternChange events', () => {
     describe(EVENTS.PATTERN_STRUCTURE_CHANGE, () => {
         it('emitted by pattern_panel new action', () => {
             const cap = captureGranular()
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             pp.onAction('new')
             expect(cap.patternStructureChange).toHaveBeenCalled()
@@ -135,7 +135,7 @@ describe('Granular patternChange events', () => {
         it('emitted by pattern_panel delete action', () => {
             const cap = captureGranular()
             appState.patterns = [structuredClone(PATTERN_2BEAT), structuredClone(PATTERN_2BEAT)]
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             vi.spyOn(window, 'confirm').mockReturnValue(true)
             pp.onAction('delete', 1, appState.patterns[1])
@@ -144,7 +144,7 @@ describe('Granular patternChange events', () => {
 
         it('emitted by pattern_panel duplicate action', async () => {
             const cap = captureGranular()
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             await pp.onAction('duplicate', 0, appState.patterns[0])
             expect(cap.patternStructureChange).toHaveBeenCalled()
@@ -152,7 +152,7 @@ describe('Granular patternChange events', () => {
 
         it('emitted by pattern_panel clean action', () => {
             const cap = captureGranular()
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             vi.spyOn(window, 'confirm').mockReturnValue(true)
             pp.onAction('clean', 0, appState.patterns[0])
@@ -254,7 +254,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('pattern_panel responds to noteChange', () => {
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             const spy = vi.spyOn(pp, 'requestSync')
             playbackEvents.emit(EVENTS.NOTE_CHANGE)
@@ -262,7 +262,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('pattern_panel responds to trackParamChange', () => {
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             const spy = vi.spyOn(pp, 'requestSync')
             playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE)
@@ -270,7 +270,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('pattern_panel responds to patternStructureChange', () => {
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             const spy = vi.spyOn(pp, 'requestSync')
             playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
@@ -278,7 +278,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('pattern_panel responds to drumkitChange', () => {
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             const spy = vi.spyOn(pp, 'requestSync')
             playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
@@ -294,7 +294,7 @@ describe('Granular patternChange events', () => {
                     tracks: [{ name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, sampleId: 'kick_old' }],
                 },
             ]
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             pp.show()
 
@@ -328,7 +328,7 @@ describe('Granular patternChange events', () => {
                     ],
                 },
             ]
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             pp.show()
 
@@ -350,7 +350,7 @@ describe('Granular patternChange events', () => {
                     tracks: [{ name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, sampleId: 'old_sound' }],
                 },
             ]
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             pp.show()
 
@@ -381,7 +381,7 @@ describe('Granular patternChange events', () => {
                     ],
                 },
             ]
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             pp.show()
 
@@ -405,7 +405,7 @@ describe('Granular patternChange events', () => {
             ]
             soundRegistry.sounds['samples/kick.wav'] = { url: 'assets/sounds/kick_heavy.wav' }
 
-            const pp = new PatternPanel()
+            const pp = new PatternPanel({ serviceRegistry })
             pp.init()
             pp.show()
 
@@ -419,7 +419,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('piano_roll responds to noteChange', () => {
-            const prp = new PianoRollPanel()
+            const prp = new PianoRollPanel({ serviceRegistry })
             prp.init()
             const spy = vi.spyOn(prp, 'syncNotes')
             playbackEvents.emit(EVENTS.NOTE_CHANGE)
@@ -427,7 +427,7 @@ describe('Granular patternChange events', () => {
         })
 
         it('piano_roll responds to patternStructureChange', () => {
-            const prp = new PianoRollPanel()
+            const prp = new PianoRollPanel({ serviceRegistry })
             prp.init()
             const spy = vi.spyOn(prp, 'sync')
             playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)

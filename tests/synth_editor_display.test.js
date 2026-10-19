@@ -124,7 +124,7 @@ describe('Soft Synth Editor display', () => {
             loopEnabled: false,
         }
 
-        trackEditor = new TrackEditor()
+        trackEditor = new TrackEditor({ serviceRegistry })
         trackEditor.init()
         // Attach synth panel to app-content (like main.js does)
         const appContentEl = document.getElementById('app-content')

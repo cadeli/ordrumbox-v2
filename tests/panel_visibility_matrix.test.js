@@ -24,6 +24,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/event_bus.js'
 import { serviceRegistry } from '../src/state/service_loader.js'
+import { DrumkitService } from '../src/logic/services/drumkit_service.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import TrackEditor from '../src/ui/track_editor.js'
 import NoteEditor from '../src/ui/note_editor.js'
@@ -127,6 +128,7 @@ function setupApp(viewport) {
     appState.reset()
     soundRegistry.reset()
     serviceRegistry.reset()
+    serviceRegistry.drumkitService = new DrumkitService(serviceRegistry)
     appState.patterns = [
         {
             name: 'Pattern 1',

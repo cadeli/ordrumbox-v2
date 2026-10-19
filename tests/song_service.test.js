@@ -12,11 +12,14 @@ vi.mock('../src/core/idb.js', () => ({
     idbKeys: vi.fn().mockResolvedValue([]),
 }))
 
-import songService from '../src/logic/services/song_service.js'
+import { SongService } from '../src/logic/services/song_service.js'
 import { idbPut, idbGet, idbKeys } from '../src/core/idb.js'
+
+let songService
 
 describe('SongService', () => {
     beforeEach(() => {
+        songService = new SongService(serviceRegistry)
         appState.reset()
         soundRegistry.reset()
         serviceRegistry.reset()
@@ -203,6 +206,7 @@ describe('SongService', () => {
 // reported instead of silently loading a broken arrangement.
 describe('SongService — arrangements', () => {
     beforeEach(() => {
+        songService = new SongService(serviceRegistry)
         appState.reset()
         serviceRegistry.cmd = {
             setSelectedPatternIdx: vi.fn(() => Promise.resolve()),

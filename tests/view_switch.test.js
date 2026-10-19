@@ -15,6 +15,7 @@ vi.mock('../src/state/service_loader.js', () => ({
     serviceRegistry: {
         history: { undo: vi.fn(), redo: vi.fn() },
         cmd: { beginGenerationUndo: vi.fn(), commitGenerationUndo: vi.fn(), cancelGenerationUndo: vi.fn() },
+        patternAutoGen: { toggleDrums: vi.fn(), toggleMelodic: vi.fn() },
         patterns: {},
     },
 }))
@@ -186,21 +187,13 @@ describe('ViewSwitch', () => {
         })
 
         it('wires ↻ Drum, ↻ Bass and ↻ Chords to the shared service', async () => {
-            const patternAutoGen = (await import('../src/logic/services/pattern_auto_gen.js')).default
-            const drums = vi.spyOn(patternAutoGen, 'toggleDrums').mockImplementation(async () => {})
-            const melodic = vi.spyOn(patternAutoGen, 'toggleMelodic').mockImplementation(async () => {})
-            try {
-                vs.drumBtn.click()
-                vs.bassBtn.click()
-                vs.chordsBtn.click()
+            vs.drumBtn.click()
+            vs.bassBtn.click()
+            vs.chordsBtn.click()
 
-                expect(drums).toHaveBeenCalledTimes(1)
-                expect(melodic).toHaveBeenNthCalledWith(1, 'BASS')
-                expect(melodic).toHaveBeenNthCalledWith(2, 'PIANO')
-            } finally {
-                drums.mockRestore()
-                melodic.mockRestore()
-            }
+            expect(serviceRegistry.patternAutoGen.toggleDrums).toHaveBeenCalledTimes(1)
+            expect(serviceRegistry.patternAutoGen.toggleMelodic).toHaveBeenNthCalledWith(1, 'BASS')
+            expect(serviceRegistry.patternAutoGen.toggleMelodic).toHaveBeenNthCalledWith(2, 'PIANO')
         })
     })
 })

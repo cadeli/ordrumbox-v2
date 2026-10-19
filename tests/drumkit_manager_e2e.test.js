@@ -22,10 +22,6 @@ const mockDrumkitService = {
     getAnalysisInfo: vi.fn().mockReturnValue(null),
 }
 
-vi.mock('../src/logic/services/drumkit_service.js', () => ({
-    default: mockDrumkitService,
-}))
-
 vi.mock('../src/logic/services/instruments_manager/index.js', () => ({
     default: {
         DATA: {
@@ -65,6 +61,7 @@ beforeEach(async () => {
     document.body.innerHTML = ''
     appState.reset()
     serviceRegistry.reset()
+    serviceRegistry.drumkitService = mockDrumkitService
     soundRegistry.reset()
     Object.values(mockDrumkitService).forEach((fn) => fn.mockClear?.())
 

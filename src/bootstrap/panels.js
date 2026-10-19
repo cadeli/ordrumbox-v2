@@ -42,7 +42,7 @@ export function createAndInitPanels() {
     const patternPanel = new PatternPanel({ serviceRegistry: services })
     const pianoRollPanel = new PianoRollPanel({ serviceRegistry: services })
     const noteEditor = new NoteEditor({ serviceRegistry: services })
-    const trackEditor = new TrackEditor()
+    const trackEditor = new TrackEditor({ serviceRegistry: services })
     const toolsPanel = new ToolsPanel({ serviceRegistry: services })
     const outputPanel = new OutputPanel({
         resourcesLoader: services.resourcesLoader,
@@ -67,7 +67,7 @@ export function createAndInitPanels() {
 
     const mobileTabBar = new MobileTabBar()
     mobileTabBar.init()
-    const patternSettingsPanel = new PatternSettingsPanel({ getCmd: () => services.cmd })
+    const patternSettingsPanel = new PatternSettingsPanel({ getCmd: () => services.cmd, getPatternAutoGen: () => services.patternAutoGen })
     patternSettingsPanel.init()
 
     const appContent = document.createElement('div')

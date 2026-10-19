@@ -6,7 +6,6 @@
 
 import { appState } from '../state/app_state.js'
 import { playbackEvents, emitStructureChanged } from '../state/event_bus.js'
-import { getServices } from '../state/service_loader.js'
 
 import { getTracksArray } from '../core/tracks.js'
 import BasePanel from './base_panel.js'
@@ -62,7 +61,7 @@ export default class PatternPanel extends BasePanel {
         super('pattern-panel')
 
         this.#appState = deps.appState ?? appState
-        this.#serviceRegistry = deps.serviceRegistry ?? getServices()
+        this.#serviceRegistry = deps.serviceRegistry
         this.#playbackEvents = deps.playbackEvents ?? playbackEvents
 
         this.#selectedNote = null

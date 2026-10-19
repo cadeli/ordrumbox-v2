@@ -1,6 +1,5 @@
 import { appState } from '../../state/app_state.js'
 import { playbackEvents } from '../../state/event_bus.js'
-import { getServices } from '../../state/service_loader.js'
 import { getAutoAssignService } from '../../state/service_loader.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { instrumentsManager } from './instruments_manager/index.js'
@@ -10,7 +9,17 @@ import { EVENTS } from '../../core/events.js'
 
 const TAG = 'DrumkitService'
 
-class DrumkitService {
+export class DrumkitService {
+    #registry
+
+    /**
+     * @param {object} registry - service container
+     */
+    constructor(registry) {
+        this.#registry = registry
+    }
+
+
     /** Every loaded sound, whatever kit it belongs to. */
     /** @returns {Array<import('../../state/sound_registry.js').SoundEntry & {url: string}>} */
     getAllSounds() {
@@ -93,8 +102,8 @@ class DrumkitService {
         appState.selectedDrumkitIdx = kitIdx
         appState.selectedDrumkit = kit.name
         try {
-            await getServices().resourcesLoader?.loadMissingSamplesFromDrumkits([kit])
-            await getServices().cmd?.autoAssignSoundsForNewDrumkit?.()
+            await this.#registry.resourcesLoader?.loadMissingSamplesFromDrumkits([kit])
+            await this.#registry.cmd?.autoAssignSoundsForNewDrumkit?.()
         } catch (err) {
             logger.warn(TAG, `Some samples could not be loaded for "${kit.name}": ${err.message}`)
             throw err
@@ -230,7 +239,7 @@ class DrumkitService {
 
     normalizeAll() {
         const sounds = this.getCurrentKitSounds()
-        const ctx = getServices().audioCtx
+        const ctx = this.#registry.audioCtx
         let count = 0
 
         for (const s of sounds) {
@@ -272,4 +281,3 @@ class DrumkitService {
     }
 }
 
-export default new DrumkitService()

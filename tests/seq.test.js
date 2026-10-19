@@ -90,7 +90,7 @@ describe('Sequencer', () => {
 
     it('constructor creates transport if none exists', () => {
         serviceRegistry.transport = null
-        new Sequencer()
+        new Sequencer({ serviceRegistry })
         // toBeDefined() also passes for null, which is what it was before
         expect(serviceRegistry.transport).not.toBeNull()
         expect(serviceRegistry.transport.isRunning).toBe(false)
@@ -125,7 +125,7 @@ describe('Sequencer', () => {
 
         it('an array of tracks re-syncs exactly those', async () => {
             const engine = await engineSpies()
-            const seq = new Sequencer()
+            const seq = new Sequencer({ serviceRegistry })
             seq.ensureAudioEngine()
             const { playbackEvents, EVENTS } = await bus()
             const kick = { name: 'KICK' }
@@ -140,7 +140,7 @@ describe('Sequencer', () => {
 
         it('no payload re-syncs the whole selected pattern', async () => {
             const engine = await engineSpies()
-            const seq = new Sequencer()
+            const seq = new Sequencer({ serviceRegistry })
             seq.ensureAudioEngine()
             const { playbackEvents, EVENTS } = await bus()
 
@@ -154,7 +154,7 @@ describe('Sequencer', () => {
             // [] has no length, so it takes the same branch as no payload: an
             // empty list cannot tell the engine which tracks changed.
             const engine = await engineSpies()
-            const seq = new Sequencer()
+            const seq = new Sequencer({ serviceRegistry })
             seq.ensureAudioEngine()
             const { playbackEvents, EVENTS } = await bus()
 
@@ -167,31 +167,31 @@ describe('Sequencer', () => {
     it('constructor reuses existing transport', () => {
         const existing = { audioCtx: serviceRegistry.audioCtx, onSchedule: null }
         serviceRegistry.transport = existing
-        new Sequencer()
+        new Sequencer({ serviceRegistry })
         expect(serviceRegistry.transport).toBe(existing)
     })
 
     it('isRunning returns false when no transport', () => {
         serviceRegistry.transport = null
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         serviceRegistry.transport = null
         expect(seq.isRunning).toBe(false)
     })
 
     it('tick returns transport tick', () => {
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         serviceRegistry.transport.tick = 42
         expect(seq.tick).toBe(42)
     })
 
     it('tick returns 0 when no transport', () => {
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         serviceRegistry.transport = null
         expect(seq.tick).toBe(0)
     })
 
     it('setBpm updates transport and pattern bpm', () => {
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         seq.setBpm(140)
         expect(serviceRegistry.transport.bpm).toBe(140)
         expect(appState.patterns[0].bpm).toBe(140)
@@ -199,13 +199,13 @@ describe('Sequencer', () => {
 
     it('setBpm propagates to audioEngine if exists', () => {
         serviceRegistry.audioEngine = { setBpm: vi.fn() }
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         seq.setBpm(150)
         expect(serviceRegistry.audioEngine.setBpm).toHaveBeenCalledWith(150)
     })
 
     it('stop stops transport and dispatches event', () => {
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         serviceRegistry.transport = { stop: vi.fn(), isRunning: false }
         seq.stop()
         expect(serviceRegistry.transport.stop).toHaveBeenCalledOnce()
@@ -213,7 +213,7 @@ describe('Sequencer', () => {
 
     it('stop stops audioEngine', () => {
         serviceRegistry.audioEngine = { stop: vi.fn() }
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         seq.stop()
         expect(serviceRegistry.audioEngine.stop).toHaveBeenCalledOnce()
     })
@@ -221,7 +221,7 @@ describe('Sequencer', () => {
     it('toggleStartStop resumes suspended audioCtx', () => {
         serviceRegistry.audioCtx.state = 'suspended'
         serviceRegistry.transport = { isRunning: true, stop: vi.fn() }
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         seq.toggleStartStop()
         expect(serviceRegistry.audioCtx.resume).toHaveBeenCalledOnce()
     })
@@ -233,7 +233,7 @@ describe('Sequencer', () => {
             start: vi.fn(),
             audioCtx: serviceRegistry.audioCtx,
         }
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         seq.start = vi.fn()
         seq.toggleStartStop()
         expect(seq.start).toHaveBeenCalledOnce()
@@ -241,7 +241,7 @@ describe('Sequencer', () => {
 
     it('toggleStartStop calls stop when running', () => {
         serviceRegistry.transport = { isRunning: true, stop: vi.fn(), audioCtx: serviceRegistry.audioCtx }
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         seq.stop = vi.fn()
         seq.toggleStartStop()
         expect(seq.stop).toHaveBeenCalledOnce()
@@ -249,14 +249,14 @@ describe('Sequencer', () => {
 
     it('ensureTransport sets onSchedule on new transport', () => {
         serviceRegistry.transport = null
-        new Sequencer()
+        new Sequencer({ serviceRegistry })
         expect(serviceRegistry.transport.onSchedule).toBeTypeOf('function')
     })
 
     it('ensureTransport sets audioCtx when missing', () => {
         const fakeTransport = { audioCtx: null, onSchedule: null }
         serviceRegistry.transport = fakeTransport
-        new Sequencer()
+        new Sequencer({ serviceRegistry })
         expect(fakeTransport.audioCtx).toBe(serviceRegistry.audioCtx)
     })
 
@@ -265,7 +265,7 @@ describe('Sequencer', () => {
     it('onSchedule does not return a thenable', () => {
         serviceRegistry.transport = null
         serviceRegistry.audioEngine = { playNotes: vi.fn(async () => {}) }
-        new Sequencer()
+        new Sequencer({ serviceRegistry })
 
         const result = serviceRegistry.transport.onSchedule(0, 0)
         expect(result && typeof result.then).toBeFalsy()
@@ -277,7 +277,7 @@ describe('Sequencer', () => {
         serviceRegistry.transport = null
         const failure = new Error('boom')
         serviceRegistry.audioEngine = { playNotes: vi.fn(() => Promise.reject(failure)) }
-        new Sequencer()
+        new Sequencer({ serviceRegistry })
 
         serviceRegistry.transport.onSchedule(0, 0)
         await Promise.resolve()
@@ -295,7 +295,7 @@ describe('Sequencer', () => {
         serviceRegistry.resourcesLoader = { audioCtx: null, ensureResourcesLoaded: vi.fn() }
         serviceRegistry.audioCtx = null
         serviceRegistry.transport = null
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         expect(serviceRegistry.transport).not.toBeNull()
 
         expect(() => seq.toggleStartStop()).not.toThrow()
@@ -309,7 +309,7 @@ describe('Sequencer', () => {
     // ── race condition: start/stop TOCTOU ─────────────────────────────
 
     it('start() called while starting enters the loading path only once and honors the pending stop', async () => {
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         serviceRegistry.audioEngine = {
             start: vi.fn().mockResolvedValue(undefined),
             stop: vi.fn(),
@@ -342,7 +342,7 @@ describe('Sequencer', () => {
     })
 
     it('start() runs the full startup and does not stop when nothing was requested', async () => {
-        const seq = new Sequencer()
+        const seq = new Sequencer({ serviceRegistry })
         serviceRegistry.audioEngine = {
             start: vi.fn().mockResolvedValue(undefined),
             stop: vi.fn(),
@@ -397,7 +397,7 @@ describe('Sequencer', () => {
         /** Starts playback so the transport is anchored on the given view. */
         async function startIn(view) {
             appState.currentView = view
-            const seq = new Sequencer()
+            const seq = new Sequencer({ serviceRegistry })
             const transport = makeTransport()
             const engine = makeEngine()
             serviceRegistry.transport = transport
@@ -408,7 +408,7 @@ describe('Sequencer', () => {
 
         it('is the pattern bpm outside the song view and the arrangement bpm inside it', async () => {
             withArrangement(150)
-            const seq = new Sequencer()
+            const seq = new Sequencer({ serviceRegistry })
 
             appState.currentView = 'edit'
             expect(seq.currentPlaybackTempo()).toBe(140)
@@ -491,7 +491,7 @@ describe('Sequencer', () => {
 
         it('starts a song from the measure the cursor was put on', async () => {
             appState.currentView = 'song'
-            const seq = new Sequencer()
+            const seq = new Sequencer({ serviceRegistry })
             serviceRegistry.transport = makeTransport(false)
             serviceRegistry.audioEngine = {
                 start: vi.fn().mockResolvedValue(undefined),
@@ -510,7 +510,7 @@ describe('Sequencer', () => {
         // own zero even after the cursor was moved.
         it('starts a pattern from its own zero', async () => {
             appState.currentView = 'edit'
-            const seq = new Sequencer()
+            const seq = new Sequencer({ serviceRegistry })
             serviceRegistry.transport = makeTransport(false)
             serviceRegistry.audioEngine = {
                 start: vi.fn().mockResolvedValue(undefined),
@@ -524,7 +524,7 @@ describe('Sequencer', () => {
         })
 
         it('jumps a running transport there, re-anchored on the audio clock', () => {
-            const seq = new Sequencer()
+            const seq = new Sequencer({ serviceRegistry })
             serviceRegistry.transport = makeTransport(true)
             serviceRegistry.audioCtx.currentTime = 12
             serviceRegistry.audioEngine = { invalidateCache: vi.fn() }
@@ -538,7 +538,7 @@ describe('Sequencer', () => {
 
         // Stopped: there is nothing to jump, the cursor only has to be remembered.
         it('only remembers the measure while the transport is stopped', () => {
-            const seq = new Sequencer()
+            const seq = new Sequencer({ serviceRegistry })
             serviceRegistry.transport = makeTransport(false)
             serviceRegistry.transport.tick = 99
 
@@ -549,7 +549,7 @@ describe('Sequencer', () => {
         })
 
         it('clamps and floors the measure it is given', () => {
-            const seq = new Sequencer()
+            const seq = new Sequencer({ serviceRegistry })
             serviceRegistry.transport = makeTransport(false)
 
             seq.setSongCursor(4.7)
@@ -564,7 +564,7 @@ describe('Sequencer', () => {
     describe.each(PARAM_SETS)('Sequencer — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
         it('creates transport and can set bpm', () => {
             appState.patterns = [makePattern({ bpm, beatCount })]
-            const seq = new Sequencer()
+            const seq = new Sequencer({ serviceRegistry })
             seq.setBpm(bpm + 10)
             expect(serviceRegistry.transport.bpm).toBe(bpm + 10)
         })

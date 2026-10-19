@@ -9,6 +9,8 @@ import { playbackEvents } from '../src/state/event_bus.js'
 import { MAX_BEATS } from '../src/core/constants.js'
 import { EVENTS } from '../src/core/events.js'
 
+const patternAutoGenMock = { toggleDrums: vi.fn(), toggleMelodic: vi.fn() }
+
 let PatternSettingsPanel
 
 beforeEach(async () => {
@@ -61,7 +63,12 @@ describe('PatternSettingsPanel', () => {
                 appState.currentPage = 0
             }),
         }
-        panel = new PatternSettingsPanel({ getCmd: () => serviceRegistry.cmd })
+        patternAutoGenMock.toggleDrums.mockClear()
+        patternAutoGenMock.toggleMelodic.mockClear()
+        panel = new PatternSettingsPanel({
+            getCmd: () => serviceRegistry.cmd,
+            getPatternAutoGen: () => patternAutoGenMock,
+        })
         panel.init()
     })
 
@@ -339,21 +346,13 @@ describe('PatternSettingsPanel', () => {
     // covered by tests/pattern_auto_gen.test.js — here we only pin the wiring.
     describe('generation buttons', () => {
         it('wires ↻ Drum, ↻ Bass and ↻ Chords to the shared service', async () => {
-            const patternAutoGen = (await import('../src/logic/services/pattern_auto_gen.js')).default
-            const drums = vi.spyOn(patternAutoGen, 'toggleDrums').mockImplementation(async () => {})
-            const melodic = vi.spyOn(patternAutoGen, 'toggleMelodic').mockImplementation(async () => {})
-            try {
-                panel.container.querySelector('.ps-gen-drum').click()
-                panel.container.querySelector('.ps-gen-bass').click()
-                panel.container.querySelector('.ps-gen-chords').click()
+            panel.container.querySelector('.ps-gen-drum').click()
+            panel.container.querySelector('.ps-gen-bass').click()
+            panel.container.querySelector('.ps-gen-chords').click()
 
-                expect(drums).toHaveBeenCalledTimes(1)
-                expect(melodic).toHaveBeenNthCalledWith(1, 'BASS')
-                expect(melodic).toHaveBeenNthCalledWith(2, 'PIANO')
-            } finally {
-                drums.mockRestore()
-                melodic.mockRestore()
-            }
+            expect(patternAutoGenMock.toggleDrums).toHaveBeenCalledTimes(1)
+            expect(patternAutoGenMock.toggleMelodic).toHaveBeenNthCalledWith(1, 'BASS')
+            expect(patternAutoGenMock.toggleMelodic).toHaveBeenNthCalledWith(2, 'PIANO')
         })
     })
 

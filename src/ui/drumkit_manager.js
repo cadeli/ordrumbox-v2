@@ -1,6 +1,5 @@
 import { playbackEvents } from '../state/event_bus.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import drumkitService from '../logic/services/drumkit_service.js'
 import { showToast } from '../core/notify.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
@@ -136,7 +135,7 @@ export default class DrumkitManager extends BasePanel {
             this.#selectedSoundKey = null
         }
         if (!this.#selectedSoundKey) {
-            const sounds = drumkitService.getCurrentKitSounds()
+            const sounds = this.#serviceRegistry.drumkitService.getCurrentKitSounds()
             if (sounds.length) {
                 this.#selectedSoundKey = sounds[0].url
             }
@@ -150,7 +149,7 @@ export default class DrumkitManager extends BasePanel {
     }
 
     #renderList() {
-        const sounds = drumkitService.getCurrentKitSounds()
+        const sounds = this.#serviceRegistry.drumkitService.getCurrentKitSounds()
         if (!sounds.length) {
             this.#listEl.innerHTML = '<div class="dm-list-empty">No samples in this kit</div>'
             return
@@ -185,7 +184,7 @@ export default class DrumkitManager extends BasePanel {
         else if (key === 'tune') sound.tune = value
         else if (key === 'decay') {
             sound.decay = value
-            this.#detail.drawWaveform(sound, drumkitService.getAnalysisInfo(sound))
+            this.#detail.drawWaveform(sound, this.#serviceRegistry.drumkitService.getAnalysisInfo(sound))
         }
         clearTimeout(this.#drumkitChangeDebounce)
         this.#drumkitChangeDebounce = setTimeout(() => playbackEvents.emit(EVENTS.DRUMKIT_CHANGE), 200)
@@ -208,7 +207,7 @@ export default class DrumkitManager extends BasePanel {
     }
 
     removeSample(soundKey) {
-        const displayName = drumkitService.removeSample(soundKey)
+        const displayName = this.#serviceRegistry.drumkitService.removeSample(soundKey)
         if (displayName) {
             this.#selectedSoundKey = null
             showToast(`Removed "${displayName}"`, 'success')
@@ -227,7 +226,7 @@ export default class DrumkitManager extends BasePanel {
         try {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = await ctx.decodeAudioData(arrayBuffer)
-            const replaced = await drumkitService.replaceSampleBuffer(soundKey, buffer, file.name)
+            const replaced = await this.#serviceRegistry.drumkitService.replaceSampleBuffer(soundKey, buffer, file.name)
             if (!replaced) {
                 showToast(`Sample "${soundKey}" is no longer in the kit`, 'warning')
             } else {

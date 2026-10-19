@@ -38,13 +38,13 @@ describe('TrackEditor sound panel', () => {
     })
 
     it('prefers the sample from the selected drumkit when an instrument is chosen', () => {
-        const editor = new TrackEditor()
+        const editor = new TrackEditor({ serviceRegistry })
 
         expect(getPreferredSampleForInstrument(editor, 'KICK').url).toBe('real/kick.wav')
     })
 
     function renderSoundPanelHtml(track) {
-        const editor = new TrackEditor()
+        const editor = new TrackEditor({ serviceRegistry })
         editor.init()
         editor.track = track
         vi.spyOn(editor.synthEditor, 'getGeneratedSoundKeys').mockReturnValue([])
@@ -84,7 +84,7 @@ describe('TrackEditor sound panel', () => {
 
 describe('TrackEditor filterFreq display', () => {
     function getFreqDisplay(track) {
-        const editor = new TrackEditor()
+        const editor = new TrackEditor({ serviceRegistry })
         editor.init()
         editor.track = track
         editor.fxTab.setActive('3')
@@ -108,7 +108,7 @@ describe('TrackEditor filterFreq display', () => {
 
 describe('TrackEditor loop panel', () => {
     it('renders loop properties correctly', () => {
-        const editor = new TrackEditor()
+        const editor = new TrackEditor({ serviceRegistry })
         editor.init()
         editor.track = {
             beatCount: 8,
@@ -131,7 +131,7 @@ describe('TrackEditor loop panel', () => {
 
 describe('TrackEditor PATTERN_CHANGE handling', () => {
     it('rebinds to the same-named track in the new pattern and re-syncs', () => {
-        const editor = new TrackEditor()
+        const editor = new TrackEditor({ serviceRegistry })
         editor.init()
         const oldTrack = { name: 'KICK', velocity: 0.7 }
         const newTrack = { name: 'KICK', velocity: 0.3 }
@@ -151,7 +151,7 @@ describe('TrackEditor PATTERN_CHANGE handling', () => {
     })
 
     it('clears the track and re-syncs when the track no longer exists in the new pattern (does not auto-hide)', () => {
-        const editor = new TrackEditor()
+        const editor = new TrackEditor({ serviceRegistry })
         editor.init()
         editor.track = { name: 'KICK', velocity: 0.7 }
         editor.selectedTrackIdx = 0
@@ -169,7 +169,7 @@ describe('TrackEditor PATTERN_CHANGE handling', () => {
     })
 
     it('does nothing when no track is currently selected', () => {
-        const editor = new TrackEditor()
+        const editor = new TrackEditor({ serviceRegistry })
         editor.init()
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
@@ -207,7 +207,7 @@ describe('TrackEditor loop slider events', () => {
         appState.patterns = [pattern]
         appState.selectedPatternIdx = 0
 
-        const editor = new TrackEditor()
+        const editor = new TrackEditor({ serviceRegistry })
         editor.init()
         editor.show({ track, trackIdx: 0 })
 
@@ -246,7 +246,7 @@ describe('TrackEditor loop slider events', () => {
         appState.patterns = [pattern]
         appState.selectedPatternIdx = 0
 
-        const editor = new TrackEditor()
+        const editor = new TrackEditor({ serviceRegistry })
         editor.init()
         editor.show({ track, trackIdx: 0 })
 
@@ -282,7 +282,7 @@ describe('TrackEditor loop slider events', () => {
         appState.patterns = [pattern]
         appState.selectedPatternIdx = 0
 
-        const editor = new TrackEditor()
+        const editor = new TrackEditor({ serviceRegistry })
         editor.init()
         editor.show({ track, trackIdx: 0 })
 

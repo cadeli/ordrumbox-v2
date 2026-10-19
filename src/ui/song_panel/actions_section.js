@@ -4,7 +4,6 @@
 import { appState } from '../../state/app_state.js'
 import { showToast } from '../../core/notify.js'
 import { downloadJson } from '../components/ui_utils.js'
-import songService from '../../logic/services/song_service.js'
 import { songMeasureAtTick } from '../../logic/song_playback.js'
 import { TICK } from '../../core/constants.js'
 import { emitStructureChanged } from '../../state/event_bus.js'
@@ -68,7 +67,7 @@ export default class ActionsSection {
     async saveSong() {
         const editor = this.#editor
         try {
-            await songService.save(editor.songName)
+            await this.#editor.serviceRegistry.songService.save(editor.songName)
             showToast(`Song "${editor.songName}" saved`, 'success')
         } catch (err) {
             showToast('Save failed: ' + err.message, 'error')
@@ -78,7 +77,7 @@ export default class ActionsSection {
     async loadSong() {
         const editor = this.#editor
         try {
-            const keys = await songService.listKeys()
+            const keys = await this.#editor.serviceRegistry.songService.listKeys()
             if (!keys.length) {
                 showToast('No saved songs found', 'warning')
                 return
@@ -110,13 +109,13 @@ export default class ActionsSection {
                 const choice = /** @type {HTMLSelectElement} */ (overlay.querySelector('#sg-load-select')).value
                 close()
 
-                const data = await songService.load(choice)
+                const data = await this.#editor.serviceRegistry.songService.load(choice)
                 if (!data) {
                     showToast('Song not found', 'warning')
                     return
                 }
 
-                editor.songName = await songService.applyToAppState(data, choice)
+                editor.songName = await this.#editor.serviceRegistry.songService.applyToAppState(data, choice)
                 emitStructureChanged()
                 editor.sync()
                 showToast(`Song "${editor.songName}" loaded`, 'success')
@@ -128,7 +127,7 @@ export default class ActionsSection {
 
     exportSong() {
         const editor = this.#editor
-        const { data, filename } = songService.exportToFile(editor.songName)
+        const { data, filename } = this.#editor.serviceRegistry.songService.exportToFile(editor.songName)
         downloadJson(data, filename)
         showToast(`Song "${editor.songName}" exported`, 'success')
     }
@@ -144,14 +143,14 @@ export default class ActionsSection {
 
             try {
                 const text = await file.text()
-                const data = songService.parseImportedFile(text)
+                const data = this.#editor.serviceRegistry.songService.parseImportedFile(text)
                 if (!data) {
                     showToast('Invalid song file', 'error')
                     return
                 }
 
                 const fallbackName = file.name.replace(/\.\w+$/, '')
-                editor.songName = await songService.applyToAppState(data, fallbackName)
+                editor.songName = await this.#editor.serviceRegistry.songService.applyToAppState(data, fallbackName)
                 emitStructureChanged()
                 editor.sync()
                 showToast(`Song "${editor.songName}" imported`, 'success')

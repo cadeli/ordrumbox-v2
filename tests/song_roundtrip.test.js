@@ -18,7 +18,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_loader.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import songService from '../src/logic/services/song_service.js'
+import { SongService } from '../src/logic/services/song_service.js'
 import Commander from '../src/logic/commands/commander.js'
 import { idbClearStore } from '../src/core/idb.js'
 
@@ -277,6 +277,8 @@ function buildComplexProject() {
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
+let songService
+
 describe('Song & Project Persistence Roundtrip', () => {
     let mockIDB
 
@@ -290,6 +292,8 @@ describe('Song & Project Persistence Roundtrip', () => {
         serviceRegistry.cmd = cmd
         serviceRegistry.seq = { setBpm: vi.fn(), toggleStartStop: vi.fn() }
         serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
+        songService = new SongService(serviceRegistry)
+        serviceRegistry.songService = songService
 
         // Install in-memory mock of IndexedDB
         mockIDB = createMockIDB()

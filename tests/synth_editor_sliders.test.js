@@ -122,7 +122,7 @@ describe('SynthEditor — OrKnob integration', () => {
             solo: false,
         }
 
-        trackEditor = new TrackEditor()
+        trackEditor = new TrackEditor({ serviceRegistry })
         trackEditor.init()
         // Attach synth panel to app-content
         document.getElementById('app-content').appendChild(trackEditor.synthEditor.panel)
@@ -333,7 +333,7 @@ describe('SynthEditor — LFO animation', () => {
             solo: false,
         }
 
-        trackEditor = new TrackEditor()
+        trackEditor = new TrackEditor({ serviceRegistry })
         trackEditor.init()
         document.getElementById('app-content').appendChild(trackEditor.synthEditor.panel)
         trackEditor.track = mockTrack

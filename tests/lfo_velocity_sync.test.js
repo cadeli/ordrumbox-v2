@@ -44,7 +44,7 @@ describe('LFO Velocity Sync Verification', () => {
             appState.patterns = [{ tracks: [track], beatCount: 8, bpm: 120 }]
             appState.selectedPatternIdx = 0
 
-            editor = new TrackEditor()
+            editor = new TrackEditor({ serviceRegistry })
             editor.init()
             editor.track = track
             editor.sync()
@@ -183,7 +183,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             appState.selectedPatternIdx = 0
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
-            editor = new TrackEditor()
+            editor = new TrackEditor({ serviceRegistry })
             editor.init()
             editor.track = track
             editor.sync()
@@ -227,7 +227,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             appState.selectedPatternIdx = 0
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
-            editor = new TrackEditor()
+            editor = new TrackEditor({ serviceRegistry })
             editor.init()
             editor.track = track
             editor.sync()
@@ -271,7 +271,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             appState.selectedPatternIdx = 0
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
-            editor = new TrackEditor()
+            editor = new TrackEditor({ serviceRegistry })
             editor.init()
             editor.track = track
             editor.sync()

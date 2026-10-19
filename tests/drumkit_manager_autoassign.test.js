@@ -4,7 +4,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { serviceRegistry } from '../src/state/service_loader.js'
 import DrumkitManager from '../src/ui/drumkit_manager.js'
-import drumkitService from '../src/logic/services/drumkit_service.js'
+import { DrumkitService } from '../src/logic/services/drumkit_service.js'
 import AutoAssign from '../src/logic/services/auto_assign.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
@@ -29,10 +29,14 @@ function setupRegistry() {
     soundRegistry.drumkitList = [{ name: 'custom', instruments: [{ url: SAMPLE_ID, key: 'CLAP' }] }]
 }
 
+let drumkitService
+
 describe('DrumkitManager instrument mapping', () => {
     beforeEach(() => {
         document.body.innerHTML = ''
         setupRegistry()
+        drumkitService = new DrumkitService(serviceRegistry)
+        serviceRegistry.drumkitService = drumkitService
     })
 
     it('persists the selected instrument for a subsequent auto-assign', () => {

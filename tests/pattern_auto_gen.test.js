@@ -62,7 +62,7 @@ vi.mock('../src/core/notify.js', () => ({
     showToast: vi.fn(),
 }))
 
-import patternAutoGen from '../src/logic/services/pattern_auto_gen.js'
+import { PatternAutoGen } from '../src/logic/services/pattern_auto_gen.js'
 import { playbackEvents } from '../src/state/event_bus.js'
 import { serviceRegistry } from '../src/state/service_loader.js'
 import { appState } from '../src/state/app_state.js'
@@ -78,8 +78,10 @@ function setPattern(tracks) {
 }
 
 describe('PatternAutoGen', () => {
+    let patternAutoGen
     beforeEach(() => {
         vi.clearAllMocks()
+        patternAutoGen = new PatternAutoGen(serviceRegistry)
         serviceRegistry.cmd.beginGenerationUndo.mockReturnValue(true)
     })
 

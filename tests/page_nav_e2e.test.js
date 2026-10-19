@@ -142,14 +142,14 @@ function initToolbar() {
 }
 
 function initPatternPanel() {
-    const pp = new PatternPanel()
+    const pp = new PatternPanel({ serviceRegistry })
     pp.init()
     pp.subscribe()
     return pp
 }
 
 function initPianoRollPanel() {
-    const pr = new PianoRollPanel()
+    const pr = new PianoRollPanel({ serviceRegistry })
     pr.init()
     pr.subscribe()
     return pr

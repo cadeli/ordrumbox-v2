@@ -4,7 +4,6 @@
 import { playbackEvents } from '../../state/event_bus.js'
 import { EVENTS } from '../../core/events.js'
 import { Lifecycle } from '../../core/lifecycle.js'
-import patternAutoGen from '../../logic/services/pattern_auto_gen.js'
 
 export default class ViewSwitch {
     /** Owns every listener bound through #life — released by destroy(). */
@@ -208,8 +207,8 @@ export default class ViewSwitch {
         // Generation orchestration (undo transaction, track creation, event
         // batch) lives in logic/services/pattern_auto_gen.js — shared with
         // the pattern settings panel.
-        this.#life.listen(this.#drumBtn, 'click', () => patternAutoGen.toggleDrums())
-        this.#life.listen(this.#bassBtn, 'click', () => patternAutoGen.toggleMelodic('BASS'))
-        this.#life.listen(this.#chordsBtn, 'click', () => patternAutoGen.toggleMelodic('PIANO'))
+        this.#life.listen(this.#drumBtn, 'click', () => this.#toolbar.serviceRegistry.patternAutoGen.toggleDrums())
+        this.#life.listen(this.#bassBtn, 'click', () => this.#toolbar.serviceRegistry.patternAutoGen.toggleMelodic('BASS'))
+        this.#life.listen(this.#chordsBtn, 'click', () => this.#toolbar.serviceRegistry.patternAutoGen.toggleMelodic('PIANO'))
     }
 }

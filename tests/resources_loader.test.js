@@ -7,6 +7,7 @@ import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 
 const CACHE_STORES = ['patterns', 'drumkits', 'samples', 'generated_sounds']
+let registry
 
 vi.mock('../src/state/app_state.js', () => ({
     appState: makeAppStateMock({ currentView: 'edit' }),
@@ -57,7 +58,8 @@ describe('ResourcesLoader', () => {
     let fetchSpy
 
     beforeEach(async () => {
-        loader = new ResourcesLoader()
+        ;({ serviceRegistry: registry } = await import('../src/state/service_loader.js'))
+        loader = new ResourcesLoader({ serviceRegistry: registry })
         fetchSpy = vi.fn()
         globalThis.fetch = fetchSpy
         function makeIdbRequest(result) {
@@ -559,7 +561,7 @@ describe('ResourcesLoader', () => {
                 }
             }
 
-            const l = new ResourcesLoader()
+            const l = new ResourcesLoader({ serviceRegistry: registry })
             const ctx = l.audioCtx
 
             expect(ctx).toBe(mockCtx)
@@ -569,13 +571,13 @@ describe('ResourcesLoader', () => {
             delete globalThis.AudioContext
             delete globalThis.webkitAudioContext
 
-            const l = new ResourcesLoader()
+            const l = new ResourcesLoader({ serviceRegistry: registry })
             expect(() => l.audioCtx).toThrow('AudioContext is not available')
         })
 
         it('reuses provided audioCtx', () => {
             const mockCtx = { test: true }
-            const l = new ResourcesLoader(mockCtx)
+            const l = new ResourcesLoader({ serviceRegistry: registry, audioCtx: mockCtx })
             expect(l.audioCtx).toBe(mockCtx)
         })
     })
@@ -587,7 +589,7 @@ describe('ResourcesLoader', () => {
             const mockCtx = {
                 decodeAudioData: vi.fn().mockResolvedValue(mockBuffer),
             }
-            loader = new ResourcesLoader(mockCtx)
+            loader = new ResourcesLoader({ serviceRegistry: registry, audioCtx: mockCtx })
             fetchSpy.mockResolvedValue({
                 ok: true,
                 arrayBuffer: () => Promise.resolve(mockArrayBuffer),
@@ -606,7 +608,7 @@ describe('ResourcesLoader', () => {
 
         it('throws on HTTP error', async () => {
             const mockCtx = { decodeAudioData: vi.fn() }
-            loader = new ResourcesLoader(mockCtx)
+            loader = new ResourcesLoader({ serviceRegistry: registry, audioCtx: mockCtx })
             fetchSpy.mockResolvedValue({ ok: false, status: 404 })
 
             await expect(loader.loadSample({ url: 'missing.wav' }, 'real')).rejects.toThrow('HTTP 404')
@@ -623,7 +625,7 @@ describe('ResourcesLoader', () => {
     describe('loadSamplesForPatterns', () => {
         const makeLoader = () => {
             const mockCtx = { decodeAudioData: vi.fn().mockResolvedValue({ duration: 1 }) }
-            return new ResourcesLoader(mockCtx)
+            return new ResourcesLoader({ serviceRegistry: registry, audioCtx: mockCtx })
         }
 
         it('loads referenced samples from any drumkit and skips already loaded ones', async () => {

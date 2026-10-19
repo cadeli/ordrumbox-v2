@@ -1,5 +1,4 @@
 import { appState } from '../state/app_state.js'
-import { getServices } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { playbackEvents } from '../state/event_bus.js'
 import { fixPatterns, fixSongs } from '../patterns/fixer.js'
@@ -62,11 +61,13 @@ export default class ResourcesLoader {
     }
 
     #audioCtx
+    #serviceRegistry
     #autoPersistEnabled
     #loadGeneration = 0
     #samples
 
-    constructor(audioCtx = null) {
+    constructor({ serviceRegistry = null, audioCtx = null } = {}) {
+        this.#serviceRegistry = serviceRegistry
         this.#audioCtx = audioCtx
         this.#autoPersistEnabled = false
         this.#samples = new SampleLoadingSection(this)
@@ -94,8 +95,8 @@ export default class ResourcesLoader {
             }
             this.#audioCtx = new AudioContextCtor()
         }
-        if (getServices().audioCtx !== this.#audioCtx) {
-            getServices().audioCtx = this.#audioCtx
+        if (this.#serviceRegistry && this.#serviceRegistry.audioCtx !== this.#audioCtx) {
+            this.#serviceRegistry.audioCtx = this.#audioCtx
         }
         return this.#audioCtx
     }
@@ -319,7 +320,7 @@ export default class ResourcesLoader {
         delete s.selectedDrumkitNum
         delete s.selectedPatternNum
         delete s.selectedTrackNum
-        s.currentView = getServices().viewManager?.currentView ?? appState.currentView ?? 'edit'
+        s.currentView = this.#serviceRegistry?.viewManager?.currentView ?? appState.currentView ?? 'edit'
         appState.currentView = s.currentView
         this.saveSettings()
     }
@@ -401,7 +402,7 @@ export default class ResourcesLoader {
         appState.patterns.length = 0
         // Boot must not fill the undo stack: suppress per-pattern recording,
         // then reset history so the first Ctrl+Z can never wipe a loaded note.
-        getServices().cmd.withSuppressedRecord(() => {
+        this.#serviceRegistry.cmd.withSuppressedRecord(() => {
             fixedPatterns.forEach((pattern) => {
                 if (pattern?.tracks) {
                     getTracksArray(pattern).forEach((track) => {
@@ -412,10 +413,10 @@ export default class ResourcesLoader {
                         }
                     })
                 }
-                getServices().cmd.importPatternFromJson(pattern)
+                this.#serviceRegistry.cmd.importPatternFromJson(pattern)
             })
         })
-        getServices().history?.clear()
+        this.#serviceRegistry.history?.clear()
         this.#autoPersistEnabled = true
     }
 

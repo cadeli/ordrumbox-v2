@@ -2,7 +2,6 @@
 // Import / save / load / normalize actions for the drumkit manager.
 
 import { playbackEvents } from '../../state/event_bus.js'
-import drumkitService from '../../logic/services/drumkit_service.js'
 import AudioImportService from '../../logic/services/audio_import_service.js'
 import { showToast } from '../../core/notify.js'
 import { downloadJson } from '../components/ui_utils.js'
@@ -26,7 +25,7 @@ export default class ImportSection {
     }
 
     saveCurrentKit() {
-        const kit = drumkitService.exportCurrentKit()
+        const kit = this.#editor.serviceRegistry.drumkitService.exportCurrentKit()
         if (!kit) {
             showToast('No drumkit selected', 'warning')
             return
@@ -43,7 +42,7 @@ export default class ImportSection {
 
         try {
             const data = JSON.parse(await file.text())
-            const kitName = await drumkitService.restoreDrumkit(data)
+            const kitName = await this.#editor.serviceRegistry.drumkitService.restoreDrumkit(data)
             showToast(`Loaded drumkit "${kitName}"`, 'success')
             this.#editor.selectedSoundKey = null
             this.#editor.sync()
@@ -96,7 +95,7 @@ export default class ImportSection {
         try {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = await ctx.decodeAudioData(arrayBuffer)
-            const { fileName, kitName } = await drumkitService.addSample(file, buffer)
+            const { fileName, kitName } = await this.#editor.serviceRegistry.drumkitService.addSample(file, buffer)
             showToast(`Added "${fileName}" to kit "${kitName}"`, 'success')
             this.#editor.sync()
         } catch (err) {
@@ -107,13 +106,13 @@ export default class ImportSection {
     }
 
     async onAutoDetectAll() {
-        const ok = await drumkitService.autoDetectAll()
+        const ok = await this.#editor.serviceRegistry.drumkitService.autoDetectAll()
         if (ok) showToast('Auto-detect complete', 'success')
         else showToast('No pattern selected', 'warning')
     }
 
     onNormalizeAll() {
-        const count = drumkitService.normalizeAll()
+        const count = this.#editor.serviceRegistry.drumkitService.normalizeAll()
         if (count > 0) {
             showToast(`Normalized ${count} sample(s)`, 'success')
             this.#editor.sync()

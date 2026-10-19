@@ -101,7 +101,7 @@ describe('TrackEditor — OrSlider integration', () => {
 
     beforeEach(() => {
         setup()
-        editor = new TrackEditor()
+        editor = new TrackEditor({ serviceRegistry })
         editor.init()
         editor.fxTab.setActive('3')
     })
@@ -221,7 +221,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
 
     beforeEach(() => {
         setup()
-        editor = new TrackEditor()
+        editor = new TrackEditor({ serviceRegistry })
         editor.init()
         editor.fxTab.setActive('3')
     })
@@ -321,7 +321,7 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
 
     beforeEach(() => {
         setup()
-        editor = new TrackEditor()
+        editor = new TrackEditor({ serviceRegistry })
         editor.init()
     })
 
@@ -533,7 +533,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
 
     beforeEach(() => {
         setup()
-        editor = new TrackEditor()
+        editor = new TrackEditor({ serviceRegistry })
         editor.init()
     })
 
@@ -661,7 +661,7 @@ describe('TrackEditor — LFO live update uses setValue', () => {
 
     beforeEach(() => {
         setup()
-        editor = new TrackEditor()
+        editor = new TrackEditor({ serviceRegistry })
         editor.init()
         editor.fxTab.setActive('3')
     })

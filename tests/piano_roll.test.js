@@ -117,7 +117,7 @@ describe('PianoRollPanel', () => {
         global.window.innerWidth = 1200
         global.window.innerHeight = 800
 
-        panel = new PianoRollPanel()
+        panel = new PianoRollPanel({ serviceRegistry })
         panel.init()
         panel.show()
     })
@@ -1058,7 +1058,7 @@ describe('PianoRollPanel', () => {
             panel.hide()
             panel.container?.remove()
             // fresh instance: nothing resolved yet
-            panel = new PianoRollPanel()
+            panel = new PianoRollPanel({ serviceRegistry })
             panel.init()
             panel.show()
 

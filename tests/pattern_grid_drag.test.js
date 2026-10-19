@@ -53,7 +53,7 @@ describe('Pattern grid note drag', () => {
         }
 
         document.body.innerHTML = ''
-        panel = new PatternPanel()
+        panel = new PatternPanel({ serviceRegistry })
         panel.init()
         panel.sync()
     })

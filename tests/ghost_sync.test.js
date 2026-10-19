@@ -119,11 +119,11 @@ function boot(pattern, { withPiano = true } = {}) {
     appState.selectedPatternIdx = 0
     appState.selectedTrackIdx = 0
 
-    const grid = new PatternPanel()
+    const grid = new PatternPanel({ serviceRegistry })
     grid.init()
     let piano = null
     if (withPiano) {
-        piano = new PianoRollPanel()
+        piano = new PianoRollPanel({ serviceRegistry })
         piano.init()
         piano.show()
     }

@@ -4,7 +4,6 @@
 
 import { soundRegistry } from '../../state/sound_registry.js'
 import InstrumentsManager, { instrumentsManager } from '../../logic/services/instruments_manager/index.js'
-import drumkitService from '../../logic/services/drumkit_service.js'
 import { drawDecayMarker, drawEnvelope } from '../../audio/sample_analyzer.js'
 import { formatNote } from '../../core/hz_to_note.js'
 import { NOT_FOUND } from '../../core/constants.js'
@@ -47,7 +46,7 @@ export default class DetailSection {
             return
         }
 
-        const analysis = drumkitService.getAnalysisInfo(sound)
+        const analysis = this.#editor.serviceRegistry.drumkitService.getAnalysisInfo(sound)
         const detected = instrumentsManager.findInstrumentFromFileName(sound.display_name ?? sound.url)
         const noteStr = analysis?.noteInfo ? formatNote(analysis.noteInfo) : '—'
         const peakDb = analysis?.peakDb != null ? analysis.peakDb.toFixed(1) : '—'
@@ -117,7 +116,7 @@ export default class DetailSection {
         })
 
         editor.listen(this.#detailEl.querySelector('#dm-kit-select'), 'change', (e) => {
-            const displayName = drumkitService.moveToKit(key, /** @type {HTMLInputElement} */ (e.target).value)
+            const displayName = this.#editor.serviceRegistry.drumkitService.moveToKit(key, /** @type {HTMLInputElement} */ (e.target).value)
             if (displayName)
                 showToast(
                     `Moved "${displayName}" to kit "${/** @type {HTMLInputElement} */ (e.target).value}"`,
@@ -127,7 +126,7 @@ export default class DetailSection {
         })
 
         editor.listen(this.#detailEl.querySelector('#dm-inst-select'), 'change', (e) => {
-            const displayName = drumkitService.setInstrument(key, /** @type {HTMLInputElement} */ (e.target).value)
+            const displayName = this.#editor.serviceRegistry.drumkitService.setInstrument(key, /** @type {HTMLInputElement} */ (e.target).value)
             if (displayName)
                 showToast(
                     `Set "${displayName}" to instrument "${/** @type {HTMLInputElement} */ (e.target).value}"`,
