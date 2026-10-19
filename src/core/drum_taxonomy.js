@@ -63,7 +63,7 @@ export function getPanFromTrackName(trackName) {
  */
 export function detectTrackType(name) {
     const n = name.toUpperCase()
-    const exact = TRACK_KINDS[n]
+    const exact = /** @type {Record<string, {panIndex: number, type: string}>} */ (TRACK_KINDS)[n]
     if (exact) return exact.type
     if (n.includes('KICK') || n.includes('BD')) return 'KICK'
     if (n.includes('SNARE') || n.includes('SD')) return 'SNARE'

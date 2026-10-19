@@ -81,13 +81,15 @@ const NOTE_KEY_ORDER = [
  * @property {number} retriggerCount          - Number of hits: initial trigger plus its repeats
  *                                          (1 = the note alone). With arp, the number of arp
  *                                          notes. Default: 1
- * @property {Array|string|Object|null} arp - Arpeggio: interval array (e.g. [0, 4, 7]),
+ * @property {any[]|string|Object|null} arp - Arpeggio: interval array (e.g. [0, 4, 7]),
  *                                          numeric string "0,4,7", mode keyword
  *                                          ("up"/"down"/"updown"/"random"), or
  *                                          {intervals, mode?}. Default: null (disabled)
  * @property {number} arpTriggerProbability - Probability of arpeggio trigger (0-1). Default: 1
  * @property {number} euclideanFill         - Euclidean pulses k over the span to the next note, base note included (0-16, 0=disabled). Default: 0 (disabled)
  * @property {number} euclideanRotation     - Phase offset of the euclidean pattern in steps (0-15). Default: 0
+ * @property {string|undefined} [_arpScale] - arpeggio scale override (note editor only)
+ * @property {string|undefined} [_arpType]   - arpeggio direction override (note editor only)
  * @property {number} pos                   - Phase offset inside the `every` cycle: the
  *                                          note fires on the pass where
  *                                          (pass + pos) % every === 0, so pos shifts
@@ -98,6 +100,7 @@ const NOTE_KEY_ORDER = [
  * A note in a track (runtime object). Same shape as NoteDefaults.
  * @typedef {NoteDefaults} Note
  */
+/** @type {NoteDefaults} */
 export const NOTE_DEFAULTS = {
     velocity: 0.8,
     beat: 0,
@@ -131,23 +134,23 @@ export const NOTE_RECALCULATED = ['stepPercent']
  */
 export const NOTE_POSITION_KEYS = new Set(['beat', 'beatStep'])
 
+const NOTE_ROUND_2D = new Set(['velocity', 'pan', 'prob', 'rate'])
+
 /**
  * Convert a note object to a compact array using the given key order.
  * Omits trailing default values (keeps all values up to and including
  * the last non-default value).
  *
- * @param {Object} note - The note object
+ * @param {any} note - The note object
  * @param {string[]} keys - The key order to use
- * @returns {Array} Compact note array
+ * @returns {any[]} Compact note array
  */
-const NOTE_ROUND_2D = new Set(['velocity', 'pan', 'prob', 'rate'])
-
 export function noteToObjectCompact(note, keys = NOTE_KEY_ORDER) {
     let lastIndex = -1
     for (let i = 0; i < keys.length; i++) {
         const key = keys[i]
-        const val = note[key]
-        const defaultVal = NOTE_DEFAULTS[key]
+        const val = /** @type {Record<string, unknown>} */ (note)[key]
+        const defaultVal = /** @type {Record<string, unknown>} */ (NOTE_DEFAULTS)[key]
         if (val !== undefined && val !== defaultVal) {
             lastIndex = i
         }
@@ -155,8 +158,8 @@ export function noteToObjectCompact(note, keys = NOTE_KEY_ORDER) {
     if (lastIndex === -1) return []
     const arr = []
     for (let i = 0; i <= lastIndex; i++) {
-        const val = note[keys[i]] ?? NOTE_DEFAULTS[keys[i]]
-        arr.push(NOTE_ROUND_2D.has(keys[i]) ? Math.round(val * 100) / 100 : val)
+        const val = /** @type {Record<string, unknown>} */ (note)[keys[i]] ?? /** @type {Record<string, unknown>} */ (NOTE_DEFAULTS)[keys[i]]
+        arr.push(NOTE_ROUND_2D.has(keys[i]) ? Math.round(Number(val) * 100) / 100 : val)
     }
     return arr
 }
@@ -165,12 +168,12 @@ export function noteToObjectCompact(note, keys = NOTE_KEY_ORDER) {
  * Convert a compact array back to a note object using the given key order.
  * Missing values are filled with defaults.
  *
- * @param {Array} arr - Compact note array
+ * @param {any[]} arr - Compact note array
  * @param {string[]} keys - The key order to use
  * @returns {Object} Note object with all properties
  */
 export function compactArrayToNote(arr, keys = NOTE_KEY_ORDER) {
-    const note = {}
+    const note = /** @type {Record<string, unknown>} */ ({} )
     for (let i = 0; i < arr.length && i < keys.length; i++) {
         note[keys[i]] = arr[i]
     }
@@ -181,14 +184,14 @@ export function compactArrayToNote(arr, keys = NOTE_KEY_ORDER) {
  * Determine which keys are actually used in a set of notes.
  * Returns only the keys needed (non-default values present), in NOTE_KEY_ORDER.
  *
- * @param {Object[]} notes - Array of note objects
+ * @param {any[]} notes - Array of note objects
  * @returns {string[]} Used keys in optimal order
  */
 export function detectUsedKeys(notes) {
     const used = new Set()
     for (const note of notes) {
         for (const key of NOTE_KEY_ORDER) {
-            if (key in note && note[key] !== NOTE_DEFAULTS[key]) {
+            if (key in note && /** @type {Record<string, unknown>} */ (note)[key] !== /** @type {Record<string, unknown>} */ (NOTE_DEFAULTS)[key]) {
                 used.add(key)
             }
         }
@@ -222,8 +225,9 @@ function renameLegacyKeys(note, aliases) {
     let changed = false
     for (const [legacy, current] of Object.entries(aliases)) {
         if (!Object.prototype.hasOwnProperty.call(note, legacy)) continue
-        if (note[current] === undefined) note[current] = note[legacy]
-        delete note[legacy]
+        const n = /** @type {Record<string, unknown>} */ (note)
+        if (n[current] === undefined) n[current] = n[legacy]
+        delete n[legacy]
         changed = true
     }
     return changed
@@ -298,7 +302,7 @@ export function migrateLegacyPatternKeys(pattern) {
 /**
  * Check if a track uses compact array format (notes as arrays with noteKeys header).
  *
- * @param {Object} track - The track object
+ * @param {any} track - The track object
  * @returns {boolean} True if notes are arrays (compact format)
  */
 export function isCompactFormat(track) {
@@ -334,7 +338,7 @@ export function areValidNoteKeys(keys) {
  * Normalize a note object by applying default values for missing properties.
  * Single source of truth for note normalization.
  *
- * @param {Object|null} note - The note object to normalize
+ * @param {any} note - The note object to normalize
  * @returns {Object} Normalized note with all properties
  */
 export function normalizeNote(note) {

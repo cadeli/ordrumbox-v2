@@ -60,6 +60,7 @@ export function isLandscape() {
 export function watchOrientation(onFlip, { debounceMs = 150 } = {}) {
     if (typeof window === 'undefined') return () => {}
     let lastLandscape = isLandscape()
+    /** @type {ReturnType<typeof setTimeout> | null} */
     let timer = null
 
     const check = () => {

@@ -52,7 +52,7 @@ import { valueOrFallback } from '../core/logger.js'
  * @property {boolean} reverbOn             - Reverb enabled. Default: true
  * @property {boolean} delayOn              - Delay enabled. Default: true
  * @property {string}  synthSoundKey    - Synth preset key. Default: null
- * @property {Array}   notes                - Note array (objects or compact arrays). Default: []
+ * @property {any[]}   notes                - Note array (objects or compact arrays). Default: []
  * @property {string[]} [noteKeys]           - Compact-format header: the name carried by each
  *                                             position of a compact notes[][]. Present only
  *                                             while notes are stored compactly.
@@ -81,6 +81,7 @@ import { valueOrFallback } from '../core/logger.js'
  * A track in a pattern (runtime object). Same shape as TrackDefaults.
  * @typedef {TrackDefaults} Track
  */
+/** @type {TrackDefaults} */
 export const TRACK_DEFAULTS = {
     name: '',
     useAutoAssignSound: true,

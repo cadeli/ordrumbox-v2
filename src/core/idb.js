@@ -188,6 +188,7 @@ export const MIGRATIONS = {
 }
 
 /** Creates missing stores, then runs every migration in (oldVersion, newVersion]. */
+/** @param {IDBDatabase} db @param {number} oldVersion @param {number} newVersion @param {IDBTransaction|null} [tx] */
 export function runUpgrades(db, oldVersion, newVersion, tx = null) {
     for (const name of ALL_STORES) {
         if (!db.objectStoreNames.contains(name)) db.createObjectStore(name)
@@ -199,10 +200,11 @@ export function runUpgrades(db, oldVersion, newVersion, tx = null) {
         .sort((a, b) => a - b)
 
     for (const version of versions) {
-        MIGRATIONS[version](db, tx)
+        /** @type {Record<number, (db: IDBDatabase, tx: IDBTransaction|null) => void>} */ (MIGRATIONS)[version](db, tx)
     }
 }
 
+/** @type {Promise<IDBDatabase> | null} */
 let dbPromise = null
 
 /**
@@ -248,6 +250,7 @@ export function openDb() {
  * the connection once if it turns out to be closed (e.g. another tab bumped
  * DB_VERSION and forced a version change).
  */
+/** @param {string} storeName @param {IDBTransactionMode} mode @param {(store: IDBObjectStore) => Promise<any>} run */
 async function withStore(storeName, mode, run) {
     const db = await openDb()
     try {
@@ -269,6 +272,7 @@ async function withStore(storeName, mode, run) {
     }
 }
 
+/** @param {string} storeName @param {IDBValidKey} key */
 export function idbGet(storeName, key) {
     return withStore(
         storeName,
@@ -282,6 +286,7 @@ export function idbGet(storeName, key) {
     )
 }
 
+/** @param {string} storeName @param {IDBValidKey} key @param {any} value */
 export function idbPut(storeName, key, value) {
     return withStore(
         storeName,
@@ -299,6 +304,7 @@ export function idbPut(storeName, key, value) {
     )
 }
 
+/** @param {string} storeName @param {IDBValidKey} key */
 export function idbDelete(storeName, key) {
     return withStore(
         storeName,
@@ -316,6 +322,7 @@ export function idbDelete(storeName, key) {
     )
 }
 
+/** @param {string} storeName */
 export function idbKeys(storeName) {
     return withStore(
         storeName,
@@ -329,6 +336,7 @@ export function idbKeys(storeName) {
     )
 }
 
+/** @param {string} storeName */
 export function idbClearStore(storeName) {
     return withStore(
         storeName,
@@ -346,6 +354,7 @@ export function idbClearStore(storeName) {
     )
 }
 
+/** @param {string} storeName */
 export function idbGetAllEntries(storeName) {
     return withStore(
         storeName,
@@ -353,6 +362,7 @@ export function idbGetAllEntries(storeName) {
         (store) =>
             new Promise((resolve, reject) => {
                 const req = store.openCursor()
+                /** @type {Array<{key: IDBValidKey, value: unknown}>} */
                 const entries = []
                 req.onsuccess = () => {
                     const cursor = req.result
@@ -375,6 +385,7 @@ export function idbGetAllEntries(storeName) {
  * @returns {Promise<{usageBytes?: number, quotaBytes?: number, usageRatio?: number|null, stores: Object<string, IDBValidKey[]>}>}
  */
 export async function getStorageReport() {
+    /** @type {{usageBytes?: number, quotaBytes?: number, usageRatio?: number|null, stores: Record<string, IDBValidKey[]>}} */
     const report = { stores: {} }
     try {
         const est = await navigator.storage?.estimate?.()

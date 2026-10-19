@@ -13,6 +13,7 @@ export class Lifecycle {
     /** Owns every listener bound through listen() — aborted by destroy(). */
     #abortController = new AbortController()
     /** Every unsubscribe function returned by sub(). */
+    /** @type {Array<() => void>} */
     #unsubs = []
 
     /** Signal shared by every listener bound through listen(). */

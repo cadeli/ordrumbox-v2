@@ -70,12 +70,12 @@ export function notesAtStep(track, beat, beatStep) {
  * @returns {string}
  */
 export function getAudibleNoteSignature(note) {
-    const audibleProps = {}
+    const audibleProps = /** @type {Record<string, unknown>} */ ({})
     Object.keys(note ?? {})
         .filter((key) => !NOTE_POSITION_KEYS.has(key))
         .sort()
         .forEach((key) => {
-            audibleProps[key] = normalizeSignatureValue(note[key])
+            audibleProps[key] = normalizeSignatureValue(/** @type {Record<string, unknown>} */ (note)[key])
         })
     return JSON.stringify(audibleProps)
 }
@@ -95,9 +95,9 @@ export function normalizeSignatureValue(value) {
         return Object.keys(value)
             .sort()
             .reduce((normalized, key) => {
-                normalized[key] = normalizeSignatureValue(value[key])
+                /** @type {Record<string, unknown>} */ (normalized)[key] = normalizeSignatureValue(/** @type {Record<string, unknown>} */ (value)[key])
                 return normalized
-            }, {})
+            }, /** @type {Record<string, unknown>} */ ({}))
     }
     return value
 }

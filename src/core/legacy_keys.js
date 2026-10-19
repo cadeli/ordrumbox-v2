@@ -37,8 +37,9 @@ function renameLegacyKeys(obj, aliases) {
     let changed = false
     for (const [legacy, current] of Object.entries(aliases)) {
         if (!Object.prototype.hasOwnProperty.call(obj, legacy)) continue
-        if (!(current in obj)) obj[current] = obj[legacy]
-        delete obj[legacy]
+        const o = /** @type {Record<string, unknown>} */ (obj)
+        if (!(current in o)) o[current] = o[legacy]
+        delete o[legacy]
         changed = true
     }
     return changed

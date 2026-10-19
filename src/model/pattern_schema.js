@@ -22,6 +22,7 @@
  * @property {string}  [_autoGenScale]   - Auto-generation state (auto_generator.js).
  * @property {number}  [_autoGenKeyOffset] - Auto-generation state (auto_generator.js).
  */
+/** @type {Pattern} */
 export const PATTERN_DEFAULTS = {
     id: '',
     beatCount: 4,

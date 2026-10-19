@@ -19,8 +19,8 @@ export function getTracksArray(pattern) {
  * Keep only the melodic tracks (BASS, PIANO, ORGAN) that have notes.
  * Returns a NEW array; `tracks` is left untouched.
  *
- * @param {Array} tracks
- * @returns {Array}
+ * @param {any[]} tracks
+ * @returns {any[]}
  */
 export function filterEmptyMelodicTracks(tracks) {
     return tracks.filter((t) => !isMelodicTrack(t) || (t.notes && t.notes.length > 0))

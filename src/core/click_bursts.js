@@ -17,6 +17,7 @@ let installed = false
 /** @type {Set<ReturnType<typeof setTimeout>>} */
 const pendingBursts = new Set()
 
+/** @param {number} x @param {number} y */
 function spawn(x, y) {
     if (active >= MAX_ACTIVE) return
     const el = document.createElement('div')
@@ -35,6 +36,7 @@ function spawn(x, y) {
     pendingBursts.add(timer)
 }
 
+/** @param {PointerEvent} event */
 function onPointerDown(event) {
     try {
         spawn(event.clientX, event.clientY)

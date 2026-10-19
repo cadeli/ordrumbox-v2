@@ -60,12 +60,13 @@ function ensureStyles() {
  * Shows a toast notification.
  * @param {string} message  Text to display
  * @param {'info'|'success'|'error'|'warning'} type
- * @param {Object} [opts]
- * @param {Array<{label:string, onClick:Function}>} [opts.actions]  Action buttons (disables auto-dismiss)
- * @param {boolean} [opts.dismissible]  Show a × close button (disables auto-dismiss)
- * @param {number} [opts.duration]  Auto-dismiss delay in ms (overrides the type default)
+ * @param {Object} [options]
+ * @param {Array<{label:string, onClick:Function}>} [options.actions]  Action buttons (disables auto-dismiss)
+ * @param {boolean} [options.dismissible]  Show a × close button (disables auto-dismiss)
+ * @param {number} [options.duration]  Auto-dismiss delay in ms (overrides the type default)
  */
-export function showToast(message, type = 'info', { actions, dismissible, duration } = {}) {
+export function showToast(message, type = 'info', options = {}) {
+    const { actions, dismissible, duration } = options
     if (typeof document === 'undefined') return
     const container = ensureContainer()
     const { bg, border } = TOAST_STYLES[type] ?? TOAST_STYLES.info
@@ -121,6 +122,7 @@ export function showToast(message, type = 'info', { actions, dismissible, durati
     container.appendChild(el)
     clampStack(container)
 
+    /** @type {ReturnType<typeof setTimeout> | null} */
     let dismissTimer = null
     function dismiss() {
         if (dismissTimer) { clearTimeout(dismissTimer); dismissTimer = null }
@@ -151,14 +153,15 @@ const reportedOnce = new Set()
  *
  * @param {string} context   stable identifier, used as dedup key (e.g. 'Mixer.worklet')
  * @param {string} message   user-facing text (no technical detail)
- * @param {Object} [opts]
- * @param {'info'|'success'|'error'|'warning'} [opts.type]       default 'warning'
- * @param {boolean} [opts.once]      report only the first time per session (default true)
- * @param {Error} [opts.cause]       logged for developers (dev builds only)
- * @param {Array<{label:string, onClick:Function}>} [opts.actions]
+ * @param {Object} [options]
+ * @param {'info'|'success'|'error'|'warning'} [options.type]       default 'warning'
+ * @param {boolean} [options.once]      report only the first time per session (default true)
+ * @param {Error} [options.cause]       logged for developers (dev builds only)
+ * @param {Array<{label:string, onClick:Function}>} [options.actions]
  * @returns {boolean} true when a report was actually emitted
  */
-export function reportUserError(context, message, { type = 'warning', once = true, cause, actions } = {}) {
+export function reportUserError(context, message, options = {}) {
+    const { type = 'warning', once = true, cause, actions } = options
     if (once) {
         if (reportedOnce.has(context)) return false
         reportedOnce.add(context)

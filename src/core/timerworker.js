@@ -1,3 +1,4 @@
+/** @type {ReturnType<typeof setInterval> | null} */
 let timerID = null
 let interval = 100
 
