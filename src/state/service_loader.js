@@ -80,7 +80,12 @@ export class ServiceRegistry {
 
     /**
      * Assign a known service key. Throws on unknown keys so typos
+     /**
+     * Assign a known service key. Throws on unknown keys so typos
      * cannot silently create non-resettable properties.
+     * @param {string} key
+     * @param {object} value
+     * @returns {object}
      */
     register(key, value) {
         if (!(key in ServiceRegistry.DEFAULTS)) {
@@ -125,11 +130,21 @@ const LAZY_SERVICES = Object.freeze({
  * "Enable MIDI"): both saw null, both awaited the import, the second assignment
  * won and the orphaned instance kept its live MIDI access + input handlers — every
  * note fired twice.
+ * Each key resolves to a different concrete service type; the map is typed as
+ * `Promise<object>` because the concrete type depends on the key.
  * @type {Map<string, Promise<object>>}
  */
 const pendingServices = new Map()
 
-/** @param {string} key - a LAZY_SERVICES key (unknown keys throw at runtime) @param {object} [deps] @returns {Promise<any>} */
+/**
+ * Get or construct a lazy service by key.
+ * The concrete return type depends on the key; callers should prefer the
+ * typed accessors (getAutoGeneratorService, getAutoAssignService, etc.)
+ * which narrow the return type.
+ * @param {string} key - a LAZY_SERVICES key (unknown keys throw at runtime)
+ * @param {object} [deps]
+ * @returns {Promise<object>}
+ */
 async function lazyService(key, deps) {
     const factory = LAZY_SERVICES[key]
     if (!factory) throw new Error(`Unknown lazy service: ${key}`)
@@ -154,20 +169,34 @@ async function lazyService(key, deps) {
 
 export const getService = (key) => lazyService(key)
 
+/**
+ * @returns {Promise<AutoGeneratorService>}
+ */
 export const getAutoGeneratorService = () =>
-    lazyService('autoGenerator', {
+    /** @type {Promise<AutoGeneratorService>} */ (lazyService('autoGenerator', {
         registry: services,
-    })
+    }))
 
-export const getAutoAssignService = () => lazyService('autoAssign')
+/**
+ * @returns {Promise<AutoAssignService>}
+ */
+export const getAutoAssignService = () =>
+    /** @type {Promise<AutoAssignService>} */ (lazyService('autoAssign'))
 
+/**
+ * @returns {Promise<MidiManagerService>}
+ */
 export const getMidiManagerService = () =>
-    lazyService('midiManager', {
+    /** @type {Promise<MidiManagerService>} */ (lazyService('midiManager', {
         getSeq: () => services.seq,
         getAudioCtx: () => services.audioCtx,
-    })
+    }))
 
-export const getHistoryService = () => lazyService('history')
+/**
+ * @returns {Promise<HistoryService>}
+ */
+export const getHistoryService = () =>
+    /** @type {Promise<HistoryService>} */ (lazyService('history'))
 
 /**
  * Eagerly builds and assigns the startup services into the container, in the
