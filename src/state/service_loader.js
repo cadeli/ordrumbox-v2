@@ -49,3 +49,28 @@ export const getAutoAssignService = () => lazyService('autoAssign')
 export const getMidiManagerService = () => lazyService('midiManager')
 
 export const getHistoryService = () => lazyService('history')
+
+/**
+ * Eagerly builds and assigns the startup services into the registry, in the
+ * right dependency order. This is the single composition root for the eager
+ * services; call it once from the bootstrap.
+ * @returns {Promise<typeof serviceRegistry>}
+ */
+export async function initServices() {
+    const [{ default: ResourcesLoader }, { default: Commander }, { default: Sequencer }, flatNotesService] =
+        await Promise.all([
+            import('../loader/resources_loader.js'),
+            import('../logic/commands/commander.js'),
+            import('../logic/sequencer.js'),
+            import('../patterns/flat_notes.js'),
+        ])
+    serviceRegistry.resourcesLoader = new ResourcesLoader()
+    serviceRegistry.history = await getHistoryService()
+    serviceRegistry.cmd = new Commander({
+        history: serviceRegistry.history,
+        persistPatterns: () => serviceRegistry.resourcesLoader?.persistPatterns?.(),
+    })
+    serviceRegistry.seq = new Sequencer()
+    serviceRegistry.flatNotes = flatNotesService
+    return serviceRegistry
+}
