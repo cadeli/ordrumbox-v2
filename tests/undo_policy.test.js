@@ -12,6 +12,9 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import outputPanelSrc from '../src/ui/output_panel.js?raw'
+import outputMasterSrc from '../src/ui/output_panel/master_section.js?raw'
+import outputCompressorSrc from '../src/ui/output_panel/compressor_section.js?raw'
+import outputFiltersSrc from '../src/ui/output_panel/filters_section.js?raw'
 import pointerSectionSrc from '../src/ui/pattern_panel/pointer_section.js?raw'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -92,8 +95,9 @@ describe('Undo policy — track parameters (cmd.updateTrack)', () => {
 
 describe('Undo policy — master/mixer is never in history', () => {
     it('output panel drives the mixer directly with no cmd/record/history wiring', () => {
-        expect(outputPanelSrc).toContain('setMasterBus')
-        expect(outputPanelSrc).not.toMatch(/history_manager|HistoryManager|\.record\(/)
+        const outputSrc = outputPanelSrc + outputMasterSrc + outputCompressorSrc + outputFiltersSrc
+        expect(outputSrc).toContain('setMasterBus')
+        expect(outputSrc).not.toMatch(/history_manager|HistoryManager|\.record\(/)
     })
 
     it('pattern panel master shortcut also bypasses history', () => {
