@@ -2,15 +2,13 @@ import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { playbackEvents } from '../state/event_bus.js'
-import { fixPatterns, fixSongs, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.js'
+import { fixPatterns, fixSongs } from '../patterns/fixer.js'
 import { idbGet, idbPut } from '../core/idb.js'
 import {
     cachePatterns,
     getCachedPatterns,
     cacheDrumkits,
     getCachedDrumkits,
-    cacheSample,
-    getCachedSample,
     cacheGeneratedSounds,
     getCachedGeneratedSounds,
 } from '../cache/idb_cache.js'
@@ -19,6 +17,7 @@ import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'
 import { MASTER_BUS_DEFAULTS, SESSION_DEFAULTS, normalizeColorScheme } from '../core/constants.js'
+import SampleLoadingSection from './sample_loading_section.js'
 
 /**
  * Session snapshot persisted in soundRegistry.settings.session, filled field by
@@ -65,10 +64,12 @@ export default class ResourcesLoader {
     #audioCtx
     #autoPersistEnabled
     #loadGeneration = 0
+    #samples
 
     constructor(audioCtx = null) {
         this.#audioCtx = audioCtx
         this.#autoPersistEnabled = false
+        this.#samples = new SampleLoadingSection(this)
         playbackEvents.on(EVENTS.PATTERN_CHANGE, () => {
             if (this.#autoPersistEnabled) this.persistPatterns()
         })
@@ -106,9 +107,6 @@ export default class ResourcesLoader {
     #patternsLoadingPromise = null
     /** @type {Promise<unknown> | null} In-flight single-flight promise for sample loading */
     #samplesLoadingPromise = null
-    /** @type {Map<string, Promise<any>>} In-flight sample loads keyed by URL (dedup) */
-    #sampleLoadPromises = new Map()
-
     /** @type {Promise<void> | null} In-flight settings hydration */
     #settingsLoadingPromise = null
 
@@ -445,11 +443,11 @@ export default class ResourcesLoader {
     }
 
     getUnloadedSamplesFromDrumkits = (drumkits) => {
-        return getUnloadedSamplesFromDrumkits(drumkits, soundRegistry.sounds)
+        return this.#samples.getUnloadedSamplesFromDrumkits(drumkits)
     }
 
     loadMissingSamplesFromDrumkits = async (drumkits) => {
-        return this.#loadSampleEntries(this.getUnloadedSamplesFromDrumkits(drumkits))
+        return this.#samples.loadMissingSamplesFromDrumkits(drumkits)
     }
 
     /**
@@ -462,104 +460,15 @@ export default class ResourcesLoader {
      * @returns {Promise<object[]>} the loaded sounds
      */
     loadSamplesForPatterns = async (patterns) => {
-        const wanted = new Set()
-        const one = /** @type {{tracks?: object}} */ (patterns)
-        const patternList = one?.tracks ? [one] : Object.values(one ?? {})
-        for (const pattern of patternList) {
-            const tracks = /** @type {{tracks?: object}} */ (pattern)?.tracks
-            for (const track of Object.values(tracks ?? {})) {
-                const sampleId = track?.sampleId
-                if (sampleId && sampleId !== 'NOT_DEFINED' && !soundRegistry.sounds[sampleId]?.buffer) {
-                    wanted.add(sampleId)
-                }
-            }
-        }
-        if (wanted.size === 0) return []
-
-        const samplesToLoad = []
-        for (const drumkit of soundRegistry.drumkitList) {
-            for (const sample of Object.values(drumkit?.instruments ?? {})) {
-                if (wanted.delete(sample.url)) {
-                    samplesToLoad.push({ sample, kitName: drumkit.name })
-                }
-            }
-        }
-        return this.#loadSampleEntries(samplesToLoad)
-    }
-
-    #loadSampleEntries = async (samplesToLoad) => {
-        let loadedCount = 0
-        const totalCount = samplesToLoad.length
-
-        if (totalCount === 0) {
-            return []
-        }
-
-        const updateProgress = () => {
-            this.onSoundsProgress(Math.floor((loadedCount * 100) / totalCount))
-        }
-
-        const results = await Promise.all(
-            samplesToLoad.map(async ({ sample, kitName }) => {
-                try {
-                    return await this.loadSample(sample, kitName)
-                } catch (error) {
-                    logger.error('ResourcesLoader', 'ResourcesLoader::loadSample error ' + sample.url, error)
-                    return null
-                } finally {
-                    loadedCount++
-                    updateProgress()
-                }
-            }),
-        )
-        return results.filter(Boolean)
-    }
-
-    loadSamplesFromDrumkit = (drumkit) => {
-        return this.loadMissingSamplesFromDrumkits([drumkit])
+        return this.#samples.loadSamplesForPatterns(patterns)
     }
 
     loadSample = async (sample, kitName) => {
-        const inFlight = this.#sampleLoadPromises.get(sample.url)
-        if (inFlight) return inFlight
-        const build = (async () => {
-            let arrayBuffer = await getCachedSample(sample.url)
-        if (!arrayBuffer) {
-            const response = await fetch(ResourcesLoader.KITS_PATH + sample.url)
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`)
-            }
-            arrayBuffer = await response.arrayBuffer()
-            await cacheSample(sample.url, arrayBuffer)
-        } else {
-            logger.debug('ResourcesLoader', `Sample "${sample.url}" loaded from IDB cache`)
-        }
-        const buffer = await this.audioCtx.decodeAudioData(arrayBuffer)
-        const sound = {
-            kitName: kitName,
-            url: sample.url,
-            key: sample.key,
-            index: Object.keys(soundRegistry.sounds).length + 1,
-            display_name: sample.display_name,
-            buffer: buffer,
-            duration: Math.floor(buffer.duration * 1000),
-            isLoad: true,
-            playStatus: false,
-            rootMidi: sample.rootMidi ?? null,
-            peakDb: sample.peakDb ?? null,
-            decay: sample.decay ?? null,
-            gainDb: sample.gainDb ?? 0,
-            tune: sample.tune ?? 0,
-        }
-        soundRegistry.sounds[sample.url] = sound
-        return sound
-        })()
-        this.#sampleLoadPromises.set(sample.url, build)
-        try {
-            return await build
-        } finally {
-            this.#sampleLoadPromises.delete(sample.url)
-        }
+        return this.#samples.loadSample(sample, kitName)
+    }
+
+    loadSamplesFromDrumkit = (drumkit) => {
+        return this.#samples.loadSamplesFromDrumkit(drumkit)
     }
 
     fix = (patterns) => {
