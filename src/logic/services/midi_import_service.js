@@ -8,6 +8,15 @@ import { instrumentsManager, GM_DRUM_NAMES, GM_PROGRAM_NAMES } from './instrumen
 import { logger } from '../../core/logger.js'
 
 export default class MidiImportService {
+    #registry
+
+    /**
+     * @param {object} [deps]
+     * @param {typeof import('../../state/service_registry.js').serviceRegistry} [deps.registry]
+     */
+    constructor(deps = {}) {
+        this.#registry = deps.registry ?? serviceRegistry
+    }
     /**
      * Import a MIDI file and create patterns from it.
      * @param {File} file - MIDI file from input element
@@ -78,9 +87,9 @@ export default class MidiImportService {
         const patternCount = this.#createPatternsFromTrackDefs(trackDefs, baseName, bpm, PPQN)
 
         const newIdx = appState.patterns.length - 1
-        await serviceRegistry.cmd.setSelectedPatternIdx(newIdx)
+        await this.#registry.cmd.setSelectedPatternIdx(newIdx)
 
-        serviceRegistry.audioEngine?.invalidateCache()
+        this.#registry.audioEngine?.invalidateCache()
         const message =
             patternCount > 1
                 ? `MIDI imported: ${trackDefs.length} track(s) into ${patternCount} patterns`
@@ -292,7 +301,7 @@ export default class MidiImportService {
     }
 
     #createPatternsFromTrackDefs(trackDefs, baseName, bpm, PPQN) {
-        const cmd = serviceRegistry.cmd
+        const cmd = this.#registry.cmd
         const TICK_RATIO = PPQN / TICK
 
         let maxTick = 0

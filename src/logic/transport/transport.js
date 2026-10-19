@@ -5,8 +5,15 @@ import { logger } from '../../core/logger.js'
 import { reportUserError } from '../../core/notify.js'
 
 export default class Transport {
-    /** @param {BaseAudioContext} audioCtx */
-    constructor(audioCtx) {
+    #getMidiManager
+
+    /**
+     * @param {BaseAudioContext} audioCtx
+     * @param {object} [deps]
+     * @param {() => any} [deps.getMidiManager] - resolves the live MIDI manager at call time (lazily created)
+     */
+    constructor(audioCtx, deps = {}) {
+        this.#getMidiManager = deps.getMidiManager ?? (() => serviceRegistry.midiManager)
         this.audioCtx = audioCtx
         this.isRunning = false
         this.tick = 1
@@ -47,9 +54,10 @@ export default class Transport {
         this.ensureTimerWorker()
         this.timerWorker.postMessage('start')
 
-        if (serviceRegistry.midiManager) {
+        const midiManager = this.#getMidiManager()
+        if (midiManager) {
             const perfNow = performance.now()
-            serviceRegistry.midiManager.sendStart(perfNow)
+            midiManager.sendStart(perfNow)
         }
     }
 
@@ -58,8 +66,9 @@ export default class Transport {
         this.isRunning = false
         this.timerWorker?.postMessage('stop')
 
-        if (serviceRegistry.midiManager) {
-            serviceRegistry.midiManager.sendStop()
+        const midiManager = this.#getMidiManager()
+        if (midiManager) {
+            midiManager.sendStop()
         }
     }
 
@@ -78,9 +87,9 @@ export default class Transport {
 
         // Schedule Clock
         while (this.nextClockTime < audioNow + this.scheduleAheadSeconds) {
-            if (this.isRunning && serviceRegistry.midiManager) {
+            if (this.isRunning && this.#getMidiManager()) {
                 const midiTime = perfNow + (this.nextClockTime - audioNow) * 1000
-                serviceRegistry.midiManager.sendClock(midiTime)
+                this.#getMidiManager().sendClock(midiTime)
             }
             this.nextClockTime += this.clockInterval
         }

@@ -8,6 +8,15 @@ import { cacheSample, cacheDrumkits } from '../../cache/idb_cache.js'
 import { EVENTS } from '../../core/events.js'
 
 export default class AudioImportService {
+    #registry
+
+    /**
+     * @param {object} [deps]
+     * @param {typeof import('../../state/service_registry.js').serviceRegistry} [deps.registry]
+     */
+    constructor(deps = {}) {
+        this.#registry = deps.registry ?? serviceRegistry
+    }
     /**
      * Import a directory of audio files as a new drumkit.
      * @param {FileList} files - files from webkitdirectory input
@@ -23,7 +32,7 @@ export default class AudioImportService {
         const firstPath = files[0].webkitRelativePath ?? ''
         const kitName = firstPath.split('/')[0] ?? 'imported'
 
-        const audioCtx = serviceRegistry.audioCtx
+        const audioCtx = this.#registry.audioCtx
         const instruments = []
 
         for (const file of audioFiles) {

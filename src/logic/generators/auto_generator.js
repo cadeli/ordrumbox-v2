@@ -36,15 +36,21 @@ export default class AutoGenerator {
 
     #cachedGenre
     #cachedStructure
+    #registry
 
-    constructor() {
+    /**
+     * @param {object} [deps]
+     * @param {typeof import('../../state/service_registry.js').serviceRegistry} [deps.registry]
+     */
+    constructor(deps = {}) {
+        this.#registry = deps.registry ?? serviceRegistry
         this.kickGen = new KickGenerator()
         this.snareGen = new SnareGenerator()
         this.hatGen = new HatGenerator()
         this.clapGen = new ClapGenerator()
         this.percGen = new PercGenerator()
         this.cowbellGen = new CowbellGenerator()
-        this.bassGen = new BassGenerator()
+        this.bassGen = new BassGenerator({ registry: this.#registry })
         this.melodyGen = new MelodyGenerator()
         this.structureGen = new SongStructure()
     }
@@ -100,7 +106,7 @@ export default class AutoGenerator {
         try {
             let pattern = appState.selectedPattern
             if (!pattern) {
-                pattern = serviceRegistry.cmd.addPattern('Generated')
+                pattern = this.#registry.cmd.addPattern('Generated')
             }
 
             const genre =
@@ -123,7 +129,7 @@ export default class AutoGenerator {
 
             if (!pattern.tracks || pattern.tracks.length === 0) {
                 for (const [trackName, config] of Object.entries(structure)) {
-                    const track = serviceRegistry.cmd.addTrack(pattern, trackName)
+                    const track = this.#registry.cmd.addTrack(pattern, trackName)
                     logger.info(AutoGenerator.TAG, `  track=${trackName}, variant=${config}`)
                     await this.generateTrack(track, config, this.#randomDensity(track), pattern, harmony)
                 }
@@ -139,16 +145,16 @@ export default class AutoGenerator {
 
             const hasBassTrack = pattern.tracks.some((t) => detectTrackType(t.name) === 'BASS')
             if (!hasBassTrack) {
-                const bassTrack = serviceRegistry.cmd.addTrack(pattern, 'BASS')
+                const bassTrack = this.#registry.cmd.addTrack(pattern, 'BASS')
                 bassTrack.useSoftSynth = false
                 bassTrack.useAutoAssignSound = true
                 bassTrack.synthSoundKey = 'BASS1'
                 bassTrack.velocity = 0.5
             }
 
-            serviceRegistry.autoAssign ??= new AutoAssign()
-            await serviceRegistry.autoAssign.autoAssignSounds(pattern)
-            serviceRegistry.flatNotes.applyFlatNotes(pattern)
+            this.#registry.autoAssign ??= new AutoAssign()
+            await this.#registry.autoAssign.autoAssignSounds(pattern)
+            this.#registry.flatNotes.applyFlatNotes(pattern)
 
             logger.info(AutoGenerator.TAG, `generatePattern: done (${pattern.tracks.length} tracks)`)
             return pattern
@@ -306,7 +312,7 @@ export default class AutoGenerator {
                     track.notes = []
                     await this.generateTrack(track, config, density, pattern, harmony)
                 }
-                serviceRegistry.flatNotes.applyFlatNotes(pattern)
+                this.#registry.flatNotes.applyFlatNotes(pattern)
             } else {
                 logger.warn(AutoGenerator.TAG, `  -> no config found for type=${type}`)
             }

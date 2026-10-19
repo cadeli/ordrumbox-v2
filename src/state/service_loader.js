@@ -17,8 +17,8 @@ const LAZY_SERVICES = Object.freeze({
  */
 const pendingServices = new Map()
 
-/** @param {string} key - a LAZY_SERVICES key (unknown keys throw at runtime) @returns {Promise<any>} */
-async function lazyService(key) {
+/** @param {string} key - a LAZY_SERVICES key (unknown keys throw at runtime) @param {object} [deps] @returns {Promise<any>} */
+async function lazyService(key, deps) {
     const factory = LAZY_SERVICES[key]
     if (!factory) throw new Error(`Unknown lazy service: ${key}`)
     if (serviceRegistry[key]) return serviceRegistry[key]
@@ -29,7 +29,7 @@ async function lazyService(key) {
     const build = (async () => {
         const { default: Cls } = await factory()
         // Another caller may have won the race while we were importing.
-        if (!serviceRegistry[key]) serviceRegistry[key] = new Cls()
+        if (!serviceRegistry[key]) serviceRegistry[key] = new Cls(deps)
         return serviceRegistry[key]
     })()
     pendingServices.set(key, build)
@@ -42,11 +42,18 @@ async function lazyService(key) {
 
 export const getService = (key) => lazyService(key)
 
-export const getAutoGeneratorService = () => lazyService('autoGenerator')
+export const getAutoGeneratorService = () =>
+    lazyService('autoGenerator', {
+        registry: serviceRegistry,
+    })
 
 export const getAutoAssignService = () => lazyService('autoAssign')
 
-export const getMidiManagerService = () => lazyService('midiManager')
+export const getMidiManagerService = () =>
+    lazyService('midiManager', {
+        getSeq: () => serviceRegistry.seq,
+        getAudioCtx: () => serviceRegistry.audioCtx,
+    })
 
 export const getHistoryService = () => lazyService('history')
 
@@ -69,6 +76,7 @@ export async function initServices() {
     serviceRegistry.cmd = new Commander({
         history: serviceRegistry.history,
         persistPatterns: () => serviceRegistry.resourcesLoader?.persistPatterns?.(),
+        registry: serviceRegistry,
     })
     serviceRegistry.seq = new Sequencer()
     serviceRegistry.flatNotes = flatNotesService

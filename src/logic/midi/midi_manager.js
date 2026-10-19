@@ -14,8 +14,18 @@ import { clamp } from '../../core/numbers.js'
 export default class MidiManager extends EventTarget {
     static TAG = 'MidiManager'
 
-    constructor() {
+    #getSeq
+    #getAudioCtx
+
+    /**
+     * @param {object} [deps]
+     * @param {() => any} [deps.getSeq] - resolves the sequencer at call time
+     * @param {() => BaseAudioContext|null} [deps.getAudioCtx] - resolves the audio context at call time
+     */
+    constructor(deps = {}) {
         super()
+        this.#getSeq = deps.getSeq ?? (() => serviceRegistry.seq)
+        this.#getAudioCtx = deps.getAudioCtx ?? (() => serviceRegistry.audioCtx)
         this.midiAccess = null
         this.inputs = []
         this.outputs = []
@@ -277,20 +287,23 @@ export default class MidiManager extends EventTarget {
 
     handleExternalStart = () => {
         this.resetExternalClockTracking()
-        if (!serviceRegistry.seq.isRunning) {
-            serviceRegistry.seq.toggleStartStop()
+        const seq = this.#getSeq()
+        if (!seq.isRunning) {
+            seq.toggleStartStop()
         }
     }
 
     handleExternalContinue = () => {
-        if (!serviceRegistry.seq.isRunning) {
-            serviceRegistry.seq.toggleStartStop()
+        const seq = this.#getSeq()
+        if (!seq.isRunning) {
+            seq.toggleStartStop()
         }
     }
 
     handleExternalStop = () => {
-        if (serviceRegistry.seq.isRunning) {
-            serviceRegistry.seq.toggleStartStop()
+        const seq = this.#getSeq()
+        if (seq.isRunning) {
+            seq.toggleStartStop()
         }
         this.resetExternalClockTracking()
     }
@@ -307,15 +320,16 @@ export default class MidiManager extends EventTarget {
                 this.clockPulseTimes = updateClockPulseTracking(this.clockPulseTimes, now)
                 const bpm = estimateBpmFromClockPulses(this.clockPulseTimes)
                 if (Number.isFinite(bpm) && bpm > 0) {
-                    serviceRegistry.seq.setBpm(Math.round(bpm * 100) / 100)
+                    this.#getSeq().setBpm(Math.round(bpm * 100) / 100)
                 }
             }
         } else {
             this.clockPulseTimes.push(now)
         }
 
-        if (!serviceRegistry.seq.isRunning) {
-            serviceRegistry.seq.toggleStartStop()
+        const seq = this.#getSeq()
+        if (!seq.isRunning) {
+            seq.toggleStartStop()
         }
     }
 
@@ -342,16 +356,18 @@ export default class MidiManager extends EventTarget {
             return
         }
 
-        if (serviceRegistry.audioCtx && serviceRegistry.audioCtx.state === 'suspended') {
+        const audioCtx = this.#getAudioCtx()
+        if (audioCtx && audioCtx.state === 'suspended') {
             try {
-                await serviceRegistry.audioCtx.resume()
+                await audioCtx.resume()
             } catch (error) {
                 logger.warn('MidiManager', `${MidiManager.TAG}: Unable to resume audio context`, error)
             }
         }
 
-        if (serviceRegistry.seq) {
-            serviceRegistry.seq.simpleBeep(trackIdx)
+        const seq = this.#getSeq()
+        if (seq) {
+            seq.simpleBeep(trackIdx)
         }
     }
 }

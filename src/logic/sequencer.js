@@ -52,7 +52,9 @@ export default class Sequencer {
     /** @returns {void} */
     ensureTransport = () => {
         if (!this.serviceRegistry.transport) {
-            this.serviceRegistry.transport = new Transport(this.serviceRegistry.audioCtx)
+            this.serviceRegistry.transport = new Transport(this.serviceRegistry.audioCtx, {
+                getMidiManager: () => this.serviceRegistry.midiManager,
+            })
             this.serviceRegistry.transport.onSchedule = (tick, time) => {
                 // The promise is deliberately NOT handed back: Transport only
                 // catches synchronous throws, so an async failure has to be

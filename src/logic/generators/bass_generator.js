@@ -240,16 +240,23 @@ export default class BassGenerator extends BaseGenerator {
         },
     })
 
-    constructor() {
+    #registry
+
+    /**
+     * @param {object} [deps]
+     * @param {typeof import('../../state/service_registry.js').serviceRegistry} [deps.registry]
+     */
+    constructor(deps = {}) {
         super('BASS', BassGenerator.BASS_GENERATION_CONFIGS)
+        this.#registry = deps.registry ?? serviceRegistry
         this.setToneThreshold(5)
         this.isScalesLoading = false
     }
 
     loadScales = async () => {
-        if (this.isScalesLoading || !serviceRegistry.resourcesLoader) return
+        if (this.isScalesLoading || !this.#registry.resourcesLoader) return
         this.isScalesLoading = true
-        await serviceRegistry.resourcesLoader.loadScales(ResourcesLoader.SCALES_URL)
+        await this.#registry.resourcesLoader.loadScales(ResourcesLoader.SCALES_URL)
         this.finishScalesLoad()
     }
 

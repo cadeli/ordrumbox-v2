@@ -91,6 +91,7 @@ export default class Commander {
 
     #history
     #persistPatterns
+    #registry
     #suppressRecord
     #genSnapshot
     #coalesceIds = new WeakMap()
@@ -101,16 +102,17 @@ export default class Commander {
     #songs
     #selection
 
-    constructor({ history = null, persistPatterns = null } = {}) {
+    constructor({ history = null, persistPatterns = null, registry = null } = {}) {
         this.#history = history
         this.#persistPatterns = persistPatterns
+        this.#registry = registry ?? serviceRegistry
         this.#suppressRecord = false
 
         this.#notes = new NoteCommands(this)
         this.#tracks = new TrackCommands(this)
         this.#patterns = new PatternCommands(this)
         this.#songs = new SongCommands(this)
-        this.#selection = new SelectionCommands()
+        this.#selection = new SelectionCommands({ registry: this.#registry })
 
         // Own-property arrow delegates: every MIXIN_METHODS entry must be an
         // own enumerable function so {...cmd} copies keep driving THIS instance.

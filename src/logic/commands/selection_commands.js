@@ -11,14 +11,22 @@ import { EVENTS } from '../../core/events.js'
  * Selection & state commands — stateless, drives appState/events directly.
  */
 export default class SelectionCommands {
-    // no host access needed: every member works through appState/serviceRegistry
+    #registry
+
+    /**
+     * @param {object} [deps]
+     * @param {typeof import('../../state/service_registry.js').serviceRegistry} [deps.registry] - mutable service registry (services assigned later)
+     */
+    constructor(deps = {}) {
+        this.#registry = deps.registry ?? serviceRegistry
+    }
 
     /** @param {number} num */
     async setSelectedDrumkitIdx(num) {
         const previousIdx = appState.selectedDrumkitIdx
         try {
             appState.selectedDrumkitIdx = num
-            await serviceRegistry.resourcesLoader.loadMissingSamplesFromDrumkits([soundRegistry.drumkitList[num]])
+            await this.#registry.resourcesLoader.loadMissingSamplesFromDrumkits([soundRegistry.drumkitList[num]])
             if (appState.selectedDrumkitIdx !== num) return
             await this.autoAssignSoundsForNewDrumkit()
             if (appState.selectedDrumkitIdx !== num) return
@@ -34,11 +42,11 @@ export default class SelectionCommands {
     async autoAssignSoundsForNewDrumkit() {
         try {
             const selectedPattern = appState.selectedPattern
-            serviceRegistry.seq.setBpm(selectedPattern.bpm)
+            this.#registry.seq.setBpm(selectedPattern.bpm)
             const autoAssign = await getAutoAssignService()
             autoAssign.autoAssignSounds(selectedPattern)
-            serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
-            serviceRegistry.audioEngine?.invalidateCache()
+            this.#registry.flatNotes.applyFlatNotes(selectedPattern)
+            this.#registry.audioEngine?.invalidateCache()
         } catch (err) {
             logger.error('Commander', 'cmd::autoAssignSoundsForNewDrumkit failed', err)
             showToast('Sound assignment failed', 'error')
@@ -57,7 +65,7 @@ export default class SelectionCommands {
                 // Same defensive treatment as the rest of the switch: a missing
                 // sequencer must not roll the whole selection back (which would
                 // abort the sample loading and the change event below).
-                serviceRegistry.seq?.setBpm(selectedPattern.bpm)
+                this.#registry.seq?.setBpm(selectedPattern.bpm)
                 if (Object.keys(soundRegistry.sounds).length > 0) {
                     const autoAssign = await getAutoAssignService()
                     autoAssign.autoAssignSounds(selectedPattern)
@@ -66,14 +74,14 @@ export default class SelectionCommands {
                 // finishing this one would re-assign sounds on the pattern they
                 // just left and then announce "pattern changed" for it.
                 if (appState.selectedPatternIdx !== target) return
-                serviceRegistry.flatNotes.applyFlatNotes(selectedPattern)
+                this.#registry.flatNotes.applyFlatNotes(selectedPattern)
                 // Explicit sound assignments can point to samples of another
                 // drumkit than the selected one — load them on demand so the
                 // pattern is audible right after a switch or a reload.
                 // Isolated: a missing loader or a failed fetch must never
                 // abort the switch itself (the emit below still has to run).
                 try {
-                    await serviceRegistry.resourcesLoader?.loadSamplesForPatterns([selectedPattern])
+                    await this.#registry.resourcesLoader?.loadSamplesForPatterns([selectedPattern])
                 } catch (err) {
                     logger.warn('Commander', 'cmd::setSelectedPatternIdx sample loading failed', err)
                 }
