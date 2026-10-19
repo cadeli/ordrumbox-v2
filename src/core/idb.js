@@ -1,6 +1,4 @@
 import { logger } from './logger.js'
-import { migrateLegacyPatternKeys } from './note_schema.js'
-import { migrateLegacySongKeys } from './legacy_keys.js'
 
 const DB_NAME = 'ordrumbox'
 const DB_VERSION = 8

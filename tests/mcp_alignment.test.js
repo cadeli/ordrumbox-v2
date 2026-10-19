@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { tools, handleToolCall, normalizePattern } from '../ordrumboxMcpserver.mjs'
+import { tools, handleToolCall } from '../ordrumboxMcpserver.mjs'
 import { TRACK_DEFAULTS, TRACK_VALUE_RANGES } from '../src/model/track_schema.js'
 import { NOTE_DEFAULTS } from '../src/core/note_schema.js'
 
