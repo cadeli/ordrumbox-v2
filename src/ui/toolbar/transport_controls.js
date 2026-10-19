@@ -1,7 +1,6 @@
 // src/ui/toolbar/transport_controls.js
 // Transport section: start/stop, BPM toggle/slider, beats select.
 
-import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents, emitPageChanged } from '../../state/event_bus.js'
 import { appState } from '../../state/app_state.js'
 import { MAX_BEATS } from '../../core/constants.js'
@@ -14,6 +13,12 @@ const BPM_MAX = 250
 export default class TransportControls {
     /** Owns every listener bound through #life — released by destroy(). */
     #life = new Lifecycle()
+    #toolbar
+
+    /** @param {import('../toolbar.js').default} toolbar */
+    constructor(toolbar) {
+        this.#toolbar = toolbar
+    }
     /** @type {HTMLButtonElement} */
     #startBtn
     /** @type {HTMLButtonElement} */
@@ -129,7 +134,7 @@ export default class TransportControls {
         this.#life.reset()
 
         this.#life.listen(this.#startBtn, 'click', () => {
-            serviceRegistry.seq.toggleStartStop()
+            this.#toolbar.serviceRegistry.seq.toggleStartStop()
         })
 
         this.#life.listen(this.#bpmToggle, 'click', () => {
@@ -141,7 +146,7 @@ export default class TransportControls {
             this.#bpmValue.textContent = String(bpm)
             this.#bpmToggle.textContent = String(bpm)
             this.#bpmOverride = bpm
-            serviceRegistry.seq?.setBpm(bpm)
+            this.#toolbar.serviceRegistry.seq?.setBpm(bpm)
             playbackEvents.emit(EVENTS.BPM_CHANGE, bpm)
         })
 
@@ -150,8 +155,8 @@ export default class TransportControls {
             if (isNaN(val)) return
             const pattern = appState.selectedPattern
             if (!pattern) return
-            serviceRegistry.cmd.setPatternBeatCount(pattern, val)
-            serviceRegistry.cmd.resetPage()
+            this.#toolbar.serviceRegistry.cmd.setPatternBeatCount(pattern, val)
+            this.#toolbar.serviceRegistry.cmd.resetPage()
             emitPageChanged()
         })
     }

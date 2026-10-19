@@ -1,7 +1,6 @@
 // src/ui/output_panel/master_section.js
 // Master volume + pre-gain knobs for the output panel.
 
-import { serviceRegistry } from '../../state/service_registry.js'
 import { OrKnob } from '../components/or_knob.js'
 import { formatSignedDb } from '../components/ui_utils.js'
 
@@ -39,7 +38,7 @@ export default class MasterSection {
             value: 1,
             format: (v) => v.toFixed(2),
             onChange: (v) => {
-                serviceRegistry.audioEngine?.mixer?.setMasterBus({ master: v })
+                this.#editor.serviceRegistry.audioEngine?.mixer?.setMasterBus({ master: v })
                 this.#editor.persistMaster('volume', v)
             },
         })
@@ -59,7 +58,7 @@ export default class MasterSection {
             format: formatSignedDb,
             unit: 'dB',
             onChange: (v) => {
-                serviceRegistry.audioEngine?.mixer?.setMasterBus({ preGain: v })
+                this.#editor.serviceRegistry.audioEngine?.mixer?.setMasterBus({ preGain: v })
                 this.#editor.persistMaster('preGain', v)
             },
         })

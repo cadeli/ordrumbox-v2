@@ -36,13 +36,13 @@ import { serviceRegistry } from '../state/service_registry.js'
  * }}
  */
 export function createAndInitPanels() {
-    const toolbar = new Toolbar()
+    const toolbar = new Toolbar({ serviceRegistry })
     const patternPanel = new PatternPanel()
     const pianoRollPanel = new PianoRollPanel()
     const noteEditor = new NoteEditor()
     const trackEditor = new TrackEditor()
     const toolsPanel = new ToolsPanel()
-    const outputPanel = new OutputPanel()
+    const outputPanel = new OutputPanel({ serviceRegistry })
     const aboutPanel = new AboutPanel()
     const drumkitManager = new DrumkitManager()
     const songPanel = new SongPanel()

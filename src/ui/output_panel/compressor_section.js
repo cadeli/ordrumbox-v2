@@ -1,7 +1,6 @@
 // src/ui/output_panel/compressor_section.js
 // Compressor knobs, bypass toggle and transfer-curve plot.
 
-import { serviceRegistry } from '../../state/service_registry.js'
 import { OrKnob } from '../components/or_knob.js'
 import { color } from '../theme.js'
 
@@ -78,7 +77,7 @@ export default class CompressorSection {
         this.#compBypassBtn.addEventListener('click', () => {
             this.#compBypass = !this.#compBypass
             this.#compBypassBtn.classList.toggle('active', !this.#compBypass)
-            serviceRegistry.audioEngine?.mixer?.setMasterBus({ bypass: this.#compBypass })
+            this.#editor.serviceRegistry.audioEngine?.mixer?.setMasterBus({ bypass: this.#compBypass })
             this.#editor.persistMaster('compBypass', this.#compBypass)
             this.drawCompCurve()
         })
@@ -114,7 +113,7 @@ export default class CompressorSection {
                 format: (v) => (p.step < 1 ? parseFloat(v.toFixed(3)) : Math.round(v)),
                 unit: p.unit ?? '',
                 onChange: (v) => {
-                    serviceRegistry.audioEngine?.mixer?.setMasterBus({ [p.key]: v })
+                    this.#editor.serviceRegistry.audioEngine?.mixer?.setMasterBus({ [p.key]: v })
                     this.#editor.persistMaster(p.key, v)
                     if (p.key === 'threshold' || p.key === 'ratio' || p.key === 'knee' || p.key === 'makeup') {
                         this.drawCompCurve()

@@ -17,14 +17,20 @@ export default class OutputPanel extends BasePanel {
     #filters
     #spectrum
     #saveTimer = null
+    #serviceRegistry
 
-    constructor() {
+    constructor({ serviceRegistry: sr = serviceRegistry } = {}) {
         super('output-panel')
+        this.#serviceRegistry = sr
         this.canvas = null
         this.#master = new MasterSection(this)
         this.#compressor = new CompressorSection(this)
         this.#filters = new FiltersSection(this)
         this.#spectrum = new SpectrumSection(this)
+    }
+
+    get serviceRegistry() {
+        return this.#serviceRegistry
     }
 
     get canvas() {
@@ -63,7 +69,7 @@ export default class OutputPanel extends BasePanel {
         soundRegistry.settings.master[key] = value
         if (this.#saveTimer) clearTimeout(this.#saveTimer)
         this.#saveTimer = setTimeout(() => {
-            serviceRegistry.resourcesLoader?.saveSettings?.()
+            this.#serviceRegistry.resourcesLoader?.saveSettings?.()
         }, 500)
     }
 

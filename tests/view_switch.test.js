@@ -31,7 +31,7 @@ describe('ViewSwitch', () => {
 
     beforeEach(() => {
         vi.clearAllMocks()
-        vs = new ViewSwitch()
+        vs = new ViewSwitch({ serviceRegistry })
     })
 
     describe('createDOM()', () => {

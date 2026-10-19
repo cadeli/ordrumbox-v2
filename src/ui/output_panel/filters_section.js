@@ -1,7 +1,6 @@
 // src/ui/output_panel/filters_section.js
 // Low-cut / high-cut filter sliders for the output panel.
 
-import { serviceRegistry } from '../../state/service_registry.js'
 import { MASTER_BUS_DEFAULTS } from '../../core/constants.js'
 import { OrSlider } from '../components/or_slider.js'
 
@@ -75,7 +74,7 @@ export default class FiltersSection {
     }
 
     pushFilters() {
-        serviceRegistry.audioEngine?.mixer?.setMasterBus({
+        this.#editor.serviceRegistry.audioEngine?.mixer?.setMasterBus({
             lowcut: this.#lowcutVal,
             hicut: this.#hicutVal,
         })

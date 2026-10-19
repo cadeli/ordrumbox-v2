@@ -9,8 +9,11 @@ import { applyLogSearchParams, exposeLoggerOnWindow } from '../core/log_config.j
 applyLogSearchParams()
 exposeLoggerOnWindow()
 
-serviceRegistry.cmd = new Commander()
 serviceRegistry.resourcesLoader = new ResourcesLoader()
+serviceRegistry.history = await getHistoryService()
+serviceRegistry.cmd = new Commander({
+    history: serviceRegistry.history,
+    persistPatterns: () => serviceRegistry.resourcesLoader?.persistPatterns?.(),
+})
 serviceRegistry.seq = new Sequencer()
 serviceRegistry.flatNotes = flatNotesService
-serviceRegistry.history = await getHistoryService()

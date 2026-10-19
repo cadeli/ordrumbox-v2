@@ -1,7 +1,6 @@
 // src/ui/output_panel/spectrum_section.js
 // Spectrum analyzer animation loop + drawing.
 
-import { serviceRegistry } from '../../state/service_registry.js'
 import { reportUserError } from '../../core/notify.js'
 import { color, rgba } from '../theme.js'
 
@@ -51,7 +50,7 @@ export default class SpectrumSection {
         if (!this.#bgColor) {
             this.#bgColor = color('scope-bg')
         }
-        const data = serviceRegistry.audioEngine?.getAnalyserData?.()
+        const data = this.#editor.serviceRegistry.audioEngine?.getAnalyserData?.()
 
         ctx.fillStyle = this.#bgColor
         ctx.fillRect(0, 0, w, h)

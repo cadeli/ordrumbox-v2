@@ -1,7 +1,6 @@
 // src/ui/toolbar/view_switch.js
 // View switch: view buttons, generation buttons, undo/redo.
 
-import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/event_bus.js'
 import { EVENTS } from '../../core/events.js'
 import { Lifecycle } from '../../core/lifecycle.js'
@@ -10,6 +9,12 @@ import patternAutoGen from '../../logic/services/pattern_auto_gen.js'
 export default class ViewSwitch {
     /** Owns every listener bound through #life — released by destroy(). */
     #life = new Lifecycle()
+    #toolbar
+
+    /** @param {import('../toolbar.js').default} toolbar */
+    constructor(toolbar) {
+        this.#toolbar = toolbar
+    }
     /** @type {HTMLButtonElement} */
     #drumBtn
     /** @type {HTMLButtonElement} */
@@ -194,10 +199,10 @@ export default class ViewSwitch {
         })
 
         this.#life.listen(this.#undoBtn, 'click', () => {
-            serviceRegistry.history?.undo()
+            this.#toolbar.serviceRegistry.history?.undo()
         })
         this.#life.listen(this.#redoBtn, 'click', () => {
-            serviceRegistry.history?.redo()
+            this.#toolbar.serviceRegistry.history?.redo()
         })
 
         // Generation orchestration (undo transaction, track creation, event

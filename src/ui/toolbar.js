@@ -34,16 +34,22 @@ export default class Toolbar {
     #ro
     #overflowTimer
     #checkOverflow
+    #serviceRegistry
 
-        constructor() {
+    constructor({ serviceRegistry: sr = serviceRegistry } = {}) {
         this.container = null
+        this.#serviceRegistry = sr
 
-        this.#transport = new TransportControls()
+        this.#transport = new TransportControls(this)
         this.#patternNav = new PatternNav()
-        this.#viewSwitch = new ViewSwitch()
+        this.#viewSwitch = new ViewSwitch(this)
         this.#overflow = new OverflowMenu()
         this.#nextUndoDesc = null
         this.#nextRedoDesc = null
+    }
+
+    get serviceRegistry() {
+        return this.#serviceRegistry
     }
 
     // ── Read-only accessors on the sections ────────────────────────────────
@@ -217,9 +223,9 @@ export default class Toolbar {
 
     /** Reads the model once, then hands each section what it renders. */
     sync() {
-        const transport = serviceRegistry.transport
+        const transport = this.#serviceRegistry.transport
         const pat = appState.selectedPattern
-        const history = serviceRegistry.history
+        const history = this.#serviceRegistry.history
         const tracks = pat ? getTracksArray(pat) : []
 
         this.#transport.sync({
@@ -261,10 +267,10 @@ export default class Toolbar {
     #handleKeyboard(e) {
         if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
             e.preventDefault()
-            serviceRegistry.history?.undo()
+            this.#serviceRegistry.history?.undo()
         } else if ((e.ctrlKey || e.metaKey) && ((e.shiftKey && e.key === 'z') || e.key === 'y')) {
             e.preventDefault()
-            serviceRegistry.history?.redo()
+            this.#serviceRegistry.history?.redo()
         }
     }
 

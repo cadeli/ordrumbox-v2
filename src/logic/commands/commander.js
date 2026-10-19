@@ -90,6 +90,7 @@ export default class Commander {
     ]
 
     #history
+    #persistPatterns
     #suppressRecord
     #genSnapshot
     #coalesceIds = new WeakMap()
@@ -100,8 +101,9 @@ export default class Commander {
     #songs
     #selection
 
-    constructor() {
-        this.#history = null
+    constructor({ history = null, persistPatterns = null } = {}) {
+        this.#history = history
+        this.#persistPatterns = persistPatterns
         this.#suppressRecord = false
 
         this.#notes = new NoteCommands(this)
@@ -309,7 +311,11 @@ export default class Commander {
     }
 
     persist = () => {
-        serviceRegistry.resourcesLoader?.persistPatterns?.()
+        if (this.#persistPatterns) {
+            this.#persistPatterns()
+        } else {
+            serviceRegistry.resourcesLoader?.persistPatterns?.()
+        }
     }
 
     incrementPatternVersionByTrack(track) {
