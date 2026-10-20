@@ -1417,24 +1417,12 @@ body {
     pointer-events: none;
     z-index: var(--z-content);
 }
-.pp-pr-note.pp-pr-trig-fixed::after,
-.pp-pr-note.pp-pr-trig-rand::after {
-    display: none;
-}
 .pp-pr-ghost {
     position: absolute;
     border-radius: 2px;
     pointer-events: none;
     z-index: var(--z-content);
     opacity: 0.6;
-}
-.pp-pr-ghost-retrigger {
-    background: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
-}
-.pp-pr-ghost-euclidean {
-    background: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
 }
 .pp-pr-playhead {
     position: absolute;
@@ -3141,8 +3129,6 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-/* .sg-del-btn / .sg-danger were removed with the redundant Rename and Delete
-   buttons: .sg-del-btn was never used, .sg-danger only styled that Delete. */
 .sg-modal-overlay {
     position: fixed;
     inset: 0;
