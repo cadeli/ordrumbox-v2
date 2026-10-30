@@ -63,6 +63,11 @@ export default class SongStructure {
 
     static resolveGenreFromTags = (tags) => {
         if (!tags) return null
+        // A pattern's tags are a list: the first one naming a known style is its genre.
+        if (Array.isArray(tags)) {
+            const known = tags.map((tag) => String(tag).toLowerCase().trim()).find((tag) => SongStructure.STYLE_TO_GENRE[tag])
+            return known ? SongStructure.STYLE_TO_GENRE[known] : null
+        }
         const style =
             typeof tags === 'string'
                 ? tags.toLowerCase()

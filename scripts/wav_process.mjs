@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
 const KITS_DIR = path.join(ROOT, 'assets', 'kits')
-const DRUMKITS_JSON = path.join(ROOT, 'assets', 'data', 'drumkits.json')
+const DRUMKITS_JSON = path.join(ROOT, 'assets', 'data', 'kits.json')
 
 const TARGET_PEAK_DB = -3
 const TARGET_PEAK_LINEAR = Math.pow(10, TARGET_PEAK_DB / 20)
@@ -169,8 +169,8 @@ function main() {
 
     const wavFiles = []
     for (const kit of drumkits) {
-        for (const inst of kit.instruments) {
-            wavFiles.push({ kit, inst, wavPath: path.join(KITS_DIR, inst.url) })
+        for (const inst of kit.samples) {
+            wavFiles.push({ kit, inst, wavPath: path.join(KITS_DIR, inst.path) })
         }
     }
 

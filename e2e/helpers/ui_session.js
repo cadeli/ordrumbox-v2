@@ -5,6 +5,7 @@
 
 import { expect } from '@playwright/test'
 import { NOTE_DEFAULTS } from '../../src/core/note_schema.js'
+import { patternFromFile } from '../../src/patterns/file_format.js'
 
 /**
  * Attaches a page dialog handler backed by a FIFO queue.
@@ -244,7 +245,8 @@ export async function waitForPatternSoundsLoaded(page, patternIdx) {
  * so notes are decoded to objects before the fields are removed.
  */
 export function stripForComparison(data) {
-    const clone = structuredClone(data)
+    // back to the runtime names, which the keys and defaults used below are in
+    const clone = patternFromFile(structuredClone(data))
     const noteKeys = [...EXPORT_DROPPED_NOTE_KEYS]
     const tracks = Array.isArray(clone.tracks) ? clone.tracks : Object.values(clone.tracks ?? {})
     for (const track of tracks) {

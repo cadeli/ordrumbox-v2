@@ -9,10 +9,10 @@ const PRE_CACHE_ASSETS = [
     './manifest.json',
     './logo.png',
     './favicon.ico',
-    './assets/data/drumkits.json',
-    './assets/data/song.json',
+    './assets/data/kits.json',
+    './assets/data/library.json',
     './assets/data/scales.json',
-    './assets/data/generated_sounds.json',
+    './assets/data/synth_presets.json',
 ]
 
 self.addEventListener('install', (event) => {

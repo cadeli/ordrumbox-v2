@@ -3,6 +3,7 @@ import { playbackEvents } from '../../state/event_bus.js'
 import { getAutoAssignService } from '../../state/service_loader.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { instrumentsManager } from './instruments_manager/index.js'
+import { kitFromFile, kitToFile } from '../../patterns/file_format.js'
 import { analyzeSample, clearAnalysisCache } from '../../audio/sample_analyzer.js'
 import { logger } from '../../core/logger.js'
 import { EVENTS } from '../../core/events.js'
@@ -43,7 +44,7 @@ export class DrumkitService {
         return soundRegistry.drumkitList[appState.selectedDrumkitIdx]?.name ?? null
     }
 
-    /** @returns {{name: string, instruments: import('../../state/sound_registry.js').SoundEntry[]}|null} */
+    /** @returns {{name: string, samples: object[]}|null} the current kit as a file holds it */
     exportCurrentKit() {
         const name = this.currentKitName()
         if (!name) return null
@@ -63,11 +64,12 @@ export class DrumkitService {
 
         // no version field: restoreDrumkit validates the shape it needs, so a
         // stored number could never gate anything
-        return { name, instruments }
+        return kitToFile({ name, instruments })
     }
 
-    /** @param {Record<string, unknown>} data @returns {Promise<string>} */
-    async restoreDrumkit(data) {
+    /** @param {Record<string, unknown>} raw @returns {Promise<string>} */
+    async restoreDrumkit(raw) {
+        const data = kitFromFile(raw)
         if (!data || typeof data.name !== 'string' || !Array.isArray(data.instruments)) {
             throw new Error('Missing drumkit name or instruments')
         }

@@ -1,11 +1,10 @@
 {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
+  "id": "techno-beat",
   "name": "Techno Beat",
   "tracks": [
     {
       "name": "KICK",
-      "loopAtStep": 16,
+      "loopLength": 16,
       "noteKeys": [
         "velocity",
         "beat"
@@ -30,7 +29,7 @@
     },
     {
       "name": "SNARE",
-      "loopAtStep": 16,
+      "loopLength": 16,
       "pan": 0.3,
       "noteKeys": [
         "velocity",
@@ -49,11 +48,11 @@
     },
     {
       "name": "CHH",
-      "loopAtStep": 16,
+      "loopLength": 16,
       "pan": -0.3,
       "noteKeys": [
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [],
@@ -116,6 +115,5 @@
         ]
       ]
     }
-  ],
-  "id": "techno-beat"
+  ]
 }

@@ -85,7 +85,7 @@ test('the arrangement listbox switches the selected arrangement', async ({ page 
     const optionCount = await sel.locator('option').count()
     expect(optionCount, 'the library ships at least one arrangement').toBeGreaterThanOrEqual(1)
 
-    // The shipped song.json carries a second arrangement — switch to it, then back.
+    // The shipped library.json carries a second arrangement — switch to it, then back.
     if (optionCount >= 2) {
         const names = await page.evaluate(() => window.__e2e.appState.songs.map((s) => s.name))
 

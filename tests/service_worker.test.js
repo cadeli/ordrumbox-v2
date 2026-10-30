@@ -135,10 +135,10 @@ describe('service worker (sw.js)', () => {
             `${ORIGIN}/manifest.json`,
             `${ORIGIN}/logo.png`,
             `${ORIGIN}/favicon.ico`,
-            `${ORIGIN}/assets/data/drumkits.json`,
-            `${ORIGIN}/assets/data/song.json`,
+            `${ORIGIN}/assets/data/kits.json`,
+            `${ORIGIN}/assets/data/library.json`,
             `${ORIGIN}/assets/data/scales.json`,
-            `${ORIGIN}/assets/data/generated_sounds.json`,
+            `${ORIGIN}/assets/data/synth_presets.json`,
         ]
         expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
             './',
@@ -146,10 +146,10 @@ describe('service worker (sw.js)', () => {
             './manifest.json',
             './logo.png',
             './favicon.ico',
-            './assets/data/drumkits.json',
-            './assets/data/song.json',
+            './assets/data/kits.json',
+            './assets/data/library.json',
             './assets/data/scales.json',
-            './assets/data/generated_sounds.json',
+            './assets/data/synth_presets.json',
         ])
         expect(env.caches.open.mock.calls.every(([name]) => name === CACHE_NAME)).toBe(true)
 
@@ -198,7 +198,7 @@ describe('service worker (sw.js)', () => {
     it('prefers the network for JSON data even when cached', async () => {
         const fetchMock = vi.fn(async () => makeResponse('fresh data'))
         env = loadServiceWorker(fetchMock)
-        const request = makeRequest('assets/data/drumkits.json')
+        const request = makeRequest('assets/data/kits.json')
         await seedCache(env, request, makeResponse('stale data'))
 
         const { response } = await dispatchFetch(env, request)

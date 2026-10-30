@@ -1,13 +1,18 @@
 {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
+  "id": "rock8b",
   "name": "Rock8B",
+  "beatCount": 16,
   "description": "Rock groove measures 5-7, break on measure 8: stop on beats 1-2 (crash+kick accent), snare/tom fill on beats 3-4",
+  "tags": [
+    "rock",
+    "drums",
+    "fill"
+  ],
   "tracks": [
     {
       "name": "CRASH",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": 1,
       "noteKeys": [
         "velocity",
@@ -26,11 +31,11 @@
     {
       "name": "KICK",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -89,12 +94,12 @@
     {
       "name": "SNARE",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": 0.3,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -155,12 +160,12 @@
     {
       "name": "CHH",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": -0.3,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [],
@@ -268,12 +273,12 @@
     {
       "name": "OHH",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": -0.2,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -286,11 +291,11 @@
     {
       "name": "MTOM",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -307,11 +312,11 @@
     {
       "name": "LO_TOM",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -326,12 +331,5 @@
         ]
       ]
     }
-  ],
-  "beatCount": 16,
-  "id": "rock8b",
-  "tags": [
-    "rock",
-    "drums",
-    "fill"
   ]
 }

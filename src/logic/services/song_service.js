@@ -4,6 +4,7 @@ import { idbGet, idbPut, idbKeys } from '../../core/idb.js'
 import { logger } from '../../core/logger.js'
 import { clamp } from '../../core/numbers.js'
 import { normalizeSongs } from '../../model/song_schema.js'
+import { libraryFromFile, libraryToFile } from '../../patterns/file_format.js'
 import { showToast } from '../../core/notify.js'
 
 const SONGS_STORE = 'songs'
@@ -144,7 +145,7 @@ export class SongService {
         data.exportedAt = Date.now()
         const safeName = songName.replace(/[^a-zA-Z0-9_-]/g, '_')
         logger.info('SongService', `Song "${songName}" exported`)
-        return { data, filename: `${safeName}.odbox` }
+        return { data: libraryToFile(data), filename: `${safeName}.odbox` }
     }
 
     /**
@@ -153,7 +154,7 @@ export class SongService {
      * @returns {SongRecord|null} parsed data or null if invalid
      */
     parseImportedFile(text) {
-        const data = JSON.parse(text)
+        const data = libraryFromFile(JSON.parse(text))
         if (!data?.patterns || !Array.isArray(data.patterns)) {
             logger.warn('SongService', 'Imported file has no valid patterns array')
             return null

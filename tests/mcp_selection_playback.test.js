@@ -23,7 +23,7 @@ describe('MCP selectPattern', () => {
     beforeEach(async () => {
         dataDir = await mkdtemp(join(tmpdir(), 'ordrumbox-mcp-select-'))
         process.env.ORDRUMBOX_MCP_DATA_DIR = dataDir
-        await writeFile(join(dataDir, 'song.json'), JSON.stringify(LIBRARY), 'utf8')
+        await writeFile(join(dataDir, 'library.json'), JSON.stringify(LIBRARY), 'utf8')
         appState.reset()
         serviceRegistry.reset()
         resetLibraryCache()

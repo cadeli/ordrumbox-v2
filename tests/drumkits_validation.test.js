@@ -5,17 +5,17 @@ import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..')
-const DRUMKITS_JSON = join(PROJECT_ROOT, 'assets/data/drumkits.json')
+const DRUMKITS_JSON = join(PROJECT_ROOT, 'assets/data/kits.json')
 const KITS_DIR = join(PROJECT_ROOT, 'assets/kits')
 
-describe('drumkits.json validation', () => {
+describe('kits.json validation', () => {
     let drumkits
 
     beforeAll(() => {
         drumkits = JSON.parse(readFileSync(DRUMKITS_JSON, 'utf-8'))
     })
 
-    it('drumkits.json exists and is valid JSON', () => {
+    it('kits.json exists and is valid JSON', () => {
         expect(existsSync(DRUMKITS_JSON)).toBe(true)
         expect(Array.isArray(drumkits)).toBe(true)
         expect(drumkits.length).toBeGreaterThan(0)
@@ -26,18 +26,18 @@ describe('drumkits.json validation', () => {
             expect(kit.name, `kit[${i}].name`).toBeDefined()
             expect(typeof kit.name, `kit[${i}].name type`).toBe('string')
             expect(kit.name.length, `kit[${i}].name empty`).toBeGreaterThan(0)
-            expect(Array.isArray(kit.instruments), `kit[${i}].instruments`).toBe(true)
-            expect(kit.instruments.length, `kit[${i}].instruments empty`).toBeGreaterThan(0)
+            expect(Array.isArray(kit.samples), `kit[${i}].samples`).toBe(true)
+            expect(kit.samples.length, `kit[${i}].samples empty`).toBeGreaterThan(0)
         })
     })
 
     it('each instrument has required fields', () => {
         drumkits.forEach((kit, ki) => {
-            kit.instruments.forEach((inst, ii) => {
-                expect(inst.key, `kit[${ki}].instruments[${ii}].key`).toBeDefined()
-                expect(typeof inst.key, `kit[${ki}].instruments[${ii}].key type`).toBe('string')
-                expect(inst.url, `kit[${ki}].instruments[${ii}].url`).toBeDefined()
-                expect(typeof inst.url, `kit[${ki}].instruments[${ii}].url type`).toBe('string')
+            kit.samples.forEach((inst, ii) => {
+                expect(inst.key, `kit[${ki}].samples[${ii}].key`).toBeDefined()
+                expect(typeof inst.key, `kit[${ki}].samples[${ii}].key type`).toBe('string')
+                expect(inst.path, `kit[${ki}].samples[${ii}].url`).toBeDefined()
+                expect(typeof inst.path, `kit[${ki}].samples[${ii}].url type`).toBe('string')
             })
         })
     })
@@ -50,7 +50,7 @@ describe('drumkits.json validation', () => {
 
     it('no duplicate keys within a kit', () => {
         drumkits.forEach((kit) => {
-            const keys = kit.instruments.map((i) => i.key.toUpperCase())
+            const keys = kit.samples.map((i) => i.key.toUpperCase())
             const unique = new Set(keys)
             expect(keys.length, `kit "${kit.name}" has duplicate keys`).toBe(unique.size)
         })
@@ -59,10 +59,10 @@ describe('drumkits.json validation', () => {
     it('all referenced WAV files exist on disk', () => {
         const missing = []
         drumkits.forEach((kit) => {
-            kit.instruments.forEach((inst) => {
-                const filePath = join(KITS_DIR, inst.url)
+            kit.samples.forEach((inst) => {
+                const filePath = join(KITS_DIR, inst.path)
                 if (!existsSync(filePath)) {
-                    missing.push(`${kit.name}/${inst.key} -> ${inst.url}`)
+                    missing.push(`${kit.name}/${inst.key} -> ${inst.path}`)
                 }
             })
         })
@@ -73,12 +73,12 @@ describe('drumkits.json validation', () => {
         const urlMap = new Map()
         const conflicts = []
         drumkits.forEach((kit) => {
-            kit.instruments.forEach((inst) => {
+            kit.samples.forEach((inst) => {
                 const key = `${kit.name}:${inst.key.toUpperCase()}`
                 if (urlMap.has(key)) {
                     conflicts.push(`${key} referenced twice`)
                 }
-                urlMap.set(key, inst.url)
+                urlMap.set(key, inst.path)
             })
         })
         expect(conflicts.length).toBe(0)
@@ -87,12 +87,12 @@ describe('drumkits.json validation', () => {
     it('all WAV files are valid (>0 bytes)', () => {
         const empty = []
         drumkits.forEach((kit) => {
-            kit.instruments.forEach((inst) => {
-                const filePath = join(KITS_DIR, inst.url)
+            kit.samples.forEach((inst) => {
+                const filePath = join(KITS_DIR, inst.path)
                 if (existsSync(filePath)) {
                     const stats = statSync(filePath)
                     if (stats.size === 0) {
-                        empty.push(`${kit.name}/${inst.key} -> ${inst.url}`)
+                        empty.push(`${kit.name}/${inst.key} -> ${inst.path}`)
                     }
                 }
             })

@@ -1,13 +1,19 @@
 {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
+  "id": "techno-bass-4m",
   "name": "Techno Bass 4M",
+  "beatCount": 16,
+  "bpm": 130,
   "description": "4 measures (16 beats) of techno at 130 BPM: four-on-the-floor kick, driving 8th-note acid bass in A minor with a filter sweep, offbeat open hats and 16th closed hats.",
+  "tags": [
+    "techno",
+    "bass",
+    "acid"
+  ],
   "tracks": [
     {
       "name": "KICK",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "noteKeys": [
         "velocity",
         "beat"
@@ -81,11 +87,11 @@
     {
       "name": "BASS",
       "beatCount": 16,
-      "loopAtStep": 64,
-      "velocity": 0.95,
+      "loopLength": 64,
+      "volume": 0.95,
       "mono": true,
       "filterType": "lowpass",
-      "filterFreqLfo": {
+      "filterCutoffLfo": {
         "type": "sine",
         "freq": 0.5,
         "min": 300,
@@ -94,7 +100,7 @@
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep",
+        "step",
         "pitch"
       ],
       "notes": [
@@ -291,7 +297,7 @@
     {
       "name": "CLAP",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": -0.4,
       "noteKeys": [
         "velocity",
@@ -335,12 +341,12 @@
     {
       "name": "OHH",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": -0.2,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -428,12 +434,12 @@
     {
       "name": "CHH",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": -0.3,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -598,13 +604,5 @@
         ]
       ]
     }
-  ],
-  "bpm": 130,
-  "beatCount": 16,
-  "id": "techno-bass-4m",
-  "tags": [
-    "techno",
-    "bass",
-    "acid"
   ]
 }

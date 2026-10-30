@@ -1,13 +1,17 @@
 {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
+  "id": "rock8a",
   "name": "Rock8A",
+  "beatCount": 16,
   "description": "Rock groove, measures 1-4: kick on 1/3/3&, snare backbeat, 8th hats, crash on downbeat",
+  "tags": [
+    "rock",
+    "drums"
+  ],
   "tracks": [
     {
       "name": "CRASH",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": 1,
       "noteKeys": [
         "velocity"
@@ -21,11 +25,11 @@
     {
       "name": "KICK",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -89,12 +93,12 @@
     {
       "name": "SNARE",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": 0.3,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -144,12 +148,12 @@
     {
       "name": "CHH",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": -0.3,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [],
@@ -288,12 +292,12 @@
     {
       "name": "OHH",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": -0.2,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -308,11 +312,5 @@
         ]
       ]
     }
-  ],
-  "beatCount": 16,
-  "id": "rock8a",
-  "tags": [
-    "rock",
-    "drums"
   ]
 }

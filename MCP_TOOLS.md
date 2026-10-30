@@ -28,7 +28,7 @@ Creates a new empty pattern.
 }
 ```
 
-`filePath` is always an **absolute** path. The file name is sanitized: lowercased and every run of non-alphanumerics becomes `_` (`My Pattern` → `my_pattern.json`). The pattern is also appended to the `patterns` array of `assets/data/song.json`.
+`filePath` is always an **absolute** path. The file name is sanitized: lowercased and every run of non-alphanumerics becomes `_` (`My Pattern` → `my_pattern.json`). The pattern is also appended to the `patterns` array of `assets/data/library.json`.
 
 ---
 
@@ -473,7 +473,7 @@ Use this to get valid track names for MCP requests.
 
 ### listPatterns
 
-Returns the list of all patterns from `assets/data/song.json` (the `patterns` array).
+Returns the list of all patterns from `assets/data/library.json` (the `patterns` array).
 
 **Input:** `{}`
 
@@ -549,7 +549,7 @@ Samples are resolved relative to `assets/kits/`.
 
 ## 6. Arrangements (Songs)
 
-An **arrangement** (a "song") is an ordered list of **clips** placing patterns on a measure timeline. Arrangements live in the `songs` array of `song.json`, next to the `patterns` library.
+An **arrangement** (a "song") is an ordered list of **clips** placing patterns on a measure timeline. Arrangements live in the `songs` array of `library.json`, next to the `patterns` library.
 
 **Measures, not steps:** a measure holds four 4/4 beats, 0-indexed (`startMeasure: 0` is the first measure). One clip lasts `measureCount` measures — by default as long as the pattern itself (`beatCount / 4`), so an 8-beat pattern lasts 2 measures and a 12-beat one lasts 3.
 
@@ -688,7 +688,7 @@ Removes clips from an arrangement. Give `startMeasure`, `patternName`, or both.
 2. `createArrangement` with its `clips` list for the structure, or `createArrangement` followed by `addPatternToArrangement` calls
 3. `listArrangements` to check the result, `removePatternFromArrangement` to fix a placement
 
-Each arrangement write rewrites the `songs` array of `song.json` and leaves the pattern library untouched.
+Each arrangement write rewrites the `songs` array of `library.json` and leaves the pattern library untouched.
 
 ---
 

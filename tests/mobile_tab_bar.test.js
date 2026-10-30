@@ -104,7 +104,7 @@ describe('Mobile tab bar', () => {
 
         patternPanel = new PatternPanel()
         patternPanel.init()
-        trackEditor = new TrackEditor()
+        trackEditor = new TrackEditor({ serviceRegistry })
         trackEditor.init()
         // Attach synth panel to app-content
         document.getElementById('app-content').appendChild(trackEditor.synthEditor.panel)

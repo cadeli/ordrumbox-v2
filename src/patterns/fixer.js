@@ -74,8 +74,6 @@ export function fixTrackDefaults(track) {
 }
 
 export function fixPattern(pattern, takenIds = new Set()) {
-    pattern.application ??= 'online-ordrumbox'
-    pattern.url ??= 'https://www.ordrumbox.com'
     // Every pattern that reaches the app passes through here, so this is the one
     // place that can guarantee a stable id. Existing ids are never rewritten.
     ensurePatternId(pattern, takenIds)

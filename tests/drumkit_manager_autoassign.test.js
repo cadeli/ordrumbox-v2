@@ -91,7 +91,7 @@ describe('DrumkitManager instrument mapping', () => {
         const exported = drumkitService.exportCurrentKit()
         expect(exported).toMatchObject({
             name: 'custom',
-            instruments: [{ url: SAMPLE_ID, key: 'CLAP', gainDb: -3.5, tune: 2, decay: 750 }],
+            samples: [{ path: SAMPLE_ID, key: 'CLAP', gainDb: -3.5, transpose: 2, decay: 750 }],
         })
 
         soundRegistry.sounds[SAMPLE_ID].key = 'KICK'

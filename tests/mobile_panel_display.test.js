@@ -118,7 +118,7 @@ function setupApp(viewport) {
     const pp = new PatternPanel()
     pp.init()
 
-    const trackEditor = new TrackEditor()
+    const trackEditor = new TrackEditor({ serviceRegistry })
     trackEditor.init()
 
     document.getElementById('app-content')?.remove()

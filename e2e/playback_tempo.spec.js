@@ -48,7 +48,9 @@ test.describe('Playback tempo follows the visible view', () => {
         await page.locator('button.tb-start').click()
         // same path as the BPM slider while playing
         await page.evaluate(() => window.__e2e.serviceRegistry.seq.setBpm(140))
-        await expect.poll(async () => (await transportState(page)).tick).toBeGreaterThan(0)
+        // tick is 1 on a transport that never ran and start() sets it back to 0:
+        // only a tick past that has really been counted by the running transport
+        await expect.poll(async () => (await transportState(page)).tick).toBeGreaterThan(1)
         const before = await transportState(page)
         expect(before.bpm).toBe(140)
 

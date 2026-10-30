@@ -2,6 +2,7 @@ import { PATTERN_DEFAULTS } from '../model/pattern_schema.js'
 import { TRACK_DEFAULTS } from '../model/track_schema.js'
 import { getPanFromTrackName } from '../core/drum_taxonomy.js'
 import { NOTE_DEFAULTS, NOTE_RECALCULATED, detectUsedKeys, noteToObjectCompact } from '../core/note_schema.js'
+import { patternToFile } from './file_format.js'
 
 const ROUND_2D = new Set([
     'velocity',
@@ -118,13 +119,8 @@ export class Exporter {
         return cleaned
     }
 
-    /** @param {import('../model/pattern_schema.js').Pattern} pattern @returns {Partial<import('../model/pattern_schema.js').Pattern> & {application: string, url: string}} */
+    /** @param {import('../model/pattern_schema.js').Pattern} pattern @returns {Record<string, any>} the pattern as a file holds it */
     static export(pattern) {
-        const cleaned = this.cleanPattern(pattern)
-        return {
-            application: 'online-ordrumbox',
-            url: 'https://www.ordrumbox.com',
-            ...cleaned,
-        }
+        return patternToFile(this.cleanPattern(pattern))
     }
 }

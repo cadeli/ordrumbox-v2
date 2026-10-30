@@ -42,7 +42,7 @@ describe('Granular patternChange events', () => {
         appState.selectedPatternIdx = 0
         appState.currentPage = 0
 
-        cmd = new Commander()
+        cmd = new Commander({ registry: serviceRegistry })
         serviceRegistry.cmd = cmd
         serviceRegistry.seq = { setBpm: vi.fn() }
         serviceRegistry.flatNotes = { applyFlatNotes: (pat) => applyFlatNotes(pat) }

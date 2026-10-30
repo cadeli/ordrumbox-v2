@@ -524,7 +524,7 @@ describe('E2E Flow 6 — Export to JSON and roundtrip', () => {
         cmd.addNote(kick, 2, 0, 0)
 
         const exported = Exporter.export(pat)
-        expect(exported).toHaveProperty('application', 'online-ordrumbox')
+        expect(exported).not.toHaveProperty('application')
         expect(exported).toHaveProperty('name', 'JSON Export')
         expect(exported.tracks.length).toBe(1)
     })

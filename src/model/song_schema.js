@@ -6,7 +6,8 @@
 //
 // ## Format
 //
-// song.json is a pattern library shared by every arrangement:
+// library.json is a pattern library shared by every arrangement (shown here with
+// the runtime names; patterns/file_format.js holds the names on disk):
 //
 //     {
 //       infos:   { name, description, date },

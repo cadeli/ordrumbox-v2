@@ -116,24 +116,6 @@ describe('patternFixer - fixTrackDefaults', () => {
 })
 
 describe('patternFixer - fixPattern', () => {
-    it('adds metadata defaults', () => {
-        const pattern = { tracks: [] }
-        fixPattern(pattern)
-        expect(pattern.application).toBe('online-ordrumbox')
-        expect(pattern.url).toBe('https://www.ordrumbox.com')
-    })
-
-    it('preserves existing metadata', () => {
-        const pattern = {
-            application: 'my-app',
-            url: 'https://example.com',
-            tracks: [],
-        }
-        fixPattern(pattern)
-        expect(pattern.application).toBe('my-app')
-        expect(pattern.url).toBe('https://example.com')
-    })
-
     it('fixes all tracks', () => {
         const pattern = {
             tracks: [
@@ -169,7 +151,6 @@ describe('patternFixer - fixPatterns', () => {
         ]
         const fixed = fixPatterns(patterns)
         expect(fixed.length).toBe(2)
-        expect(fixed[0].application).toBe('online-ordrumbox')
         expect(fixed[1].name).toBe('B')
     })
 })

@@ -1,0 +1,919 @@
+[
+  {
+    "name": "real",
+    "info": " kit",
+    "desc": "recorded by mweb in the studio",
+    "samples": [
+      {
+        "displayName": "kick",
+        "key": "KICK",
+        "path": "real/kick.wav",
+        "peakDb": -3,
+        "rootMidi": 72,
+        "decay": 5000
+      },
+      {
+        "displayName": "snare",
+        "key": "SNARE",
+        "path": "real/snare.wav",
+        "peakDb": -3,
+        "rootMidi": 31,
+        "decay": 5000
+      },
+      {
+        "displayName": "tom",
+        "key": "TOM",
+        "path": "real/tom.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "rimshot",
+        "key": "CLAP",
+        "path": "real/rim.wav",
+        "peakDb": -3,
+        "rootMidi": 19,
+        "decay": 5000
+      },
+      {
+        "displayName": "cow",
+        "key": "COWBELL",
+        "path": "real/cow.wav",
+        "peakDb": -3,
+        "rootMidi": 62,
+        "decay": 5000
+      },
+      {
+        "displayName": "chh",
+        "key": "CHH",
+        "path": "real/chh.wav",
+        "peakDb": -3,
+        "rootMidi": 72,
+        "decay": 5000
+      },
+      {
+        "displayName": "ohh",
+        "key": "OHH",
+        "path": "real/ohh.wav",
+        "peakDb": -3,
+        "rootMidi": 67,
+        "decay": 5000
+      },
+      {
+        "displayName": "crash",
+        "key": "CRASH",
+        "path": "real/crash.wav",
+        "peakDb": -3,
+        "rootMidi": 72,
+        "decay": 5000
+      },
+      {
+        "displayName": "congas",
+        "key": "CONGAS",
+        "path": "real/congas.wav",
+        "peakDb": -3,
+        "rootMidi": 79,
+        "decay": 5000
+      },
+      {
+        "displayName": "low_congas",
+        "key": "LO_CONGAS",
+        "path": "real/low_congas.wav",
+        "peakDb": -3,
+        "rootMidi": 65,
+        "decay": 5000
+      },
+      {
+        "displayName": "bass-c2",
+        "key": "BASS",
+        "path": "real/bass-c2.wav",
+        "peakDb": -3,
+        "rootMidi": 36,
+        "decay": 5000
+      },
+      {
+        "displayName": "gtr-c4",
+        "key": "GUITAR",
+        "path": "real/gtr-c4.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      },
+      {
+        "displayName": "piano-c4",
+        "key": "PIANO",
+        "path": "real/piano-c4.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      },
+      {
+        "displayName": "synth-c3",
+        "key": "SYNTHLEAD",
+        "path": "real/synth-c3.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "brass-c4",
+        "key": "BRASS",
+        "path": "real/brass-c4.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      },
+      {
+        "displayName": "string-c3",
+        "key": "STRING",
+        "path": "real/string-c3.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "organ-c3",
+        "key": "ORGAN",
+        "path": "real/organ-c3.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "tambourine.wav",
+        "key": "TAMBOURINE",
+        "path": "real/tambourine.wav",
+        "peakDb": -3,
+        "rootMidi": 67,
+        "decay": 5000
+      }
+    ]
+  },
+  {
+    "name": "matt",
+    "info": "@9mattyeux kit",
+    "desc": "recorded by mweb using 70' Soundcraft table and NEVE 1073",
+    "samples": [
+      {
+        "displayName": "CHH",
+        "key": "CHH",
+        "path": "matt/CHH.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      },
+      {
+        "displayName": "SNAREH",
+        "key": "CLAP",
+        "path": "matt/SNARE_CL.wav",
+        "peakDb": -3,
+        "rootMidi": 55,
+        "decay": 5000
+      },
+      {
+        "displayName": "LOWTOM",
+        "key": "LO_TOM",
+        "path": "matt/LOW_TOM.wav",
+        "peakDb": -3,
+        "rootMidi": 43,
+        "decay": 5000
+      },
+      {
+        "displayName": "KICK",
+        "key": "KICK",
+        "path": "matt/KICK.wav",
+        "peakDb": -3,
+        "rootMidi": 72,
+        "decay": 5000
+      },
+      {
+        "displayName": "OHH",
+        "key": "OHH",
+        "path": "matt/OHH.wav",
+        "peakDb": -3,
+        "rootMidi": 67,
+        "decay": 5000
+      },
+      {
+        "displayName": "RIMSHOT",
+        "key": "RIMSHOT",
+        "path": "matt/RIMSHOT.wav",
+        "peakDb": -3,
+        "rootMidi": 43,
+        "decay": 5000
+      },
+      {
+        "displayName": "RIDE",
+        "key": "RIDE",
+        "path": "matt/RIDE.wav",
+        "peakDb": -3,
+        "rootMidi": 24,
+        "decay": 5000
+      },
+      {
+        "displayName": "CRASH",
+        "key": "CRASH",
+        "path": "matt/CRASH.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "SNARE",
+        "key": "SNARE",
+        "path": "matt/SNARE.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "TOM",
+        "key": "TOM",
+        "path": "matt/TOM.wav",
+        "peakDb": -3,
+        "rootMidi": 43,
+        "decay": 5000
+      }
+    ]
+  },
+  {
+    "name": "electro",
+    "info": "electro kit",
+    "desc": " by mweb layered classic electro drums ",
+    "samples": [
+      {
+        "displayName": "CHH",
+        "key": "CHH",
+        "path": "electro/chh.wav",
+        "peakDb": -3,
+        "rootMidi": 19,
+        "decay": 5000
+      },
+      {
+        "displayName": "CLAP",
+        "key": "CLAP",
+        "path": "electro/clap.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "RIDE",
+        "key": "RIDE",
+        "path": "electro/ride.wav",
+        "peakDb": -3,
+        "rootMidi": 55,
+        "decay": 5000
+      },
+      {
+        "displayName": "KICK",
+        "key": "KICK",
+        "path": "electro/kick.wav",
+        "peakDb": -3,
+        "rootMidi": 72,
+        "decay": 5000
+      },
+      {
+        "displayName": "OHH",
+        "key": "OHH",
+        "path": "electro/ohh.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "COWBELL",
+        "key": "COWBELL",
+        "path": "electro/cow.wav",
+        "peakDb": -3,
+        "rootMidi": 51,
+        "decay": 5000
+      },
+      {
+        "displayName": "SNARE",
+        "key": "SNARE",
+        "path": "electro/snare.wav",
+        "peakDb": -3,
+        "rootMidi": 55,
+        "decay": 5000
+      },
+      {
+        "displayName": "TOM",
+        "key": "TOM",
+        "path": "electro/tom.wav",
+        "peakDb": -3,
+        "rootMidi": 55,
+        "decay": 5000
+      },
+      {
+        "displayName": "BASS",
+        "key": "BASS",
+        "path": "electro/acid-bass-c2.wav",
+        "peakDb": -3,
+        "rootMidi": 36,
+        "decay": 5000
+      },
+      {
+        "displayName": "acid-synth-c4",
+        "key": "SYNTHLEAD",
+        "path": "electro/acid-synth-c4.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      },
+      {
+        "displayName": "RHODES",
+        "key": "PIANO",
+        "path": "electro/rhodes-c4.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      }
+    ]
+  },
+  {
+    "name": "open",
+    "info": "layered kit",
+    "desc": "This kit was generated using various layered accoustic drums",
+    "samples": [
+      {
+        "displayName": "CHH",
+        "key": "CHH",
+        "path": "open/CHH.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "CLAP",
+        "key": "CLAP",
+        "path": "open/CLAP.wav",
+        "peakDb": -3,
+        "rootMidi": 43,
+        "decay": 5000
+      },
+      {
+        "displayName": "CRASH",
+        "key": "CRASH",
+        "path": "open/CRASH.wav",
+        "peakDb": -3,
+        "rootMidi": 55,
+        "decay": 5000
+      },
+      {
+        "displayName": "KICK",
+        "key": "KICK",
+        "path": "open/KICK.wav",
+        "peakDb": -3,
+        "rootMidi": 31,
+        "decay": 5000
+      },
+      {
+        "displayName": "OHH",
+        "key": "OHH",
+        "path": "open/OHH.wav",
+        "peakDb": -3,
+        "rootMidi": 55,
+        "decay": 5000
+      },
+      {
+        "displayName": "RIMSHOT",
+        "key": "RIMSHOT",
+        "path": "open/RIMSHOT.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "SIDE",
+        "key": "SIDE",
+        "path": "open/SIDE.wav",
+        "peakDb": -3,
+        "rootMidi": 55,
+        "decay": 5000
+      },
+      {
+        "displayName": "SNARE",
+        "key": "SNARE",
+        "path": "open/SNARE.wav",
+        "peakDb": -3,
+        "rootMidi": 55,
+        "decay": 5000
+      },
+      {
+        "displayName": "TOM",
+        "key": "TOM",
+        "path": "open/TOM.wav",
+        "peakDb": -3,
+        "rootMidi": 43,
+        "decay": 5000
+      }
+    ]
+  },
+  {
+    "name": "ropen",
+    "info": "layered kit",
+    "desc": "This kit was generated using various layered accoustic drums",
+    "samples": [
+      {
+        "displayName": "CHH",
+        "key": "CHH",
+        "path": "ropen/CHH.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "CRASH2",
+        "key": "CRASH2",
+        "path": "ropen/CRASH2.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 500
+      },
+      {
+        "displayName": "CRASH",
+        "key": "CRASH",
+        "path": "ropen/CRASH.wav",
+        "peakDb": -3,
+        "rootMidi": 72,
+        "decay": 5000
+      },
+      {
+        "displayName": "KICK",
+        "key": "KICK",
+        "path": "ropen/KICK.wav",
+        "peakDb": -3,
+        "rootMidi": 31,
+        "decay": 5000
+      },
+      {
+        "displayName": "OHH",
+        "key": "OHH",
+        "path": "ropen/OHH.wav",
+        "peakDb": -3,
+        "rootMidi": 67,
+        "decay": 5000
+      },
+      {
+        "displayName": "RIDE",
+        "key": "RIDE",
+        "path": "ropen/RIDE.wav",
+        "peakDb": -3,
+        "rootMidi": 24,
+        "decay": 5000
+      },
+      {
+        "displayName": "SNARE",
+        "key": "SNARE",
+        "path": "ropen/SNARE.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "TOM",
+        "key": "TOM",
+        "path": "ropen/TOM.wav",
+        "peakDb": -3,
+        "rootMidi": 50,
+        "decay": 5000
+      }
+    ]
+  },
+  {
+    "name": "generated",
+    "info": "ordrumbox kit",
+    "desc": " this kit was generated a long time ago by the soft synth from the ordrumbox java application  ",
+    "samples": [
+      {
+        "displayName": "kick.wav",
+        "key": "KICK",
+        "path": "generated/kick.wav",
+        "peakDb": -3,
+        "rootMidi": 43,
+        "decay": 5000
+      },
+      {
+        "displayName": "snare.wav",
+        "key": "SNARE",
+        "path": "generated/snare.wav",
+        "peakDb": -3,
+        "rootMidi": 43,
+        "decay": 5000
+      },
+      {
+        "displayName": "tom.wav",
+        "key": "TOM",
+        "path": "generated/tom.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      },
+      {
+        "displayName": "clap.wav",
+        "key": "CLAP",
+        "path": "generated/clap.wav",
+        "peakDb": -3,
+        "rootMidi": 67,
+        "decay": 5000
+      },
+      {
+        "displayName": "cow.wav",
+        "key": "COWBELL",
+        "path": "generated/cow.wav",
+        "peakDb": -3,
+        "rootMidi": 69,
+        "decay": 5000
+      },
+      {
+        "displayName": "chh.wav",
+        "key": "CHH",
+        "path": "generated/chh.wav",
+        "peakDb": -3,
+        "rootMidi": 19,
+        "decay": 5000
+      },
+      {
+        "displayName": "ohh.wav",
+        "key": "OHH",
+        "path": "generated/ohh.wav",
+        "peakDb": -3,
+        "rootMidi": 55,
+        "decay": 5000
+      },
+      {
+        "displayName": "crash.wav",
+        "key": "CRASH",
+        "path": "generated/crash.wav",
+        "peakDb": -3,
+        "rootMidi": 67,
+        "decay": 5000
+      }
+    ]
+  },
+  {
+    "name": "human",
+    "info": "ordrumbox kit",
+    "desc": " this is a human beat box, sampled by ordrumbox  ",
+    "samples": [
+      {
+        "displayName": "bd.wav",
+        "key": "KICK",
+        "path": "human/bd.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      },
+      {
+        "displayName": "Snare.wav",
+        "key": "SNARE",
+        "path": "human/Snare.wav",
+        "peakDb": -3,
+        "rootMidi": 36,
+        "decay": 5000
+      },
+      {
+        "displayName": "MidTom.wav",
+        "key": "TOM",
+        "path": "human/MidTom.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "HiTom.wav",
+        "key": "HI_TOM",
+        "path": "human/HiTom.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      },
+      {
+        "displayName": "LowTom.wav",
+        "key": "LO_TOM",
+        "path": "human/LowTom.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "chh.wav",
+        "key": "CHH",
+        "path": "human/chh.wav",
+        "peakDb": -3,
+        "rootMidi": 72,
+        "decay": 5000
+      },
+      {
+        "displayName": "OHH.wav",
+        "key": "OHH",
+        "path": "human/OHH.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "Crash.wav",
+        "key": "CRASH",
+        "path": "human/Crash.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      }
+    ]
+  },
+  {
+    "name": "8bits",
+    "info": "ordrumbox kit",
+    "desc": "Just for fun, generated with 8-bits tools",
+    "samples": [
+      {
+        "displayName": "kick.wav",
+        "key": "KICK",
+        "path": "8bits/kick.wav",
+        "peakDb": -3,
+        "rootMidi": 55,
+        "decay": 5000
+      },
+      {
+        "displayName": "snare.wav",
+        "key": "SNARE",
+        "path": "8bits/snare.wav",
+        "peakDb": -3,
+        "rootMidi": 36,
+        "decay": 5000
+      },
+      {
+        "displayName": "tom.wav",
+        "key": "TOM",
+        "path": "8bits/tom.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "clap.wav",
+        "key": "CLAP",
+        "path": "8bits/clap.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "cow.wav",
+        "key": "COWBELL",
+        "path": "8bits/cow.wav",
+        "peakDb": -3,
+        "rootMidi": 67,
+        "decay": 5000
+      },
+      {
+        "displayName": "chh.wav",
+        "key": "CHH",
+        "path": "8bits/chh.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "ohh.wav",
+        "key": "OHH",
+        "path": "8bits/ohh.wav",
+        "peakDb": -3,
+        "rootMidi": 19,
+        "decay": 5000
+      },
+      {
+        "displayName": "crash.wav",
+        "key": "CRASH",
+        "path": "8bits/crash.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      }
+    ]
+  },
+  {
+    "name": "delagrange",
+    "info": "ordrumbox kit ",
+    "desc": "Accoustic strange experimental percussions sampled by ordrumbox",
+    "samples": [
+      {
+        "displayName": "kick.wav",
+        "key": "KICK",
+        "path": "delagrange/kick.wav",
+        "peakDb": -3,
+        "rootMidi": 31,
+        "decay": 5000
+      },
+      {
+        "displayName": "snare.wav",
+        "key": "SNARE",
+        "path": "delagrange/snare.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      },
+      {
+        "displayName": "tom.wav",
+        "key": "TOM",
+        "path": "delagrange/tom.wav",
+        "peakDb": -3,
+        "rootMidi": 31,
+        "decay": 5000
+      },
+      {
+        "displayName": "clap.wav",
+        "key": "CLAP",
+        "path": "delagrange/clap.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      },
+      {
+        "displayName": "cow.wav",
+        "key": "COWBELL",
+        "path": "delagrange/cow.wav",
+        "peakDb": -3,
+        "rootMidi": 72,
+        "decay": 5000
+      },
+      {
+        "displayName": "chh.wav",
+        "key": "CHH",
+        "path": "delagrange/chh.wav",
+        "peakDb": -3,
+        "rootMidi": 43,
+        "decay": 5000
+      },
+      {
+        "displayName": "ohh.wav",
+        "key": "OHH",
+        "path": "delagrange/ohh.wav",
+        "peakDb": -3,
+        "rootMidi": 36,
+        "decay": 5000
+      },
+      {
+        "displayName": "crash.wav",
+        "key": "CRASH",
+        "path": "delagrange/crash.wav",
+        "peakDb": -3,
+        "rootMidi": 43,
+        "decay": 5000
+      },
+      {
+        "displayName": "hit.wav",
+        "key": "HIT",
+        "path": "delagrange/hit.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      }
+    ]
+  },
+  {
+    "name": "vintage",
+    "info": "ordrumbox kit ",
+    "desc": "vintage drums and percussions ",
+    "samples": [
+      {
+        "displayName": "kick.wav",
+        "key": "KICK",
+        "path": "vintage/kick.wav",
+        "peakDb": -3,
+        "rootMidi": 19,
+        "decay": 5000
+      },
+      {
+        "displayName": "snare.wav",
+        "key": "SNARE",
+        "path": "vintage/snare.wav",
+        "peakDb": -3,
+        "rootMidi": 67,
+        "decay": 5000
+      },
+      {
+        "displayName": "tom.wav",
+        "key": "TOM",
+        "path": "vintage/tom.wav",
+        "peakDb": -3,
+        "rootMidi": 60,
+        "decay": 5000
+      },
+      {
+        "displayName": "clap.wav",
+        "key": "CLAP",
+        "path": "vintage/clap.wav",
+        "peakDb": -3,
+        "rootMidi": 19,
+        "decay": 5000
+      },
+      {
+        "displayName": "cow.wav",
+        "key": "COWBELL",
+        "path": "vintage/cow.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "chh.wav",
+        "key": "CHH",
+        "path": "vintage/chh.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "ohh.wav",
+        "key": "OHH",
+        "path": "vintage/ohh.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "crash.wav",
+        "key": "CRASH",
+        "path": "vintage/crash.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      }
+    ]
+  },
+  {
+    "name": "punchy",
+    "info": "ordrumbox kit ",
+    "desc": "Punchy drums and percussions ",
+    "samples": [
+      {
+        "displayName": "kick.wav",
+        "key": "KICK",
+        "path": "punchy/kick.wav",
+        "peakDb": -3,
+        "rootMidi": 72,
+        "decay": 5000
+      },
+      {
+        "displayName": "snare.wav",
+        "key": "SNARE",
+        "path": "punchy/snare.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "tom.wav",
+        "key": "TOM",
+        "path": "punchy/tom.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "clap.wav",
+        "key": "CLAP",
+        "path": "punchy/clap.wav",
+        "peakDb": -3,
+        "rootMidi": 31,
+        "decay": 5000
+      },
+      {
+        "displayName": "hit.wav",
+        "key": "HIT",
+        "path": "punchy/hit.wav",
+        "peakDb": -3,
+        "rootMidi": 36,
+        "decay": 5000
+      },
+      {
+        "displayName": "chh.wav",
+        "key": "CHH",
+        "path": "punchy/chh.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "ohh.wav",
+        "key": "OHH",
+        "path": "punchy/ohh.wav",
+        "peakDb": -3,
+        "rootMidi": 48,
+        "decay": 5000
+      },
+      {
+        "displayName": "crash.wav",
+        "key": "CRASH",
+        "path": "punchy/crash.wav",
+        "peakDb": -3,
+        "rootMidi": 24,
+        "decay": 5000
+      }
+    ]
+  }
+]

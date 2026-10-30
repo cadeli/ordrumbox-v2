@@ -886,7 +886,7 @@ test.describe.serial('Full session lifecycle', () => {
 
         // the file is exactly what the exporter produces for the live pattern
         expect(fileJson).toEqual(liveExport)
-        expect(fileJson.application).toBe('online-ordrumbox')
+        expect(fileJson).not.toHaveProperty('application')
         expect(fileJson.name).toBe(NEW_PATTERN)
         expect(fileJson.beatCount).toBe(8)
         const fileTracks = Array.isArray(fileJson.tracks) ? fileJson.tracks : Object.values(fileJson.tracks ?? {})

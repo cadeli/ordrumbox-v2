@@ -3,7 +3,10 @@ import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import AutoAssign from '../src/logic/services/auto_assign.js'
 import Instrument from '../src/model/instrument.js'
-import drumkits from '../assets/data/drumkits.json' with { type: 'json' }
+import { kitsFromFile } from '../src/patterns/file_format.js'
+import kitsFile from '../assets/data/kits.json' with { type: 'json' }
+
+const drumkits = kitsFromFile(kitsFile)
 
 const buildRealKitSounds = () => {
     const sounds = {}

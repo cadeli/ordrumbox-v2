@@ -144,4 +144,4 @@ See `MCP_TOOLS.md` for full parameter details.
 - All step/beat indices are **0-indexed**
 - Track names are **uppercase instrument IDs** (max 12 chars) — use `listAllInstrumentsNames` to see them
 - The server logs debug info to stderr; JSON-RPC messages go to stdout
-- Patterns are saved to `assets/data/patterns/<name>.json`, where `<name>` is sanitized (lowercased, every run of non-alphanumerics → `_`, e.g. `My Pattern` → `my_pattern.json`) and appended to the `patterns` array of `assets/data/song.json`
+- Patterns are saved to `assets/data/patterns/<name>.json`, where `<name>` is sanitized (lowercased, every run of non-alphanumerics → `_`, e.g. `My Pattern` → `my_pattern.json`) and appended to the `patterns` array of `assets/data/library.json`

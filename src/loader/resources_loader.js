@@ -2,6 +2,7 @@ import { appState } from '../state/app_state.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { playbackEvents } from '../state/event_bus.js'
 import { fixPatterns, fixSongs } from '../patterns/fixer.js'
+import { kitsFromFile, libraryFromFile } from '../patterns/file_format.js'
 import { idbGet, idbPut } from '../core/idb.js'
 import {
     cachePatterns,
@@ -45,13 +46,13 @@ export default class ResourcesLoader {
         return 'assets/data/scales.json'
     }
     static get DRUMKITS_URL() {
-        return 'assets/data/drumkits.json'
+        return 'assets/data/kits.json'
     }
     static get SONG_URL() {
-        return 'assets/data/song.json'
+        return 'assets/data/library.json'
     }
     static get GENERATED_SOUNDS_URL() {
-        return 'assets/data/generated_sounds.json'
+        return 'assets/data/synth_presets.json'
     }
     static get SETTINGS_URL() {
         return 'assets/data/settings.json'
@@ -185,7 +186,7 @@ export default class ResourcesLoader {
         const gen = ++this.#loadGeneration
         let jsonDrumkits = await getCachedDrumkits()
         if (!jsonDrumkits) {
-            jsonDrumkits = await this.loadJsonResource(file)
+            jsonDrumkits = kitsFromFile(await this.loadJsonResource(file))
             await cacheDrumkits(jsonDrumkits)
         } else {
             logger.debug('ResourcesLoader', 'Drumkit list loaded from IDB cache')
@@ -381,7 +382,7 @@ export default class ResourcesLoader {
         const gen = ++this.#loadGeneration
         let json = await getCachedPatterns()
         if (!json) {
-            json = await this.loadJsonResource(file)
+            json = libraryFromFile(await this.loadJsonResource(file))
             try {
                 await cachePatterns(json)
             } catch {

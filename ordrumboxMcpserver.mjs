@@ -6,6 +6,7 @@ import { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { Exporter } from './src/patterns/exporter.js'
+import { libraryFromFile, libraryToFile } from './src/patterns/file_format.js'
 
 import Commander from './src/logic/commands/commander.js'
 import { appState } from './src/state/app_state.js'
@@ -27,7 +28,7 @@ const __dirname = dirname(__filename)
 const KITS_DIR = resolve(__dirname, 'assets/kits')
 
 /**
- * Data directory the server reads song.json from and writes patterns to.
+ * Data directory the server reads library.json from and writes patterns to.
  * Resolved on every access so ORDRUMBOX_MCP_DATA_DIR can redirect the whole
  * write path (tests point it at a temp dir instead of the repo data).
  */
@@ -36,7 +37,7 @@ function dataDir() {
 }
 
 function songIndexPath() {
-    return resolve(dataDir(), 'song.json')
+    return resolve(dataDir(), 'library.json')
 }
 
 function patternsOutputDir() {
@@ -49,7 +50,7 @@ function formatPatternsWithNotesOnLine(patterns) {
 }
 
 /**
- * song.json is `{ infos, patterns, songs }` in current releases (older files
+ * library.json is `{ infos, patterns, songs }` in current releases (older files
  * were a bare pattern array) — same `json.patterns ?? json` rule as loadSong().
  * `songs` is the arrangement list; a file without one simply has no
  * arrangement yet.
@@ -68,14 +69,15 @@ async function readSongIndex() {
     try {
         doc = JSON.parse(data)
     } catch (e) {
-        throw new Error(`Corrupt song.json: ${e.message}`, { cause: e })
+        throw new Error(`Corrupt library.json: ${e.message}`, { cause: e })
     }
-    return { doc, patterns: songPatternsOf(doc), songs: songArrangementsOf(doc) }
+    const runtime = libraryFromFile(doc)
+    return { doc, patterns: songPatternsOf(runtime), songs: songArrangementsOf(runtime) }
 }
 
 async function writeSongIndex(doc, patterns, songs) {
-    const next = Array.isArray(doc) ? patterns : { ...doc, patterns, songs }
-    await writeFile(songIndexPath(), formatPatternsWithNotesOnLine(next), 'utf8')
+    const header = Array.isArray(doc) ? {} : doc
+    await writeFile(songIndexPath(), formatPatternsWithNotesOnLine(libraryToFile({ ...header, patterns, songs })), 'utf8')
 }
 
 // --- Utility functions ---
@@ -162,13 +164,13 @@ function findPatternByName(patternName) {
 
 // --- Pattern / arrangement state shared by the tools ---------------------------
 
-/** True once every pattern of song.json has been imported into appState. */
+/** True once every pattern of library.json has been imported into appState. */
 let libraryLoaded = false
 /** Set when importing gave an id-less pattern one, so the file must be patched. */
 let libraryIdsRepaired = false
 
 /**
- * Reset the library cache so the next tool call re-imports song.json.
+ * Reset the library cache so the next tool call re-imports library.json.
  * Tests point ORDRUMBOX_MCP_DATA_DIR at a fresh temp dir per case, so the
  * flags from a previous run must not leak into the next one.
  */
@@ -178,7 +180,7 @@ export function resetLibraryCache() {
 }
 
 /**
- * Import the whole pattern library of song.json into appState.
+ * Import the whole pattern library of library.json into appState.
  *
  * Arrangements store clips as pattern **ids**, so a tool that takes a pattern
  * *name* has to be able to resolve it. The MCP server is a short-lived process:
@@ -198,7 +200,7 @@ async function ensureLibraryLoaded() {
 }
 
 /**
- * Write the in-memory state back to song.json.
+ * Write the in-memory state back to library.json.
  *
  * `patterns` is only rewritten when the library import had to mint missing ids;
  * otherwise the file keeps its own (compact) entries and only `songs` changes.
@@ -230,9 +232,9 @@ function arrangementIndexOf(songRef) {
 }
 
 /**
- * Load song.json's arrangements into appState and select the targeted one.
+ * Load library.json's arrangements into appState and select the targeted one.
  *
- * Cloned rather than validated: song.json is written by the app and already
+ * Cloned rather than validated: library.json is written by the app and already
  * normalized on load, so a tool must round-trip it byte-for-byte except for
  * what it deliberately changes.
  *
@@ -342,7 +344,7 @@ export function upsertNoteOnTrack(cmd, track, noteInput) {
 }
 
 /**
- * The pattern a tool must edit: already in memory, else imported from song.json.
+ * The pattern a tool must edit: already in memory, else imported from library.json.
  * @param {string} patternName
  * @returns {Promise<any|null>}
  */
@@ -359,7 +361,7 @@ async function loadPatternFromJson(patternName) {
     return pattern
 }
 
-/** Replace a pattern's entry in song.json, leaving the rest of the file alone. */
+/** Replace a pattern's entry in library.json, leaving the rest of the file alone. */
 async function updatePatternInIndex(pattern) {
     const { doc, patterns, songs } = await readSongIndex()
     const idx = patterns.findIndex((p) => p.name === pattern.name)
@@ -369,7 +371,7 @@ async function updatePatternInIndex(pattern) {
     await writeSongIndex(doc, patterns, songs)
 }
 
-/** Append a pattern to song.json and write it back, arrangements untouched. */
+/** Append a pattern to library.json and write it back, arrangements untouched. */
 async function addPatternToIndex(pattern) {
     const { doc, patterns, songs } = await readSongIndex()
     patterns.push(pattern)
@@ -632,7 +634,7 @@ export const tools = [
     },
     {
         name: 'listPatterns',
-        description: 'Returns the list of all patterns from song.json',
+        description: 'Returns the list of all patterns from library.json',
         inputSchema: { type: 'object', properties: {} },
     },
     {
@@ -713,7 +715,7 @@ export const tools = [
 
     {
         name: 'listArrangements',
-        description: 'Returns the arrangements (songs) of song.json with their clips, resolved to pattern names',
+        description: 'Returns the arrangements (songs) of library.json with their clips, resolved to pattern names',
         inputSchema: { type: 'object', properties: {} },
     },
     {

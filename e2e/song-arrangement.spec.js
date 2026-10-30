@@ -1,6 +1,6 @@
 // e2e/song-arrangement.spec.js
 //
-// The arrangement grid in the Song view: song.json carries a `songs` array of
+// The arrangement grid in the Song view: library.json carries a `songs` array of
 // clips, and the grid draws them the way a DAW arrangement view does — time
 // left to right on X (a ruler, one cell per measure), one row per pattern named
 // in a frozen first column, one rectangle per clip whose width is its duration.
@@ -24,7 +24,7 @@ async function openSongView(page) {
 }
 
 test.describe('Song arrangement grid', () => {
-    test('loads the demo arrangement from song.json', async ({ page }) => {
+    test('loads the demo arrangement from library.json', async ({ page }) => {
         await openSongView(page)
 
         const song = await page.evaluate(() => {
@@ -207,7 +207,7 @@ test.describe('Song arrangement context menus', () => {
     })
 
     // The loop is both the grid width and what playback loops over, so it
-    // follows the clips instead of freezing at the length song.json declares.
+    // follows the clips instead of freezing at the length library.json declares.
     test('deleting the last clip shortens the arrangement', async ({ page }) => {
         await openSongView(page)
         const measures = () => page.evaluate(() => Number(document.getElementById('sa-list').dataset.totalMeasures))

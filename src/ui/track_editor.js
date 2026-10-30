@@ -74,9 +74,9 @@ export default class TrackEditor extends BasePanel {
     #domReady
 
     /**
-     * @param {object} [deps] injected singletons, defaulting to the modules
+     * @param {object} [deps] injected singletons, defaulting to the modules (except serviceRegistry)
      * @param {typeof import('../state/app_state.js').appState} [deps.appState]
-     * @param {typeof import('../state/service_loader.js').serviceRegistry} [deps.serviceRegistry]
+     * @param {typeof import('../state/service_loader.js').serviceRegistry} [deps.serviceRegistry] has no default: without it, the synth editor cannot load its presets
      * @param {typeof import('../state/sound_registry.js').soundRegistry} [deps.soundRegistry]
      * @param {typeof import('../state/event_bus.js').playbackEvents} [deps.playbackEvents]
      */

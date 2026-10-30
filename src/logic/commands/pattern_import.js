@@ -1,4 +1,5 @@
 import { fixPattern } from '../../patterns/fixer.js'
+import { patternFromFile } from '../../patterns/file_format.js'
 import { TRACK_DEFAULTS } from '../../model/track_schema.js'
 import {
     areValidNoteKeys,
@@ -140,21 +141,21 @@ function copyNoteProps(note, sourceNote, track) {
  *
  * Imports notes from both compact (arrays with noteKeys) and object formats.
  *
- * @param {object} sourcePattern - the JSON pattern to import
- * @param {string} [sourcePattern.name]
- * @param {string} [sourcePattern.id]
- * @param {number} [sourcePattern.bpm]
- * @param {number} [sourcePattern.beatCount]
- * @param {string} [sourcePattern.application]
- * @param {string} [sourcePattern.url]
- * @param {string[]|Record<string, string>} [sourcePattern.tags]
- * @param {object|object[]} [sourcePattern.tracks]
+ * @param {object} rawPattern - the JSON pattern to import
+ * @param {string} [rawPattern.name]
+ * @param {string} [rawPattern.id]
+ * @param {number} [rawPattern.bpm]
+ * @param {number} [rawPattern.beatCount]
+ * @param {string[]|Record<string, string>} [rawPattern.tags]
+ * @param {object|object[]} [rawPattern.tracks]
  * @param {Function} addPattern  - fn(name) => pattern  (creates + registers)
  * @param {Function} addTrack    - fn(pattern, name) => track
  * @param {Function} addNote     - fn(track, beat, beatStep, pitch) => note
  * @returns {import('../../model/pattern_schema.js').Pattern} the imported pattern
  */
-export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNote) {
+export function importPatternFromJson(rawPattern, addPattern, addTrack, addNote) {
+    // A file's pattern or a runtime one: the rename leaves the latter as it is.
+    const sourcePattern = patternFromFile(rawPattern)
     const patternName = sourcePattern?.name ?? undefined
     const importedPattern = addPattern(patternName)
 
@@ -164,11 +165,10 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
     // discarding it here would re-derive it from the name on every reload and
     // detach every song clip referencing this pattern after a rename.
     if (sourcePattern?.id) importedPattern.id = String(sourcePattern.id)
-    importedPattern.bpm = toFiniteNumber(sourcePattern?.bpm, 120, 'PatternImport bpm')
-    importedPattern.beatCount = toFiniteNumber(sourcePattern?.beatCount, 4, 'PatternImport beatCount')
+    // A file leaves out a value at its default: only a present, broken one is worth a warning.
+    importedPattern.bpm = toFiniteNumber(sourcePattern?.bpm ?? 120, 120, 'PatternImport bpm')
+    importedPattern.beatCount = toFiniteNumber(sourcePattern?.beatCount ?? 4, 4, 'PatternImport beatCount')
 
-    if (sourcePattern?.application) importedPattern.application = sourcePattern.application
-    if (sourcePattern?.url) importedPattern.url = sourcePattern.url
     // Tags circulate in two shapes: a string[] (pattern schema) and an
     // object map { style, type } (generators). Preserve the source shape —
     // `{ ...anArray }` would turn [] into {} and a list into { 0: 'a', 1: 'b' }.

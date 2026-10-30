@@ -31,11 +31,11 @@ const call = async (tool, args) => {
     return { res, text, json: res.isError ? undefined : JSON.parse(text) }
 }
 
-const readIndex = async () => JSON.parse(await readFile(resolve(dataDir, 'song.json'), 'utf-8'))
+const readIndex = async () => JSON.parse(await readFile(resolve(dataDir, 'library.json'), 'utf-8'))
 
 beforeEach(async () => {
     dataDir = await mkdtemp(resolve(tmpdir(), 'odbox-mcp-'))
-    await writeFile(resolve(dataDir, 'song.json'), JSON.stringify(LIBRARY, null, 2), 'utf8')
+    await writeFile(resolve(dataDir, 'library.json'), JSON.stringify(LIBRARY, null, 2), 'utf8')
     process.env.ORDRUMBOX_MCP_DATA_DIR = dataDir
     resetUserErrorReports()
     // Two tests below drive a refusal path on purpose. reportUserError()
@@ -53,12 +53,12 @@ afterEach(async () => {
 })
 
 describe('MCP arrangement tools', () => {
-    it('listArrangements reports the arrangements of song.json with pattern names', async () => {
+    it('listArrangements reports the arrangements of library.json with pattern names', async () => {
         const index = await readIndex()
         index.songs = [
             { id: 'a1', name: 'Intro', bpm: 120, clips: [{ pattern: 'verse', startMeasure: 0, measureCount: 2 }] },
         ]
-        await writeFile(resolve(dataDir, 'song.json'), JSON.stringify(index, null, 2), 'utf8')
+        await writeFile(resolve(dataDir, 'library.json'), JSON.stringify(index, null, 2), 'utf8')
 
         const { json } = await call('listArrangements', {})
         expect(json.count).toBe(1)
@@ -118,7 +118,7 @@ describe('MCP arrangement tools', () => {
 
         const index = await readIndex()
         expect(index.songs.find((s) => s.name === 'First').clips).toEqual([
-            { pattern: 'chorus', startMeasure: 4, measureCount: 1 },
+            { patternId: 'chorus', startMeasure: 4, measureCount: 1 },
         ])
         expect(index.songs.find((s) => s.name === 'Second').clips).toEqual([])
     })
@@ -163,7 +163,7 @@ describe('MCP arrangement tools', () => {
 
         const byMeasure = await call('removePatternFromArrangement', { startMeasure: 0 })
         expect(JSON.parse(byMeasure.text).removed).toHaveLength(2)
-        expect((await readIndex()).songs[0].clips).toEqual([{ pattern: 'verse', startMeasure: 2, measureCount: 2 }])
+        expect((await readIndex()).songs[0].clips).toEqual([{ patternId: 'verse', startMeasure: 2, measureCount: 2 }])
 
         await call('removePatternFromArrangement', { patternName: 'verse' })
         expect((await readIndex()).songs[0].clips).toEqual([])
@@ -180,7 +180,7 @@ describe('MCP arrangement tools', () => {
         expect(console.warn).toHaveBeenCalled()
     })
 
-    it('an arrangement survives a write/reload cycle through song.json', async () => {
+    it('an arrangement survives a write/reload cycle through library.json', async () => {
         await call('createArrangement', {
             name: 'Reload me',
             clips: [{ patternName: 'Verse', startMeasure: 0 }],
@@ -204,7 +204,7 @@ describe('MCP arrangement tools', () => {
 
         const index = await readIndex()
         expect(index.songs).toHaveLength(1)
-        expect(index.songs[0].clips).toEqual([{ pattern: 'verse', startMeasure: 0, measureCount: 2 }])
+        expect(index.songs[0].clips).toEqual([{ patternId: 'verse', startMeasure: 0, measureCount: 2 }])
         expect(index.patterns.map((p) => p.name)).toEqual(['Verse', 'Chorus', 'Bridge'])
     })
 

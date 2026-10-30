@@ -1,19 +1,26 @@
 {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
+  "id": "salsa-tumbao-4-measures",
   "name": "Salsa Tumbao 4 Measures",
+  "beatCount": 16,
+  "bpm": 96,
   "description": "4 measures (16 beats) of salsa: tumbao bass over a C-F-G-C loop with beat-4 chord anticipations, son clave 3-2, conga tumbao, campana and maracas.",
+  "tags": [
+    "salsa",
+    "tumbao",
+    "latin",
+    "cuban"
+  ],
   "tracks": [
     {
       "name": "BASS",
       "beatCount": 16,
-      "loopAtStep": 64,
-      "velocity": 0.95,
+      "loopLength": 64,
+      "volume": 0.95,
       "mono": true,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep",
+        "step",
         "pitch"
       ],
       "notes": [
@@ -91,11 +98,11 @@
     {
       "name": "CLAVES",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -144,11 +151,11 @@
     {
       "name": "CHI_CONGAS",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -212,11 +219,11 @@
     {
       "name": "CONGAS",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -260,12 +267,12 @@
     {
       "name": "COWBELL",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "pan": 0.4,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -376,11 +383,11 @@
     {
       "name": "MARACAS",
       "beatCount": 16,
-      "loopAtStep": 64,
+      "loopLength": 64,
       "noteKeys": [
         "velocity",
         "beat",
-        "beatStep"
+        "step"
       ],
       "notes": [
         [
@@ -528,14 +535,5 @@
         ]
       ]
     }
-  ],
-  "bpm": 96,
-  "beatCount": 16,
-  "id": "salsa-tumbao-4-measures",
-  "tags": {
-    "0": "salsa",
-    "1": "tumbao",
-    "2": "latin",
-    "3": "cuban"
-  }
+  ]
 }

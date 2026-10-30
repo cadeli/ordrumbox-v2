@@ -166,11 +166,11 @@ describe('Exporter', () => {
             expect(cleaned.tracks[0]).not.toHaveProperty('mute')
         })
 
-        it('export adds application and url metadata', () => {
-            const pattern = { ...PATTERN_DEFAULTS, bpm: 130, tracks: [] }
+        it('export writes no application or url header', () => {
+            const pattern = { ...PATTERN_DEFAULTS, bpm: 130, tracks: [], application: 'x', url: 'y' }
             const result = Exporter.export(pattern)
-            expect(result.application).toBe('online-ordrumbox')
-            expect(result.url).toBe('https://www.ordrumbox.com')
+            expect(result).not.toHaveProperty('application')
+            expect(result).not.toHaveProperty('url')
         })
 
         it('export preserves non-default pattern data', () => {

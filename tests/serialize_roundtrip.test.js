@@ -77,8 +77,8 @@ describe('Functional: Pattern serialization round-trip', () => {
         const pattern = cmd.addPattern('Test')
         const exported = Exporter.export(pattern)
 
-        expect(exported.application).toBe('online-ordrumbox')
-        expect(exported.url).toBe('https://www.ordrumbox.com')
+        expect(exported).not.toHaveProperty('application')
+        expect(exported).not.toHaveProperty('url')
         expect(exported.name).toBe('Test')
     })
 
@@ -217,29 +217,6 @@ describe('Functional: Pattern serialization round-trip', () => {
         expect(note.euclideanFill).toBe(5)
     })
 
-    it('round-trip preserves application and url metadata', () => {
-        const source = makePattern({
-            name: 'MetaTest',
-            bpm: 120,
-            beatCount: 4,
-            tracks: [makeTrack('KICK', [makeNote(0, 0)], { beatCount: 4, stepsPerBeat: 4 })],
-        })
-        source.application = 'test-app'
-        source.url = 'https://test.com'
-
-        const imported = cmd.importPatternFromJson(source)
-        expect(imported.application).toBe('test-app')
-        expect(imported.url).toBe('https://test.com')
-
-        const exported = Exporter.export(imported)
-        expect(exported.application).toBe('test-app')
-        expect(exported.url).toBe('https://test.com')
-
-        const reimported = cmd.importPatternFromJson(exported)
-        expect(reimported.application).toBe('test-app')
-        expect(reimported.url).toBe('https://test.com')
-    })
-
     it('track with no notes round-trips', () => {
         const source = makePattern({
             name: 'NoNotes',
@@ -261,8 +238,8 @@ describe('Functional: Pattern serialization round-trip', () => {
         cmd.addNote(track, 0, 0, 0)
 
         const exported = Exporter.export(pattern)
-        expect(exported.application).toBe('online-ordrumbox')
-        expect(exported.url).toBe('https://www.ordrumbox.com')
+        expect(exported).not.toHaveProperty('application')
+        expect(exported).not.toHaveProperty('url')
         expect(exported.name).toBe('DefaultTrack')
         expect(exported.tracks).toHaveLength(1)
         expect(exported.tracks[0].name).toBe('KICK')
