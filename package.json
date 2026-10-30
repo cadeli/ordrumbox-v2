@@ -42,7 +42,7 @@
         "vanilla"
     ],
     "author": "orDrumbox team",
-    "license": "GPL-3.0-only",
+    "license": "MIT",
     "devDependencies": {
         "@eslint/js": "^10.0.1",
         "@playwright/test": "^1.63.0",

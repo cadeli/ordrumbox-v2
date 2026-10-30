@@ -184,7 +184,7 @@ MasterGain: 1.0
 
 ## License
 
-orDrumbox is maintained by the community under the GPL V3 License.
+orDrumbox is maintained by the community under the [MIT License](LICENSE).
 
 The bundled UI display font **Press Start 2P** by CodeMan38 is not covered by
 that licence: © 2012 The Press Start 2P Project Authors (cody@zone38.net), with

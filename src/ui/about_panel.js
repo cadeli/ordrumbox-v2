@@ -3,7 +3,7 @@ import { bindTabToggles } from './components/ui_utils.js'
 import BasePanel from './base_panel.js'
 
 const APP_NAME = 'OrDrumbox'
-const APP_LICENSE = 'GPL-3.0-only'
+const APP_LICENSE = 'MIT'
 const APP_FONT = 'Press Start 2P (SIL OFL 1.1)'
 const APP_REPO = 'https://github.com/cadeli/ordrumbox-v2'
 const APP_WEBSITE = 'https://www.ordrumbox.com'
