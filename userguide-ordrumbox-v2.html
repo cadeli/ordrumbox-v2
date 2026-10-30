@@ -183,14 +183,13 @@
                     <li><a href="#7-output-panel">Output Panel</a></li>
                     <li><a href="#8-synth-editor">Synth Editor</a></li>
                     <li><a href="#9-piano-roll">Piano Roll</a></li>
-                    <li><a href="#10-patterns-panel">Patterns Panel</a></li>
-                    <li><a href="#11-pattern-settings">Pattern Settings</a></li>
-                    <li><a href="#12-drumkit-manager">Drumkit Manager</a></li>
-                    <li><a href="#13-about-panel">About Panel</a></li>
-                    <li><a href="#14-mobile-tab-bar">Mobile Tab Bar</a></li>
-                    <li><a href="#15-keyboard-shortcuts">Keyboard Shortcuts</a></li>
-                    <li><a href="#16-audio-signal-flow">Audio Signal Flow</a></li>
-                    <li><a href="#17-installation--offline-use">Installation & Offline Use</a></li>
+                    <li><a href="#10-song-panel">Song Panel</a></li>
+                    <li><a href="#11-drumkit-manager">Drumkit Manager</a></li>
+                    <li><a href="#12-about-panel">About Panel</a></li>
+                    <li><a href="#13-mobile-layout">Mobile Layout</a></li>
+                    <li><a href="#14-keyboard-shortcuts">Keyboard Shortcuts</a></li>
+                    <li><a href="#15-audio-signal-flow">Audio Signal Flow</a></li>
+                    <li><a href="#16-installation--offline-use">Installation &amp; Offline Use</a></li>
                 </ol>
             </div>
 
@@ -198,22 +197,27 @@
 
             <h2 id="1-getting-started">1. Getting Started</h2>
             <p>
-                OrDrumbox v2 is a browser-based drum machine and pattern sequencer. When you open the application, you
-                see:
+                OrDrumbox v2 is a browser-based drum machine and pattern sequencer. Click <strong>Start</strong> on the
+                waiting screen to open the application. On a desktop screen you then see:
             </p>
             <ul>
-                <li><strong>Toolbar</strong> at the top — main controls</li>
-                <li><strong>Pattern Panel</strong> — the step sequencer grid</li>
+                <li><strong>Toolbar</strong> at the top &mdash; main controls</li>
+                <li><strong>Pattern Panel</strong> &mdash; the step sequencer grid</li>
+                <li><strong>Track Editor</strong> and <strong>Output Panel</strong> &mdash; open beside the grid</li>
             </ul>
 
             <h3>Basic Workflow</h3>
             <ol>
                 <li>Select a <strong>Pattern</strong> from the Pattern dropdown</li>
-                <li>Click <strong>Start</strong> to begin playback</li>
+                <li>Click <strong>&#9654;</strong> (or press <strong>Space</strong>) to start playback</li>
                 <li>Click on the grid to add/remove notes</li>
-                <li>Click a <strong>track name</strong> to open the Track Editor</li>
-                <li>Click a <strong>note cell</strong> to open the Note Editor</li>
-                <li>Use <strong>Auto Gen</strong> to enable automatic pattern regeneration (toggle)</li>
+                <li>Click a <strong>track name</strong> to show that track in the Track Editor</li>
+                <li>Click a <strong>note</strong> to show it in the Note Editor</li>
+                <li>
+                    Use <strong>&#8635; Drum</strong>, <strong>&#8635; Bass</strong> or
+                    <strong>&#8635; Chords</strong> to generate parts
+                </li>
+                <li>Open the <strong>Song</strong> view to chain patterns into an arrangement</li>
             </ol>
 
             <hr />
@@ -230,46 +234,69 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Start / Stop</strong></td>
-                        <td>Toggles playback. Red background when running.</td>
+                        <td><strong>&#9654; / &#9632;</strong></td>
+                        <td>Starts or stops playback. Red background when running.</td>
                     </tr>
                     <tr>
                         <td><strong>BPM</strong></td>
-                        <td>Click to open the tempo slider (range: 20–250 BPM).</td>
+                        <td>Click the value to open the tempo slider (range: 20&ndash;250 BPM).</td>
                     </tr>
                     <tr>
                         <td><strong>Pattern</strong></td>
                         <td>Dropdown to switch between patterns.</td>
                     </tr>
                     <tr>
-                        <td><strong>Kit</strong></td>
+                        <td><strong>Page</strong></td>
+                        <td>&#9664; / &#9654; move between pages of the pattern. One page is always 4 beats.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Beats</strong></td>
+                        <td>Number of beats in the pattern (1&ndash;16).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Drumkit</strong></td>
                         <td>
                             Dropdown to switch drumkits (samples load on first use). Only tracks with
                             <strong>auto</strong> enabled are re-assigned; manually assigned samples keep their sound,
-                            even when it belongs to another drumkit — it is loaded on demand, also after a restart.
+                            even when it belongs to another drumkit &mdash; it is loaded on demand, also after a
+                            restart. <strong>Click the Drumkit label</strong> to open the Drumkit Manager.
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>Auto Gen</strong></td>
+                        <td><strong>Generation</strong></td>
                         <td>
-                            Toggle button. When active (green), the pattern is automatically regenerated on section
-                            boundaries using genre-based song structure. Click again to disable.
+                            <strong>&#8635; Drum</strong>, <strong>&#8635; Bass</strong> and
+                            <strong>&#8635; Chords</strong> are toggles. Switching one on generates notes and sets the
+                            matching tracks to Auto, so they keep evolving; the button stays lit. Switching it off stops
+                            the regeneration. Drum works on the existing percussion tracks; Bass and Chords create their
+                            soft-synth track on first use.
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>Clear</strong></td>
-                        <td>Removes all notes from the current pattern (asks for confirmation).</td>
+                        <td><strong>History</strong></td>
+                        <td>&#8630; Undo and &#8631; Redo. The tooltip names the next step.</td>
                     </tr>
                     <tr>
-                        <td><strong>Tools</strong></td>
-                        <td>Opens the Tools panel (export/import, pattern name).</td>
+                        <td><strong>View</strong></td>
+                        <td>
+                            <strong>Synth</strong> (Synth Editor), <strong>Grid</strong> (Pattern Panel),
+                            <strong>proll</strong> (Piano Roll), <strong>Song</strong> (Song Panel).
+                        </td>
                     </tr>
                     <tr>
-                        <td><strong>Output</strong></td>
-                        <td>Opens the Output panel (master mixer, spectrum analyzer).</td>
+                        <td><strong>&#9881;</strong></td>
+                        <td>Opens the Tools Panel.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>&#8942;</strong></td>
+                        <td>Opens the About Panel.</td>
                     </tr>
                 </tbody>
             </table>
+            <p>
+                The Output Panel has no toolbar button: it opens with the application on desktop, and clicking the
+                <strong>Master</strong> row at the bottom of the pattern grid brings it back.
+            </p>
 
             <hr />
 
@@ -278,8 +305,8 @@
             <h3>Display</h3>
             <ul>
                 <li>
-                    <strong>Pattern name</strong> (red), <strong>BPM</strong>, <strong>beat count</strong>, and
-                    <strong>track count</strong> are shown in the header.
+                    <strong>Pattern name</strong>, <strong>BPM</strong>, <strong>beat count</strong>,
+                    <strong>measure count</strong> and current <strong>page</strong> are shown in the header.
                 </li>
                 <li>Each track row shows: <strong>track name</strong> + <strong>step grid</strong>.</li>
                 <li><strong>Playhead</strong> — vertical line moving across the grid during playback.</li>
@@ -299,8 +326,12 @@
                 </thead>
                 <tbody>
                     <tr>
+                        <td><strong>+ New</strong></td>
+                        <td>Add a new pattern and select it</td>
+                    </tr>
+                    <tr>
                         <td><strong>✕ Delete</strong></td>
-                        <td>Delete the current pattern (with confirmation)</td>
+                        <td>Delete the current pattern (with confirmation; the last pattern cannot be deleted)</td>
                     </tr>
                     <tr>
                         <td><strong>⌫ Clean</strong></td>
@@ -319,8 +350,8 @@
                         <td>Export pattern as JSON file</td>
                     </tr>
                     <tr>
-                        <td><strong>↑ Replace</strong></td>
-                        <td>Load/replace pattern from JSON file</td>
+                        <td><strong>↑ Load</strong></td>
+                        <td>Import a JSON pattern file as a new pattern and select it (the current pattern is kept)</td>
                     </tr>
                 </tbody>
             </table>
@@ -336,7 +367,7 @@
                 <tbody>
                     <tr>
                         <td><strong>Track name</strong></td>
-                        <td>Click to open Track Editor for that track</td>
+                        <td>Click to show that track in the Track Editor</td>
                     </tr>
                     <tr>
                         <td><strong>Volume slider</strong></td>
@@ -364,11 +395,15 @@
                 <tbody>
                     <tr>
                         <td><strong>Master</strong></td>
-                        <td>Master volume slider (range 0–2)</td>
+                        <td>Master volume slider (range 0–2). Click the row to open the Output Panel.</td>
                     </tr>
                     <tr>
                         <td><strong>+ new track</strong></td>
                         <td>Add a new empty track to the pattern</td>
+                    </tr>
+                    <tr>
+                        <td><strong>− delete track</strong></td>
+                        <td>Delete the selected track (the last track cannot be deleted)</td>
                     </tr>
                 </tbody>
             </table>
@@ -448,7 +483,7 @@
                     </tr>
                     <tr>
                         <td>Click track name</td>
-                        <td>Opens Track Editor for that track</td>
+                        <td>Shows that track in the Track Editor</td>
                     </tr>
                     <tr>
                         <td>Right-click cell</td>
@@ -504,7 +539,8 @@
                     diagonal never changes both velocity and pitch at once.
                 </li>
                 <li>
-                    <strong>Chords:</strong> in a cell holding several notes, the <strong>slice under the pointer</strong>
+                    <strong>Chords:</strong> in a cell holding several notes, the
+                    <strong>slice under the pointer</strong>
                     is the note edited &mdash; one voice per slice.
                 </li>
                 <li>
@@ -512,9 +548,9 @@
                     an edit is never silent.
                 </li>
                 <li>
-                    <strong>Safe:</strong> a drag never deletes the note &mdash; the click the browser sends at the end of
-                    the gesture is swallowed. A <strong>plain</strong> click still selects the note, and a second plain
-                    click still deletes it.
+                    <strong>Safe:</strong> a drag never deletes the note &mdash; the click the browser sends at the end
+                    of the gesture is swallowed. A <strong>plain</strong> click still selects the note, and a second
+                    plain click still deletes it.
                 </li>
                 <li>
                     <strong>Undo:</strong> a whole drag (or a held key) is one history step &mdash;
@@ -529,34 +565,39 @@
             </p>
 
             <h3>Editing gauge</h3>
-            <p>
-                While a velocity or pitch is being edited, a gauge pops up over the note:
-            </p>
+            <p>While a velocity or pitch is being edited, a gauge pops up over the note:</p>
             <ul>
                 <li>
                     a knob-style arc that fills with the value &mdash; velocity directly (0.8 fills 80&nbsp;% of the
                     sweep), and for pitch the place the note occupies on the keyboard, so the arc moves as you
                     transpose;
                 </li>
-                <li>the note name and its MIDI number, then the new value with a &blacktriangle; / &blacktriangledown; arrow;</li>
+                <li>
+                    the note name and its MIDI number, then the new value with a &blacktriangle; / &blacktriangledown;
+                    arrow;
+                </li>
                 <li>a coloured ring around the edited cell.</li>
             </ul>
             <p>
                 The gauge stays up while you drag or hold the key, then fades out about 700&nbsp;ms after the last
                 change. The note's own tooltip is hidden while the gauge is displayed, so the two never overlap, and
-                comes back afterwards. The pattern grid has no pitch axis, so this gauge is the only place a
-                transposed note can be read.
+                comes back afterwards. The pattern grid has no pitch axis, so this gauge is the only place a transposed
+                note can be read.
             </p>
 
             <hr />
 
             <h2 id="4-track-editor">4. Track Editor</h2>
             <p>
-                The Track Editor opens when you click a track name. It contains all track-level parameters organized in
-                groups.
+                The Track Editor shows the track selected in the grid. At the top, the sample bar displays the sample's
+                pitch, duration and peak with its waveform and decay marker, and <strong>&uarr;</strong> replaces the
+                sample with an audio file (WAV/FLAC/MP3/AAC). Below it come four knobs and five tabs:
+                <strong>fx</strong>, <strong>sound</strong>, <strong>mod</strong>, <strong>loop</strong> and
+                <strong>gen</strong>.
             </p>
+            <p>Track parameters are undoable; a whole knob drag is one undo step.</p>
 
-            <h3>Basic / Transport</h3>
+            <h3>Knobs</h3>
             <table>
                 <thead>
                     <tr>
@@ -568,80 +609,9 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Mute</strong></td>
-                        <td>—</td>
-                        <td>off</td>
-                        <td>Mutes the entire track</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Mono</strong></td>
-                        <td>on/off</td>
-                        <td>off</td>
-                        <td>Forces monophonic playback</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Auto</strong></td>
-                        <td>on/off</td>
-                        <td>off</td>
-                        <td>
-                            When enabled, this track is automatically regenerated at each loop boundary using the
-                            pattern generator
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Variation</strong></td>
-                        <td>0–100%</td>
-                        <td>0</td>
-                        <td>
-                            Automatic beat randomization intensity. Each loop iteration gets a fresh budget of
-                            operations (100% = 16 pts). Operations are applied greedily until the budget is exhausted.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Var Prop</strong></td>
-                        <td>0–100%</td>
-                        <td>0</td>
-                        <td>
-                            Variation probability — controls how likely each variation operation is to trigger within
-                            its budget.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Prob</strong></td>
-                        <td>0–1</td>
+                        <td><strong>Vel</strong></td>
+                        <td>0&ndash;1</td>
                         <td>1</td>
-                        <td>
-                            Track-level note probability. All notes on this track have this base probability of
-                            triggering (independent of per-note probability).
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h4>Variation</h4>
-            <p>
-                The Variation slider (0–100%) controls the intensity of automatic beat randomization applied on each
-                loop iteration. At 0%, the pattern plays as-is. As you increase the value, the sequencer randomly adds
-                anticipation notes, doubles, ghost notes, silences, and tweaks velocity or pitch — making the beat
-                evolve over time without manual editing. Each loop gets a fresh set of variations, so the pattern never
-                repeats exactly the same way.
-            </p>
-
-            <h3>Levels / Pitch</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Control</th>
-                        <th>Range</th>
-                        <th>Default</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Velo</strong></td>
-                        <td>0–1</td>
-                        <td>1.0</td>
                         <td>Track volume multiplier</td>
                     </tr>
                     <tr>
@@ -658,230 +628,106 @@
                     </tr>
                     <tr>
                         <td><strong>Decay</strong></td>
-                        <td>0–5000 ms</td>
+                        <td>20&ndash;5000 ms (log)</td>
                         <td>sample default</td>
                         <td>
-                            Sample decay time in milliseconds (from drumkit). Controls how long the sound fades out
-                            after the attack phase. Editable in the Track Editor and Drumkit Manager.
+                            Fade-out time of the sample. It is stored with the sample, so it also shows in the Drumkit
+                            Manager and affects every track using that sample.
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <p>All four parameters support LFO modulation (click the row to open LFO settings).</p>
 
-            <h3>Filters</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Control</th>
-                        <th>Range</th>
-                        <th>Default</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Type</strong></td>
-                        <td>lowpass, highpass, bandpass, peaking, lowshelf, highshelf, notch, allpass</td>
-                        <td>allpass</td>
-                        <td>Biquad filter type</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Freq</strong></td>
-                        <td>0–1</td>
-                        <td>20</td>
-                        <td>Cutoff frequency (normalized, maps to 20Hz–20kHz)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Q</strong></td>
-                        <td>0–1</td>
-                        <td>0.707</td>
-                        <td>Filter resonance</td>
-                    </tr>
-                </tbody>
-            </table>
-            <p>The <strong>Freq</strong> and <strong>Q</strong> parameters support LFO modulation.</p>
-
-            <h3>Effects</h3>
+            <h3>fx Tab</h3>
             <p>
-                Each effect has an <strong>LED toggle</strong> (green = active). Tabs 1/2/3 are on the same line as the
-                "Effects" title.
+                Four effects, each with an <strong>LED</strong> and a tab. The LED is green while the effect is active.
+                Switching it on sets the depth to 0.5; switching it off sets the depth to 0.
             </p>
-
-            <h4>Reverb</h4>
             <table>
                 <thead>
                     <tr>
+                        <th>Effect</th>
                         <th>Control</th>
-                        <th>Options</th>
+                        <th>Options / Range</th>
                         <th>Default</th>
                         <th>Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>LED</strong></td>
-                        <td>on/off</td>
-                        <td>on</td>
-                        <td>Enable/disable reverb (green = active)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>RevT</strong></td>
-                        <td>none, room, hall, plate, spring, gated</td>
-                        <td>none</td>
-                        <td>Reverb preset</td>
-                    </tr>
-                    <tr>
-                        <td><strong>RevV</strong></td>
-                        <td>0–1</td>
+                        <td><strong>Rev</strong></td>
+                        <td>Depth</td>
+                        <td>0&ndash;1</td>
                         <td>0</td>
                         <td>Wet/dry mix</td>
                     </tr>
-                </tbody>
-            </table>
-            <p><strong>Reverb Presets:</strong></p>
-            <ul>
-                <li><strong>room</strong> — Small room (0.8s decay)</li>
-                <li><strong>hall</strong> — Large hall (2.4s decay)</li>
-                <li><strong>plate</strong> — Plate reverb (1.6s decay)</li>
-                <li><strong>spring</strong> — Spring with ripple (1.2s decay)</li>
-                <li><strong>gated</strong> — Gated reverb (0.7s, cuts off at 65%)</li>
-            </ul>
-
-            <h4>Delay</h4>
-            <table>
-                <thead>
                     <tr>
-                        <th>Control</th>
-                        <th>Options/Range</th>
-                        <th>Default</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>LED</strong></td>
-                        <td>on/off</td>
-                        <td>on</td>
-                        <td>Enable/disable delay (green = active)</td>
+                        <td></td>
+                        <td>Type</td>
+                        <td>none, room, hall, plate, spring, gated</td>
+                        <td>none</td>
+                        <td>room 0.8 s, hall 2.4 s, plate 1.6 s, spring with ripple 1.2 s, gated 0.7 s cut at 65%</td>
                     </tr>
                     <tr>
-                        <td><strong>DelTy</strong></td>
-                        <td>none, slap, tape, pingpong</td>
-                        <td>tape</td>
-                        <td>Delay algorithm</td>
-                    </tr>
-                    <tr>
-                        <td><strong>DelT</strong></td>
-                        <td>0.0625, 0.125, 0.25, 0.5, 1, 2, 4</td>
-                        <td>1</td>
-                        <td>Delay time (beat multiplier)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>DelV</strong></td>
-                        <td>0–1</td>
+                        <td><strong>Dly</strong></td>
+                        <td>Depth</td>
+                        <td>0&ndash;1</td>
                         <td>0</td>
                         <td>Wet mix</td>
                     </tr>
-                </tbody>
-            </table>
-            <p><strong>Delay Types:</strong></p>
-            <ul>
-                <li><strong>slap</strong> — Single echo, short feedback</li>
-                <li><strong>tape</strong> — Tape delay with filter, warm feedback</li>
-                <li><strong>pingpong</strong> — Stereo ping-pong between left and right</li>
-            </ul>
-
-            <h4>Saturation (Sat)</h4>
-            <table>
-                <thead>
                     <tr>
-                        <th>Control</th>
-                        <th>Options/Range</th>
-                        <th>Default</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>LED</strong></td>
-                        <td>on/off</td>
-                        <td>on</td>
-                        <td>Enable/disable saturation (green = active)</td>
+                        <td></td>
+                        <td>Time</td>
+                        <td>1/16, 1/8, 1/4, 1/2, 1, 2, 4</td>
+                        <td>1</td>
+                        <td>Delay time in beats, so it follows the tempo</td>
                     </tr>
                     <tr>
-                        <td><strong>SatT</strong></td>
-                        <td>soft, hard, tape</td>
-                        <td>soft</td>
-                        <td>Saturation algorithm</td>
+                        <td></td>
+                        <td>Type</td>
+                        <td>none, slap, tape, pingpong</td>
+                        <td>tape</td>
+                        <td>slap: single short echo; tape: filtered, warm feedback; pingpong: bounces left/right</td>
                     </tr>
                     <tr>
-                        <td><strong>SatV</strong></td>
-                        <td>0–1</td>
+                        <td><strong>Sat</strong></td>
+                        <td>Depth</td>
+                        <td>0&ndash;1</td>
                         <td>0</td>
                         <td>Drive amount</td>
                     </tr>
-                </tbody>
-            </table>
-            <p><strong>Saturation Types:</strong></p>
-            <ul>
-                <li><strong>soft</strong> — Smooth tanh-based clipping</li>
-                <li><strong>hard</strong> — Hard clipping</li>
-                <li><strong>tape</strong> — Analog tape warmth</li>
-            </ul>
-
-            <h3>LFO Sub-Panel</h3>
-            <p>Click any LFO-capable row (Velo, Pan, Pitch, Freq, Q) to open the LFO editor.</p>
-            <table>
-                <thead>
                     <tr>
-                        <th>Control</th>
-                        <th>Range</th>
-                        <th>Default</th>
-                        <th>Description</th>
+                        <td></td>
+                        <td>Type</td>
+                        <td>soft, hard, tape</td>
+                        <td>soft</td>
+                        <td>soft: smooth clipping; hard: hard clipping; tape: analog warmth</td>
                     </tr>
-                </thead>
-                <tbody>
                     <tr>
-                        <td><strong>LED</strong></td>
-                        <td>on/off</td>
+                        <td><strong>fltr</strong></td>
+                        <td>Type</td>
+                        <td>LP, HP, BP</td>
                         <td>off</td>
-                        <td>Enable/disable LFO</td>
+                        <td>Lowpass, highpass or bandpass. Clicking the active type switches the filter off.</td>
                     </tr>
                     <tr>
-                        <td><strong>Type</strong></td>
-                        <td>sine, triangle, sawtooth, square</td>
-                        <td>sine</td>
-                        <td>LFO waveform shape</td>
+                        <td></td>
+                        <td>Freq</td>
+                        <td>20&ndash;20000 Hz</td>
+                        <td>20 Hz</td>
+                        <td>Cutoff frequency</td>
                     </tr>
                     <tr>
-                        <td><strong>Freq</strong></td>
-                        <td>0.1–2</td>
-                        <td>1</td>
-                        <td>LFO rate (cycles per 4 beats)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Min</strong></td>
-                        <td>varies</td>
-                        <td>parent min</td>
-                        <td>LFO sweep minimum</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Max</strong></td>
-                        <td>varies</td>
-                        <td>parent max</td>
-                        <td>LFO sweep maximum</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Phas</strong></td>
-                        <td>0–1</td>
-                        <td>0</td>
-                        <td>Phase offset</td>
+                        <td></td>
+                        <td>Q</td>
+                        <td>0.707&ndash;18.707</td>
+                        <td>0.707</td>
+                        <td>Resonance</td>
                     </tr>
                 </tbody>
             </table>
 
-            <h3>Sound Sub-Panel</h3>
+            <h3>sound Tab</h3>
             <table>
                 <thead>
                     <tr>
@@ -891,7 +737,11 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>autoassign</strong></td>
+                        <td><strong>Mono</strong></td>
+                        <td>Forces monophonic playback: a new note cuts the previous one.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>auto</strong></td>
                         <td>
                             LED toggle (green = active). When on, automatically assigns the best sample from the
                             selected drumkit based on the track name. When off, the assignment stays manual (the sample
@@ -901,38 +751,72 @@
                     <tr>
                         <td><strong>Instr</strong></td>
                         <td>
-                            Instrument type selector. Picking an instrument renames the track and assigns the preferred
-                            sample for it (from the selected drumkit when available, from another kit otherwise).
+                            Instrument selector. Picking an instrument assigns its preferred sample (from the selected
+                            drumkit when available, from another kit otherwise). The track name does not change.
                         </td>
                     </tr>
                     <tr>
                         <td><strong>Sample</strong></td>
                         <td>
-                            Sample file selector — lists the samples of the current instrument across
-                            <strong>all</strong> drumkits, selected kit first. A sample from another kit is loaded the
-                            moment it is selected, and again automatically after a restart.
+                            Lists the samples of the current instrument across <strong>all</strong> drumkits, selected
+                            kit first. A sample from another kit is loaded the moment it is selected, and again
+                            automatically after a restart.
                         </td>
                     </tr>
                     <tr>
                         <td><strong>Synth</strong></td>
-                        <td>Soft-synth generated sound selection</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Edit</strong></td>
-                        <td>Opens the Synth Editor for the selected generated sound</td>
-                    </tr>
-                    <tr>
-                        <td><strong>↑ Load</strong></td>
-                        <td>Import an audio file (WAV/FLAC/MP3) to replace the current track's sample</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Waveform</strong></td>
-                        <td>Sample waveform display with decay marker (yellow vertical line)</td>
+                        <td>
+                            Plays the track with a soft-synth preset instead of a sample (<strong>none</strong> returns
+                            to the sample). Use the <strong>Synth</strong> view to edit the preset.
+                        </td>
                     </tr>
                 </tbody>
             </table>
 
-            <h3>Loop / Pattern Sub-Panel</h3>
+            <h3>mod Tab</h3>
+            <p>
+                One LFO per parameter: <strong>Freq</strong>, <strong>Q</strong>, <strong>Vel</strong>,
+                <strong>Pan</strong> and <strong>Pitch</strong>. Click a name to edit its LFO; click its LED to switch
+                it on or off.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Control</th>
+                        <th>Range</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Type</strong></td>
+                        <td>sine, triangle, sawtooth, square, random</td>
+                        <td>sine</td>
+                        <td>LFO waveform. <strong>random</strong> holds a new random value for each cycle.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Freq</strong></td>
+                        <td>0.1&ndash;2</td>
+                        <td>1</td>
+                        <td>LFO rate (cycles per 4 beats)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Range</strong></td>
+                        <td>parameter range</td>
+                        <td>full range</td>
+                        <td>Minimum and maximum of the sweep</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase</strong></td>
+                        <td>0&ndash;1</td>
+                        <td>0</td>
+                        <td>Phase offset</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>loop Tab</h3>
             <table>
                 <thead>
                     <tr>
@@ -945,27 +829,140 @@
                 <tbody>
                     <tr>
                         <td><strong>Steps/Beat</strong></td>
-                        <td>1–8</td>
+                        <td>1&ndash;8</td>
                         <td>4</td>
                         <td>Number of steps per beat</td>
                     </tr>
                     <tr>
-                        <td><strong>Beats</strong></td>
-                        <td>1–16</td>
-                        <td>4</td>
-                        <td>Number of beats in the pattern</td>
-                    </tr>
-                    <tr>
                         <td><strong>Loop Point</strong></td>
-                        <td>1–(beats×steps/beat)</td>
+                        <td>1&ndash;(beats&times;steps/beat)</td>
                         <td>end</td>
-                        <td>Step where the track loops back</td>
+                        <td>Step where the track loops back, shown as beat.step</td>
                     </tr>
                     <tr>
                         <td><strong>Swing</strong></td>
-                        <td>0–1</td>
+                        <td>0&ndash;1</td>
                         <td>0</td>
                         <td>Shuffle amount for odd-numbered steps</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>The number of beats of the pattern is set in the toolbar.</p>
+
+            <h3>gen Tab</h3>
+            <p>
+                The <strong>Auto</strong> switch decides how the track varies from loop to loop, and which controls are
+                shown.
+            </p>
+            <h4>Auto off</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Control</th>
+                        <th>Range</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Var Pos</strong></td>
+                        <td>0&ndash;100</td>
+                        <td>0</td>
+                        <td>
+                            Variation of position, velocity and pitch. Each loop gets a fresh budget of operations (100
+                            = 16 points), so the track never repeats exactly the same way.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Var Prop</strong></td>
+                        <td>0&ndash;100</td>
+                        <td>0</td>
+                        <td>Same idea for per-note properties such as ghost notes, retriggers and fills.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Prob</strong></td>
+                        <td>0&ndash;1</td>
+                        <td>1</td>
+                        <td>Base probability of every note on the track (independent of per-note probability)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h4>Auto on</h4>
+            <p>The track is regenerated at each loop boundary. Two sub-tabs set what the generator may do:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sub-tab</th>
+                        <th>Control</th>
+                        <th>Range</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Groove</strong></td>
+                        <td>Pitch, Velocity</td>
+                        <td>0&ndash;100</td>
+                        <td>50</td>
+                        <td>Per-note chance that pitch or velocity is randomized</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Silence, Fill, Ghost</td>
+                        <td>0&ndash;100</td>
+                        <td>50</td>
+                        <td>Per-note chance of a rest, a fill or a ghost note</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Pitch Rng</td>
+                        <td>1&ndash;24</td>
+                        <td>12</td>
+                        <td>Span of the pitch randomization, in semitones</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Scale Lock</td>
+                        <td>on/off</td>
+                        <td>off</td>
+                        <td>Keeps randomized pitches in the scale</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Engine</strong></td>
+                        <td>Retrig, Euclid, Arp</td>
+                        <td>0&ndash;100</td>
+                        <td>50</td>
+                        <td>Per-note chance of retriggers, a euclidean variant or an arpeggio</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Note Prob</td>
+                        <td>0&ndash;100</td>
+                        <td>50</td>
+                        <td>Per-note chance that the note's play probability is randomized</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Depth</td>
+                        <td>0&ndash;100</td>
+                        <td>100</td>
+                        <td>How far that draw goes (100 reaches down to 0.2)</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Variant</td>
+                        <td>(none), basic, fill, roll, sparse, dense</td>
+                        <td>(none)</td>
+                        <td>Variation applied at each loop</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Density</td>
+                        <td>-1 to 1</td>
+                        <td>Auto</td>
+                        <td>Density offset per loop (-1 = automatic)</td>
                     </tr>
                 </tbody>
             </table>
@@ -973,17 +970,22 @@
             <hr />
 
             <h2 id="5-note-editor">5. Note Editor</h2>
-            <p>The Note Editor opens when you click a note in the Pattern Panel. It shows per-note parameters.</p>
+            <p>
+                The Note Editor appears in the Track Editor area when you click a note in the Pattern Panel or Piano
+                Roll. It has three knobs and four tabs: <strong>Trig</strong>, <strong>Retr</strong>,
+                <strong>Eucl</strong> and <strong>Arp</strong>.
+            </p>
             <h3>Header</h3>
             <ul>
-                <li>Track name, position (beat X step Y), and close button.</li>
+                <li>Track name and position (beat X step Y).</li>
             </ul>
 
             <h3>Vel / Pitch / Pan</h3>
             <p>
                 Velocity and pitch can also be edited directly in the grid: drag a note up/down or left/right, or use
                 <strong>Shift + &uarr;/&darr;</strong> and <strong>Shift + &larr;/&rarr;</strong> on a note picked with
-                the mouse (see <a href="#3-pattern-panel">Pattern Panel &rarr; Editing a note's velocity &amp; pitch</a>).
+                the mouse (see
+                <a href="#3-pattern-panel">Pattern Panel &rarr; Editing a note's velocity &amp; pitch</a>).
             </p>
             <table>
                 <thead>
@@ -1016,7 +1018,7 @@
                 </tbody>
             </table>
 
-            <h3>Triggers</h3>
+            <h3>Trig</h3>
             <table>
                 <thead>
                     <tr>
@@ -1028,29 +1030,28 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Every</strong></td>
-                        <td>1–16</td>
+                        <td><strong>Passes</strong></td>
+                        <td>1&ndash;16</td>
                         <td>1</td>
                         <td>Play every N-th loop (1 = every loop)</td>
                     </tr>
                     <tr>
-                        <td><strong>Pos</strong></td>
-                        <td>0–15</td>
+                        <td><strong>Phase</strong></td>
+                        <td>0&ndash;15</td>
                         <td>0</td>
-                        <td>Phase offset for trigger frequency</td>
+                        <td>Which of those loops the note plays on</td>
                     </tr>
                     <tr>
                         <td><strong>Prob</strong></td>
-                        <td>0–1</td>
+                        <td>0&ndash;1</td>
                         <td>1</td>
                         <td>Probability of triggering (1 = 100%)</td>
                     </tr>
                 </tbody>
             </table>
-            <p><strong>How triggers work:</strong></p>
-            <p>A note triggers when: <code>(currentLoop + pos) % every === 0</code></p>
+            <p>A note triggers when: <code>(currentLoop + phase) % passes === 0</code></p>
 
-            <h3>Retrig</h3>
+            <h3>Retr</h3>
             <table>
                 <thead>
                     <tr>
@@ -1063,82 +1064,97 @@
                 <tbody>
                     <tr>
                         <td><strong>Retrig</strong></td>
-                        <td>1–16</td>
+                        <td>1&ndash;16</td>
                         <td>1</td>
                         <td>Number of retrigger sub-hits</td>
                     </tr>
                     <tr>
                         <td><strong>Rate</strong></td>
-                        <td>1–16</td>
+                        <td>1&ndash;16</td>
                         <td>1</td>
                         <td>Spacing between retrigger hits</td>
                     </tr>
                     <tr>
-                        <td><strong>Eucl</strong></td>
-                        <td>0–16</td>
-                        <td>0</td>
-                        <td>Euclidean fill: adds N evenly-spaced sub-hits between this note and the next</td>
-                    </tr>
-                    <tr>
                         <td><strong>Prob</strong></td>
-                        <td>0–1</td>
+                        <td>0&ndash;1</td>
                         <td>1</td>
-                        <td>Probability for retrig, euclidean, and arp sub-notes (1 = 100%)</td>
+                        <td>
+                            Probability for retrig, euclidean and arp sub-notes (1 = 100%). The base note is always
+                            played.
+                        </td>
                     </tr>
                 </tbody>
             </table>
-            <p>
-                <strong>Euclidean fill:</strong> Adds N evenly-spaced notes between this note and the next note in the
-                track, creating complex rhythmic patterns.
-            </p>
-            <p>
-                <strong>Retrig Prob:</strong> This probability controls whether retrig sub-hits, euclidean fill
-                sub-hits, and arp sub-notes are actually played. The base note (first hit) is always played.
-            </p>
 
-            <h3>Arpeggiator</h3>
+            <h3>Eucl</h3>
             <table>
                 <thead>
                     <tr>
                         <th>Control</th>
-                        <th>Options/Range</th>
+                        <th>Range</th>
                         <th>Default</th>
                         <th>Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
+                        <td><strong>Eucl</strong></td>
+                        <td>0&ndash;16</td>
+                        <td>0</td>
+                        <td>Adds N evenly-spaced sub-hits between this note and the next</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rot</strong></td>
+                        <td>0&ndash;15</td>
+                        <td>0</td>
+                        <td>Rotates the euclidean sub-hits</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Prob</strong></td>
+                        <td>0&ndash;1</td>
+                        <td>1</td>
+                        <td>Same probability as on the Retr tab</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Arp</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Control</th>
+                        <th>Options / Range</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
                         <td><strong>Scale</strong></td>
-                        <td>major, minor, pentatonic, etc.</td>
-                        <td>major</td>
+                        <td>
+                            chromatic, major, natural/harmonic/melodic minor, the modes, blues, pentatonic major/minor,
+                            diminished, whole tone&hellip;
+                        </td>
                         <td>Musical scale for arp intervals</td>
                     </tr>
                     <tr>
                         <td><strong>Dir</strong></td>
-                        <td>up, down, updown</td>
-                        <td>up</td>
+                        <td>up, down, updown, random</td>
                         <td>Arpeggio direction</td>
                     </tr>
                     <tr>
                         <td><strong>Range</strong></td>
-                        <td>0–12</td>
-                        <td>0</td>
+                        <td>0&ndash;12</td>
                         <td>Number of arp notes (0 = disabled)</td>
                     </tr>
                 </tbody>
             </table>
-            <p><strong>How arpeggiator works:</strong></p>
-            <ul>
-                <li>When <code>Range > 0</code>, generates pitch offsets from the selected scale</li>
-                <li>Arp sub-notes use the Retrig Prob probability</li>
-            </ul>
 
             <hr />
 
             <h2 id="6-tools-panel">6. Tools Panel</h2>
             <p>
-                The Tools Panel opens when clicking the "Tools" button in the toolbar. It has three tabs: Pattern,
-                Export, and Import.
+                The Tools Panel opens with the <strong>&#9881;</strong> button in the toolbar (desktop only). It has six
+                tabs: Pattern, Export, Import, Status, MIDI and Cache.
             </p>
 
             <h3>Pattern Tab</h3>
@@ -1151,7 +1167,7 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Compact</strong></td>
+                        <td><strong>Compact Tracks</strong></td>
                         <td>
                             Detects repeating note patterns across tracks and adds loop points to minimize the number of
                             notes
@@ -1175,11 +1191,6 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Export PATTERN</strong></td>
-                        <td><code>.json</code></td>
-                        <td>Exports pattern data (strips defaults, keeps only changed values)</td>
-                    </tr>
-                    <tr>
                         <td><strong>Export MIDI</strong></td>
                         <td><code>.mid</code></td>
                         <td>Exports as Standard MIDI File (SMF Type 1, multi-track)</td>
@@ -1187,7 +1198,12 @@
                     <tr>
                         <td><strong>Export WAV</strong></td>
                         <td><code>.wav</code></td>
-                        <td>Renders audio using OfflineAudioContext</td>
+                        <td>Renders the selected pattern to audio</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Export Song</strong></td>
+                        <td><code>.wav</code></td>
+                        <td>Renders the selected arrangement (every clip, layered, at the song's tempo)</td>
                     </tr>
                 </tbody>
             </table>
@@ -1212,8 +1228,9 @@
             </table>
 
             <p>
-                <strong>Exports apply to the selected pattern.</strong> Filenames:
-                <code>ordrumbox-{patternName}.{ext}</code>
+                <strong>Export MIDI and Export WAV apply to the selected pattern.</strong> Filenames:
+                <code>ordrumbox-{patternName}.{ext}</code>. To save a pattern as JSON, use <strong>↓</strong> in the
+                pattern header or <strong>Ctrl/Cmd + S</strong>.
             </p>
             <p>
                 <strong>Which tracks are exported:</strong> the same rule as playback — if at least one track is soloed,
@@ -1261,6 +1278,51 @@
             </ul>
 
             <h3>Import Tab</h3>
+            <p>
+                <strong>Import MIDI</strong> opens a file picker for <code>.mid</code> / <code>.midi</code> files and
+                imports the file into new patterns. A long file is split into patterns of 32 beats, up to 16 patterns.
+            </p>
+            <p>
+                JSON patterns are imported with <strong>↑</strong> in the pattern header; folders of samples with
+                <strong>Import Directory</strong> in the Drumkit Manager.
+            </p>
+
+            <h3>Status Tab</h3>
+            <p>
+                Shows the state of Web MIDI with one LED per line: <strong>Support</strong>, <strong>Ready</strong>,
+                <strong>Inputs</strong>, <strong>Ext Sync</strong> and <strong>Activity</strong>.
+            </p>
+
+            <h3>MIDI Tab</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Control</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Output</strong></td>
+                        <td>MIDI output device</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Enable MIDI</strong></td>
+                        <td>Connects or disconnects MIDI (the browser may ask for permission)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Toggle Sync</strong></td>
+                        <td>Switches between the internal clock and an external MIDI clock</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Cache Tab</h3>
+            <p>
+                Lists what the application keeps in the browser (patterns, drumkits, samples, settings, songs, synth
+                presets) with size and date. Each line can be removed with <strong>&#10005;</strong>; on desktop, all
+                but samples can also be read as JSON.
+            </p>
             <table>
                 <thead>
                     <tr>
@@ -1270,21 +1332,18 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Import PATTERN</strong></td>
-                        <td>Opens file picker for <code>.json</code> files, imports as a new pattern</td>
+                        <td><strong>Refresh</strong></td>
+                        <td>Reloads the list</td>
                     </tr>
                     <tr>
-                        <td><strong>Import MIDI</strong></td>
-                        <td>
-                            Opens file picker for <code>.mid</code> / <code>.midi</code> files, imports MIDI into new
-                            pattern(s)
-                        </td>
+                        <td><strong>Clear Patterns / Drumkits / Samples</strong></td>
+                        <td>Empties that part of the cache</td>
                     </tr>
                     <tr>
-                        <td><strong>Import Directory</strong></td>
+                        <td><strong>Factory Reset</strong></td>
                         <td>
-                            Opens folder picker for audio files (<code>.wav</code>, <code>.flac</code>), imports folder
-                            contents as a new drumkit
+                            <strong>Clears all cached data at once, without confirmation.</strong> Export anything you
+                            want to keep first.
                         </td>
                     </tr>
                 </tbody>
@@ -1294,15 +1353,15 @@
 
             <h2 id="7-output-panel">7. Output Panel</h2>
             <p>
-                The Output Panel opens when clicking the "Output" button in the toolbar. It provides master mixing
-                controls and a real-time spectrum analyzer.
+                The Output Panel opens with the application on desktop, and when you click the
+                <strong>Master</strong> row of the pattern grid or the <strong>Master</strong> tab on mobile. It has
+                three tabs &mdash; <strong>vol</strong>, <strong>Comp</strong> and <strong>Flt</strong> &mdash; and a
+                real-time spectrum analyzer. Its settings are not part of the undo history: to revert, move the control
+                back.
             </p>
 
             <h3>Master</h3>
-            <p>
-                The Volume tab features a rotary knob for master output volume, displayed above the real-time spectrum
-                analyzer.
-            </p>
+            <p>The vol tab holds the master output volume knob.</p>
             <table>
                 <thead>
                     <tr>
@@ -1355,8 +1414,8 @@
                 is: <code>Pre-Gain &rarr; Compressor &rarr; Low-cut &rarr; High-cut &rarr; Master Gain</code>.
             </p>
             <p>
-                The <strong>power button</strong> (&#9889; icon, top-right) toggles the compressor on/off. Green glow =
-                active, dimmed = bypassed.
+                The <strong>power button</strong> (&#9889; icon, top-right) bypasses the whole block: pre-gain,
+                compressor <strong>and</strong> both filters. Green glow = active, dimmed = bypassed.
             </p>
             <table>
                 <thead>
@@ -1421,10 +1480,10 @@
                 </tbody>
             </table>
             <p>
-                <strong>Knob interaction:</strong> Vertical drag to change value. Arrow keys for precision (±step).
-                Shift+drag or Shift+arrows for fine mode (±0.1 step). Double-click to reset to default. Right-click
-                opens a numeric input to type an exact value (clamped to min/max and snapped to step). The same applies
-                to the sliders (Loops, BPM, pattern settings).
+                <strong>Knob interaction:</strong> Vertical drag to change value. Arrow keys move one step. Shift or
+                Alt/Option + arrows for fine mode (&times;0.1), Ctrl/Cmd + arrows for large steps (&times;10).
+                Shift+drag is fine mode too. Double-click to reset to default. Right-click opens a numeric input to type
+                an exact value (clamped to min/max and snapped to step). The same applies to the sliders.
             </p>
 
             <h3>Spectrum Analyzer</h3>
@@ -1437,10 +1496,15 @@
 
             <h2 id="8-synth-editor">8. Synth Editor</h2>
             <p>
-                The Synth Editor is a full-screen overlay for editing soft synthesizer parameters. It opens from the
-                Track Editor's "Edit" button when a generated sound is selected.
+                The Synth Editor edits soft-synthesizer presets. Open it with the <strong>Synth</strong> view button (or
+                the <strong>Synth</strong> tab on mobile). It shows the preset of the selected track, or the first
+                preset if the track plays a sample. Parameters are arranged in four tabs: <strong>OSC</strong>,
+                <strong>FLT</strong>, <strong>MOD</strong> and <strong>ENV</strong>.
             </p>
-            <p><strong>Header:</strong> OK (saves changes) / Cancel (reverts) buttons.</p>
+            <p>
+                Edits apply and save immediately, and they are not part of the undo history &mdash; use
+                <strong>Revert</strong> to restore the preset.
+            </p>
 
             <h3>Preset Management</h3>
             <p>The footer bar provides preset management controls:</p>
@@ -1454,27 +1518,31 @@
                 <tbody>
                     <tr>
                         <td><strong>Preset selector</strong></td>
-                        <td>Dropdown to load a built-in or user preset</td>
+                        <td>Dropdown to load a preset</td>
                     </tr>
                     <tr>
-                        <td><strong>Save</strong></td>
-                        <td>Save current settings to the selected preset</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Revert</strong></td>
-                        <td>Revert to the last saved state</td>
+                        <td><strong>✕ (Delete)</strong></td>
+                        <td>Delete the current preset</td>
                     </tr>
                     <tr>
                         <td><strong>+ (New)</strong></td>
-                        <td>Create a new user preset</td>
+                        <td>Create a new preset</td>
                     </tr>
                     <tr>
                         <td><strong>⧉ (Duplicate)</strong></td>
                         <td>Duplicate the current preset</td>
                     </tr>
                     <tr>
-                        <td><strong>✕ (Delete)</strong></td>
-                        <td>Delete the current user preset</td>
+                        <td><strong>Revert</strong></td>
+                        <td>Restore the original settings of the preset</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Export</strong></td>
+                        <td>Save the synth sounds as a JSON file</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Import</strong></td>
+                        <td>Load synth sounds from a JSON file</td>
                     </tr>
                 </tbody>
             </table>
@@ -1515,13 +1583,16 @@
                         <td>Synth output volume</td>
                     </tr>
                     <tr>
-                        <td><strong>slide</strong></td>
-                        <td>0–500 ms</td>
+                        <td><strong>subGain</strong></td>
+                        <td>0–1</td>
                         <td>0</td>
-                        <td>
-                            Portamento/glide time between consecutive notes. When &gt; 0, pitch slides smoothly from the
-                            previous note to the new one.
-                        </td>
+                        <td>Sub-oscillator level</td>
+                    </tr>
+                    <tr>
+                        <td><strong>pitchPunch</strong></td>
+                        <td>0–1</td>
+                        <td>0</td>
+                        <td>Amount of the pitch punch at the start of the note</td>
                     </tr>
                 </tbody>
             </table>
@@ -1558,9 +1629,9 @@
                     </tr>
                     <tr>
                         <td><strong>wave</strong></td>
-                        <td>sine, triangle, sawtooth, square</td>
+                        <td>sine, triangle, sawtooth, square, random</td>
                         <td>sine</td>
-                        <td>Waveform</td>
+                        <td>Waveform. <strong>random</strong> holds a new random value for each cycle.</td>
                     </tr>
                 </tbody>
             </table>
@@ -1652,7 +1723,7 @@
                 <tbody>
                     <tr>
                         <td><strong>type</strong></td>
-                        <td>lowpass, highpass, bandpass, notch</td>
+                        <td>lowpass, highpass, bandpass</td>
                         <td>lowpass</td>
                         <td>Filter type (TPT SVF topology)</td>
                     </tr>
@@ -1667,6 +1738,12 @@
                         <td>0.1–24</td>
                         <td>1</td>
                         <td>Resonance (higher = narrower peak at cutoff)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>drive</strong></td>
+                        <td>0–1</td>
+                        <td>0</td>
+                        <td>Filter drive</td>
                     </tr>
                     <tr>
                         <td><strong>Env</strong></td>
@@ -1705,15 +1782,15 @@
                     </tr>
                     <tr>
                         <td><strong>wave</strong></td>
-                        <td>sine, triangle, sawtooth, square</td>
+                        <td>sine, triangle, sawtooth, square, random</td>
                         <td>sine</td>
                         <td>LFO waveform</td>
                     </tr>
                     <tr>
                         <td><strong>freq</strong></td>
-                        <td>0–20</td>
+                        <td>0.01–5 Hz (log)</td>
                         <td>0</td>
-                        <td>LFO rate in cycles per 4 beats</td>
+                        <td>LFO rate</td>
                     </tr>
                     <tr>
                         <td><strong>depth</strong></td>
@@ -1723,8 +1800,8 @@
                     </tr>
                     <tr>
                         <td><strong>sync</strong></td>
-                        <td>off, 1/1, 1/2, 1/4, 1/8, 1/16, 1/8T, 1/16T</td>
-                        <td>off</td>
+                        <td>free, 1/1, 1/2, 1/4, 1/8, 1/16, 1/8T, 1/16T</td>
+                        <td>free</td>
                         <td>
                             Tempo sync. When set to a note value, the LFO rate locks to the pattern BPM instead of the
                             free-running freq. T = triplet.
@@ -1739,104 +1816,40 @@
                     <tr>
                         <th>Target</th>
                         <th>Description</th>
-                        <th>Scale</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td><strong>NOT</strong></td>
                         <td>LFO disabled</td>
-                        <td>—</td>
                     </tr>
                     <tr>
-                        <td><strong>FLT</strong></td>
-                        <td>Filter cutoff frequency</td>
-                        <td>×1000 Hz</td>
+                        <td><strong>masterVolume, subGain, pitchPunch</strong></td>
+                        <td>Master group</td>
                     </tr>
                     <tr>
-                        <td><strong>VCO1</strong></td>
-                        <td>VCO1 coarse frequency modulation</td>
-                        <td>×1000 Hz</td>
+                        <td><strong>vco1/2/3.gain, .octave, .detune</strong></td>
+                        <td>Oscillator level and tuning</td>
                     </tr>
                     <tr>
-                        <td><strong>VCO2</strong></td>
-                        <td>VCO2 coarse frequency modulation</td>
-                        <td>×1000 Hz</td>
+                        <td><strong>filter.freq, filter.Q, filter.drive</strong></td>
+                        <td>Filter</td>
                     </tr>
                     <tr>
-                        <td><strong>VCO3</strong></td>
-                        <td>VCO3 coarse frequency modulation</td>
-                        <td>×1000 Hz</td>
-                    </tr>
-                    <tr>
-                        <td><strong>masterVolume</strong></td>
-                        <td>Master volume tremolo</td>
-                        <td>×1</td>
-                    </tr>
-                    <tr>
-                        <td><strong>vco1.gain</strong></td>
-                        <td>VCO1 amplitude</td>
-                        <td>×1</td>
-                    </tr>
-                    <tr>
-                        <td><strong>vco1.detune</strong></td>
-                        <td>VCO1 fine detune</td>
-                        <td>×100 cents</td>
-                    </tr>
-                    <tr>
-                        <td><strong>vco1.octave</strong></td>
-                        <td>VCO1 octave offset</td>
-                        <td>×1200 cents</td>
-                    </tr>
-                    <tr>
-                        <td><strong>vco2.gain</strong></td>
-                        <td>VCO2 amplitude</td>
-                        <td>×1</td>
-                    </tr>
-                    <tr>
-                        <td><strong>vco2.detune</strong></td>
-                        <td>VCO2 fine detune</td>
-                        <td>×100 cents</td>
-                    </tr>
-                    <tr>
-                        <td><strong>vco2.octave</strong></td>
-                        <td>VCO2 octave offset</td>
-                        <td>×1200 cents</td>
-                    </tr>
-                    <tr>
-                        <td><strong>vco3.gain</strong></td>
-                        <td>VCO3 amplitude</td>
-                        <td>×1</td>
-                    </tr>
-                    <tr>
-                        <td><strong>vco3.detune</strong></td>
-                        <td>VCO3 fine detune</td>
-                        <td>×100 cents</td>
-                    </tr>
-                    <tr>
-                        <td><strong>vco3.octave</strong></td>
-                        <td>VCO3 octave offset</td>
-                        <td>×1200 cents</td>
-                    </tr>
-                    <tr>
-                        <td><strong>filter.freq</strong></td>
-                        <td>Filter cutoff frequency (same as FLT)</td>
-                        <td>×1000 Hz</td>
-                    </tr>
-                    <tr>
-                        <td><strong>filter.filterEnvelopeAmount</strong></td>
+                        <td><strong>filterEnv.filterEnvelopeAmount</strong></td>
                         <td>Filter envelope depth</td>
-                        <td>×1000</td>
                     </tr>
                     <tr>
-                        <td><strong>filter.Q</strong></td>
-                        <td>Filter resonance</td>
-                        <td>×24</td>
+                        <td><strong>noise.mix, noise.filterFreq, noise.filterQ</strong></td>
+                        <td>Noise generator</td>
                     </tr>
                     <tr>
-                        <td><strong>noise.mix</strong></td>
-                        <td>Noise generator level</td>
-                        <td>×1</td>
+                        <td><strong>fm.amount, fm.algo</strong></td>
+                        <td>Frequency modulation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>envelope.*, modEnvelope.*</strong></td>
+                        <td>Attack, decay, sustain and release of both envelopes</td>
                     </tr>
                 </tbody>
             </table>
@@ -1860,7 +1873,7 @@
                     </tr>
                     <tr>
                         <td><strong>filterType</strong></td>
-                        <td>lowpass, highpass, bandpass, notch</td>
+                        <td>lowpass, highpass, bandpass</td>
                         <td>highpass</td>
                         <td>Noise filter type</td>
                     </tr>
@@ -1917,20 +1930,64 @@
                 </tbody>
             </table>
 
+            <h3>Mod Envelope</h3>
+            <p>A second envelope that modulates another part of the synth.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Options / Range</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>target</strong></td>
+                        <td>Off, Filter, Pitch, FM, Shape</td>
+                        <td>Off</td>
+                        <td>What the envelope modulates</td>
+                    </tr>
+                    <tr>
+                        <td><strong>attack</strong></td>
+                        <td>0&ndash;0.5 s</td>
+                        <td>0</td>
+                        <td>Attack time</td>
+                    </tr>
+                    <tr>
+                        <td><strong>decay</strong></td>
+                        <td>0&ndash;1 s</td>
+                        <td>0.12</td>
+                        <td>Decay time</td>
+                    </tr>
+                    <tr>
+                        <td><strong>sustain</strong></td>
+                        <td>0&ndash;1</td>
+                        <td>0</td>
+                        <td>Sustain level</td>
+                    </tr>
+                    <tr>
+                        <td><strong>release</strong></td>
+                        <td>0&ndash;0.5 s</td>
+                        <td>0.1</td>
+                        <td>Release time</td>
+                    </tr>
+                </tbody>
+            </table>
+
             <hr />
 
             <h2 id="9-piano-roll">9. Piano Roll</h2>
             <p>
                 The Piano Roll is an alternative view to the Pattern Panel step grid. It displays notes on a vertical
-                pitch axis (MIDI-style) with time on the horizontal axis. Open it from the toolbar or view switcher.
+                pitch axis (MIDI-style) with time on the horizontal axis. Open it with the <strong>proll</strong> view
+                button (or the <strong>Piano</strong> tab on mobile). It edits the selected track.
             </p>
             <h3>Layout</h3>
             <ul>
                 <li><strong>Keys column</strong> (left): piano keyboard showing MIDI note names (C3, C#3, D3, etc.)</li>
                 <li><strong>Grid</strong>: time flows left-to-right, pitch flows bottom-to-top</li>
-                <li>
-                    <strong>Note measures</strong>: horizontal rectangles — length = duration, vertical position = pitch
-                </li>
+                <li><strong>Notes</strong>: horizontal rectangles — length = duration, vertical position = pitch</li>
             </ul>
             <h3>Interactions</h3>
             <table>
@@ -1978,6 +2035,10 @@
                         <td>Create or toggle note at cursor position</td>
                     </tr>
                     <tr>
+                        <td>Delete / Backspace</td>
+                        <td>Delete the note at the cursor</td>
+                    </tr>
+                    <tr>
                         <td>Right-click grid</td>
                         <td>
                             Note menu: Add note, Delete note, Add minor chord, Add major chord (chord uses the clicked
@@ -2003,109 +2064,109 @@
                 track pitch), so a note can never be transposed off the grid.
             </p>
             <p>
-                <strong>Page navigation:</strong> The piano roll displays one page of beats at a time (default: 4
-                beats). Use the page buttons in the toolbar to navigate between pages.
+                <strong>Page navigation:</strong> The piano roll displays one page (4 beats) at a time. Use the &#9664;
+                / &#9654; buttons of the panel or the toolbar, or <strong>Shift + mouse wheel</strong>.
             </p>
 
             <hr />
 
-            <h2 id="10-patterns-panel">10. Patterns Panel</h2>
+            <h2 id="10-song-panel">10. Song Panel</h2>
             <p>
-                The Patterns Panel manages all patterns in the current song. Open it from the toolbar pattern selector.
+                The Song Panel holds the pattern list and chains patterns into an arrangement. Open it with the
+                <strong>Song</strong> view button. While this view is shown, playback runs the whole arrangement at the
+                song's tempo.
             </p>
             <h3>Pattern List</h3>
             <ul>
-                <li>Shows all patterns in the current song</li>
-                <li>Click a pattern to select it and load it into the sequencer</li>
+                <li>Click a pattern to select it</li>
                 <li>Double-click a pattern name to rename it</li>
+                <li>Right-click a pattern to add it to the arrangement at the current measure</li>
             </ul>
-            <h3>Actions</h3>
+            <p>Patterns are created and deleted with the buttons of the pattern header (see Pattern Panel).</p>
+
+            <h3>Arrangement</h3>
+            <p>
+                Time runs left to right, one cell per measure. Each pattern used has its own row, and each clip is a
+                rectangle over the measures it plays. A cursor shows the position.
+            </p>
             <table>
                 <thead>
                     <tr>
-                        <th>Button</th>
-                        <th>Description</th>
+                        <th>Action</th>
+                        <th>Result</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>+ Pattern</strong></td>
-                        <td>Adds a new empty pattern to the song</td>
+                        <td>Click a measure number</td>
+                        <td>Moves the cursor there; the next play starts from that measure</td>
                     </tr>
                     <tr>
-                        <td><strong>Rename</strong></td>
-                        <td>Rename the selected pattern</td>
+                        <td>Right-click an empty cell</td>
+                        <td><strong>Add here</strong>: adds the pattern of that row at that measure</td>
                     </tr>
                     <tr>
-                        <td><strong>Delete</strong></td>
-                        <td>Delete the selected pattern (with confirmation)</td>
+                        <td>Right-click a clip</td>
+                        <td>
+                            <strong>Next</strong> repeats the pattern right after the clip;
+                            <strong>Delete</strong> removes the clip
+                        </td>
                     </tr>
                     <tr>
-                        <td><strong>Save Song</strong></td>
-                        <td>Save the entire song (all patterns) to IndexedDB</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Load Song</strong></td>
-                        <td>Load a previously saved song from IndexedDB</td>
+                        <td>Right-click a pattern name</td>
+                        <td>
+                            <strong>Add at measure N</strong> adds a clip at the cursor;
+                            <strong>Delete row</strong> removes every clip of that pattern
+                        </td>
                     </tr>
                 </tbody>
             </table>
-            <h3>Song Name</h3>
-            <p>Double-click the song name at the top to rename it. Default: "Untitled".</p>
-
-            <hr />
-
-            <h2 id="11-pattern-settings">11. Pattern Settings</h2>
             <p>
-                The Pattern Settings panel provides quick access to pattern-level parameters. On mobile, it opens from
-                the toolbar gear icon. On desktop, it's accessible from the toolbar.
+                Clips are placed from these menus; they cannot be dragged. Render an arrangement with
+                <strong>Export Song</strong> in the Tools Panel.
             </p>
+
+            <h3>Song Actions</h3>
             <table>
                 <thead>
                     <tr>
                         <th>Control</th>
-                        <th>Range</th>
                         <th>Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Page</strong></td>
-                        <td>P1, P2, ...</td>
-                        <td>Navigate between pages of the pattern (each page = 4 beats by default)</td>
+                        <td><strong>Song</strong></td>
+                        <td>Double-click the name to rename the song (default: "Untitled")</td>
                     </tr>
                     <tr>
-                        <td><strong>Beats</strong></td>
-                        <td>1–16</td>
-                        <td>Number of beats in the pattern</td>
+                        <td><strong>Description</strong></td>
+                        <td>Free text, edited in place</td>
                     </tr>
                     <tr>
-                        <td><strong>Drumkit</strong></td>
-                        <td>all kits</td>
+                        <td><strong>Arrangement</strong></td>
+                        <td>Chooses the arrangement shown in the grid</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Save / Load</strong></td>
+                        <td>Saves the song in the browser (IndexedDB), or loads one saved there</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Export / Import</strong></td>
                         <td>
-                            Switch drumkit — same rule as the toolbar Kit control (only tracks with
-                            <strong>auto</strong> enabled are re-assigned)
+                            Saves the song to an <code>.odbox</code> file, or loads a <code>.odbox</code> or
+                            <code>.json</code> file
                         </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Pattern</strong></td>
-                        <td>all patterns</td>
-                        <td>Switch to a different pattern</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Generation</strong></td>
-                        <td>Drum / Bass / Chords</td>
-                        <td>Auto-generate notes for the selected category using the pattern generator</td>
                     </tr>
                 </tbody>
             </table>
 
             <hr />
 
-            <h2 id="12-drumkit-manager">12. Drumkit Manager</h2>
+            <h2 id="11-drumkit-manager">11. Drumkit Manager</h2>
             <p>
-                The Drumkit Manager lets you inspect and edit individual samples in a drumkit. Open it from the toolbar
-                or Track Editor.
+                The Drumkit Manager lets you inspect and edit the samples of a drumkit. Open it by clicking the
+                <strong>Drumkit</strong> label in the toolbar.
             </p>
             <h3>Header Actions</h3>
             <table>
@@ -2204,15 +2265,22 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>+ Add</strong></td>
+                        <td><strong>Add sample</strong></td>
                         <td>Add a WAV/FLAC/MP3/AAC audio file to the current kit</td>
                     </tr>
                     <tr>
-                        <td><strong>Auto-detect</strong></td>
+                        <td><strong>Import Directory</strong></td>
+                        <td>
+                            Import a folder of <code>.wav</code> / <code>.flac</code> files as a new drumkit, matched to
+                            instruments automatically
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Auto-detect all</strong></td>
                         <td>Auto-detect and assign instruments for all tracks in the kit</td>
                     </tr>
                     <tr>
-                        <td><strong>Normalize</strong></td>
+                        <td><strong>Normalize all</strong></td>
                         <td>Normalize all samples to 0 dB peak</td>
                     </tr>
                 </tbody>
@@ -2220,9 +2288,10 @@
 
             <hr />
 
-            <h2 id="13-about-panel">13. About Panel</h2>
+            <h2 id="12-about-panel">12. About Panel</h2>
             <p>
-                The About Panel displays application information and PWA installation options. Open it from the toolbar.
+                The About Panel displays application information and PWA installation options. Open it with the
+                <strong>&#8942;</strong> button in the toolbar.
             </p>
             <h3>Info Tab</h3>
             <table>
@@ -2245,6 +2314,10 @@
                         <td><strong>License</strong></td>
                         <td>MIT</td>
                     </tr>
+                    <tr>
+                        <td><strong>Font</strong></td>
+                        <td>Press Start 2P (SIL OFL 1.1)</td>
+                    </tr>
                 </tbody>
             </table>
             <h3>PWA Tab</h3>
@@ -2259,51 +2332,51 @@
 
             <hr />
 
-            <h2 id="14-mobile-tab-bar">14. Mobile Tab Bar</h2>
+            <h2 id="13-mobile-layout">13. Mobile Layout</h2>
             <p>
-                On mobile viewports (width &le; 768px), a bottom tab bar replaces the toolbar for navigation between
-                views.
+                On small screens (width &le; 768 px or height &le; 480 px, and on phones), a bottom tab bar switches
+                between views.
             </p>
-            <h3>Tabs</h3>
             <table>
                 <thead>
                     <tr>
                         <th>Tab</th>
                         <th>View</th>
-                        <th>Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td><strong>Sequencer</strong></td>
-                        <td>Pattern grid</td>
-                        <td>Step sequencer view (default on mobile)</td>
+                        <td>Pattern grid (default)</td>
                     </tr>
                     <tr>
                         <td><strong>Track</strong></td>
-                        <td>Track Editor</td>
-                        <td>Opens the Track Editor for the selected track</td>
+                        <td>Track Editor for the selected track</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Piano</strong></td>
+                        <td>Piano Roll</td>
                     </tr>
                     <tr>
                         <td><strong>Synth</strong></td>
                         <td>Synth Editor</td>
-                        <td>Opens the Synth Editor (if a synth sound is selected)</td>
                     </tr>
                     <tr>
-                        <td><strong>Tools</strong></td>
-                        <td>Tools Panel</td>
-                        <td>Opens the Tools panel (export/import, settings)</td>
+                        <td><strong>Master</strong></td>
+                        <td>Output Panel</td>
                     </tr>
                 </tbody>
             </table>
             <p>
-                The active tab is highlighted. Tapping the same tab again does nothing. Switching views dispatches the
-                corresponding event and updates the main display.
+                The toolbar keeps playback, BPM, pattern, page, beats, drumkit, generation and the
+                <strong>&#8942;</strong> About button. The <strong>History</strong> and <strong>View</strong> groups and
+                the Tools button are desktop only, so undo buttons, the Song Panel and the Tools Panel are not available
+                on mobile.
             </p>
 
             <hr />
 
-            <h2 id="15-keyboard-shortcuts">15. Keyboard Shortcuts</h2>
+            <h2 id="14-keyboard-shortcuts">14. Keyboard Shortcuts</h2>
             <table>
                 <thead>
                     <tr>
@@ -2318,7 +2391,7 @@
                     </tr>
                     <tr>
                         <td><strong>B</strong></td>
-                        <td>Auto-generate a new pattern</td>
+                        <td>Generate a new pattern (the current one is kept)</td>
                     </tr>
                     <tr>
                         <td><strong>F</strong></td>
@@ -2373,7 +2446,7 @@
                         <td>Undo</td>
                     </tr>
                     <tr>
-                        <td><strong>Ctrl/Cmd + Y</strong></td>
+                        <td><strong>Ctrl/Cmd + Y</strong> or <strong>Ctrl/Cmd + Shift + Z</strong></td>
                         <td>Redo</td>
                     </tr>
                     <tr>
@@ -2383,7 +2456,8 @@
                     <tr>
                         <td><strong>Shift + Arrow</strong></td>
                         <td>
-                            Adjust focused slider by 10 steps · extend multi-step selection in the pattern grid ·
+                            Adjust focused slider or knob by 0.1 step (fine) · extend multi-step selection in the
+                            pattern grid ·
                             <strong>edit the selected note</strong> (&uarr;/&darr; velocity, &larr;/&rarr; pitch) in the
                             pattern grid (note picked with the mouse) and in the piano roll
                         </td>
@@ -2397,7 +2471,15 @@
                     </tr>
                     <tr>
                         <td><strong>Alt/Option + Arrow</strong></td>
-                        <td>Adjust focused slider by 0.1 step (fine)</td>
+                        <td>Adjust focused slider or knob by 0.1 step (fine)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ctrl/Cmd + Arrow</strong></td>
+                        <td>Adjust focused slider or knob by 10 steps</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Enter</strong></td>
+                        <td>Create, select or delete the note at the cursor (pattern grid and piano roll)</td>
                     </tr>
                     <tr>
                         <td><strong>Delete / Backspace</strong></td>
@@ -2418,6 +2500,10 @@
                     <tr>
                         <td><strong>Ctrl/Cmd + V</strong></td>
                         <td>Paste clipboard (step notes, or track when clipboard holds a track)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ctrl/Cmd + Shift + V</strong></td>
+                        <td>Paste the track from the clipboard</td>
                     </tr>
                     <tr>
                         <td><strong>Right-click track row</strong></td>
@@ -2444,7 +2530,7 @@
 
             <hr />
 
-            <h2 id="16-audio-signal-flow">16. Audio Signal Flow</h2>
+            <h2 id="15-audio-signal-flow">15. Audio Signal Flow</h2>
             <h3>Per-Track Signal Chain</h3>
             <pre>
 Sample/Synth &rarr; Filter &rarr; Saturation &rarr; Dry Gain &rarr; Reverb &rarr; Delay &rarr; Stereo Panner &rarr; Mixer Bus
@@ -2461,7 +2547,7 @@ Mixer Bus &rarr; Pre-Gain &rarr; Compressor &rarr; Low-cut Filter (35 Hz) &rarr;
 
             <hr />
 
-            <h2 id="17-installation--offline-use">17. Installation & Offline Use</h2>
+            <h2 id="16-installation--offline-use">16. Installation &amp; Offline Use</h2>
             <p>orDrumbox v2 can be used in three different ways:</p>
 
             <h3>1. Web Application</h3>
