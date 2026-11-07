@@ -159,8 +159,9 @@
   "patterns": [
     {
       "id": "rock",
-      "name": "rock",
+      "name": "Rock",
       "beatCount": 8,
+      "description": "Rock, 2 measures: syncopated kick, snare backbeat with ghost fills, 16th closed hats with an open hat on each &; cowbell 8ths every 6 passes, crash every 4.",
       "tags": [
         "rock",
         "default"
@@ -457,8 +458,9 @@
     },
     {
       "id": "slrock",
-      "name": "slRock",
+      "name": "Rock Ghost Notes",
       "bpm": 115,
+      "description": "Rock, 1 measure: kick on 1 and 3&, snare backbeat with ghosts on 2a and 3e, 8th hats; snare pickup on 4& 4a every 4 passes, crash every 4.",
       "tags": [
         "rock",
         "default"
@@ -619,7 +621,8 @@
     },
     {
       "id": "smrock",
-      "name": "SmRock",
+      "name": "Rock Alternating",
+      "description": "Rock, 1 measure: kick alternating between two figures from pass to pass, snare on 2 and 4, 8th hats; tom pickup every 4 passes, open hat on 4& every 2.",
       "tags": [
         "rock",
         "default"
@@ -807,7 +810,8 @@
     },
     {
       "id": "rockcow",
-      "name": "RockCow",
+      "name": "Rock Clap Fill",
+      "description": "Rock, 1 measure: kick on 1, 2& and a soft 3, snare on 2 and 4, 8th hats; clap on 3 every 4 passes, 16th clap fill on 4 every 8, cowbell roll every 3.",
       "tags": [
         "rock",
         "default"
@@ -1018,7 +1022,8 @@
     },
     {
       "id": "basrock",
-      "name": "BasRock",
+      "name": "Rock Basic",
+      "description": "Basic rock on an 8th grid, 1 measure: kick on 1, 3 and 3&, snare on 2 and 4, 8th hats with an open hat on 4&; snare pickup on 4& every 4 passes, crash every 4.",
       "tags": [
         "rock",
         "default"
@@ -1193,9 +1198,10 @@
     },
     {
       "id": "16beats",
-      "name": "16beats",
+      "name": "Rock Syncopated",
+      "description": "Rock, 1 measure: kick on 1, 2& and 3, snare on 2 and 4 with a ghost on 3e, 8th hats; snare pickup on 4& 4a every 4 passes, open hat on 3a every 2.",
       "tags": [
-        "electro",
+        "rock",
         "default"
       ],
       "tracks": [
@@ -1355,11 +1361,12 @@
     },
     {
       "id": "cmpbeat",
-      "name": "CmpBeat",
+      "name": "Breakbeat",
       "beatCount": 8,
       "bpm": 100,
+      "description": "Breakbeat, 2 measures: busy syncopated kick, snare on 2 and 4 with 3e, 4& and 4a, 16th hats; open hats every 2 and 3 passes.",
       "tags": [
-        "electro",
+        "breakbeat",
         "default"
       ],
       "tracks": [
@@ -1623,6 +1630,7 @@
       "id": "shuffle",
       "name": "Shuffle",
       "bpm": 80,
+      "description": "Shuffle on a triplet grid, 1 measure: kick on 1 and 3 with a last-triplet pickup, snare on 2 and 4, shuffled closed hats, open hat on each &; triplet snare fills every 4 passes.",
       "tags": [
         "swing",
         "default"
@@ -1831,8 +1839,9 @@
     },
     {
       "id": "hard",
-      "name": "hard",
+      "name": "Rock Fast",
       "bpm": 130,
+      "description": "Rock, 1 measure: kick on 1, 1&, 3 and 3a, snare on 2 and 4, 8th hats, open hat on 4&; tom pickup on 4e and 4a every 4 passes.",
       "tags": [
         "rock",
         "default"
@@ -1960,8 +1969,9 @@
     },
     {
       "id": "metal",
-      "name": "metal",
+      "name": "Rock Polyrhythm",
       "bpm": 130,
+      "description": "Rock, 1 measure: kick on 1 and 3a, snare on 2 and 4, closed hat on each a, open hat every 3 steps across the beat; 16th tom fill on 4 every 4 and 8 passes, crash every 6.",
       "tags": [
         "rock",
         "default"
@@ -2107,7 +2117,8 @@
     },
     {
       "id": "discofl",
-      "name": "DiscoFl",
+      "name": "Disco Toms",
+      "description": "Disco, 1 measure: four-on-the-floor kick, 16th closed hats, open hat on each e, tom figure on 1-2 and a tom fill on 4, no snare; clap on 3& and 4 every 2 passes, crashes every 8.",
       "tags": [
         "disco",
         "default"
@@ -2321,10 +2332,11 @@
     },
     {
       "id": "discobrk",
-      "name": "DiscoBrk",
-      "bpm": 80,
+      "name": "Disco Upbeat",
+      "bpm": 115,
+      "description": "Disco, 1 measure: four-on-the-floor kick, snare on every & with 2a, clap on 2 and 4, closed hats on 1, e and a, open hat on each &; pitched toms on 3-4 every 4 passes.",
       "tags": [
-        "electro",
+        "disco",
         "default"
       ],
       "tracks": [
@@ -2542,7 +2554,8 @@
     },
     {
       "id": "disco",
-      "name": "disco",
+      "name": "Disco",
+      "description": "Disco, 1 measure: four-on-the-floor kick, snare on 2 and 4, closed hats on 1, e and a, open hat on each &; tom, clap and cowbell figures every 2 to 8 passes.",
       "tags": [
         "disco",
         "default"
@@ -2769,8 +2782,9 @@
     },
     {
       "id": "batuc",
-      "name": "batuc",
+      "name": "Batucada",
       "bpm": 100,
+      "description": "Samba batucada, 1 measure: kick on each beat and its a, snare and clap syncopations over 2 beats, 16th hats with a gap on 2 and 4, open hat on 2 and 4; cowbell pickup on 4 every 4 to 8 passes.",
       "tags": [
         "samba",
         "default"
@@ -2960,9 +2974,10 @@
     },
     {
       "id": "mambofst",
-      "name": "MamboFst",
+      "name": "Latin House",
+      "description": "Latin house, 1 measure: four-on-the-floor kick, snare on every & with a 4e-&-a run, syncopated clap over 2 beats, open hat on each &; low cowbell roll every 8 passes, pitched crash accents every 4.",
       "tags": [
-        "samba",
+        "latin",
         "default"
       ],
       "tracks": [
@@ -3151,10 +3166,11 @@
     },
     {
       "id": "mambo",
-      "name": "mambo",
+      "name": "Pop",
       "bpm": 80,
+      "description": "Pop, 1 measure: kick on 1, 2&, 3 and 4&, snare on 2, a soft 4 and 4&, clap on 1, 8th hats.",
       "tags": [
-        "samba",
+        "pop",
         "default"
       ],
       "tracks": [
@@ -3280,10 +3296,11 @@
     },
     {
       "id": "march",
-      "name": "march",
+      "name": "March",
       "bpm": 90,
+      "description": "March, 1 measure: kick on 1 and 3, snare on 2 and 4 with a 16th roll on 4 building over 4 passes, closed hats around the backbeat, open hats on 1 and 3; 32nd tom figures on 3-4 every 4 to 8 passes.",
       "tags": [
-        "electro",
+        "march",
         "default"
       ],
       "tracks": [
@@ -3490,10 +3507,11 @@
     },
     {
       "id": "merengue",
-      "name": "merengue",
-      "bpm": 60,
+      "name": "Polyrhythm Kick",
+      "bpm": 75,
+      "description": "Polyrhythm, 1 measure: kick every 3 steps across the 4/4, snare on 2 and 4, open hat on each beat, syncopated closed hats; 16th clap fill on 4 every 2 passes, cowbell on 2& 2a every 4.",
       "tags": [
-        "samba",
+        "exp",
         "default"
       ],
       "tracks": [
@@ -3680,10 +3698,12 @@
     },
     {
       "id": "salsa",
-      "name": "salsa",
+      "name": "Son Clave",
       "bpm": 80,
+      "description": "Latin, 1 measure: 3-2 son clave on the clap over a four-on-the-floor kick, snare on 1&, 1a, 3e and 3&, closed hat on each &; pitched 16th toms on 4 every 6 passes.",
       "tags": [
-        "electro",
+        "latin",
+        "salsa",
         "default"
       ],
       "tracks": [
@@ -3908,8 +3928,13 @@
     },
     {
       "id": "salsagroovy",
-      "name": "SalsaGroovy",
+      "name": "Salsa",
       "bpm": 79,
+      "description": "Salsa, 1 measure: congas and low congas in a tumbao, syncopated snare and cowbell, 16th tambourine, open hat pairs, kick on 1, 2&, 3 and 4&, mono bass on 1, 1a, 2&, 3, 3a and 4&.",
+      "tags": [
+        "latin",
+        "salsa"
+      ],
       "tracks": [
         {
           "name": "KICK",
@@ -4348,10 +4373,12 @@
     },
     {
       "id": "bossa",
-      "name": "bossa",
+      "name": "Bossa Nova",
       "bpm": 60,
+      "description": "Bossa nova, 1 measure: kick on 1, 2& and 3, snare on 2, 3& and 4&, cowbell on 1, 2&, 3 and 4, 8th hats, toms on 3& and 4&; 16th tom pickup on 1 every 4 passes.",
       "tags": [
-        "samba",
+        "latin",
+        "bossa",
         "default"
       ],
       "tracks": [
@@ -4548,10 +4575,11 @@
     },
     {
       "id": "tango",
-      "name": "tango",
+      "name": "Stomp",
       "bpm": 70,
+      "description": "Stomp, 1 measure: kick and snare together on every beat, snare pickup on 4& 4a, closed hat on 1-3, clap on 4 and 4&; cowbell on 4& and crash on 4 every 8 passes.",
       "tags": [
-        "samba",
+        "march",
         "default"
       ],
       "tracks": [
@@ -4689,10 +4717,12 @@
     },
     {
       "id": "ragga",
-      "name": "ragga",
+      "name": "Dembow",
       "bpm": 80,
+      "description": "Dancehall dembow, 1 measure: kick on every beat, snare in a 3-3-2 figure (1, 1a, 2&, 3, 3a, 4&), 16th closed hats, open hat on each &.",
       "tags": [
         "reggae",
+        "dancehall",
         "default"
       ],
       "tracks": [
@@ -4837,10 +4867,11 @@
     },
     {
       "id": "rap",
-      "name": "rap",
+      "name": "Boom Bap",
       "bpm": 100,
+      "description": "Boom bap, 1 measure: kick on 1, 1&, 2&, 3& and 3a, snare on 2, 2a, 3e and 4e, 8th hats with 32nd figures every 3 to 6 passes, open hat on each &; clap rolls on 2 and 4 every 2 and 4 passes.",
       "tags": [
-        "funk",
+        "hiphop",
         "default"
       ],
       "tracks": [
@@ -5064,7 +5095,8 @@
     },
     {
       "id": "funk",
-      "name": "funk",
+      "name": "Funk",
+      "description": "Funk, 1 measure: kick on 1, 3& and 4a every 4 passes, snare on 2, 2a, 3e and 4 with ghost fills on 4e-&-a, clap on every beat, 8th hats; crash on 4& every 6.",
       "tags": [
         "funk",
         "default"
@@ -5245,9 +5277,10 @@
     },
     {
       "id": "slfunk",
-      "name": "SlFunk",
+      "name": "Funk Slow",
       "beatCount": 8,
       "bpm": 60,
+      "description": "Slow funk, 2 measures: syncopated kick with soft ghosts, snare on 4e, 6& and 8e, clap on 2, 3e, 3a, 4, 6, 7e and 8, broken 8th and 16th hats; snare fill on 8 every 4 passes.",
       "tags": [
         "funk",
         "default"
@@ -5594,8 +5627,9 @@
     },
     {
       "id": "funkfill",
-      "name": "FunkFill",
+      "name": "Funk Fill",
       "bpm": 100,
+      "description": "Funk fill, 1 measure: kick thickening from quarters to 16ths across the measure, snare on 2, 3, 4, 4& and 4a, quarter hats, toms on every &; 16th clap fill from 2& every 6 passes.",
       "tags": [
         "funk",
         "default"
@@ -5790,11 +5824,12 @@
     },
     {
       "id": "hip",
-      "name": "hip",
+      "name": "Hip-Hop",
       "beatCount": 8,
       "bpm": 110,
+      "description": "Hip-hop, 2 measures: kick on 1a, 2& and 3&, snare on 2 and 4 with a 4& 4a pickup at the end, swung 16th hats, open hat on each a, clap on 2e and around 4.",
       "tags": [
-        "funk",
+        "hiphop",
         "default"
       ],
       "tracks": [
@@ -6029,7 +6064,8 @@
     },
     {
       "id": "electro",
-      "name": "electro",
+      "name": "Electro",
+      "description": "Electro, 1 measure: kick on every beat with soft 2& and 4&, snare on 2 and 4, syncopated closed and open hats; 16th clap figures from 2e every 3 passes.",
       "tags": [
         "electro",
         "default"
@@ -6240,9 +6276,10 @@
     },
     {
       "id": "house",
-      "name": "house",
+      "name": "House",
+      "description": "House, 1 measure: four-on-the-floor kick, snare and swung clap on 2 and 4, closed hats on 1, e and a, open hat on each &; 32nd snare roll on 4 and 16th cowbell every 3 to 8 passes.",
       "tags": [
-        "electro",
+        "house",
         "default"
       ],
       "tracks": [
@@ -6489,9 +6526,10 @@
     },
     {
       "id": "house2",
-      "name": "house2",
+      "name": "House Upbeat",
+      "description": "House, 1 measure: four-on-the-floor kick, clap on every &, open hats on each e and a, tom on 2 and 4, closed-hat pickups on 2& and 4; cowbell and crash accents every 4 to 8 passes.",
       "tags": [
-        "electro",
+        "house",
         "default"
       ],
       "tracks": [
@@ -6688,9 +6726,10 @@
     },
     {
       "id": "danceit",
-      "name": "DanceIt",
+      "name": "Dance",
+      "description": "Dance, 1 measure: four-on-the-floor kick, clap on 2 and 4, open hat on each &, snare on 1e and 4a, sparse closed hats; tom pickups on 4 every 6 passes.",
       "tags": [
-        "electro",
+        "house",
         "default"
       ],
       "tracks": [
@@ -6859,9 +6898,10 @@
     },
     {
       "id": "smurf",
-      "name": "Smurf",
+      "name": "Rock Variations",
+      "description": "Rock, 1 measure: kick on 1 and 3&, snare on 2 and 4 with ghosts on 2& and 3e every 2 passes, 8th hats; tom, open hat, cowbell, crash and a 16th clap fill every 4 to 16 passes.",
       "tags": [
-        "electro",
+        "rock",
         "default"
       ],
       "tracks": [
@@ -7067,10 +7107,12 @@
     },
     {
       "id": "slowtrap",
-      "name": "SlowTrap",
+      "name": "Trap Half-Time",
       "bpm": 100,
+      "description": "Trap with a half-time snare on 3, 1 measure: kick on 1 and 2& with a roll on 3& every 2 passes, clap with the snare, 8th hats with 16th rolls on 3 and 4, open hat and crash on 4&; tom roll every 8 passes.",
       "tags": [
-        "electro",
+        "hiphop",
+        "trap",
         "default"
       ],
       "tracks": [
@@ -7226,10 +7268,11 @@
     },
     {
       "id": "sweet",
-      "name": "sweet",
+      "name": "Rock Open Hats",
       "bpm": 90,
+      "description": "Rock, 1 measure: kick on 1, 3 and 3&, snare on 2 with ghosts on 2a, 4 and 4a, 8th open hats and no closed hat; cowbell on 4& 4a every 6 passes, crash every 8.",
       "tags": [
-        "electro",
+        "rock",
         "default"
       ],
       "tracks": [
@@ -7410,10 +7453,11 @@
     },
     {
       "id": "jazz",
-      "name": "jazz",
+      "name": "Swing 16ths",
       "bpm": 60,
+      "description": "Swung 16ths, 1 measure: kick on 1, 2&, 3 and 4&, snare and clap together on 1& and 2e of every 2 beats, 16th open hats, closed hat every 3 beats; tom and cowbell figures every 2 to 8 passes.",
       "tags": [
-        "jazz",
+        "swing",
         "default"
       ],
       "tracks": [
@@ -7585,10 +7629,11 @@
     },
     {
       "id": "polyrythm",
-      "name": "PolyRythm",
+      "name": "Melodic Toms",
       "bpm": 60,
+      "description": "Pitched toms, 1 measure: toms rising 3, 5 and 7 semitones on 2-4 with a 5-hit ruff on 1, syncopated kick on a 32nd grid, snare on 2 and 4, closed and open hats together on every beat.",
       "tags": [
-        "jazz",
+        "exp",
         "default"
       ],
       "tracks": [
@@ -7747,11 +7792,12 @@
     },
     {
       "id": "ltgroove",
-      "name": "ltgroove",
+      "name": "Disco Groove",
       "beatCount": 8,
       "bpm": 80,
+      "description": "Disco groove, 2 measures: four-on-the-floor kick, snare on every & doubled to &-a at the end of measure 1, 16th hats, open hat on each &, clap on 1 and 3, syncopated cowbell, 16th toms through measure 2.",
       "tags": [
-        "funk",
+        "disco",
         "default"
       ],
       "tracks": [
@@ -7971,10 +8017,10 @@
     },
     {
       "id": "dub-roots",
-      "name": "DUB_ROOTS",
+      "name": "Dub Roots",
       "beatCount": 16,
       "bpm": 75,
-      "description": "Dub roots heavy ",
+      "description": "Dub roots, 4 measures: kick on 1 and 2&, snare on 3, closed hat on 2 and 4, open hat on 4&, low pitched hat line, delayed congas, cowbell, rim and hits, blues arpeggio on the second hit track, rimshots on 4 and 4a.",
       "tags": [
         "dub",
         "roots",
@@ -8619,7 +8665,8 @@
     },
     {
       "id": "variations",
-      "name": "Variations",
+      "name": "Feature Demo",
+      "description": "Feature demo, 1 measure: kick on every beat with pickups, snare on every & with doubles, probability-gated toms and claps, cowbell arpeggios, 8th hats, open hat on each e, piano on every beat.",
       "tags": [
         "exp",
         "default"
@@ -8947,9 +8994,9 @@
     },
     {
       "id": "rock8a",
-      "name": "Rock8A",
+      "name": "Rock Phrase A",
       "beatCount": 16,
-      "description": "Rock groove, measures 1-4: kick on 1/3/3&, snare backbeat, 8th hats, crash on downbeat",
+      "description": "Rock, 4 measures (1-4 of an 8-measure phrase): kick on 1, 3 and 3&, snare on 2 and 4, 8th hats, open hat on 4& of measures 2 and 4, crash on the first downbeat.",
       "tags": [
         "rock",
         "drums"
@@ -9263,9 +9310,9 @@
     },
     {
       "id": "rock8b",
-      "name": "Rock8B",
+      "name": "Rock Phrase B",
       "beatCount": 16,
-      "description": "Rock groove measures 5-7, break on measure 8: stop on beats 1-2 (crash+kick accent), snare/tom fill on beats 3-4",
+      "description": "Rock, 4 measures (5-8 of the phrase): the Rock Phrase A groove, then a stop on 1-2 of measure 8 with crash and kick, 16th snare on 3 and toms on 4.",
       "tags": [
         "rock",
         "drums",
@@ -9591,6 +9638,1758 @@
               1,
               15,
               3
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "techno",
+      "name": "Techno",
+      "bpm": 130,
+      "description": "Techno, 1 measure: four-on-the-floor kick, open hat on each &, 16th closed hats around it, clap on 2 and 4, syncopated rimshots on 1a, 2&, 3a and 4e; crash every 8 passes.",
+      "tags": [
+        "techno",
+        "default"
+      ],
+      "tracks": [
+        {
+          "name": "KICK",
+          "loopLength": 4,
+          "noteKeys": [
+            "velocity"
+          ],
+          "notes": [
+            [
+              1
+            ]
+          ]
+        },
+        {
+          "name": "CLAP",
+          "loopLength": 16,
+          "pan": 0.2,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "beat"
+          ],
+          "notes": [
+            [
+              1
+            ],
+            [
+              3
+            ]
+          ]
+        },
+        {
+          "name": "RIMSHOT",
+          "loopLength": 16,
+          "volume": 0.6,
+          "pan": 0.3,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle"
+          ],
+          "notes": [
+            [
+              0.6,
+              0,
+              3
+            ],
+            [
+              0.5,
+              1,
+              2
+            ],
+            [
+              0.6,
+              2,
+              3,
+              2
+            ],
+            [
+              0.5,
+              3,
+              1
+            ]
+          ]
+        },
+        {
+          "name": "CHH",
+          "loopLength": 4,
+          "volume": 0.6,
+          "pan": -0.3,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.5
+            ],
+            [
+              0.3,
+              1
+            ],
+            [
+              0.35,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "OHH",
+          "loopLength": 4,
+          "volume": 0.5,
+          "pan": -0.2,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.7,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "CRASH",
+          "loopLength": 16,
+          "volume": 0.6,
+          "pan": 0.6,
+          "noteKeys": [
+            "velocity",
+            "cycle"
+          ],
+          "notes": [
+            [
+              0.7,
+              8
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "drum-and-bass",
+      "name": "Drum and Bass",
+      "bpm": 172,
+      "description": "Drum and bass two-step, 1 measure: kick on 1 and 3&, snare on 2 and 4 with soft ghosts on 2a and 4a, 8th hats, open hat on 4&; extra kick on 3a every 4 passes, crash every 8.",
+      "tags": [
+        "drumandbass",
+        "default"
+      ],
+      "tracks": [
+        {
+          "name": "KICK",
+          "loopLength": 16,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              1
+            ],
+            [
+              0.9,
+              2,
+              2
+            ],
+            [
+              0.7,
+              2,
+              3,
+              4,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "SNARE",
+          "loopLength": 16,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              1,
+              1
+            ],
+            [
+              0.3,
+              1,
+              3
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              0.35,
+              3,
+              3,
+              2,
+              1
+            ]
+          ]
+        },
+        {
+          "name": "CHH",
+          "loopLength": 4,
+          "volume": 0.6,
+          "pan": -0.3,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.6
+            ],
+            [
+              0.4,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "OHH",
+          "loopLength": 16,
+          "volume": 0.5,
+          "pan": -0.2,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step"
+          ],
+          "notes": [
+            [
+              0.6,
+              3,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "CRASH",
+          "loopLength": 16,
+          "volume": 0.6,
+          "pan": 0.6,
+          "noteKeys": [
+            "velocity",
+            "cycle"
+          ],
+          "notes": [
+            [
+              0.7,
+              8
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reggae-one-drop",
+      "name": "Reggae One Drop",
+      "bpm": 76,
+      "description": "Reggae one drop, 1 measure: kick and cross-stick together on 3 only, nothing on 1, swung 8th hats accented on the &, open hat on 4& every 4 passes; snare fill on 4e, 4& and 4a every 8.",
+      "tags": [
+        "reggae",
+        "default"
+      ],
+      "tracks": [
+        {
+          "name": "KICK",
+          "loopLength": 16,
+          "noteKeys": [
+            "velocity",
+            "beat"
+          ],
+          "notes": [
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "RIMSHOT",
+          "loopLength": 16,
+          "pan": 0.3,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "beat"
+          ],
+          "notes": [
+            [
+              0.9,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "SNARE",
+          "loopLength": 16,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle"
+          ],
+          "notes": [
+            [
+              0.4,
+              3,
+              1,
+              8
+            ],
+            [
+              0.6,
+              3,
+              2,
+              8
+            ],
+            [
+              0.8,
+              3,
+              3,
+              8
+            ]
+          ]
+        },
+        {
+          "name": "CHH",
+          "loopLength": 4,
+          "swingAmount": 0.3,
+          "volume": 0.6,
+          "pan": -0.3,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.4
+            ],
+            [
+              0.7,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "OHH",
+          "loopLength": 16,
+          "volume": 0.5,
+          "pan": -0.2,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              0.6,
+              3,
+              2,
+              4,
+              3
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jazz-swing",
+      "name": "Jazz Swing",
+      "bpm": 140,
+      "description": "Jazz swing on a triplet grid, 1 measure: ride on 1, 2, the last triplet of 2, 3, 4 and the last triplet of 4, hi-hat foot on 2 and 4, feathered kick on every beat, snare comping on the last triplets every 2 to 4 passes.",
+      "tags": [
+        "jazz",
+        "default"
+      ],
+      "tracks": [
+        {
+          "name": "RIDE",
+          "stepsPerBeat": 3,
+          "loopLength": 12,
+          "volume": 0.7,
+          "pan": 0.4,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step"
+          ],
+          "notes": [
+            [
+              0.7
+            ],
+            [
+              0.9,
+              1
+            ],
+            [
+              0.5,
+              1,
+              2
+            ],
+            [
+              0.7,
+              2
+            ],
+            [
+              0.9,
+              3
+            ],
+            [
+              0.5,
+              3,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "CHH",
+          "stepsPerBeat": 3,
+          "loopLength": 12,
+          "volume": 0.6,
+          "pan": -0.3,
+          "noteKeys": [
+            "velocity",
+            "beat"
+          ],
+          "notes": [
+            [
+              0.7,
+              1
+            ],
+            [
+              0.7,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "KICK",
+          "stepsPerBeat": 3,
+          "loopLength": 12,
+          "noteKeys": [
+            "velocity",
+            "beat"
+          ],
+          "notes": [
+            [
+              0.25
+            ],
+            [
+              0.25,
+              1
+            ],
+            [
+              0.25,
+              2
+            ],
+            [
+              0.25,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "SNARE",
+          "stepsPerBeat": 3,
+          "loopLength": 12,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              0.35,
+              1,
+              2,
+              2
+            ],
+            [
+              0.45,
+              2,
+              2,
+              4,
+              3
+            ],
+            [
+              0.4,
+              3,
+              2,
+              3,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "waltz",
+      "name": "Waltz",
+      "beatCount": 3,
+      "bpm": 96,
+      "description": "Waltz in 3/4, 1 measure: kick on 1, closed hat and soft snare on 2 and 3, open hat on 3 every 2 passes; tom pickup on 3& every 4 passes, crash on 1 every 8.",
+      "tags": [
+        "waltz",
+        "default"
+      ],
+      "tracks": [
+        {
+          "name": "KICK",
+          "beatCount": 3,
+          "loopLength": 12,
+          "noteKeys": [
+            "velocity"
+          ],
+          "notes": [
+            [
+              1
+            ]
+          ]
+        },
+        {
+          "name": "SNARE",
+          "beatCount": 3,
+          "loopLength": 12,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "beat"
+          ],
+          "notes": [
+            [
+              0.4,
+              1
+            ],
+            [
+              0.4,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "CHH",
+          "beatCount": 3,
+          "loopLength": 12,
+          "volume": 0.6,
+          "pan": -0.3,
+          "noteKeys": [
+            "velocity",
+            "beat"
+          ],
+          "notes": [
+            [
+              0.6,
+              1
+            ],
+            [
+              0.6,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "OHH",
+          "beatCount": 3,
+          "loopLength": 12,
+          "volume": 0.5,
+          "pan": -0.2,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "cycle",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              0.5,
+              2,
+              2,
+              1
+            ]
+          ]
+        },
+        {
+          "name": "TOM",
+          "beatCount": 3,
+          "loopLength": 12,
+          "pan": 0.5,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              0.6,
+              2,
+              2,
+              4,
+              3
+            ],
+            [
+              0.7,
+              2,
+              3,
+              4,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "CRASH",
+          "beatCount": 3,
+          "loopLength": 12,
+          "volume": 0.6,
+          "pan": 0.6,
+          "noteKeys": [
+            "velocity",
+            "cycle"
+          ],
+          "notes": [
+            [
+              0.6,
+              8
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blues-12-8",
+      "name": "Blues 12/8",
+      "bpm": 60,
+      "description": "Slow blues in 12/8, 1 measure: closed hats on every triplet accented on the beat, kick on 1, the last triplet of 2 and 3, snare on 2 and 4; triplet tom fill on 4 every 4 passes, crash on 1 every 8.",
+      "tags": [
+        "blues",
+        "default"
+      ],
+      "tracks": [
+        {
+          "name": "KICK",
+          "stepsPerBeat": 3,
+          "loopLength": 12,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step"
+          ],
+          "notes": [
+            [
+              1
+            ],
+            [
+              0.5,
+              1,
+              2
+            ],
+            [
+              0.9,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "SNARE",
+          "stepsPerBeat": 3,
+          "loopLength": 12,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "beat"
+          ],
+          "notes": [
+            [
+              0.9,
+              1
+            ],
+            [
+              0.9,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "CHH",
+          "stepsPerBeat": 3,
+          "loopLength": 3,
+          "volume": 0.6,
+          "pan": -0.3,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.7
+            ],
+            [
+              0.35,
+              1
+            ],
+            [
+              0.5,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "TOM",
+          "stepsPerBeat": 3,
+          "loopLength": 12,
+          "pan": 0.5,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              0.6,
+              3,
+              0,
+              4,
+              3
+            ],
+            [
+              0.7,
+              3,
+              1,
+              4,
+              3
+            ],
+            [
+              0.8,
+              3,
+              2,
+              4,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "CRASH",
+          "stepsPerBeat": 3,
+          "loopLength": 12,
+          "volume": 0.6,
+          "pan": 0.6,
+          "noteKeys": [
+            "velocity",
+            "cycle"
+          ],
+          "notes": [
+            [
+              0.6,
+              8
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "break-roller",
+      "name": "Break Roller",
+      "beatCount": 8,
+      "bpm": 136,
+      "description": "Breakbeat, 2 measures: syncopated kick, snare on 2 and 4 with probability ghosts, 16th hats looping every 3 steps against the beat, open hat every 6 steps, flammed snare on 4 of measure 2; 32nd snare roll every 2 passes, descending tom arpeggio every 4, swept high-pass on the hats.",
+      "tags": [
+        "breakbeat",
+        "default"
+      ],
+      "tracks": [
+        {
+          "name": "KICK",
+          "beatCount": 8,
+          "loopLength": 32,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle",
+            "probability",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              1
+            ],
+            [
+              0.8,
+              0,
+              2
+            ],
+            [
+              0.9,
+              2,
+              2
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              0.7,
+              4,
+              2,
+              2,
+              1,
+              1
+            ],
+            [
+              0.7,
+              5,
+              3
+            ],
+            [
+              0.9,
+              6,
+              2
+            ],
+            [
+              0.6,
+              7,
+              3,
+              1,
+              0.5
+            ]
+          ]
+        },
+        {
+          "name": "SNARE",
+          "beatCount": 8,
+          "loopLength": 32,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle",
+            "probability",
+            "retriggerRate",
+            "retriggerCount"
+          ],
+          "notes": [
+            [
+              1,
+              1
+            ],
+            [
+              0.3,
+              1,
+              3,
+              1,
+              0.7
+            ],
+            [
+              0.35,
+              2,
+              1
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              0.3,
+              3,
+              3,
+              1,
+              0.6
+            ],
+            [
+              1,
+              5
+            ],
+            [
+              0.3,
+              5,
+              3,
+              1,
+              0.7
+            ],
+            [
+              0.35,
+              6,
+              1
+            ],
+            [
+              1,
+              7,
+              0,
+              1,
+              1,
+              2,
+              2
+            ],
+            [
+              0.55,
+              7,
+              2,
+              2,
+              1,
+              4,
+              4
+            ]
+          ]
+        },
+        {
+          "name": "CHH",
+          "beatCount": 8,
+          "loopLength": 3,
+          "volume": 0.6,
+          "pan": -0.3,
+          "filterType": "highpass",
+          "filterCutoffLfo": {
+            "freq": 0.5,
+            "min": 0,
+            "max": 6000,
+            "phase": 0,
+            "type": "sine"
+          },
+          "filterCutoff": 800,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.7
+            ],
+            [
+              0.35,
+              1
+            ],
+            [
+              0.5,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "OHH",
+          "beatCount": 8,
+          "loopLength": 6,
+          "volume": 0.45,
+          "pan": -0.2,
+          "noteKeys": [
+            "velocity"
+          ],
+          "notes": [
+            [
+              0.5
+            ]
+          ]
+        },
+        {
+          "name": "TOM",
+          "beatCount": 8,
+          "loopLength": 32,
+          "pan": 0.4,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "beat",
+            "cycle",
+            "retriggerRate",
+            "retriggerCount",
+            "arp",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              7,
+              4,
+              8,
+              4,
+              {
+                "intervals": [
+                  0,
+                  -3,
+                  -5,
+                  -7
+                ],
+                "direction": "down"
+              },
+              3
+            ]
+          ]
+        },
+        {
+          "name": "CRASH",
+          "beatCount": 8,
+          "loopLength": 32,
+          "volume": 0.6,
+          "pan": 0.6,
+          "noteKeys": [
+            "velocity",
+            "cycle"
+          ],
+          "notes": [
+            [
+              0.7,
+              4
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "break-euclid",
+      "name": "Break Euclid",
+      "bpm": 132,
+      "description": "Breakbeat, 1 measure: euclidean kick (3 pulses over 1, 1a and 2&) then 3&, snare on 2 and 4 with a 64th stutter on 4a every 2 passes, 16th hats gated by probability, rimshot every 5 steps and open hat every 7 across the measure, pitched euclidean toms (5 of 16), 16th clap burst on 2 every 4 passes.",
+      "tags": [
+        "breakbeat",
+        "default"
+      ],
+      "tracks": [
+        {
+          "name": "KICK",
+          "loopLength": 16,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "euclideanPulses"
+          ],
+          "notes": [
+            [
+              1,
+              0,
+              0,
+              3
+            ],
+            [
+              0.9,
+              2,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "SNARE",
+          "loopLength": 16,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle",
+            "retriggerRate",
+            "retriggerCount",
+            "retriggerProbability"
+          ],
+          "notes": [
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              0.6,
+              3,
+              3,
+              2,
+              2,
+              4,
+              0.7
+            ]
+          ]
+        },
+        {
+          "name": "CHH",
+          "loopLength": 4,
+          "volume": 0.6,
+          "volumeLfo": {
+            "freq": 1,
+            "min": 0.4,
+            "max": 0.7,
+            "phase": 0,
+            "type": "triangle"
+          },
+          "pan": -0.3,
+          "noteKeys": [
+            "velocity",
+            "step",
+            "probability"
+          ],
+          "notes": [
+            [
+              0.7
+            ],
+            [
+              0.35,
+              1,
+              0.6
+            ],
+            [
+              0.55,
+              2
+            ],
+            [
+              0.35,
+              3,
+              0.6
+            ]
+          ]
+        },
+        {
+          "name": "RIMSHOT",
+          "loopLength": 5,
+          "volume": 0.6,
+          "panLfo": {
+            "freq": 1,
+            "min": -0.6,
+            "max": 0.6,
+            "phase": 0,
+            "type": "sine"
+          },
+          "noteKeys": [
+            "velocity"
+          ],
+          "notes": [
+            [
+              0.6
+            ]
+          ]
+        },
+        {
+          "name": "OHH",
+          "loopLength": 7,
+          "volume": 0.45,
+          "pan": -0.2,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.5,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "TOM",
+          "loopLength": 16,
+          "volume": 0.7,
+          "pan": 0.4,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "arp",
+            "euclideanPulses",
+            "euclideanRotation"
+          ],
+          "notes": [
+            [
+              0.6,
+              {
+                "intervals": [
+                  0,
+                  3,
+                  5,
+                  7,
+                  10
+                ],
+                "direction": "up"
+              },
+              5,
+              1
+            ]
+          ]
+        },
+        {
+          "name": "CLAP",
+          "loopLength": 16,
+          "pan": 0.2,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "cycle",
+            "retriggerRate",
+            "retriggerCount",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              0.7,
+              1,
+              4,
+              8,
+              4,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "CRASH",
+          "loopLength": 16,
+          "volume": 0.6,
+          "pan": 0.6,
+          "noteKeys": [
+            "velocity",
+            "cycle"
+          ],
+          "notes": [
+            [
+              0.6,
+              8
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "techno-polymeter",
+      "name": "Techno Polymeter",
+      "bpm": 130,
+      "description": "Techno, 1 measure: four-on-the-floor kick, clap on 2 and 4, open hat on each &, closed hats accented every 3 steps, rimshot every 5 steps with a dotted-8th delay, tom every 7 steps drifting in pitch on an LFO; high-pass on the hats swept over 4 measures, crash every 16 passes.",
+      "tags": [
+        "techno",
+        "default"
+      ],
+      "tracks": [
+        {
+          "name": "KICK",
+          "loopLength": 4,
+          "noteKeys": [
+            "velocity"
+          ],
+          "notes": [
+            [
+              1
+            ]
+          ]
+        },
+        {
+          "name": "CLAP",
+          "loopLength": 16,
+          "pan": 0.2,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "beat"
+          ],
+          "notes": [
+            [
+              1
+            ],
+            [
+              3
+            ]
+          ]
+        },
+        {
+          "name": "CHH",
+          "loopLength": 3,
+          "volume": 0.55,
+          "pan": -0.3,
+          "filterType": "highpass",
+          "filterCutoffLfo": {
+            "freq": 0.25,
+            "min": 0,
+            "max": 5000,
+            "phase": 0,
+            "type": "sine"
+          },
+          "filterCutoff": 1500,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.6
+            ],
+            [
+              0.3,
+              1
+            ],
+            [
+              0.4,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "OHH",
+          "loopLength": 4,
+          "volume": 0.5,
+          "pan": -0.2,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.6,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "RIMSHOT",
+          "loopLength": 5,
+          "volume": 0.6,
+          "pan": 0.3,
+          "delayBeats": 0.75,
+          "delayMix": 0.3,
+          "noteKeys": [
+            "velocity"
+          ],
+          "notes": [
+            [
+              0.6
+            ]
+          ]
+        },
+        {
+          "name": "TOM",
+          "loopLength": 7,
+          "volume": 0.6,
+          "transposeLfo": {
+            "freq": 0.75,
+            "min": -5,
+            "max": 7,
+            "phase": 0,
+            "type": "sine"
+          },
+          "pan": 0.4,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity"
+          ],
+          "notes": [
+            [
+              0.5
+            ]
+          ]
+        },
+        {
+          "name": "CRASH",
+          "loopLength": 16,
+          "volume": 0.6,
+          "pan": 0.6,
+          "noteKeys": [
+            "velocity",
+            "cycle"
+          ],
+          "notes": [
+            [
+              0.6,
+              16
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "techno-rumble",
+      "name": "Techno Rumble",
+      "bpm": 128,
+      "description": "Techno, 1 measure: four-on-the-floor kick in a hall, a low-passed reverb kick on every e, & and a for the rumble with its cutoff on a slow LFO, clap on 2 and 4 with a dotted-8th delay, 16th hats gated by probability, ride on each &; 32nd snare roll on 4 every 8 passes, crash every 8.",
+      "tags": [
+        "techno",
+        "default"
+      ],
+      "tracks": [
+        {
+          "name": "KICK",
+          "loopLength": 4,
+          "reverbType": "hall",
+          "reverbMix": 0.25,
+          "noteKeys": [
+            "velocity"
+          ],
+          "notes": [
+            [
+              1
+            ]
+          ]
+        },
+        {
+          "name": "KICK",
+          "loopLength": 4,
+          "volume": 0.5,
+          "filterType": "lowpass",
+          "filterCutoffLfo": {
+            "freq": 0.25,
+            "min": 0,
+            "max": 300,
+            "phase": 0,
+            "type": "sine"
+          },
+          "filterCutoff": 120,
+          "reverbType": "hall",
+          "reverbMix": 0.6,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.3,
+              1
+            ],
+            [
+              0.45,
+              2
+            ],
+            [
+              0.35,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "CLAP",
+          "loopLength": 16,
+          "pan": 0.2,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "delayBeats": 0.75,
+          "delayMix": 0.3,
+          "noteKeys": [
+            "beat"
+          ],
+          "notes": [
+            [
+              1
+            ],
+            [
+              3
+            ]
+          ]
+        },
+        {
+          "name": "CHH",
+          "loopLength": 4,
+          "volume": 0.55,
+          "volumeLfo": {
+            "freq": 2,
+            "min": 0.35,
+            "max": 0.6,
+            "phase": 0,
+            "type": "triangle"
+          },
+          "pan": -0.3,
+          "noteKeys": [
+            "velocity",
+            "step",
+            "probability"
+          ],
+          "notes": [
+            [
+              0.55
+            ],
+            [
+              0.3,
+              1,
+              0.7
+            ],
+            [
+              0.45,
+              2
+            ],
+            [
+              0.3,
+              3,
+              0.7
+            ]
+          ]
+        },
+        {
+          "name": "RIDE",
+          "loopLength": 4,
+          "volume": 0.5,
+          "pan": 0.4,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.55,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "SNARE",
+          "loopLength": 16,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "cycle",
+            "retriggerRate",
+            "retriggerCount",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              0.6,
+              3,
+              8,
+              4,
+              8,
+              1
+            ]
+          ]
+        },
+        {
+          "name": "CRASH",
+          "loopLength": 16,
+          "volume": 0.6,
+          "pan": 0.6,
+          "noteKeys": [
+            "velocity",
+            "cycle"
+          ],
+          "notes": [
+            [
+              0.6,
+              8
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "techno-acid",
+      "name": "Techno Acid",
+      "bpm": 134,
+      "description": "Acid techno, 1 measure: four-on-the-floor kick, clap on 2 and 4, open hat on each &, 16th hats gated by probability, synth bass arpeggio (0, 3, 7, 10, 12 up and down) on a 7-of-16 euclidean rhythm through a resonant low-pass swept over 4 measures, euclidean cowbell (3 of 8); snare build from 16ths to 32nds on 4 every 8 passes.",
+      "tags": [
+        "techno",
+        "default"
+      ],
+      "tracks": [
+        {
+          "name": "KICK",
+          "loopLength": 4,
+          "noteKeys": [
+            "velocity"
+          ],
+          "notes": [
+            [
+              1
+            ]
+          ]
+        },
+        {
+          "name": "CLAP",
+          "loopLength": 16,
+          "pan": 0.2,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "beat"
+          ],
+          "notes": [
+            [
+              1
+            ],
+            [
+              3
+            ]
+          ]
+        },
+        {
+          "name": "CHH",
+          "loopLength": 4,
+          "volume": 0.55,
+          "pan": -0.3,
+          "noteKeys": [
+            "velocity",
+            "step",
+            "probability"
+          ],
+          "notes": [
+            [
+              0.5
+            ],
+            [
+              0.3,
+              1,
+              0.6
+            ],
+            [
+              0.3,
+              3,
+              0.8
+            ]
+          ]
+        },
+        {
+          "name": "OHH",
+          "loopLength": 4,
+          "volume": 0.5,
+          "pan": -0.2,
+          "noteKeys": [
+            "velocity",
+            "step"
+          ],
+          "notes": [
+            [
+              0.6,
+              2
+            ]
+          ]
+        },
+        {
+          "name": "BASS",
+          "loopLength": 16,
+          "volume": 0.6,
+          "useSynth": true,
+          "mono": true,
+          "filterType": "lowpass",
+          "filterCutoffLfo": {
+            "freq": 0.25,
+            "min": 0,
+            "max": 2500,
+            "phase": 0,
+            "type": "sine"
+          },
+          "filterCutoff": 300,
+          "filterQ": 12,
+          "delayBeats": 0.75,
+          "delayMix": 0.15,
+          "synthPreset": "BASS0",
+          "noteKeys": [
+            "velocity",
+            "arp",
+            "euclideanPulses"
+          ],
+          "notes": [
+            [
+              0.9,
+              {
+                "intervals": [
+                  0,
+                  3,
+                  7,
+                  10,
+                  12
+                ],
+                "direction": "updown"
+              },
+              7
+            ]
+          ]
+        },
+        {
+          "name": "COWBELL",
+          "loopLength": 8,
+          "volume": 0.45,
+          "pan": 0.4,
+          "noteKeys": [
+            "velocity",
+            "euclideanPulses"
+          ],
+          "notes": [
+            [
+              0.5,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "SNARE",
+          "loopLength": 16,
+          "reverbType": "room",
+          "reverbMix": 0.2,
+          "noteKeys": [
+            "velocity",
+            "beat",
+            "step",
+            "cycle",
+            "retriggerRate",
+            "retriggerCount",
+            "cycleOffset"
+          ],
+          "notes": [
+            [
+              0.5,
+              3,
+              0,
+              8,
+              8,
+              2,
+              1
+            ],
+            [
+              0.8,
+              3,
+              2,
+              8,
+              4,
+              4,
+              1
+            ]
+          ]
+        },
+        {
+          "name": "CRASH",
+          "loopLength": 16,
+          "volume": 0.6,
+          "pan": 0.6,
+          "noteKeys": [
+            "velocity",
+            "cycle"
+          ],
+          "notes": [
+            [
+              0.6,
+              8
             ]
           ]
         }

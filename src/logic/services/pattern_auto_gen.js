@@ -21,8 +21,8 @@ import { EVENTS } from '../../core/events.js'
  * @type {Record<string, {synthSoundKey: string, defaultVariant: string}>}
  */
 const MELODIC_GEN_PRESETS = {
-    BASS: { synthSoundKey: 'BASS1', defaultVariant: 'basic' },
-    PIANO: { synthSoundKey: 'PIANO', defaultVariant: 'chordStab' },
+    BASS: { synthSoundKey: 'BASS_ANALOG', defaultVariant: 'basic' },
+    PIANO: { synthSoundKey: 'PIANO_EPIANO', defaultVariant: 'chordStab' },
 }
 
 export class PatternAutoGen {

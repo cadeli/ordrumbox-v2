@@ -156,7 +156,7 @@ export default class AutoGenerator {
                 const bassTrack = this.#registry.cmd.addTrack(pattern, 'BASS')
                 bassTrack.useSoftSynth = false
                 bassTrack.useAutoAssignSound = true
-                bassTrack.synthSoundKey = 'BASS1'
+                bassTrack.synthSoundKey = 'BASS_ANALOG'
                 bassTrack.velocity = 0.5
             }
 

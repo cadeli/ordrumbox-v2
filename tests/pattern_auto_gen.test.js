@@ -268,7 +268,7 @@ describe('PatternAutoGen', () => {
             expect(serviceRegistry.cmd.addTrack).toHaveBeenCalledWith(pattern, 'BASS')
             expect(added.useSoftSynth).toBe(true)
             expect(added.useAutoAssignSound).toBe(false)
-            expect(added.synthSoundKey).toBe('BASS1')
+            expect(added.synthSoundKey).toBe('BASS_ANALOG')
             expect(added.velocity).toBe(0.8)
             expect(autoGen.generateTrack).toHaveBeenCalledWith(added, 'walking', 1, pattern, 'E-minor')
             expect(serviceRegistry.flatNotes.applyFlatNotes).toHaveBeenCalledWith(pattern)
@@ -286,7 +286,7 @@ describe('PatternAutoGen', () => {
 
             await patternAutoGen.toggleMelodic('PIANO')
 
-            expect(added.synthSoundKey).toBe('PIANO')
+            expect(added.synthSoundKey).toBe('PIANO_EPIANO')
             expect(autoGen.generateTrack).toHaveBeenCalledWith(added, 'chordStab', 1, pattern, 'E-minor')
             expect(serviceRegistry.cmd.commitGenerationUndo).toHaveBeenCalled()
         })

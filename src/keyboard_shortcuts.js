@@ -157,14 +157,14 @@ function selectRandomDrumkit() {
 }
 
 const SYNTH_SOUND_MAP = {
-    KICK: 'BASS0',
-    SNARE: 'SN',
+    KICK: 'KICK_SYNTH',
+    SNARE: 'SNARE_SYNTH',
     HAT: 'CHH_SYNTH',
     OHH: 'OHH_SYNTH',
-    BASS: 'BASS2',
-    PERC: 'SYNTH2',
-    PIANO: 'PIANO',
-    TOM: 'TOM',
+    BASS: 'BASS_ANALOG',
+    PERC: 'CROMAPERC_BELL',
+    PIANO: 'PIANO_EPIANO',
+    TOM: 'TOM_SYNTH',
 }
 
 async function convertToGeneratedSounds() {
@@ -184,7 +184,7 @@ async function convertToGeneratedSounds() {
         }
     }
 
-    // A type with no patch of its own used to fall back to 'BASS1' (so e.g. COWBELL
+    // A type with no patch of its own used to fall back to 'BASS_ANALOG' (so e.g. COWBELL
     // became a bass patch, silently), then to nothing at all (the track stayed on
     // its sample, so the action silently skipped it). Now it gets a RANDOM patch:
     // the track is converted either way, and the toast names what was random.

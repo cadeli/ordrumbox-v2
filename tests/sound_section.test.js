@@ -46,7 +46,7 @@ function makeMockEditor(overrides = {}) {
                     ],
                 },
             ],
-            generatedSounds: { BASS1: {}, PIANO: {} },
+            generatedSounds: { BASS_ANALOG: {}, PIANO: {} },
         },
         appState: { selectedDrumkitIdx: 0 },
         serviceRegistry: {
@@ -54,7 +54,7 @@ function makeMockEditor(overrides = {}) {
             resourcesLoader: { loadSample: vi.fn() },
         },
         playbackEvents: { batch: vi.fn((fn) => fn()), emit: vi.fn() },
-        synthEditor: { getGeneratedSoundKeys: vi.fn(() => ['BASS1', 'PIANO']), ensureGeneratedSoundsLoaded: vi.fn() },
+        synthEditor: { getGeneratedSoundKeys: vi.fn(() => ['BASS_ANALOG', 'PIANO']), ensureGeneratedSoundsLoaded: vi.fn() },
         sync: vi.fn(),
         esc: (s) => s,
         ...overrides,
@@ -121,25 +121,25 @@ describe('SoundSection', () => {
         })
 
         it('handles useSoftSynth=true with existing generated key', () => {
-            const editor = makeMockEditor({ track: { useSoftSynth: true, synthSoundKey: 'BASS1' } })
+            const editor = makeMockEditor({ track: { useSoftSynth: true, synthSoundKey: 'BASS_ANALOG' } })
             const container = mountSection(editor)
             expect(container.querySelector('select[data-sound="generated"]')).not.toBeNull()
         })
 
         it('handles useSoftSynth=true with missing generated key adds it to options', () => {
             const editor = makeMockEditor({ track: { useSoftSynth: true, synthSoundKey: 'UNKNOWN_KEY' } })
-            editor.synthEditor.getGeneratedSoundKeys.mockReturnValue(['BASS1', 'PIANO'])
+            editor.synthEditor.getGeneratedSoundKeys.mockReturnValue(['BASS_ANALOG', 'PIANO'])
             const container = mountSection(editor)
             const generatedSelect = container.querySelector('select[data-sound="generated"]')
             const values = [...generatedSelect.options].map((o) => o.value)
             expect(values).toContain('UNKNOWN_KEY')
         })
 
-        it('defaults currentGeneratedSound to BASS1 when useSoftSynth=true and no synthSoundKey', () => {
+        it('defaults currentGeneratedSound to BASS_ANALOG when useSoftSynth=true and no synthSoundKey', () => {
             const editor = makeMockEditor({ track: { useSoftSynth: true } })
             const container = mountSection(editor)
             const generatedSelect = container.querySelector('select[data-sound="generated"]')
-            expect(generatedSelect.value).toBe('BASS1')
+            expect(generatedSelect.value).toBe('BASS_ANALOG')
         })
 
         it('sets currentGeneratedSound to none when useSoftSynth=false', () => {
@@ -305,7 +305,7 @@ describe('SoundSection', () => {
 
     describe('onGeneratedChange()', () => {
         it('sets useSoftSynth=false when key is none', async () => {
-            const editor = makeMockEditor({ track: { useSoftSynth: true, synthSoundKey: 'BASS1' } })
+            const editor = makeMockEditor({ track: { useSoftSynth: true, synthSoundKey: 'BASS_ANALOG' } })
             section = new SoundSection(editor)
             await section.onGeneratedChange({ value: 'none' })
             expect(editor.track.useSoftSynth).toBe(false)
@@ -314,9 +314,9 @@ describe('SoundSection', () => {
         it('sets useSoftSynth=true and synthSoundKey when key is not none', async () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
-            await section.onGeneratedChange({ value: 'BASS1' })
+            await section.onGeneratedChange({ value: 'BASS_ANALOG' })
             expect(editor.track.useSoftSynth).toBe(true)
-            expect(editor.track.synthSoundKey).toBe('BASS1')
+            expect(editor.track.synthSoundKey).toBe('BASS_ANALOG')
         })
 
         it('sets useAutoAssignSound=false when selecting a synth key', async () => {
@@ -330,28 +330,28 @@ describe('SoundSection', () => {
             const editor = makeMockEditor()
             editor.soundRegistry.generatedSounds = {}
             section = new SoundSection(editor)
-            await section.onGeneratedChange({ value: 'BASS1' })
+            await section.onGeneratedChange({ value: 'BASS_ANALOG' })
             expect(editor.synthEditor.ensureGeneratedSoundsLoaded).toHaveBeenCalled()
         })
 
         it('does not call ensureGeneratedSoundsLoaded if key already exists', async () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
-            await section.onGeneratedChange({ value: 'BASS1' })
+            await section.onGeneratedChange({ value: 'BASS_ANALOG' })
             expect(editor.synthEditor.ensureGeneratedSoundsLoaded).not.toHaveBeenCalled()
         })
 
         it('calls sync after change', async () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
-            await section.onGeneratedChange({ value: 'BASS1' })
+            await section.onGeneratedChange({ value: 'BASS_ANALOG' })
             expect(editor.sync).toHaveBeenCalled()
         })
 
         it('emits trackParamChange and patternChange events', async () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
-            await section.onGeneratedChange({ value: 'BASS1' })
+            await section.onGeneratedChange({ value: 'BASS_ANALOG' })
             expect(editor.playbackEvents.batch).toHaveBeenCalled()
             expect(editor.playbackEvents.emit).toHaveBeenCalledWith('trackParamChange', editor.track)
             expect(editor.playbackEvents.emit).toHaveBeenCalledWith('patternChange', [editor.track])
@@ -375,7 +375,7 @@ describe('SoundSection', () => {
 
         it('sets useSoftSynth=false when enabling auto', () => {
             const editor = makeMockEditor({
-                track: { useAutoAssignSound: false, useSoftSynth: true, synthSoundKey: 'BASS1' },
+                track: { useAutoAssignSound: false, useSoftSynth: true, synthSoundKey: 'BASS_ANALOG' },
             })
             section = new SoundSection(editor)
             section.toggleAuto()
@@ -384,7 +384,7 @@ describe('SoundSection', () => {
 
         it('sets synthSoundKey=null when enabling auto', () => {
             const editor = makeMockEditor({
-                track: { useAutoAssignSound: false, useSoftSynth: true, synthSoundKey: 'BASS1' },
+                track: { useAutoAssignSound: false, useSoftSynth: true, synthSoundKey: 'BASS_ANALOG' },
             })
             section = new SoundSection(editor)
             section.toggleAuto()
@@ -628,9 +628,9 @@ describe('SoundSection', () => {
 
     describe('getSoundInfo()', () => {
         it('returns synthSoundKey when useSoftSynth is true', () => {
-            const editor = makeMockEditor({ track: { useSoftSynth: true, synthSoundKey: 'BASS1' } })
+            const editor = makeMockEditor({ track: { useSoftSynth: true, synthSoundKey: 'BASS_ANALOG' } })
             section = new SoundSection(editor)
-            expect(section.getSoundInfo()).toBe('BASS1')
+            expect(section.getSoundInfo()).toBe('BASS_ANALOG')
         })
 
         it('returns null when useSoftSynth is true but synthSoundKey is null', () => {

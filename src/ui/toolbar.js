@@ -141,6 +141,10 @@ export default class Toolbar {
         return this.#viewSwitch.songBtn
     }
 
+    get kitBtn() {
+        return this.#viewSwitch.kitBtn
+    }
+
     get toolsBtn() {
         return this.#overflow.toolsBtn
     }

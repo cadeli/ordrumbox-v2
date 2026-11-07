@@ -115,7 +115,7 @@ export default class SoundSection {
         this.#sampleLabel.title = currentSound ? this.#sampleTooltip(track, currentSound) : ''
 
         const generatedSoundKeys = editor.synthEditor.getGeneratedSoundKeys()
-        const currentGeneratedSound = track.useSoftSynth === true ? (track.synthSoundKey ?? 'BASS1') : 'none'
+        const currentGeneratedSound = track.useSoftSynth === true ? (track.synthSoundKey ?? 'BASS_ANALOG') : 'none'
         const synthOpts = ['none', ...generatedSoundKeys]
         if (track.useSoftSynth === true && !generatedSoundKeys.includes(currentGeneratedSound)) {
             synthOpts.push(currentGeneratedSound)

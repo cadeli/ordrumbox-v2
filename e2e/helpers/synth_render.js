@@ -34,7 +34,7 @@
  * @param {number} [opts.bpm=120]
  * @returns {Promise<Array<{channelData: number[][], sampleRate: number}>>}
  */
-const PREFERRED_BASE_SYNTH_KEY = 'SYNTH2'
+const PREFERRED_BASE_SYNTH_KEY = 'SYNTHLEAD_SAW'
 
 export async function renderSynthBatch(page, configs, opts = {}) {
     const { durationPerNote = 1.0, gapSec = 0.05, pitch = 0, bpm = 120 } = opts
@@ -58,10 +58,10 @@ export async function renderSynthBatch(page, configs, opts = {}) {
             const realKeys = Object.keys(soundRegistry.generatedSounds ?? {})
             // Pin the base patch instead of taking realKeys[0]. Key order
             // depends on load order, so the tests used to run against a
-            // different patch from run to run: against a dark one (BASS0 is a
-            // sawtooth an octave down behind a 480 Hz lowpass) highpass and
+            // different patch from run to run: against a dark one (SYNTHLEAD_SAW is a
+            // bright, harmonic-rich lead) highpass and
             // bandpass at 800 Hz are physically near-identical, and any
-            // gated group (modEnvelope, noise, fm) stays silent. SYNTH2 is
+            // gated group (modEnvelope, noise, fm) stays silent. SYNTHLEAD_SAW is
             // bright and harmonic-rich, so a filter change is always audible.
             const sourceKey =
                 configs[0]?.baseSynthSoundKey ?? (realKeys.includes(preferredBaseKey) ? preferredBaseKey : realKeys[0])

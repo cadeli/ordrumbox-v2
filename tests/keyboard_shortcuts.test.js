@@ -315,7 +315,7 @@ describe('Keyboard shortcuts', () => {
 
     it('KeyH converts tracks and shows success toast', async () => {
         serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
-        soundRegistry.generatedSounds = { BASS0: {}, SN: {} }
+        soundRegistry.generatedSounds = { KICK_SYNTH: {}, SNARE_SYNTH: {} }
 
         fireKeydown('KeyH')
         await flushAsyncShortcut()
@@ -323,7 +323,7 @@ describe('Keyboard shortcuts', () => {
         const track = appState.patterns[0].tracks[0]
         expect(track.useSoftSynth).toBe(true)
         expect(track.useAutoAssignSound).toBe(false)
-        expect(track.synthSoundKey).toBe('BASS0')
+        expect(track.synthSoundKey).toBe('KICK_SYNTH')
         expect(serviceRegistry.flatNotes.applyFlatNotes).toHaveBeenCalledWith(appState.patterns[0])
         expect(showToast).toHaveBeenCalledWith('All tracks converted to generated sounds', 'success')
     })
@@ -333,7 +333,7 @@ describe('Keyboard shortcuts', () => {
     // RANDOM patch so the conversion actually converts every track.
     it('KeyH gives a random synth patch to a track whose type has none', async () => {
         serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
-        soundRegistry.generatedSounds = { BASS0: {}, PIANO: {}, RANDOM_A: {} }
+        soundRegistry.generatedSounds = { KICK_SYNTH: {}, PIANO: {}, RANDOM_A: {} }
         const pattern = appState.patterns[0]
         pattern.tracks = { COWBELL: { name: 'COWBELL', useSoftSynth: false } }
 
@@ -351,21 +351,21 @@ describe('Keyboard shortcuts', () => {
 
     it('KeyH keeps the mapped patch when the type has one', async () => {
         serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
-        soundRegistry.generatedSounds = { BASS0: {}, SN: {}, RANDOM_A: {} }
+        soundRegistry.generatedSounds = { KICK_SYNTH: {}, SN: {}, RANDOM_A: {} }
         const pattern = appState.patterns[0]
         pattern.tracks = { KICK: { name: 'KICK', useSoftSynth: false } }
 
         fireKeydown('KeyH')
         await flushAsyncShortcut()
 
-        expect(pattern.tracks.KICK.synthSoundKey).toBe('BASS0')
+        expect(pattern.tracks.KICK.synthSoundKey).toBe('KICK_SYNTH')
         expect(showToast).toHaveBeenCalledWith('All tracks converted to generated sounds', 'success')
     })
 
     it('KeyH reassigns a mapped patch that is not loaded any more', async () => {
         serviceRegistry.flatNotes = { applyFlatNotes: vi.fn() }
         // SYNTH_SOUND_MAP maps HAT to CHH_SYNTH, which is NOT loaded here
-        soundRegistry.generatedSounds = { BASS0: {}, RANDOM_A: {} }
+        soundRegistry.generatedSounds = { KICK_SYNTH: {}, RANDOM_A: {} }
         const pattern = appState.patterns[0]
         pattern.tracks = { CHH: { name: 'CHH', useSoftSynth: false } }
 

@@ -634,11 +634,11 @@ test.describe.serial('Full session lifecycle', () => {
             )
         })
 
-        await test.step('phase 7a — T1 becomes a synth track (BASS1)', async () => {
-            await page.locator('#te-panel select[data-sound="generated"]').selectOption('BASS1')
+        await test.step('phase 7a — T1 becomes a synth track (BASS_ANALOG)', async () => {
+            await page.locator('#te-panel select[data-sound="generated"]').selectOption('BASS_ANALOG')
             await expectVal(() => trackField(page, 0, 'useSoftSynth'), true)
             await expectVal(() => trackField(page, 0, 'useAutoAssignSound'), false)
-            await expectVal(() => trackField(page, 0, 'synthSoundKey'), 'BASS1')
+            await expectVal(() => trackField(page, 0, 'synthSoundKey'), 'BASS_ANALOG')
         })
 
         await test.step('phase 7b — synth OSC tab', async () => {
@@ -675,12 +675,12 @@ test.describe.serial('Full session lifecycle', () => {
                 ['fm', 'amount', 0.6],
             ]
             for (const [group, key, value] of expected) {
-                await expectNumber(() => synthField(page, 'BASS1', group, key), value)
+                await expectNumber(() => synthField(page, 'BASS_ANALOG', group, key), value)
             }
-            await expectVal(() => synthField(page, 'BASS1', 'vco1', 'wave'), 'sawtooth')
-            await expectVal(() => synthField(page, 'BASS1', 'vco2', 'wave'), 'square')
-            await expectVal(() => synthField(page, 'BASS1', 'vco3', 'wave'), 'triangle')
-            await expectVal(async () => String(await synthField(page, 'BASS1', 'fm', 'algo')), '3')
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'vco1', 'wave'), 'sawtooth')
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'vco2', 'wave'), 'square')
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'vco3', 'wave'), 'triangle')
+            await expectVal(async () => String(await synthField(page, 'BASS_ANALOG', 'fm', 'algo')), '3')
         })
 
         await test.step('phase 7c — synth FLT tab (filter, filter env, mod envelope)', async () => {
@@ -697,16 +697,16 @@ test.describe.serial('Full session lifecycle', () => {
             await knobSet(dialogs, ss, 'modEnvelope.release', 0.15)
             await ss.locator('select[data-synth-path="modEnvelope.target"]').selectOption('filter')
 
-            await expectVal(() => synthField(page, 'BASS1', 'filter', 'type'), 'highpass')
-            await expectNumber(() => synthField(page, 'BASS1', 'filter', 'freq'), 2500)
-            await expectNumber(() => synthField(page, 'BASS1', 'filter', 'Q'), 8.5)
-            await expectNumber(() => synthField(page, 'BASS1', 'filter', 'drive'), 0.5)
-            await expectNumber(() => synthField(page, 'BASS1', 'filterEnv', 'filterEnvelopeAmount'), 0.7)
-            await expectNumber(() => synthField(page, 'BASS1', 'modEnvelope', 'attack'), 0.05)
-            await expectNumber(() => synthField(page, 'BASS1', 'modEnvelope', 'decay'), 0.2)
-            await expectNumber(() => synthField(page, 'BASS1', 'modEnvelope', 'sustain'), 0.4)
-            await expectNumber(() => synthField(page, 'BASS1', 'modEnvelope', 'release'), 0.15)
-            await expectVal(() => synthField(page, 'BASS1', 'modEnvelope', 'target'), 'filter')
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'filter', 'type'), 'highpass')
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'filter', 'freq'), 2500)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'filter', 'Q'), 8.5)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'filter', 'drive'), 0.5)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'filterEnv', 'filterEnvelopeAmount'), 0.7)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'modEnvelope', 'attack'), 0.05)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'modEnvelope', 'decay'), 0.2)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'modEnvelope', 'sustain'), 0.4)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'modEnvelope', 'release'), 0.15)
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'modEnvelope', 'target'), 'filter')
         })
 
         await test.step('phase 7d — synth MOD tab (LFOs, noise, power card)', async () => {
@@ -727,31 +727,31 @@ test.describe.serial('Full session lifecycle', () => {
 
             await knobSet(dialogs, ss, 'noise.mix', 0.6)
             await ss.locator('button[data-synth-path="noise.filterType"][data-wave-val="bandpass"]').click()
-            await expectVal(() => synthField(page, 'BASS1', 'noise', 'filterType'), 'bandpass')
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'noise', 'filterType'), 'bandpass')
             await ss.locator('button[data-synth-path="noise.filterType"][data-wave-val="highpass"]').click()
             await knobSet(dialogs, ss, 'noise.filterFreq', 4000)
             await knobSet(dialogs, ss, 'noise.filterQ', 3)
 
-            await expectVal(() => synthField(page, 'BASS1', 'lfo', 'target'), 'filter.freq')
-            await expectVal(() => synthField(page, 'BASS1', 'lfo', 'wave'), 'triangle')
-            await expectNumber(() => synthField(page, 'BASS1', 'lfo', 'freq'), 1.5)
-            await expectNumber(() => synthField(page, 'BASS1', 'lfo', 'depth'), 0.8)
-            await expectVal(() => synthField(page, 'BASS1', 'lfo', 'sync'), '1/4')
-            await expectVal(() => synthField(page, 'BASS1', 'lfo2', 'target'), 'vco1.detune')
-            await expectVal(() => synthField(page, 'BASS1', 'lfo2', 'wave'), 'square')
-            await expectNumber(() => synthField(page, 'BASS1', 'lfo2', 'freq'), 0.5)
-            await expectNumber(() => synthField(page, 'BASS1', 'lfo2', 'depth'), 0.4)
-            await expectVal(() => synthField(page, 'BASS1', 'lfo2', 'sync'), '1/8')
-            await expectNumber(() => synthField(page, 'BASS1', 'noise', 'mix'), 0.6)
-            await expectVal(() => synthField(page, 'BASS1', 'noise', 'filterType'), 'highpass')
-            await expectNumber(() => synthField(page, 'BASS1', 'noise', 'filterFreq'), 4000)
-            await expectNumber(() => synthField(page, 'BASS1', 'noise', 'filterQ'), 3)
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'lfo', 'target'), 'filter.freq')
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'lfo', 'wave'), 'triangle')
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'lfo', 'freq'), 1.5)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'lfo', 'depth'), 0.8)
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'lfo', 'sync'), '1/4')
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'lfo2', 'target'), 'vco1.detune')
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'lfo2', 'wave'), 'square')
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'lfo2', 'freq'), 0.5)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'lfo2', 'depth'), 0.4)
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'lfo2', 'sync'), '1/8')
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'noise', 'mix'), 0.6)
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'noise', 'filterType'), 'highpass')
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'noise', 'filterFreq'), 4000)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'noise', 'filterQ'), 3)
 
             // power card dance: bypass on -> off
             await ss.locator('button[data-power-card="noise"]').click()
-            await expectVal(() => synthField(page, 'BASS1', 'bypassNoise'), true)
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'bypassNoise'), true)
             await ss.locator('button[data-power-card="noise"]').click()
-            await expectVal(() => synthField(page, 'BASS1', 'bypassNoise'), false)
+            await expectVal(() => synthField(page, 'BASS_ANALOG', 'bypassNoise'), false)
         })
 
         await test.step('phase 7e — synth ENV tab (envelope + master)', async () => {
@@ -765,13 +765,13 @@ test.describe.serial('Full session lifecycle', () => {
             await knobSet(dialogs, ss, 'subGain', 0.3)
             await knobSet(dialogs, ss, 'pitchPunch', 0.5)
 
-            await expectNumber(() => synthField(page, 'BASS1', 'envelope', 'attack'), 0.02)
-            await expectNumber(() => synthField(page, 'BASS1', 'envelope', 'decay'), 0.15)
-            await expectNumber(() => synthField(page, 'BASS1', 'envelope', 'sustain'), 0.6)
-            await expectNumber(() => synthField(page, 'BASS1', 'envelope', 'release'), 0.25)
-            await expectNumber(() => synthField(page, 'BASS1', 'masterVolume'), 0.9)
-            await expectNumber(() => synthField(page, 'BASS1', 'subGain'), 0.3)
-            await expectNumber(() => synthField(page, 'BASS1', 'pitchPunch'), 0.5)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'envelope', 'attack'), 0.02)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'envelope', 'decay'), 0.15)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'envelope', 'sustain'), 0.6)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'envelope', 'release'), 0.25)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'masterVolume'), 0.9)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'subGain'), 0.3)
+            await expectNumber(() => synthField(page, 'BASS_ANALOG', 'pitchPunch'), 0.5)
         })
 
         await test.step('phase 8 — back to the grid, persist and snapshot', async () => {
@@ -779,7 +779,7 @@ test.describe.serial('Full session lifecycle', () => {
             // (view_manager exit → synthEditor.closePanelAndCommit → commitSound → persist)
             await page.locator('button.tb-view-btn[data-view="edit"]').click()
             await expect(page.locator('#pattern-panel')).toBeVisible()
-            await waitForSynthSoundPersisted(page, 'BASS1')
+            await waitForSynthSoundPersisted(page, 'BASS_ANALOG')
             await waitForPatternsPersisted(page)
 
             beforeReload = await snapshotState(page)
@@ -869,7 +869,7 @@ test.describe.serial('Full session lifecycle', () => {
             (beforeTracks[0].notes ?? []).map((n) => VOLATILE_KEYS.map((k) => n[k])),
         )
 
-        // synth preset (BASS1) survived in IndexedDB
+        // synth preset (BASS_ANALOG) survived in IndexedDB
         expect(after.bass1).toEqual(beforeReload.bass1)
     })
 

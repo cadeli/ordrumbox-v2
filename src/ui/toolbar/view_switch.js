@@ -32,6 +32,8 @@ export default class ViewSwitch {
     #prollBtn
     /** @type {HTMLButtonElement} */
     #songBtn
+    /** @type {HTMLButtonElement} */
+    #kitBtn
 
     get drumBtn() {
         return this.#drumBtn
@@ -67,6 +69,10 @@ export default class ViewSwitch {
 
     get songBtn() {
         return this.#songBtn
+    }
+
+    get kitBtn() {
+        return this.#kitBtn
     }
 
     /** Releases every listener bound through listen(). */
@@ -155,10 +161,16 @@ export default class ViewSwitch {
         this.#songBtn.dataset.view = 'song'
         this.#songBtn.textContent = 'Song'
         this.#songBtn.title = 'Toggle Song'
+        this.#kitBtn = document.createElement('button')
+        this.#kitBtn.className = 'tb-view-btn'
+        this.#kitBtn.dataset.view = 'kit'
+        this.#kitBtn.textContent = 'Kit'
+        this.#kitBtn.title = 'Toggle Drumkit Manager'
         viewRow.appendChild(this.#synthBtn)
         viewRow.appendChild(this.#editBtn)
         viewRow.appendChild(this.#prollBtn)
         viewRow.appendChild(this.#songBtn)
+        viewRow.appendChild(this.#kitBtn)
         viewWrap.appendChild(viewLabel)
         viewWrap.appendChild(viewRow)
 
@@ -195,6 +207,9 @@ export default class ViewSwitch {
         })
         this.#life.listen(this.#songBtn, 'click', () => {
             playbackEvents.emit(EVENTS.SONG_TOGGLE)
+        })
+        this.#life.listen(this.#kitBtn, 'click', () => {
+            playbackEvents.emit(EVENTS.DRUMKIT_MANAGER_TOGGLE, true)
         })
 
         this.#life.listen(this.#undoBtn, 'click', () => {

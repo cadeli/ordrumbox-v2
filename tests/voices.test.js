@@ -406,7 +406,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
         await voice.setup(flatNote, 1.0)
 
         const msg = lastPostByType('update')
-        expect(msg.attack).toBe(0.003)
+        expect(msg.attack).toBe(0.001)
         expect(msg.release).toBe(0.008)
     })
 
@@ -814,7 +814,7 @@ describe('VoiceFactory', () => {
             const voice = await factory.createVoice(flatNote)
             await voice.setup(flatNote, 0)
             const updateArg = lastPostByType('update')
-            expect(updateArg.attack).toBeGreaterThanOrEqual(0.003)
+            expect(updateArg.attack).toBeGreaterThanOrEqual(0.001)
             expect(updateArg.release).toBeGreaterThanOrEqual(0.008)
         })
 

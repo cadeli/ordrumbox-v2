@@ -132,7 +132,7 @@ export async function snapshotState(page) {
                 patterns: appState.patterns,
                 selectedPatternIdx: appState.selectedPatternIdx,
                 selectedDrumkitIdx: appState.selectedDrumkitIdx,
-                bass1: soundRegistry.generatedSounds['BASS1'] ?? null,
+                bass1: soundRegistry.generatedSounds['BASS_ANALOG'] ?? null,
             }),
         )
     })

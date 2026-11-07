@@ -355,7 +355,7 @@ describe('IDB Cache', () => {
         const fifteenDaysAgo = Date.now() - 15 * 24 * 60 * 60 * 1000
         const tx = db.transaction('samples', 'readwrite')
         tx.objectStore('samples').put(
-            { data: buf, savedAt: fifteenDaysAgo, size: 256, version: '2.0.0', store: 'samples' },
+            { data: buf, savedAt: fifteenDaysAgo, size: 256, version: '2.0.1', store: 'samples' },
             'fresh.wav',
         )
         await new Promise((r) => {
@@ -375,7 +375,7 @@ describe('IDB Cache', () => {
         const thirtyOneDaysAgo = Date.now() - 31 * 24 * 60 * 60 * 1000
         const tx = db.transaction('samples', 'readwrite')
         tx.objectStore('samples').put(
-            { data: new ArrayBuffer(64), savedAt: thirtyOneDaysAgo, size: 64, version: '2.0.0', store: 'samples' },
+            { data: new ArrayBuffer(64), savedAt: thirtyOneDaysAgo, size: 64, version: '2.0.1', store: 'samples' },
             'old.wav',
         )
         await new Promise((r) => {
