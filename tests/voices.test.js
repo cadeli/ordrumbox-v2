@@ -440,6 +440,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
             'filterType',
             'filterFreq',
             'filterQ',
+            'filterSlope',
             'drive',
             'pitchPunch',
             'subGain',

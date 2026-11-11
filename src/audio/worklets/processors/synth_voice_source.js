@@ -205,6 +205,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             { name: 'filterType', defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
             { name: 'filterFreq', defaultValue: 1000, minValue: 20,    maxValue: 20000, automationRate: 'k-rate' },
             { name: 'filterQ',    defaultValue: 0.7,  minValue: 0.1,   maxValue: 20,    automationRate: 'k-rate' },
+            { name: 'filterSlope', defaultValue: 12,   minValue: 12,    maxValue: 24,    automationRate: 'k-rate' },
             { name: 'attack',     defaultValue: 0.01, minValue: 0,     maxValue: 0.5,   automationRate: 'k-rate' },
             { name: 'decay',      defaultValue: 0.1,  minValue: 0,     maxValue: 1.0,   automationRate: 'k-rate' },
             { name: 'sustain',    defaultValue: 0.7,  minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
@@ -234,6 +235,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
         this.filt = new TptState();
+        this.filt2 = new TptState();
         this.startTime = -1;
         this.releaseTime = -1;
         this.releaseStartLevel = 0;
@@ -332,6 +334,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this.#rngState = 54321;
             this.filt.z1 = 0;
             this.filt.z2 = 0;
+            this.filt2.z1 = 0;
+            this.filt2.z2 = 0;
             this.#noiseFilt.z1 = 0;
             this.#noiseFilt.z2 = 0;
             this.#overrides = undefined;
@@ -559,6 +563,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const fType = this.#param('filterType', parameters.filterType);
         const fFreq = this.#param('filterFreq', parameters.filterFreq);
         const fQ    = this.#param('filterQ', parameters.filterQ);
+        const fSlope = this.#param('filterSlope', parameters.filterSlope);
         const master = this.#param('master', parameters.master);
         const pan    = this.#param('pan', parameters.pan);
         const lfo1Target = Math.round(this.#param('lfo1Target', parameters.lfo1Target));
@@ -942,8 +947,22 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                     const fClamped = fFreqSample < 20 ? 20 : (fFreqSample > sr * 0.25 ? sr * 0.25 : fFreqSample);
                     const gLfo = Math.tan(PI * fClamped / sr);
                     this.#tptFilt(dry, gLfo, kMod);
+                    if (fSlope >= 24) {
+                        const first = (filtMode === 0) ? this.#filtLP : (filtMode === 1) ? this.#filtHP : (filtMode === 2) ? this.#filtBP : (this.#filtLP + this.#filtHP);
+                        const saved = this.filt;
+                        this.filt = this.filt2;
+                        this.#tptFilt(first, gLfo, kMod);
+                        this.filt = saved;
+                    }
                 } else {
                     this.#tptFilt(dry, gCoeff, kCoeff);
+                    if (fSlope >= 24) {
+                        const first = (filtMode === 0) ? this.#filtLP : (filtMode === 1) ? this.#filtHP : (filtMode === 2) ? this.#filtBP : (this.#filtLP + this.#filtHP);
+                        const saved = this.filt;
+                        this.filt = this.filt2;
+                        this.#tptFilt(first, gCoeff, kCoeff);
+                        this.filt = saved;
+                    }
                 }
 
                 if (filtMode === 0) y = this.#filtLP;

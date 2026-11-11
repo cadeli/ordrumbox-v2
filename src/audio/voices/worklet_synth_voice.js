@@ -319,6 +319,7 @@ constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null, s
                 filterType: mapEnum(FILTER_TO_INT, filterCfg.type, 'filterType'),
                 filterFreq: toFiniteNumber(filterCfg.freq, 1000),
                 filterQ: toFiniteNumber(filterCfg.Q, 0.7),
+                filterSlope: toFiniteNumber(filterCfg.slope, 12),
                 drive: toFiniteNumber(filterCfg.drive, 0),
                 pitchPunch: toFiniteNumber(gs.pitchPunch, 0),
                 subGain: toFiniteNumber(gs.subGain, 0),

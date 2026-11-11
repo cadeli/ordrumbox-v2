@@ -286,6 +286,7 @@ export default class GroupsSection {
         const isLfo = pathArr[0] === 'lfo' || pathArr[0] === 'lfo2'
         if (key === 'wave') return WAVE_TYPES
         if (pathArr[0] === 'filter' && key === 'type') return FILTER_TYPES
+        if (pathArr[0] === 'filter' && key === 'slope') return [12, 24]
         if (pathArr[0] === 'noise' && key === 'filterType') return FILTER_TYPES
         if (pathArr[0] === 'fm' && key === 'algo') return [0, 1, 2, 3, 4]
         if (pathArr[0] === 'modEnvelope' && key === 'target') return MOD_ENV_TARGETS
